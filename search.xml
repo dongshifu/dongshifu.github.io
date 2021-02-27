@@ -111,6 +111,39 @@
       </tags>
   </entry>
   <entry>
+    <title>Linux shell学习</title>
+    <url>/2019/11/27/shell/</url>
+    <content><![CDATA[<h1 id="Shell"><a href="#Shell" class="headerlink" title="Shell"></a>Shell</h1><p>首行的 #! 指明该程序的解释器</p>
+<p>程序语言执行：</p>
+<p>c ：编译，二进制代码（CPU,X86复杂指令集，Power精简指令集，ARM）</p>
+<p>java ：编译器，字节码（java虚拟机 JDK）</p>
+<p>shell -解释</p>
+<p>perl-解释</p>
+<p>expect-解释</p>
+<p>Python- 解释</p>
+<p>​            -编译 ：字节码</p>
+<p>代码重定向</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">! /usr/bin/bash</span></span><br><span class="line">ping -c1 baidu.com &amp;&gt;/dev/null &amp;&amp; echo "baidu is up" || echo "baidu is down!"</span><br><span class="line"></span><br><span class="line">/usr/bin/python &lt;&lt;-EOF</span><br><span class="line">print("hello world")</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+<p>通过bash xx.sh ./xx.sh执行的文件是使用sub shell来执行的.</p>
+<p>通过. xx.sh或source xx.sh执行的使用当前bash.会影响当前的bash.</p>
+<p>系统级：</p>
+<p>/etc/profile</p>
+<p>/etc/bashrc</p>
+<p>用户级：</p>
+<p>~/.bash_profile</p>
+<p>~/.bashrc</p>
+<p>~/.bash_logout</p>
+<p>~/.bash_history</p>
+<p>/bin/bash 和/sbin/</p>
+]]></content>
+      <categories>
+        <category>linux</category>
+      </categories>
+      <tags>
+        <tag>linux shell</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Linux 系统管理</title>
     <url>/2019/11/27/system/</url>
     <content><![CDATA[<h2 id="Linux系统管理"><a href="#Linux系统管理" class="headerlink" title="Linux系统管理"></a>Linux系统管理</h2><h3 id="进程管理"><a href="#进程管理" class="headerlink" title="进程管理"></a>进程管理</h3><h4 id="进程查看"><a href="#进程查看" class="headerlink" title="进程查看"></a>进程查看</h4><p>作用：判断服务器健康状态，查看系统中所有进程，杀死进程</p>
@@ -143,39 +176,6 @@
       </categories>
       <tags>
         <tag>linux 系统管理</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Linux shell学习</title>
-    <url>/2019/11/27/shell/</url>
-    <content><![CDATA[<h1 id="Shell"><a href="#Shell" class="headerlink" title="Shell"></a>Shell</h1><p>首行的 #! 指明该程序的解释器</p>
-<p>程序语言执行：</p>
-<p>c ：编译，二进制代码（CPU,X86复杂指令集，Power精简指令集，ARM）</p>
-<p>java ：编译器，字节码（java虚拟机 JDK）</p>
-<p>shell -解释</p>
-<p>perl-解释</p>
-<p>expect-解释</p>
-<p>Python- 解释</p>
-<p>​            -编译 ：字节码</p>
-<p>代码重定向</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">! /usr/bin/bash</span></span><br><span class="line">ping -c1 baidu.com &amp;&gt;/dev/null &amp;&amp; echo "baidu is up" || echo "baidu is down!"</span><br><span class="line"></span><br><span class="line">/usr/bin/python &lt;&lt;-EOF</span><br><span class="line">print("hello world")</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
-<p>通过bash xx.sh ./xx.sh执行的文件是使用sub shell来执行的.</p>
-<p>通过. xx.sh或source xx.sh执行的使用当前bash.会影响当前的bash.</p>
-<p>系统级：</p>
-<p>/etc/profile</p>
-<p>/etc/bashrc</p>
-<p>用户级：</p>
-<p>~/.bash_profile</p>
-<p>~/.bashrc</p>
-<p>~/.bash_logout</p>
-<p>~/.bash_history</p>
-<p>/bin/bash 和/sbin/</p>
-]]></content>
-      <categories>
-        <category>linux</category>
-      </categories>
-      <tags>
-        <tag>linux shell</tag>
       </tags>
   </entry>
   <entry>
