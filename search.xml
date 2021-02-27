@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>Linux 文件系统</title>
+    <url>/2019/11/27/file/</url>
+    <content><![CDATA[<h2 id="1-分区类型"><a href="#1-分区类型" class="headerlink" title="1.分区类型"></a>1.分区类型</h2><ul>
+<li>主分区：最多只能有四个</li>
+<li>扩展分区：最多一个，算作主分区的一种，主分区加扩展分区最多有四个。扩展分区不能存储数据和格式化，必须再划分为逻辑分区才可以使用。</li>
+<li>逻辑分区：在扩展分区中划分</li>
+</ul>
+<p>逻辑分区的编号从5开始</p>
+<h2 id="2-文件系统"><a href="#2-文件系统" class="headerlink" title="2.文件系统"></a>2.文件系统</h2><ul>
+<li>ext2:ext文件系统的升级版。最大支持16TB的分区和最大2TB的文件。</li>
+<li>ext3:ext2的升级，增加日志功能。</li>
+<li>ext4:ext3升级版本，主流使用，功能强大</li>
+</ul>
+<h3 id="2-1常用命令"><a href="#2-1常用命令" class="headerlink" title="2.1常用命令"></a>2.1常用命令</h3><h4 id="df-du-fsck-dump2fs"><a href="#df-du-fsck-dump2fs" class="headerlink" title="df, du, fsck, dump2fs"></a>df, du, fsck, dump2fs</h4><h4 id="1-文件系统查看命令df"><a href="#1-文件系统查看命令df" class="headerlink" title="1.文件系统查看命令df"></a>1.文件系统查看命令df</h4><p>df [选项][挂载点]</p>
+<p>-a 所有文件系统信息</p>
+<p>-h 使用习惯单位显示容量，如kB,MB,GB</p>
+<p>ls 只统计目录下的大小，而不会统计子目录下的数据大小。</p>
+<h4 id="2-统计目录或文件大小"><a href="#2-统计目录或文件大小" class="headerlink" title="2.统计目录或文件大小"></a>2.统计目录或文件大小</h4><p>-a</p>
+<p>-h </p>
+<p>-s</p>
+<p>df命令从文件系统考虑，不光要考虑文件占用的空间，还要统计被命令或程序占用的空间（eg. 文件已经被删除，但程序并没有释放空间）</p>
+<p>du命令面向文件，只会计算文件或目录占用的空间。</p>
+<h4 id="3-文件系统修复命令fsck"><a href="#3-文件系统修复命令fsck" class="headerlink" title="3.文件系统修复命令fsck"></a>3.文件系统修复命令fsck</h4><p>fsck[选项]分区设备文件名</p>
+<h4 id="4-显示磁盘状态命令dumpe2fs"><a href="#4-显示磁盘状态命令dumpe2fs" class="headerlink" title="4.显示磁盘状态命令dumpe2fs"></a>4.显示磁盘状态命令dumpe2fs</h4><p>dumpe2fs 分区设备文件名</p>
+<h3 id="2-2-文件系统常用命令-挂载命令"><a href="#2-2-文件系统常用命令-挂载命令" class="headerlink" title="2.2 文件系统常用命令-挂载命令"></a>2.2 文件系统常用命令-挂载命令</h3><h4 id="1-查询与自动挂载"><a href="#1-查询与自动挂载" class="headerlink" title="1.查询与自动挂载"></a>1.查询与自动挂载</h4><p>mount [-l]：查询系统中已经挂载的设备，-l会显示卷标名称</p>
+<p>mount -a 依据配置文件/etc/fastb的内容，自动挂载</p>
+<h4 id="2-挂载命令格式"><a href="#2-挂载命令格式" class="headerlink" title="2.挂载命令格式"></a>2.挂载命令格式</h4><p>mount [-t 文件系统] [-L 卷标名] [-o 特殊选项] 设备文件名 挂载点</p>
+<p>选项：</p>
+<p>-t 文件系统：加入文件系统类型来指定挂载的类型，可以ext3，ext4,iso9660等文件系统</p>
+<p>-L 卷标名：挂载指定卷标的分区，而不是安装设备文件名挂载</p>
+<p>-o 特殊指令（remount …）</p>
+<p>mount -o remount ,noexec /home</p>
+<h4 id="3-挂载光盘与U盘"><a href="#3-挂载光盘与U盘" class="headerlink" title="3 挂载光盘与U盘"></a>3 挂载光盘与U盘</h4><p>1.挂载光盘</p>
+<p>mkdir /mnt/cdrom/ 建立挂载点</p>
+<p>mount -t iso9660 /dev/cdrom /mnt/cdrom 挂载光盘</p>
+<p>mount /dev/sr0 /mnt/cdrom</p>
+<p> 2.卸载命令</p>
+<p>umount 设备文件名或挂载点</p>
+<p>umount /mnt/cdrom</p>
+<p>3.挂载U盘</p>
+<p>fdisk -l 查看U盘设备文件名</p>
+<p>mount -t vfat /dev/sdb1 /mnt/usb/</p>
+<p>linux默认不支持NTFS文件系统</p>
+<h4 id="4支持NTFS文件系统"><a href="#4支持NTFS文件系统" class="headerlink" title="4支持NTFS文件系统"></a>4支持NTFS文件系统</h4><p>重新编译内核</p>
+<p>第三方软件</p>
+<p>NTFS-3G插件</p>
+<h3 id="2-3-fdisk分区"><a href="#2-3-fdisk分区" class="headerlink" title="2.3 fdisk分区"></a>2.3 fdisk分区</h3><h4 id="fdisk命令分区过程"><a href="#fdisk命令分区过程" class="headerlink" title="fdisk命令分区过程"></a>fdisk命令分区过程</h4><p>1.添加硬盘，虚拟机必须在关机的情况下添加</p>
+<p>2.查看新硬盘 fdisk -l</p>
+<p>3.使用fdisk命令分区</p>
+<p>fdisk /dev/sdb</p>
+<p> 4.重新读取分区表信息</p>
+<p>partprobe</p>
+<p>5.格式化分区</p>
+<p>扩展分区不可以格式化</p>
+<p>mkfs -t ext4 /dev/sdb1</p>
+<p>6.建立挂载分区</p>
+<h4 id="分区自动挂载与fstab文件修复"><a href="#分区自动挂载与fstab文件修复" class="headerlink" title="分区自动挂载与fstab文件修复"></a>分区自动挂载与fstab文件修复</h4><p>将挂载写入/etc/fstab文件，一定要写对</p>
+<p>mount -a 依据配置文件 /etc/fstab的内容，自动挂载</p>
+<p>/etc/fstab文件修复</p>
+<p>mount -o remount,rm /</p>
+<h3 id="2-4-分配swap分区"><a href="#2-4-分配swap分区" class="headerlink" title="2.4 分配swap分区"></a>2.4 分配swap分区</h3><p>1.free命令</p>
+<p>查看内存与swap分区使用情况</p>
+<p>cached(缓存):加速数据的读取过程</p>
+<p>buffer(缓冲)：写入数据过程中，将分散的写入操作保存到内存中，当达到一定的程度再集中写入硬盘，加速数据的写入过程。</p>
+<p>2.新建swap分区</p>
+<p>fdisk /dev/sdb</p>
+<p>还需将分区ID改为82</p>
+<p>3.格式化</p>
+<p>mkswap /dev/sdb6</p>
+<p>4.加入swap分区</p>
+<p>swapon /dev/sdb6 加入swap分区</p>
+<p>swapoff /dev/sdb6 取消swap分区</p>
+<p>5.swap分区开机自动挂载</p>
+<p>vi /etc/fstab</p>
+]]></content>
+      <categories>
+        <category>linux</category>
+      </categories>
+      <tags>
+        <tag>linux 文件系统</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Linux服务管理</title>
+    <url>/2019/11/27/server/</url>
+    <content><![CDATA[<h2 id="Linux服务管理"><a href="#Linux服务管理" class="headerlink" title="Linux服务管理"></a>Linux服务管理</h2><h3 id="服务分类"><a href="#服务分类" class="headerlink" title="服务分类"></a>服务分类</h3><p>Linux服务</p>
+<ul>
+<li><p>RPM包默认安装的服务</p>
+<p>— 独立的服务</p>
+<p>— 基于xinetd服务</p>
+</li>
+<li><p>源码包安装的服务</p>
+</li>
+</ul>
+<p>启动与自启动</p>
+<ul>
+<li>服务启动：在当前系统中让服务运行，并提供功能</li>
+<li>服务自启动：服务在系统开机或重启之后，随着系统的启动而自动启动服务</li>
+</ul>
+<p>RPM安装服务和源码安装服务区别就在于安装位置的不同。</p>
+<p>service不可以启动RPM安装的软件</p>
+]]></content>
+      <categories>
+        <category>linux</category>
+      </categories>
+      <tags>
+        <tag>linux 服务</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Linux shell学习</title>
+    <url>/2019/11/27/shell/</url>
+    <content><![CDATA[<h1 id="Shell"><a href="#Shell" class="headerlink" title="Shell"></a>Shell</h1><p>首行的 #! 指明该程序的解释器</p>
+<p>程序语言执行：</p>
+<p>c ：编译，二进制代码（CPU,X86复杂指令集，Power精简指令集，ARM）</p>
+<p>java ：编译器，字节码（java虚拟机 JDK）</p>
+<p>shell -解释</p>
+<p>perl-解释</p>
+<p>expect-解释</p>
+<p>Python- 解释</p>
+<p>​            -编译 ：字节码</p>
+<p>代码重定向</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">! /usr/bin/bash</span></span><br><span class="line">ping -c1 baidu.com &amp;&gt;/dev/null &amp;&amp; echo "baidu is up" || echo "baidu is down!"</span><br><span class="line"></span><br><span class="line">/usr/bin/python &lt;&lt;-EOF</span><br><span class="line">print("hello world")</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+<p>通过bash xx.sh ./xx.sh执行的文件是使用sub shell来执行的.</p>
+<p>通过. xx.sh或source xx.sh执行的使用当前bash.会影响当前的bash.</p>
+<p>系统级：</p>
+<p>/etc/profile</p>
+<p>/etc/bashrc</p>
+<p>用户级：</p>
+<p>~/.bash_profile</p>
+<p>~/.bashrc</p>
+<p>~/.bash_logout</p>
+<p>~/.bash_history</p>
+<p>/bin/bash 和/sbin/</p>
+]]></content>
+      <categories>
+        <category>linux</category>
+      </categories>
+      <tags>
+        <tag>linux shell</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Linux 系统管理</title>
+    <url>/2019/11/27/system/</url>
+    <content><![CDATA[<h2 id="Linux系统管理"><a href="#Linux系统管理" class="headerlink" title="Linux系统管理"></a>Linux系统管理</h2><h3 id="进程管理"><a href="#进程管理" class="headerlink" title="进程管理"></a>进程管理</h3><h4 id="进程查看"><a href="#进程查看" class="headerlink" title="进程查看"></a>进程查看</h4><p>作用：判断服务器健康状态，查看系统中所有进程，杀死进程</p>
+<p>查看系统中所有进程：</p>
+<ul>
+<li>ps aux :使用系统中所有进程，使用BSD操作系统格式</li>
+<li>ps -le 查看系统中所有进程，使用Linux标准命令格式</li>
+</ul>
+<p>查看系统健康状态：</p>
+<ul>
+<li>top[选项]</li>
+</ul>
+<p>查看进程树：</p>
+<ul>
+<li>pstree</li>
+</ul>
+<h4 id="终止进程"><a href="#终止进程" class="headerlink" title="终止进程"></a>终止进程</h4><p>1.kill命令</p>
+<p>kill -l 查看可用的进程信号</p>
+<p>kill -1 进程id 重启进程</p>
+<p>kill -9 进程id 强制杀死进程</p>
+<p>2.killall命令</p>
+<p>killall -9 进程名</p>
+<p>3.pkill </p>
+<p>按照终端号踢出用户</p>
+<p>w 使用w命令查询本机已经登录的用户</p>
+<p>pkill -t -9 pts/1 强制杀死从pts/1虚拟终端登录的进程</p>
+]]></content>
+      <categories>
+        <category>linux</category>
+      </categories>
+      <tags>
+        <tag>linux 系统管理</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>hexo基本操作</title>
+    <url>/2019/11/26/hexo-operate/</url>
+    <content><![CDATA[<h2 id="hexo-文章管理"><a href="#hexo-文章管理" class="headerlink" title="hexo 文章管理"></a>hexo 文章管理</h2><h3 id="1-增加文章"><a href="#1-增加文章" class="headerlink" title="1.增加文章"></a>1.增加文章</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">hexo new xx</span><br></pre></td></tr></table></figure>
+<p>创建的文件自动保存在source/_post文件夹下，为MarkDown格式</p>
+<p>可以在文件中开头通过：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">---</span><br><span class="line">title: 标题 # 自动创建，如 hello-world</span><br><span class="line">date: 日期 # 自动创建，如 2019-09-22 01:47:21</span><br><span class="line">tags: </span><br><span class="line">- 标签1</span><br><span class="line">- 标签2</span><br><span class="line">- 标签3</span><br><span class="line">categories:</span><br><span class="line">- 分类1</span><br><span class="line">- 分类2</span><br><span class="line">---</span><br></pre></td></tr></table></figure>
+<p>来添加文章的必要信息。</p>
+<h3 id="2-标签页添加"><a href="#2-标签页添加" class="headerlink" title="2.标签页添加"></a>2.标签页添加</h3><p>在项目的根目录下执行命令</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">hexo new page tags</span><br></pre></td></tr></table></figure>
+<p>执行命令后自动生成一个source/tags/index.md文件，内容如下：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">---</span><br><span class="line">title: tags</span><br><span class="line">date: 2019-09-26 16:44:17</span><br><span class="line">---</span><br></pre></td></tr></table></figure>
+<p>可以为其增加type字段指定页面的类型:</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">type: tags</span><br><span class="line">comments: false</span><br></pre></td></tr></table></figure>
+<p>在使用的主题_config.yml文件将页面的链接加到主菜单中，修改menu字段：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">menu:</span><br><span class="line">  home: / || home</span><br><span class="line">  #about: /about/ || user</span><br><span class="line">  tags: /tags/ || tags</span><br><span class="line">  #categories: /categories/ || th</span><br><span class="line">  archives: /archives/ || archive</span><br><span class="line">  #schedule: /schedule/ || calendar</span><br><span class="line">  #sitemap: /sitemap.xml || sitemap</span><br><span class="line">  #commonweal: /404/ || heartbeat</span><br></pre></td></tr></table></figure>
+<p>本地服务重启，可以观察到页面状态变化(左侧导航出现标签，点击之后会显示标签的列表)。</p>
+<h3 id="3-分类页"><a href="#3-分类页" class="headerlink" title="3.分类页"></a>3.分类页</h3><p>对文章进行归类，一个文章可以对应某个或多个分类，可以通过以下命令创建分类页：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">hexo new page categories</span><br></pre></td></tr></table></figure>
+<p>生成一个/source/categories/index.md文件。</p>
+<p>在其中增加type字段来指定页面的类型：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">type: categories </span><br><span class="line">comments: false</span><br></pre></td></tr></table></figure>
+<p>然后在使用的主题_config.yml文件中将页面链接加入到主菜单中，修改menu字段：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">menu:</span><br><span class="line">  home: / || home</span><br><span class="line"><span class="meta">  #</span><span class="bash">about: /about/ || user</span></span><br><span class="line">  tags: /tags/ || tags</span><br><span class="line">  categories: /categories/ || th</span><br><span class="line">  archives: /archives/ || archive</span><br><span class="line"><span class="meta">  #</span><span class="bash">schedule: /schedule/ || calendar</span></span><br><span class="line"><span class="meta">  #</span><span class="bash">sitemap: /sitemap.xml || sitemap</span></span><br><span class="line"><span class="meta">  #</span><span class="bash">commonweal: /404/ || heartbeat</span></span><br></pre></td></tr></table></figure>
+<h4 id="4-添加搜索页"><a href="#4-添加搜索页" class="headerlink" title="4.添加搜索页"></a>4.添加搜索页</h4><p>需要搜索全站的内容，所以一个搜索功能的支持也是很有必要的，要添加搜索的支持，需要先安装一个插件，叫做 hexo-generator-searchdb，命令如下：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">npm install hexo-generator-searchdb --save</span><br></pre></td></tr></table></figure>
+<p>然后在<strong>项目</strong>的_config.yml中添加搜索设置如下:</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">search:</span><br><span class="line">  path: search.xml</span><br><span class="line">  field: post</span><br><span class="line">  format: html</span><br><span class="line">  limit: 10000</span><br></pre></td></tr></table></figure>
+<p>然后在主题的 _config.yml 里面修改如下：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> Local search</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> Dependencies: https://github.com/wzpan/hexo-generator-search</span></span><br><span class="line">local_search:</span><br><span class="line">  enable: true</span><br><span class="line"><span class="meta">  #</span><span class="bash"> If auto, trigger search by changing input.</span></span><br><span class="line"><span class="meta">  #</span><span class="bash"> If manual, trigger search by pressing enter key or search button.</span></span><br><span class="line">  trigger: auto</span><br><span class="line"><span class="meta">  #</span><span class="bash"> Show top n results per article, show all results by setting to -1</span></span><br><span class="line">  top_n_per_article: 5</span><br><span class="line"><span class="meta">  #</span><span class="bash"> Unescape html strings to the readable one.</span></span><br><span class="line">  unescape: false</span><br><span class="line"><span class="meta">  #</span><span class="bash"> Preload the search data when the page loads.</span></span><br><span class="line">  preload: false</span><br></pre></td></tr></table></figure>
+<h3 id="5-404页面添加"><a href="#5-404页面添加" class="headerlink" title="5.404页面添加"></a>5.404页面添加</h3><p>若需要添加一个 404 页面，直接在根目录 source 文件夹新建一个 404.md 文件，内容可以仿照如下：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">---</span><br><span class="line">title: 404 Not Found</span><br><span class="line">date: 2019-11-27 10:41:27</span><br><span class="line">---</span><br><span class="line"> </span><br><span class="line">&lt;center&gt;</span><br><span class="line">对不起，您所访问的页面不存在或者已删除。</span><br><span class="line">您可以&lt;a href="https://dongshifu.github.io&gt;"&gt;点击此处&lt;/a&gt;返回首页。</span><br><span class="line">或访问&lt;a href="https://blog.csdn.net/dongshifo"&gt;查看更多内容。</span><br><span class="line">&lt;/center&gt;</span><br><span class="line"> </span><br><span class="line">&lt;blockquote class="blockquote-center"&gt;</span><br><span class="line">    Dongshifu</span><br><span class="line">&lt;/blockquote&gt;</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>工具</category>
+      </categories>
+      <tags>
+        <tag>hexo 基本操作</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>http</title>
+    <url>/2019/11/26/http/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>hexo 测试</title>
+    <url>/2019/11/25/hello-world/</url>
+    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
+<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
+<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
+<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
+<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html" target="_blank" rel="noopener">Deployment</a></p>
+]]></content>
+  </entry>
+</search>
