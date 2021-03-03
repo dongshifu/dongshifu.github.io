@@ -1353,33 +1353,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Linux服务管理</title>
-    <url>/2019/11/27/server/</url>
-    <content><![CDATA[<h2 id="Linux服务管理"><a href="#Linux服务管理" class="headerlink" title="Linux服务管理"></a>Linux服务管理</h2><h3 id="服务分类"><a href="#服务分类" class="headerlink" title="服务分类"></a>服务分类</h3><p>Linux服务</p>
-<ul>
-<li><p>RPM包默认安装的服务</p>
-<p>— 独立的服务</p>
-<p>— 基于xinetd服务</p>
-</li>
-<li><p>源码包安装的服务</p>
-</li>
-</ul>
-<p>启动与自启动</p>
-<ul>
-<li>服务启动：在当前系统中让服务运行，并提供功能</li>
-<li>服务自启动：服务在系统开机或重启之后，随着系统的启动而自动启动服务</li>
-</ul>
-<p>RPM安装服务和源码安装服务区别就在于安装位置的不同。</p>
-<p>service不可以启动RPM安装的软件</p>
-]]></content>
-      <categories>
-        <category>linux</category>
-      </categories>
-      <tags>
-        <tag>linux 服务</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Linux shell学习</title>
     <url>/2019/11/27/shell/</url>
     <content><![CDATA[<h3 id="shell简介"><a href="#shell简介" class="headerlink" title="shell简介"></a>shell简介</h3><h4 id="基本定义"><a href="#基本定义" class="headerlink" title="基本定义"></a>基本定义</h4><ul>
@@ -1568,6 +1541,33 @@
       </categories>
       <tags>
         <tag>linux shell</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Linux服务管理</title>
+    <url>/2019/11/27/server/</url>
+    <content><![CDATA[<h2 id="Linux服务管理"><a href="#Linux服务管理" class="headerlink" title="Linux服务管理"></a>Linux服务管理</h2><h3 id="服务分类"><a href="#服务分类" class="headerlink" title="服务分类"></a>服务分类</h3><p>Linux服务</p>
+<ul>
+<li><p>RPM包默认安装的服务</p>
+<p>— 独立的服务</p>
+<p>— 基于xinetd服务</p>
+</li>
+<li><p>源码包安装的服务</p>
+</li>
+</ul>
+<p>启动与自启动</p>
+<ul>
+<li>服务启动：在当前系统中让服务运行，并提供功能</li>
+<li>服务自启动：服务在系统开机或重启之后，随着系统的启动而自动启动服务</li>
+</ul>
+<p>RPM安装服务和源码安装服务区别就在于安装位置的不同。</p>
+<p>service不可以启动RPM安装的软件</p>
+]]></content>
+      <categories>
+        <category>linux</category>
+      </categories>
+      <tags>
+        <tag>linux 服务</tag>
       </tags>
   </entry>
   <entry>
