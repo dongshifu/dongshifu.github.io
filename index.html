@@ -205,6 +205,109 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/03/08/Go%20%E6%8E%A5%E5%8F%A3_5%E6%8E%A5%E5%8F%A3%E8%BD%AC%E6%8D%A2%E7%9A%84%E5%8E%9F%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/03/08/Go%20%E6%8E%A5%E5%8F%A3_5%E6%8E%A5%E5%8F%A3%E8%BD%AC%E6%8D%A2%E7%9A%84%E5%8E%9F%E7%90%86/" class="post-title-link" itemprop="url">Go 接口_5接口转换的原理</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-03-08 15:05:01" itemprop="dateCreated datePublished" datetime="2021-03-08T15:05:01+08:00">2021-03-08</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-01-12 10:27:58" itemprop="dateModified" datetime="2021-01-12T10:27:58+08:00">2021-01-12</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>通过前面提到的 <code>iface</code> 的源码可以看到，实际上它包含接口的类型 <code>interfacetype</code> 和 实体类型的类型 <code>_type</code>，这两者都是 <code>iface</code> 的字段 <code>itab</code> 的成员。也就是说生成一个 <code>itab</code> 同时需要接口的类型和实体的类型。</p>
+<blockquote>
+<p><interface 类型， 实体类型> -&gt;itable</p>
+</blockquote>
+<p>当判定一种类型是否满足某个接口时，Go 使用类型的方法集和接口所需要的方法集进行匹配，如果类型的方法集完全包含接口的方法集，则可认为该类型实现了该接口。</p>
+<p>例如某类型有 <code>m</code> 个方法，某接口有 <code>n</code> 个方法，则很容易知道这种判定的时间复杂度为 <code>O(mn)</code>，Go 会对方法集的函数按照函数名的字典序进行排序，所以实际的时间复杂度为 <code>O(m+n)</code>。</p>
+<p>这里我们来探索将一个接口转换给另外一个接口背后的原理，当然，能转换的原因必然是类型兼容。</p>
+<p>直接来看一个例子：</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> coder <span class="keyword">interface</span> &#123;</span><br><span class="line">	code()</span><br><span class="line">	run()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> runner <span class="keyword">interface</span> &#123;</span><br><span class="line">	run()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Gopher <span class="keyword">struct</span> &#123;</span><br><span class="line">	language <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(g Gopher)</span> <span class="title">code</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(g Gopher)</span> <span class="title">run</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> c coder = Gopher&#123;&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">var</span> r runner</span><br><span class="line">	r = c</span><br><span class="line">	fmt.Println(c, r)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>简单解释下上述代码：定义了两个 <code>interface</code>: <code>coder</code> 和 <code>runner</code>。定义了一个实体类型 <code>Gopher</code>，类型 <code>Gopher</code> 实现了两个方法，分别是 <code>run()</code> 和 <code>code()</code>。main 函数里定义了一个接口变量 <code>c</code>，绑定了一个 <code>Gopher</code> 对象，之后将 <code>c</code> 赋值给另外一个接口变量 <code>r</code> 。赋值成功的原因是 <code>c</code> 中包含 <code>run()</code> 方法。这样，两个接口变量完成了转换。</p>
+<p>执行命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">go tool compile -S ./src/main.go</span><br></pre></td></tr></table></figure>
+<p>得到 main 函数的汇编命令，可以看到： <code>r = c</code> 这一行语句实际上是调用了 <code>runtime.convI2I(SB)</code>，也就是 <code>convI2I</code> 函数，从函数名来看，就是将一个 <code>interface</code> 转换成另外一个 <code>interface</code>，看下它的源代码：</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">convI2I</span><span class="params">(inter *interfacetype, i iface)</span> <span class="params">(r iface)</span></span> &#123;</span><br><span class="line">	tab := i.tab</span><br><span class="line">	<span class="keyword">if</span> tab == <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> tab.inter == inter &#123;</span><br><span class="line">		r.tab = tab</span><br><span class="line">		r.data = i.data</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	r.tab = getitab(inter, tab._type, <span class="literal">false</span>)</span><br><span class="line">	r.data = i.data</span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>代码比较简单，函数参数 <code>inter</code> 表示接口类型，<code>i</code> 表示绑定了实体类型的接口，<code>r</code> 则表示接口转换了之后的新的 <code>iface</code>。通过前面的分析，我们又知道， <code>iface</code> 是由 <code>tab</code> 和 <code>data</code> 两个字段组成。所以，实际上 <code>convI2I</code> 函数真正要做的事，找到新 <code>interface</code> 的 <code>tab</code> 和 <code>data</code>，就大功告成了。</p>
+<p>我们还知道，<code>tab</code> 是由接口类型 <code>interfacetype</code> 和 实体类型 <code>_type</code>。所以最关键的语句是 <code>r.tab = getitab(inter, tab._type, false)</code>。</p>
+<p>因此，重点来看下 <code>getitab</code> 函数的源码，只看关键的地方：</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">getitab</span><span class="params">(inter *interfacetype, typ *_type, canfail <span class="keyword">bool</span>)</span> *<span class="title">itab</span></span> &#123;</span><br><span class="line">	<span class="comment">// ……</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 根据 inter, typ 计算出 hash 值</span></span><br><span class="line">	h := itabhash(inter, typ)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// look twice - once without lock, once with.</span></span><br><span class="line">	<span class="comment">// common case will be no lock contention.</span></span><br><span class="line">	<span class="keyword">var</span> m *itab</span><br><span class="line">	<span class="keyword">var</span> locked <span class="keyword">int</span></span><br><span class="line">	<span class="keyword">for</span> locked = <span class="number">0</span>; locked &lt; <span class="number">2</span>; locked++ &#123;</span><br><span class="line">		<span class="keyword">if</span> locked != <span class="number">0</span> &#123;</span><br><span class="line">			lock(&amp;ifaceLock)</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 遍历哈希表的一个 slot</span></span><br><span class="line">		<span class="keyword">for</span> m = (*itab)(atomic.Loadp(unsafe.Pointer(&amp;hash[h]))); m != <span class="literal">nil</span>; m = m.link &#123;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 如果在 hash 表中已经找到了 itab（inter 和 typ 指针都相同）</span></span><br><span class="line">			<span class="keyword">if</span> m.inter == inter &amp;&amp; m._type == typ &#123;</span><br><span class="line">                <span class="comment">// ……</span></span><br><span class="line">                </span><br><span class="line">				<span class="keyword">if</span> locked != <span class="number">0</span> &#123;</span><br><span class="line">					unlock(&amp;ifaceLock)</span><br><span class="line">				&#125;</span><br><span class="line">				<span class="keyword">return</span> m</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 在 hash 表中没有找到 itab，那么新生成一个 itab</span></span><br><span class="line">	m = (*itab)(persistentalloc(unsafe.Sizeof(itab&#123;&#125;)+<span class="keyword">uintptr</span>(<span class="built_in">len</span>(inter.mhdr)<span class="number">-1</span>)*sys.PtrSize, <span class="number">0</span>, &amp;memstats.other_sys))</span><br><span class="line">	m.inter = inter</span><br><span class="line">    m._type = typ</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 添加到全局的 hash 表中</span></span><br><span class="line">	additab(m, <span class="literal">true</span>, canfail)</span><br><span class="line">	unlock(&amp;ifaceLock)</span><br><span class="line">	<span class="keyword">if</span> m.bad &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> m</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>简单总结一下：getitab 函数会根据 <code>interfacetype</code> 和 <code>_type</code> 去全局的 itab 哈希表中查找，如果能找到，则直接返回；否则，会根据给定的 <code>interfacetype</code> 和 <code>_type</code> 新生成一个 <code>itab</code>，并插入到 itab 哈希表，这样下一次就可以直接拿到 <code>itab</code>。</p>
+<p>这里查找了两次，并且第二次上锁了，这是因为如果第一次没找到，在第二次仍然没有找到相应的 <code>itab</code> 的情况下，需要新生成一个，并且写入哈希表，因此需要加锁。这样，其他协程在查找相同的 <code>itab</code> 并且也没有找到时，第二次查找时，会被挂住，之后，就会查到第一个协程写入哈希表的 <code>itab</code>。 </p>
+<p>再来看一下 <code>additab</code> 函数的代码：</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 检查 _type 是否符合 interface_type 并且创建对应的 itab 结构体 将其放到 hash 表中</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">additab</span><span class="params">(m *itab, locked, canfail <span class="keyword">bool</span>)</span></span> &#123;</span><br><span class="line">	inter := m.inter</span><br><span class="line">	typ := m._type</span><br><span class="line">	x := typ.uncommon()</span><br><span class="line"></span><br><span class="line">	<span class="comment">// both inter and typ have method sorted by name,</span></span><br><span class="line">	<span class="comment">// and interface names are unique,</span></span><br><span class="line">	<span class="comment">// so can iterate over both in lock step;</span></span><br><span class="line">    <span class="comment">// the loop is O(ni+nt) not O(ni*nt).</span></span><br><span class="line">    <span class="comment">// </span></span><br><span class="line">    <span class="comment">// inter 和 typ 的方法都按方法名称进行了排序</span></span><br><span class="line">    <span class="comment">// 并且方法名都是唯一的。所以循环的次数是固定的</span></span><br><span class="line">    <span class="comment">// 只用循环 O(ni+nt)，而非 O(ni*nt)</span></span><br><span class="line">	ni := <span class="built_in">len</span>(inter.mhdr)</span><br><span class="line">	nt := <span class="keyword">int</span>(x.mcount)</span><br><span class="line">	xmhdr := (*[<span class="number">1</span> &lt;&lt; <span class="number">16</span>]method)(add(unsafe.Pointer(x), <span class="keyword">uintptr</span>(x.moff)))[:nt:nt]</span><br><span class="line">	j := <span class="number">0</span></span><br><span class="line">	<span class="keyword">for</span> k := <span class="number">0</span>; k &lt; ni; k++ &#123;</span><br><span class="line">		i := &amp;inter.mhdr[k]</span><br><span class="line">		itype := inter.typ.typeOff(i.ityp)</span><br><span class="line">		name := inter.typ.nameOff(i.name)</span><br><span class="line">		iname := name.name()</span><br><span class="line">		ipkg := name.pkgPath()</span><br><span class="line">		<span class="keyword">if</span> ipkg == <span class="string">""</span> &#123;</span><br><span class="line">			ipkg = inter.pkgpath.name()</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">for</span> ; j &lt; nt; j++ &#123;</span><br><span class="line">			t := &amp;xmhdr[j]</span><br><span class="line">            tname := typ.nameOff(t.name)</span><br><span class="line">            <span class="comment">// 检查方法名字是否一致</span></span><br><span class="line">			<span class="keyword">if</span> typ.typeOff(t.mtyp) == itype &amp;&amp; tname.name() == iname &#123;</span><br><span class="line">				pkgPath := tname.pkgPath()</span><br><span class="line">				<span class="keyword">if</span> pkgPath == <span class="string">""</span> &#123;</span><br><span class="line">					pkgPath = typ.nameOff(x.pkgpath).name()</span><br><span class="line">				&#125;</span><br><span class="line">				<span class="keyword">if</span> tname.isExported() || pkgPath == ipkg &#123;</span><br><span class="line">					<span class="keyword">if</span> m != <span class="literal">nil</span> &#123;</span><br><span class="line">                        <span class="comment">// 获取函数地址，并加入到itab.fun数组中</span></span><br><span class="line">						ifn := typ.textOff(t.ifn)</span><br><span class="line">						*(*unsafe.Pointer)(add(unsafe.Pointer(&amp;m.fun[<span class="number">0</span>]), <span class="keyword">uintptr</span>(k)*sys.PtrSize)) = ifn</span><br><span class="line">					&#125;</span><br><span class="line">					<span class="keyword">goto</span> nextimethod</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">        <span class="comment">// ……</span></span><br><span class="line">        </span><br><span class="line">		m.bad = <span class="literal">true</span></span><br><span class="line">		<span class="keyword">break</span></span><br><span class="line">	nextimethod:</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> !locked &#123;</span><br><span class="line">		throw(<span class="string">"invalid itab locking"</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 计算 hash 值</span></span><br><span class="line">    h := itabhash(inter, typ)</span><br><span class="line">    <span class="comment">// 加到Hash Slot链表中</span></span><br><span class="line">	m.link = hash[h]</span><br><span class="line">	m.inhash = <span class="literal">true</span></span><br><span class="line">	atomicstorep(unsafe.Pointer(&amp;hash[h]), unsafe.Pointer(m))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>additab</code> 会检查 <code>itab</code> 持有的 <code>interfacetype</code> 和 <code>_type</code> 是否符合，就是看 <code>_type</code> 是否完全实现了 <code>interfacetype</code> 的方法，也就是看两者的方法列表重叠的部分就是 <code>interfacetype</code> 所持有的方法列表。注意到其中有一个双层循环，乍一看，循环次数是 <code>ni * nt</code>，但由于两者的函数列表都按照函数名称进行了排序，因此最终只执行了 <code>ni + nt</code> 次，代码里通过一个小技巧来实现：第二层循环并没有从 0 开始计数，而是从上一次遍历到的位置开始。</p>
+<p>求 hash 值的函数比较简单：</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">itabhash</span><span class="params">(inter *interfacetype, typ *_type)</span> <span class="title">uint32</span></span> &#123;</span><br><span class="line">	h := inter.typ.hash</span><br><span class="line">	h += <span class="number">17</span> * typ.hash</span><br><span class="line">	<span class="keyword">return</span> h % hashSize</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>hashSize</code> 的值是 1009。</p>
+<p>更一般的，当把实体类型赋值给接口的时候，会调用 <code>conv</code> 系列函数，例如空接口调用 <code>convT2E</code> 系列、非空接口调用 <code>convT2I</code> 系列。这些函数比较相似：</p>
+<blockquote>
+<ol>
+<li>具体类型转空接口时，_type 字段直接复制源类型的 _type；调用 mallocgc 获得一块新内存，把值复制进去，data 再指向这块新内存。</li>
+<li>具体类型转非空接口时，入参 tab 是编译器在编译阶段预先生成好的，新接口 tab 字段直接指向入参 tab 指向的 itab；调用 mallocgc 获得一块新内存，把值复制进去，data 再指向这块新内存。</li>
+<li>而对于接口转接口，itab 调用 getitab 函数获取。只用生成一次，之后直接从 hash 表中获取。</li>
+</ol>
+</blockquote>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><p>【接口赋值、反射】<a href="http://wudaijun.com/2018/01/go-interface-implement/" target="_blank" rel="noopener">http://wudaijun.com/2018/01/go-interface-implement/</a></p>
+<p>【itab】<a href="http://legendtkl.com/2017/07/01/golang-interface-implement/" target="_blank" rel="noopener">http://legendtkl.com/2017/07/01/golang-interface-implement/</a></p>
+<p>【和 C++ 的对比】<a href="https://www.jianshu.com/p/b38b1719636e" target="_blank" rel="noopener">https://www.jianshu.com/p/b38b1719636e</a></p>
+<p>【itab 原理】<a href="https://ninokop.github.io/2017/10/29/Go-%E6%96%B9%E6%B3%95%E8%B0%83%E7%94%A8%E4%B8%8E%E6%8E%A5%E5%8F%A3/" target="_blank" rel="noopener">https://ninokop.github.io/2017/10/29/Go-%E6%96%B9%E6%B3%95%E8%B0%83%E7%94%A8%E4%B8%8E%E6%8E%A5%E5%8F%A3/</a></p>
+<p>【getitab源码说明】<a href="https://www.twblogs.net/a/5c245d59bd9eee16b3db561d" target="_blank" rel="noopener">https://www.twblogs.net/a/5c245d59bd9eee16b3db561d</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/06/c%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -832,6 +935,115 @@
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//普通变量</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">Student</span> <span class="title">ss</span>;</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Student</span>&#123;</span></span><br><span class="line">    <span class="keyword">char</span> name[<span class="number">21</span>];</span><br><span class="line">    <span class="keyword">int</span> age;</span><br><span class="line">    <span class="keyword">int</span> score;</span><br><span class="line">    <span class="keyword">char</span> addr[<span class="number">51</span>];</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">fun01</span><span class="params">(ss stu)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">strcpy</span>(stu.name,<span class="string">"lujunyi"</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%s\n"</span>,stu.name);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ss stu = &#123;<span class="string">"宋江"</span>,<span class="number">50</span>,<span class="number">101</span>,<span class="string">"水船"</span>&#125;;</span><br><span class="line">    fun01(stu);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%s\n"</span>,stu.name); <span class="comment">//值传递，不改变</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//结构体指针</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">student</span> <span class="title">ss</span>;</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">student</span>&#123;</span></span><br><span class="line">    <span class="keyword">char</span> name[<span class="number">21</span>];</span><br><span class="line">    <span class="keyword">int</span> age;</span><br><span class="line">    <span class="keyword">int</span> score;</span><br><span class="line">    <span class="keyword">char</span> addr[<span class="number">21</span>];</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">fun02</span><span class="params">(ss* p)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">strcpy</span>(p-&gt;name, <span class="string">"公孙胜"</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%s\n"</span>,p-&gt;name);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">//结构体指针作为函数参数</span></span><br><span class="line">    ss stu = &#123;<span class="string">"吴用"</span>,<span class="number">50</span>, <span class="number">101</span>,<span class="string">"水泊梁山"</span>&#125;;</span><br><span class="line"></span><br><span class="line">    fun02(&amp;stu);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%s\n"</span>,stu.name);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//结构体数组做函数参数</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">student</span> <span class="title">ss</span>;</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">student</span>&#123;</span></span><br><span class="line">    <span class="keyword">char</span> name[<span class="number">21</span>];</span><br><span class="line">    <span class="keyword">int</span> age;</span><br><span class="line">    <span class="keyword">int</span> score;</span><br><span class="line">    <span class="keyword">char</span> addr[<span class="number">21</span>];</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">//数组作为函数参数退化为指针，丢失元素精度，需要传递个数</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">BubbleSort</span><span class="params">(ss stu[],<span class="keyword">int</span> len)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i&lt;len<span class="number">-1</span>; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> j = <span class="number">0</span>; j&lt;len-i<span class="number">-1</span>; j++)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span>(stu[j].age &gt;stu[j+<span class="number">1</span>].age)</span><br><span class="line">            &#123;</span><br><span class="line">                ss temp = stu[j];</span><br><span class="line">                stu[j] = stu[j+<span class="number">1</span>];</span><br><span class="line">                stu[j+<span class="number">1</span>] = temp; </span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ss stu[<span class="number">3</span>] = </span><br><span class="line">    &#123;</span><br><span class="line">        &#123;<span class="string">"鲁智深"</span>,<span class="number">30</span>,<span class="number">78</span>,<span class="string">"五台山"</span>&#125;,</span><br><span class="line">        &#123;<span class="string">"呼吁"</span>,<span class="number">29</span>,<span class="number">78</span>,<span class="string">"三台山"</span>&#125;,</span><br><span class="line">        &#123;<span class="string">"呈共"</span>,<span class="number">31</span>,<span class="number">87</span>,<span class="string">"滇池"</span>&#125;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    BubbleSort(stu, <span class="number">3</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">3</span>;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%s\t%d\t%d\t%s\n"</span>,stu[i].name,stu[i].age,stu[i].score,stu[i].addr);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/03/Go%20%E6%8E%A5%E5%8F%A3_3iface%20%E5%92%8C%20eface%20%E7%9A%84%E5%8C%BA%E5%88%AB%E6%98%AF%E4%BB%80%E4%B9%88/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/01/03/Go%20%E6%8E%A5%E5%8F%A3_3iface%20%E5%92%8C%20eface%20%E7%9A%84%E5%8C%BA%E5%88%AB%E6%98%AF%E4%BB%80%E4%B9%88/" class="post-title-link" itemprop="url">Go 接口的底层实现</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-01-03 21:29:16" itemprop="dateCreated datePublished" datetime="2020-01-03T21:29:16+08:00">2020-01-03</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-08 15:50:02" itemprop="dateModified" datetime="2021-03-08T15:50:02+08:00">2021-03-08</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Go-interface/" itemprop="url" rel="index">
+                    <span itemprop="name">Go interface</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="Go-接口的底层实现"><a href="#Go-接口的底层实现" class="headerlink" title="Go 接口的底层实现"></a>Go 接口的底层实现</h3><p><code>iface</code> 和 <code>eface</code> 都是 Go 中<strong>描述接口的底层结构体</strong>，区别在于 <strong><code>iface</code> 描述的接口包含方法</strong>，<strong>而 <code>eface</code> 则是不包含任何方法的空接口：<code>interface{}</code>。</strong></p>
+<p>从源码层面：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> iface <span class="keyword">struct</span> &#123;</span><br><span class="line">	tab  *itab</span><br><span class="line">	data unsafe.Pointer</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> itab <span class="keyword">struct</span> &#123;</span><br><span class="line">	inter  *interfacetype</span><br><span class="line">	_type  *_type</span><br><span class="line">	link   *itab</span><br><span class="line">	hash   <span class="keyword">uint32</span> <span class="comment">// copy of _type.hash. Used for type switches.</span></span><br><span class="line">	bad    <span class="keyword">bool</span>   <span class="comment">// type does not implement interface</span></span><br><span class="line">	inhash <span class="keyword">bool</span>   <span class="comment">// has this itab been added to hash?</span></span><br><span class="line">	unused [<span class="number">2</span>]<span class="keyword">byte</span></span><br><span class="line">	fun    [<span class="number">1</span>]<span class="keyword">uintptr</span> <span class="comment">// variable sized</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong><code>iface</code> 内部维护两个指针，<code>tab</code> 指向一个 <code>itab</code> 实体， 它表示接口的类型以及赋给这个接口的实体类型。<code>data</code> 则指向接口具体的值，一般而言是一个指向堆内存的指针。</strong></p>
+<p>再来仔细看一下 <code>itab</code> 结构体：</p>
+<ul>
+<li><code>_type</code> 字段描述了<strong>实体的类型</strong>，包括内存对齐方式，大小等；</li>
+<li><code>inter</code> 字段则描述了<strong>接口的类型</strong>。</li>
+<li><code>fun</code> 字段<strong>放置和接口方法对应的具体数据类型的方法地址，实现接口调用方法的动态分派，一般在每次给接口赋值发生转换时会更新此表，或者直接拿缓存的 itab。</strong></li>
+</ul>
+<p>为什么 <code>fun</code> 数组的大小为 1，要是接口定义了多个方法可怎么办？<strong>实际上，这里存储的是第一个方法的函数指针，如果有更多的方法，在它之后的内存空间里继续存储。从汇编角度来看，通过增加地址就能获取到这些函数指针，没什么影响</strong>。<strong>这些方法是按照函数名称的字典序进行排列的。</strong></p>
+<p>再看一下 <code>interfacetype</code> 类型，它描述的是<strong>接口的类型</strong>：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> interfacetype <span class="keyword">struct</span> &#123;</span><br><span class="line">	typ     _type</span><br><span class="line">	pkgpath name</span><br><span class="line">	mhdr    []imethod</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到，它<strong>包装了 <code>_type</code> 类型，<code>_type</code> 实际上是描述 Go 语言中各种数据类型的结构体</strong>。这里还包含一个 <strong><code>mhdr</code> 字段，表示接口所定义的函数列表， <code>pkgpath</code> 记录定义了接口的包名。</strong></p>
+<p>这里通过一张图来看下 <code>iface</code> 结构体的全貌：</p>
+<p><img src="http://note.youdao.com/yws/public/resource/8941a5b166d00686542939a34ab5b824/xmlnote/WEBRESOURCE4c3c10a3a36d081c3787db1242d05528/4518" alt="iface 结构体全景" style="zoom:50%;" /></p>
+<p><code>eface</code> 的源码：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> eface <span class="keyword">struct</span> &#123;</span><br><span class="line">    _type *_type</span><br><span class="line">    data  unsafe.Pointer</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>相比 <code>iface</code>，<code>eface</code> 比较简单。只维护了一个 <code>_type</code> 字段，<strong>表示空接口所承载的具体的实体类型</strong>。<code>data</code> 描述了具体的值。</p>
+<p><img src="http://note.youdao.com/yws/public/resource/8941a5b166d00686542939a34ab5b824/xmlnote/WEBRESOURCEb64a739bc6eb4c7cfe6a05b71e1d6e38/4523" alt="eface 结构体" style="zoom:50%;" /></p>
+<p>例子：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	x := <span class="number">200</span></span><br><span class="line">	<span class="keyword">var</span> any <span class="keyword">interface</span>&#123;&#125; = x</span><br><span class="line">	fmt.Println(any)</span><br><span class="line"></span><br><span class="line">	g := Gopher&#123;<span class="string">"Go"</span>&#125;</span><br><span class="line">	<span class="keyword">var</span> c coder = g</span><br><span class="line">	fmt.Println(c)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> coder <span class="keyword">interface</span> &#123;</span><br><span class="line">	code()</span><br><span class="line">	debug()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Gopher <span class="keyword">struct</span> &#123;</span><br><span class="line">	language <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p Gopher)</span> <span class="title">code</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Printf(<span class="string">"I am coding %s language\n"</span>, p.language)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p Gopher)</span> <span class="title">debug</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Printf(<span class="string">"I am debuging %s language\n"</span>, p.language)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>执行命令，打印出汇编语言：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">go tool compile -S ./src/main.go</span><br></pre></td></tr></table></figure>
+<p>可以看到，main 函数里调用了两个函数：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">func convT2E64(t *_type, elem unsafe.Pointer) (e eface)</span><br><span class="line">func convT2I(tab *itab, elem unsafe.Pointer) (i iface)</span><br></pre></td></tr></table></figure>
+<p>上面两个函数的参数和 <code>iface</code> 及 <code>eface</code> 结构体的字段是可以联系起来的：两个函数都是将参数<code>组装</code>一下，形成最终的接口。</p>
+<p>作为补充，最后再来看下 <code>_type</code> 结构体：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> _type <span class="keyword">struct</span> &#123;</span><br><span class="line">    <span class="comment">// 类型大小</span></span><br><span class="line">	size       <span class="keyword">uintptr</span></span><br><span class="line">    ptrdata    <span class="keyword">uintptr</span></span><br><span class="line">    <span class="comment">// 类型的 hash 值</span></span><br><span class="line">    hash       <span class="keyword">uint32</span></span><br><span class="line">    <span class="comment">// 类型的 flag，和反射相关</span></span><br><span class="line">    tflag      tflag</span><br><span class="line">    <span class="comment">// 内存对齐相关</span></span><br><span class="line">    align      <span class="keyword">uint8</span></span><br><span class="line">    fieldalign <span class="keyword">uint8</span></span><br><span class="line">    <span class="comment">// 类型的编号，有bool, slice, struct 等等等等</span></span><br><span class="line">	kind       <span class="keyword">uint8</span></span><br><span class="line">	alg        *typeAlg</span><br><span class="line">	<span class="comment">// gc 相关</span></span><br><span class="line">	gcdata    *<span class="keyword">byte</span></span><br><span class="line">	str       nameOff</span><br><span class="line">	ptrToThis typeOff</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>Go 语言各种数据类型都是在 <code>_type</code> 字段的基础上，增加一些额外的字段来进行管理的：</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> arraytype <span class="keyword">struct</span> &#123;</span><br><span class="line">	typ   _type</span><br><span class="line">	elem  *_type</span><br><span class="line">	slice *_type</span><br><span class="line">	<span class="built_in">len</span>   <span class="keyword">uintptr</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> chantype <span class="keyword">struct</span> &#123;</span><br><span class="line">	typ  _type</span><br><span class="line">	elem *_type</span><br><span class="line">	dir  <span class="keyword">uintptr</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> slicetype <span class="keyword">struct</span> &#123;</span><br><span class="line">	typ  _type</span><br><span class="line">	elem *_type</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> structtype <span class="keyword">struct</span> &#123;</span><br><span class="line">	typ     _type</span><br><span class="line">	pkgPath name</span><br><span class="line">	fields  []structfield</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这些数据类型的结构体定义，是反射实现的基础。</p>
+<h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><p>【Go Interface 源码剖析 】<a href="http://legendtkl.com/2017/07/01/golang-interface-implement/" target="_blank" rel="noopener">http://legendtkl.com/2017/07/01/golang-interface-implement/</a></p>
+<p>【interface 源码解读 包含反射】<a href="http://wudaijun.com/2018/01/go-interface-implement/" target="_blank" rel="noopener">http://wudaijun.com/2018/01/go-interface-implement/</a></p>
 
       
     </div>
@@ -2147,262 +2359,6 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/26/linux%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/12/26/linux%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/" class="post-title-link" itemprop="url">linux环境变量设置</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-12-26 15:29:16" itemprop="dateCreated datePublished" datetime="2019-12-26T15:29:16+08:00">2019-12-26</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-02-27 15:56:07" itemprop="dateModified" datetime="2021-02-27T15:56:07+08:00">2021-02-27</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/linux/" itemprop="url" rel="index">
-                    <span itemprop="name">linux</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="Ubuntu环境变量的添加和删除"><a href="#Ubuntu环境变量的添加和删除" class="headerlink" title="Ubuntu环境变量的添加和删除"></a>Ubuntu环境变量的添加和删除</h3><h4 id="添加环境变量的位置"><a href="#添加环境变量的位置" class="headerlink" title="添加环境变量的位置"></a>添加环境变量的位置</h4><ul>
-<li>/etc/profile 该文件为系统的每个用户设置环境信息，当用户第一次登录时，该文件被执行，并从/etc/profile.d目录的配置文件中搜集shell的设置。</li>
-<li>/etc/environment 登录操作系统使用的第二个文件，系统在读取自己的profile之前，设置环境文件的环境变量</li>
-<li>/etc/bashrc 为每一个运行bash shell的用户执行该文件。当bash shell被打开时，该文件被读取</li>
-<li>~/.profile 每个用户都可以使用该文件输入专用于自己使用的shell信息，当用户登录时，该文件仅仅执行一次。默认情况下设置一些环境变量，执行用户的.bashrc文件</li>
-<li>~/.bashrc 该文件包含专用的bash shell的bash信息，当登录以及每次打开新的shell时，该文件被读取。</li>
-</ul>
-<h4 id="添加方法"><a href="#添加方法" class="headerlink" title="添加方法"></a>添加方法</h4><ul>
-<li>方法一：直接修改/etc/enviroment文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">打开/etc/environment文件，其内容如下：</span></span><br><span class="line">PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games" </span><br><span class="line"><span class="meta">#</span><span class="bash">在环境变量PATH中添加你要添加的路径即可。</span></span><br></pre></td></tr></table></figure>
-<ul>
-<li>方法二：修改/etc/profile文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">这个文件不是保存环境变量信息的文件，在登录时，系统只是根据它的内容对环境变量进行设置。</span></span><br><span class="line">export PATH=$PATH:[your path1]:[your path2]:[...]  </span><br><span class="line">export PATH=[your path1]:[your path2]:[...]:$PATH #其中，各个PATH之间用冒号分隔，$PATH指代添加your path前的环境变量。</span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>方法三：修改/etc/bashrc或者~/.bashrc文件，这两个文件<strong>不是为了保存环境变量，只是在使用bash shell时进行设置而已，所以设置方法和二中一样。对于/etc/bashrc文件，修改的作用于所有用户，但对于~/.bashrc文件，修改的仅仅作用于当前用户。这种修改的作用也是永久性的。</strong></p>
-</li>
-<li><p>方法四：<strong>修改~/.profile文件，作用仅限于当前用户，但同样也是永久性的。这种方法和修改/etc/profile本质上是一样的，这种之不过是仅仅修改了当前用户自己的配置文件。所以作用仅限于当前用户，但同样也是永久性的。</strong></p>
-</li>
-<li><p>方法五：在Terminal中使用shell命令，只在当前Terminal中起作用，关闭了当前Terminal就无效了。对其他Terminal也无效</p>
-</li>
-</ul>
-<h4 id="显示环境变量"><a href="#显示环境变量" class="headerlink" title="显示环境变量"></a>显示环境变量</h4><ul>
-<li>显示所有环境变量</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">env #打印所有的环境变量</span><br></pre></td></tr></table></figure>
-<ul>
-<li>显示指定环境变量</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo $PATH #打印PATH环境变量</span><br></pre></td></tr></table></figure>
-<h4 id="让修改生效"><a href="#让修改生效" class="headerlink" title="让修改生效"></a>让修改生效</h4><p>使用source命令也可以让修改立即生效。使用方法为：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">source [file name]  # file name 指的是上面修改过的文件的file name</span><br></pre></td></tr></table></figure>
-<h4 id="删除对环境变量的修改"><a href="#删除对环境变量的修改" class="headerlink" title="删除对环境变量的修改"></a>删除对环境变量的修改</h4><p>将以上方法中对配置文件的修改还原回去即可。另外，由于第五种方法由于是临时性质的且局部的，只需要关闭这个Terminal就好了。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/27/linux_file/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/11/27/linux_file/" class="post-title-link" itemprop="url">Linux 文件系统</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-11-27 21:29:16" itemprop="dateCreated datePublished" datetime="2019-11-27T21:29:16+08:00">2019-11-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-08 14:34:35" itemprop="dateModified" datetime="2021-03-08T14:34:35+08:00">2021-03-08</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/linux/" itemprop="url" rel="index">
-                    <span itemprop="name">linux</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="1-分区类型"><a href="#1-分区类型" class="headerlink" title="1.分区类型"></a>1.分区类型</h2><ul>
-<li>主分区：最多只能有四个</li>
-<li>扩展分区：最多一个，算作主分区的一种，主分区加扩展分区最多有四个。扩展分区不能存储数据和格式化，必须再划分为逻辑分区才可以使用。</li>
-<li>逻辑分区：在扩展分区中划分</li>
-</ul>
-<p>逻辑分区的编号从5开始</p>
-<h2 id="2-文件系统"><a href="#2-文件系统" class="headerlink" title="2.文件系统"></a>2.文件系统</h2><ul>
-<li>ext2:ext文件系统的升级版。最大支持16TB的分区和最大2TB的文件。</li>
-<li>ext3:ext2的升级，增加日志功能。</li>
-<li>ext4:ext3升级版本，主流使用，功能强大</li>
-</ul>
-<h3 id="2-1常用命令"><a href="#2-1常用命令" class="headerlink" title="2.1常用命令"></a>2.1常用命令</h3><h4 id="df-du-fsck-dump2fs"><a href="#df-du-fsck-dump2fs" class="headerlink" title="df, du, fsck, dump2fs"></a>df, du, fsck, dump2fs</h4><h4 id="1-文件系统查看命令df"><a href="#1-文件系统查看命令df" class="headerlink" title="1.文件系统查看命令df"></a>1.文件系统查看命令df</h4><p>df [选项][挂载点]</p>
-<p>-a 所有文件系统信息</p>
-<p>-h 使用习惯单位显示容量，如kB,MB,GB</p>
-<p>ls 只统计目录下的大小，而不会统计子目录下的数据大小。</p>
-<h4 id="2-统计目录或文件大小"><a href="#2-统计目录或文件大小" class="headerlink" title="2.统计目录或文件大小"></a>2.统计目录或文件大小</h4><p>-a</p>
-<p>-h </p>
-<p>-s</p>
-<p>df命令从文件系统考虑，不光要考虑文件占用的空间，还要统计被命令或程序占用的空间（eg. 文件已经被删除，但程序并没有释放空间）</p>
-<p>du命令面向文件，只会计算文件或目录占用的空间。</p>
-<h4 id="3-文件系统修复命令fsck"><a href="#3-文件系统修复命令fsck" class="headerlink" title="3.文件系统修复命令fsck"></a>3.文件系统修复命令fsck</h4><p>fsck[选项]分区设备文件名</p>
-<h4 id="4-显示磁盘状态命令dumpe2fs"><a href="#4-显示磁盘状态命令dumpe2fs" class="headerlink" title="4.显示磁盘状态命令dumpe2fs"></a>4.显示磁盘状态命令dumpe2fs</h4><p>dumpe2fs 分区设备文件名</p>
-<h3 id="2-2-文件系统常用命令-挂载命令"><a href="#2-2-文件系统常用命令-挂载命令" class="headerlink" title="2.2 文件系统常用命令-挂载命令"></a>2.2 文件系统常用命令-挂载命令</h3><h4 id="1-查询与自动挂载"><a href="#1-查询与自动挂载" class="headerlink" title="1.查询与自动挂载"></a>1.查询与自动挂载</h4><p>mount [-l]：查询系统中已经挂载的设备，-l会显示卷标名称</p>
-<p>mount -a 依据配置文件/etc/fastb的内容，自动挂载</p>
-<h4 id="2-挂载命令格式"><a href="#2-挂载命令格式" class="headerlink" title="2.挂载命令格式"></a>2.挂载命令格式</h4><p>mount [-t 文件系统] [-L 卷标名] [-o 特殊选项] 设备文件名 挂载点</p>
-<p>选项：</p>
-<p>-t 文件系统：加入文件系统类型来指定挂载的类型，可以ext3，ext4,iso9660等文件系统</p>
-<p>-L 卷标名：挂载指定卷标的分区，而不是安装设备文件名挂载</p>
-<p>-o 特殊指令（remount …）</p>
-<p>mount -o remount ,noexec /home</p>
-<h4 id="3-挂载光盘与U盘"><a href="#3-挂载光盘与U盘" class="headerlink" title="3 挂载光盘与U盘"></a>3 挂载光盘与U盘</h4><p>1.挂载光盘</p>
-<p>mkdir /mnt/cdrom/ 建立挂载点</p>
-<p>mount -t iso9660 /dev/cdrom /mnt/cdrom 挂载光盘</p>
-<p>mount /dev/sr0 /mnt/cdrom</p>
-<p> 2.卸载命令</p>
-<p>umount 设备文件名或挂载点</p>
-<p>umount /mnt/cdrom</p>
-<p>3.挂载U盘</p>
-<p>fdisk -l 查看U盘设备文件名</p>
-<p>mount -t vfat /dev/sdb1 /mnt/usb/</p>
-<p>linux默认不支持NTFS文件系统</p>
-<h4 id="4支持NTFS文件系统"><a href="#4支持NTFS文件系统" class="headerlink" title="4支持NTFS文件系统"></a>4支持NTFS文件系统</h4><p>重新编译内核</p>
-<p>第三方软件</p>
-<p>NTFS-3G插件</p>
-<h3 id="2-3-fdisk分区"><a href="#2-3-fdisk分区" class="headerlink" title="2.3 fdisk分区"></a>2.3 fdisk分区</h3><h4 id="fdisk命令分区过程"><a href="#fdisk命令分区过程" class="headerlink" title="fdisk命令分区过程"></a>fdisk命令分区过程</h4><p>1.添加硬盘，虚拟机必须在关机的情况下添加</p>
-<p>2.查看新硬盘 fdisk -l</p>
-<p>3.使用fdisk命令分区</p>
-<p>fdisk /dev/sdb</p>
-<p> 4.重新读取分区表信息</p>
-<p>partprobe</p>
-<p>5.格式化分区</p>
-<p>扩展分区不可以格式化</p>
-<p>mkfs -t ext4 /dev/sdb1</p>
-<p>6.建立挂载分区</p>
-<h4 id="分区自动挂载与fstab文件修复"><a href="#分区自动挂载与fstab文件修复" class="headerlink" title="分区自动挂载与fstab文件修复"></a>分区自动挂载与fstab文件修复</h4><p>将挂载写入/etc/fstab文件，一定要写对</p>
-<p>mount -a 依据配置文件 /etc/fstab的内容，自动挂载</p>
-<p>/etc/fstab文件修复</p>
-<p>mount -o remount,rm /</p>
-<h3 id="2-4-分配swap分区"><a href="#2-4-分配swap分区" class="headerlink" title="2.4 分配swap分区"></a>2.4 分配swap分区</h3><p>1.free命令</p>
-<p>查看内存与swap分区使用情况</p>
-<p>cached(缓存):加速数据的读取过程</p>
-<p>buffer(缓冲)：写入数据过程中，将分散的写入操作保存到内存中，当达到一定的程度再集中写入硬盘，加速数据的写入过程。</p>
-<p>2.新建swap分区</p>
-<p>fdisk /dev/sdb</p>
-<p>还需将分区ID改为82</p>
-<p>3.格式化</p>
-<p>mkswap /dev/sdb6</p>
-<p>4.加入swap分区</p>
-<p>swapon /dev/sdb6 加入swap分区</p>
-<p>swapoff /dev/sdb6 取消swap分区</p>
-<p>5.swap分区开机自动挂载</p>
-<p>vi /etc/fstab</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
@@ -2453,7 +2409,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-count">17</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -2466,7 +2422,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-count">15</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
