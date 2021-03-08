@@ -985,7 +985,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-08 18:37:36" itemprop="dateModified" datetime="2021-03-08T18:37:36+08:00">2021-03-08</time>
+                <time title="修改时间：2021-03-08 18:38:43" itemprop="dateModified" datetime="2021-03-08T18:38:43+08:00">2021-03-08</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1693,7 +1693,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/26/linux%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/26/linux%E6%93%8D%E4%BD%9C%E7%AC%94%E8%AE%B0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -1707,7 +1707,7 @@
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
           
-            <a href="/2019/12/26/linux%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/" class="post-title-link" itemprop="url">linux环境变量设置</a>
+            <a href="/2019/12/26/linux%E6%93%8D%E4%BD%9C%E7%AC%94%E8%AE%B0/" class="post-title-link" itemprop="url">linux相关操作笔记</a>
         </h1>
 
         <div class="post-meta">
@@ -1724,7 +1724,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-02-27 15:56:07" itemprop="dateModified" datetime="2021-02-27T15:56:07+08:00">2021-02-27</time>
+                <time title="修改时间：2021-02-27 16:06:20" itemprop="dateModified" datetime="2021-02-27T16:06:20+08:00">2021-02-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1749,40 +1749,601 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h3 id="Ubuntu环境变量的添加和删除"><a href="#Ubuntu环境变量的添加和删除" class="headerlink" title="Ubuntu环境变量的添加和删除"></a>Ubuntu环境变量的添加和删除</h3><h4 id="添加环境变量的位置"><a href="#添加环境变量的位置" class="headerlink" title="添加环境变量的位置"></a>添加环境变量的位置</h4><ul>
-<li>/etc/profile 该文件为系统的每个用户设置环境信息，当用户第一次登录时，该文件被执行，并从/etc/profile.d目录的配置文件中搜集shell的设置。</li>
-<li>/etc/environment 登录操作系统使用的第二个文件，系统在读取自己的profile之前，设置环境文件的环境变量</li>
-<li>/etc/bashrc 为每一个运行bash shell的用户执行该文件。当bash shell被打开时，该文件被读取</li>
-<li>~/.profile 每个用户都可以使用该文件输入专用于自己使用的shell信息，当用户登录时，该文件仅仅执行一次。默认情况下设置一些环境变量，执行用户的.bashrc文件</li>
-<li>~/.bashrc 该文件包含专用的bash shell的bash信息，当登录以及每次打开新的shell时，该文件被读取。</li>
-</ul>
-<h4 id="添加方法"><a href="#添加方法" class="headerlink" title="添加方法"></a>添加方法</h4><ul>
-<li>方法一：直接修改/etc/enviroment文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">打开/etc/environment文件，其内容如下：</span></span><br><span class="line">PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games" </span><br><span class="line"><span class="meta">#</span><span class="bash">在环境变量PATH中添加你要添加的路径即可。</span></span><br></pre></td></tr></table></figure>
+          <h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>linux只是操作系统的内核。</p>
 <ul>
-<li>方法二：修改/etc/profile文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">这个文件不是保存环境变量信息的文件，在登录时，系统只是根据它的内容对环境变量进行设置。</span></span><br><span class="line">export PATH=$PATH:[your path1]:[your path2]:[...]  </span><br><span class="line">export PATH=[your path1]:[your path2]:[...]:$PATH #其中，各个PATH之间用冒号分隔，$PATH指代添加your path前的环境变量。</span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>方法三：修改/etc/bashrc或者~/.bashrc文件，这两个文件<strong>不是为了保存环境变量，只是在使用bash shell时进行设置而已，所以设置方法和二中一样。对于/etc/bashrc文件，修改的作用于所有用户，但对于~/.bashrc文件，修改的仅仅作用于当前用户。这种修改的作用也是永久性的。</strong></p>
+<li><p>Redhat系列：企业版：redhat，centos</p>
 </li>
-<li><p>方法四：<strong>修改~/.profile文件，作用仅限于当前用户，但同样也是永久性的。这种方法和修改/etc/profile本质上是一样的，这种之不过是仅仅修改了当前用户自己的配置文件。所以作用仅限于当前用户，但同样也是永久性的。</strong></p>
-</li>
-<li><p>方法五：在Terminal中使用shell命令，只在当前Terminal中起作用，关闭了当前Terminal就无效了。对其他Terminal也无效</p>
+<li><p>Debian系列：debian，ubuntu</p>
 </li>
 </ul>
-<h4 id="显示环境变量"><a href="#显示环境变量" class="headerlink" title="显示环境变量"></a>显示环境变量</h4><ul>
-<li>显示所有环境变量</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">env #打印所有的环境变量</span><br></pre></td></tr></table></figure>
+<p>Ubuntu:</p>
 <ul>
-<li>显示指定环境变量</li>
+<li>命名规则：前两位数字：发行时的年份的最后两位数字，</li>
+<li>后两位：发行的月份，04表示4月份发行的稳定版;10表示10月份发行的测试版。</li>
 </ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo $PATH #打印PATH环境变量</span><br></pre></td></tr></table></figure>
-<h4 id="让修改生效"><a href="#让修改生效" class="headerlink" title="让修改生效"></a>让修改生效</h4><p>使用source命令也可以让修改立即生效。使用方法为：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">source [file name]  # file name 指的是上面修改过的文件的file name</span><br></pre></td></tr></table></figure>
-<h4 id="删除对环境变量的修改"><a href="#删除对环境变量的修改" class="headerlink" title="删除对环境变量的修改"></a>删除对环境变量的修改</h4><p>将以上方法中对配置文件的修改还原回去即可。另外，由于第五种方法由于是临时性质的且局部的，只需要关闭这个Terminal就好了。</p>
+<p>版本：</p>
+<ul>
+<li>桌面版：至少三年的技术支持</li>
+<li><p>服务器版：至少五年的技术支持</p>
+</li>
+<li><p>发布频率：一年两次</p>
+<ul>
+<li>单数年，段期支持</li>
+<li>双数年，长期支持，LTS</li>
+</ul>
+</li>
+</ul>
+<h2 id="Linux快捷键"><a href="#Linux快捷键" class="headerlink" title="Linux快捷键"></a>Linux快捷键</h2><h3 id="命令解析器"><a href="#命令解析器" class="headerlink" title="命令解析器"></a>命令解析器</h3><p>shell — unix操作系统</p>
+<p>bash — linux操作系统 Bone重新写了shell</p>
+<p>本质：<strong>根据命令的名字，调用对应的可执行程序，命令解析器调用</strong></p>
+<h3 id="Linux快捷键-1"><a href="#Linux快捷键-1" class="headerlink" title="Linux快捷键"></a>Linux快捷键</h3><p>ctrl  + p  历史命令向上</p>
+<p>ctrl + n 历史命令向下</p>
+<p>ctrl + b 命令光标向前</p>
+<p>ctrl + f 命令光标向后</p>
+<p>ctrl + a 光标到行首</p>
+<p>ctrl + e 行尾部</p>
+<p>字符删除：</p>
+<p>删除前面的：ctrl + h</p>
+<p>删除后面的：ctrl + d</p>
+<p>删除一部分：</p>
+<p>前面： crtl + u</p>
+<p>Tab键智能提示，自动补充命令，路径</p>
+<h3 id="Linux下的目录结构"><a href="#Linux下的目录结构" class="headerlink" title="Linux下的目录结构"></a>Linux下的目录结构</h3><p>/ 根目录 ls /</p>
+<p>/bin  Binary 缩写，<strong>该目录存放经常使用的命令</strong>。自动配置了环境变量，执行过程自动加载目录</p>
+<p>/boot <strong>存放开机启动项文件</strong>，包括一些连接文件以及镜像文件</p>
+<p>/dev Device的缩写，该目录下存放Linux的外部设备，在Linux中访问设备的方式和访问文件相同。</p>
+<p>/etc <strong>存放所有系统管理所需要的配置文件和子目录</strong>。</p>
+<p>/home <strong>用户的主目录，在linux中，每个用户都有一个自己的目录，一般该目录名是以用户的帐号命名的。</strong></p>
+<p>/lib <strong>该目录存放系统最基本的动态连接共享库，其作用类似于Windows里的DLL文件，几乎所有的应用程序都需要这些共享库。</strong></p>
+<p>/lost+found 一般情况下都是空，当系统非法关机后，这里存放一些文件碎片。</p>
+<p>/media linux系统自动识别一些设备，例如U盘，光驱等。<strong>当识别后，linux会将识别的设备挂载到这个目录。</strong></p>
+<p>/mnt <strong>为了让用户临时挂载别的文件系统，可以将光驱挂载在/mnt上</strong>，然后进入该目录就可以查看光驱里的内容。</p>
+<p>/opt 给主机额外安装软件所摆放的目录</p>
+<p>/root <strong>系统管理员，也称为超级权限者的用户主目录</strong></p>
+<p><strong>/sbin S为Super User的意思，存放的是系统管理者使用的系统管理程序。</strong></p>
+<p>/usr <strong>user software resource，用户的很多应用程序和文件都在这个目录下，类似windows下的program files目录</strong></p>
+<p>/var 存放不断扩充的东西，习惯将经常修改的目录放在这个目录下，包括各种日志文件</p>
+<h3 id="用户目录"><a href="#用户目录" class="headerlink" title="用户目录"></a>用户目录</h3><p>绝对路径:  知道如何写，从根目录开始写</p>
+<p>相对路径： </p>
+<ul>
+<li>. 当前目录</li>
+<li>.. 上一级目录</li>
+<li>- 邻近的两个目录间切换</li>
+</ul>
+<p>dongshifu@dong:~$</p>
+<ul>
+<li>dongshifu:当前登录的用户</li>
+<li>@ 在 dong这台主机下</li>
+<li>~:用户的家目录（宿主目录）</li>
+<li>$: 当前用户的普通用户。若为# 则表示超级用户</li>
+</ul>
+<h3 id="文件和目录操作"><a href="#文件和目录操作" class="headerlink" title="文件和目录操作"></a>文件和目录操作</h3><p>查看目录：</p>
+<ul>
+<li>tree ，一般情况下文件和目录的颜色。白色，红色，绿色，蓝色，黄色</li>
+<li>ls</li>
+</ul>
+<p>目录切换</p>
+<ul>
+<li>cd +目录</li>
+<li>pwd 查看当前位置</li>
+</ul>
+<p>创建目录</p>
+<ul>
+<li>mkdir dirname</li>
+<li>创建复合目录（多级目录） mkdir -p </li>
+</ul>
+<p>删除目录</p>
+<ul>
+<li>rmdir 删除空目录</li>
+<li>rm -rf (r表示递归，-i会提示)  -f 强制删除</li>
+</ul>
+<p>在目录中创建文件</p>
+<ul>
+<li>touch 若文件不存在，创建文件，若文件存在，修改文件的时间</li>
+</ul>
+<p>文件的拷贝</p>
+<ul>
+<li>cp eg. cp hello.c tmp（文件不存在则创建文件，文件存在则覆盖文件）</li>
+</ul>
+<p><strong>目录的拷贝</strong></p>
+<ul>
+<li><strong>cp 要拷贝目录  newdir -r</strong></li>
+</ul>
+<p>查看文件具体信息</p>
+<ul>
+<li>ls -al</li>
+<li>cat 文件名 适合内容少的文件</li>
+<li>more 空格翻页，q退出</li>
+<li>less </li>
+<li>head 文件的前多少行 - number</li>
+<li>tail 文件的后多少行</li>
+</ul>
+<p>mv命令</p>
+<ul>
+<li>mv</li>
+<li>移动文件 mv</li>
+</ul>
+<p>软链接相当于快捷方式</p>
+<ul>
+<li>创建软链接，源文件要使用绝对路径</li>
+<li>软链接大小：源文件+路径的总字节数</li>
+<li>目录可以创建软链接</li>
+</ul>
+<p>eg. ln -s /home/a.txt（源文件名+绝对路径） a.test(软链接的名字)</p>
+<p>硬链接：映射到inode，不占用磁盘空间。 ln hello.c hello.hard</p>
+<ul>
+<li>以文件副本的形式存在。但不占用实际空间</li>
+<li>不允许给目录创建硬链接</li>
+<li>硬链接只有在同一个文件系统中才能创建</li>
+</ul>
+<p>硬链接能够同步更新：</p>
+<ul>
+<li>linux下每一个文件都对应一个Inode，创建硬链接后，两个文件的Inode是相同的</li>
+<li>查看文件的Inode: stat a.txt</li>
+<li>文件创建硬链接后，硬链接计数+1, 删除一个硬链接，硬链接计数-1</li>
+</ul>
+<p><strong>linux文件系统的存储单位是块。inode — i结点(相当于索引)，保存了一些文件信息，通过inode找到对应的文件。硬链接映射的都是文件的inode（可以理解为某一个位置）。</strong></p>
+<p>软链接需要指定绝对地址。</p>
+<h4 id="文件或目录属性"><a href="#文件或目录属性" class="headerlink" title="文件或目录属性"></a>文件或目录属性</h4><ul>
+<li>wc 获取<strong>文本文件</strong>的基本信息（行数，单词个数[空格区分]，字节数，文件名）</li>
+<li>od -t （指定数据的显示格式） 二进制文件查看 </li>
+<li>du 查看当前目录的大小 du -h (human)</li>
+<li>df 磁盘的使用情况 df -h</li>
+</ul>
+<p>which  命令：查看使用的命令（只能查看外部的命令，内建命令难以查询）所在的目录</p>
+<h4 id="文件权限，用户，用户组"><a href="#文件权限，用户，用户组" class="headerlink" title="文件权限，用户，用户组"></a>文件权限，用户，用户组</h4><p>查看当前登录的用户： whoami</p>
+<p>修改文件权限：</p>
+<ul>
+<li>文字设定法：chmod [who] [+]-[=] [mode]<ul>
+<li>who: 文件所有者 u, 文件所属组：g, 其他人: o， 所有的人：a</li>
+<li>+/ 增加权限 - 减少权限， = 覆盖原来的权限</li>
+<li>mode ： r读，w写，x执行</li>
+<li>eg： chmod o+w temp</li>
+<li>chmod a=w temp</li>
+</ul>
+</li>
+<li>数字设定法<ul>
+<li>- 表示没有</li>
+<li>r  4</li>
+<li>w 2</li>
+<li>x 1</li>
+<li>765 —-rwx—-文件所有者 —-rw—-文件所属组 —-r-x—-其他人</li>
+<li>chmod -001 </li>
+</ul>
+</li>
+</ul>
+<h4 id="修改文件所有者和所属组"><a href="#修改文件所有者和所属组" class="headerlink" title="修改文件所有者和所属组"></a>修改文件所有者和所属组</h4><p>chown 用户名 文件/目录名</p>
+<p>chown 所有者:所属组 文件/目录名</p>
+<p>chgrp ABC temp 修改temp所属组为ABC</p>
+<h4 id="目录必须有的权限"><a href="#目录必须有的权限" class="headerlink" title="目录必须有的权限"></a>目录必须有的权限</h4><p>必须有执行权限，否则无法进入</p>
+<p>chmod a-x mytest # mytest的用户、组以及其他用户都减执行权限</p>
+<h4 id="文件的查找"><a href="#文件的查找" class="headerlink" title="文件的查找"></a>文件的查找</h4><p>查找某个目录下是否有某个文件：</p>
+<p>按文件属性查找：</p>
+<ul>
+<li>按照文件名字查找： find + 查找的目录 + -name  +“文件的名字”</li>
+<li>按照文件大小查找： find  + 查找的目录 + -size  + 大小(+表示大小， -表示小于)。 find /home -size +10K -size -100M</li>
+<li>按照文件类型查找：find + 查找目录 + -type +d/f/c/s/p/l</li>
+</ul>
+<p>按文件内容查找：</p>
+<ul>
+<li>grep -r(递归查找) “查找的内容” + 查找的路径</li>
+</ul>
+<p>通配符： * 所有， ？一个字符</p>
+<h3 id="软件安装"><a href="#软件安装" class="headerlink" title="软件安装"></a>软件安装</h3><p><img src="./figure/install.png" alt=""></p>
+<p>软件列表：存放软件的名字和下载地址</p>
+<h4 id="挂载"><a href="#挂载" class="headerlink" title="挂载"></a>挂载</h4><p>磁盘设备种类：</p>
+<ul>
+<li>sd :SCSI Device</li>
+<li>hd : Hard Disk硬盘</li>
+<li>fd : Floppy Disk 软盘</li>
+</ul>
+<p>硬盘1:sda </p>
+<ul>
+<li>主分区：最多有四个<ul>
+<li>主分区1：sda1</li>
+<li>主分区2:  sda2</li>
+<li>主分区3:  sda3</li>
+<li>主分区4: sda4</li>
+</ul>
+</li>
+<li>扩展分区：第一个逻辑分区从sda5开始：<ul>
+<li>逻辑分区1:sda5</li>
+<li>逻辑分区2: sda6</li>
+</ul>
+</li>
+</ul>
+<p>mount 命令会临时覆盖挂载目录，umount后则恢复。</p>
+<h4 id="压缩包管理"><a href="#压缩包管理" class="headerlink" title="压缩包管理"></a>压缩包管理</h4><p>扩展版：</p>
+<ul>
+<li>gzip：.gz格式的压缩包<ul>
+<li>不会保留原文件，默认不会打包压缩</li>
+<li>gunzip 解压</li>
+<li>不能压缩目录</li>
+</ul>
+</li>
+<li>bzip: .bz2格式的压缩包<ul>
+<li>不会保留原文件，默认不会打包压缩  -k选项可以保留原文件</li>
+<li>bunzip 解压</li>
+<li>不能压缩目录</li>
+</ul>
+</li>
+</ul>
+<p>好用版：</p>
+<ul>
+<li>tar<ul>
+<li>参数<ul>
+<li>c —创建：压缩</li>
+<li>x —解压缩，释放</li>
+<li>v — 显示提示信息</li>
+<li>f —指定压缩文件的名字</li>
+<li>z —使用gzip的方式压缩文件， 后缀为.gz</li>
+<li>j —使用bzip2的方式压缩文件， —bz2</li>
+</ul>
+</li>
+<li>压缩<ul>
+<li>tar zcvf 生成压缩包的名字(xxx.tar.gz)  要压缩的文件或目录</li>
+<li>tar jcvf 生成压缩包的名字(xxx.tar.bz2) 要压缩的文件或目录</li>
+</ul>
+</li>
+<li>解压缩<ul>
+<li>tar jxvf 压缩包的名字(解压到当前目录)</li>
+<li>-C 指定解压目录</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>rar<ul>
+<li>参数<ul>
+<li>压缩： a</li>
+<li>解压缩 : x</li>
+</ul>
+</li>
+<li>压缩<ul>
+<li>rar a 生成文件 要压缩的文件</li>
+</ul>
+</li>
+<li>解压缩<ul>
+<li>rar x 要解压的文件 解压目录</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>zip<ul>
+<li>参数</li>
+<li>压缩<ul>
+<li>zip 要生成压缩包名字 压缩的文件或目录</li>
+</ul>
+</li>
+<li>解压缩<ul>
+<li>unzip 压缩包的名字</li>
+<li>unzip 压缩包的名字 -d 目录</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="PS命令使用"><a href="#PS命令使用" class="headerlink" title="PS命令使用"></a>PS命令使用</h4><p>who 命令：查看当前终端登录情况</p>
+<p>ps a :查看当前操作系统所有用户</p>
+<p>ps au:  查看用户的信息</p>
+<p>ps aux: 查看没有终端的应用程序(不能与用户进行交互的进程[输入、输出])，TTY为?的进程</p>
+<p><strong>管道 |：指令1 | 指令2 ：指令1的输出作为指令2的输入，指令2处理完毕，将信息输出到屏幕</strong></p>
+<h4 id="env和top"><a href="#env和top" class="headerlink" title="env和top"></a>env和top</h4><p>Linux下的环境变量的格式: key - value</p>
+<p>key=value:value:value</p>
+<h4 id="网络相关命令"><a href="#网络相关命令" class="headerlink" title="网络相关命令"></a>网络相关命令</h4><p>ifconfig /ipconfig</p>
+<p>nslookup :查看域名对应的ip</p>
+<h4 id="用户管理"><a href="#用户管理" class="headerlink" title="用户管理"></a>用户管理</h4><p>创建用户:</p>
+<ul>
+<li>sudo adduser +用户名  </li>
+<li>sudo useradd -s /bin/bash -g shifudong -d /home/shifudong -m shifudong <ul>
+<li>-s 指定新用户登录时shell类型</li>
+<li>-g 指定所属组，该组必须已经存在</li>
+<li>-d 用户家目录</li>
+<li>-m 用户家目录不存在时，自动创建该目录</li>
+</ul>
+</li>
+</ul>
+<p>设置用户组：</p>
+<ul>
+<li>sudo groupadd itcast</li>
+</ul>
+<p>切换用户：</p>
+<ul>
+<li>su + 用户名</li>
+</ul>
+<p>修改密码：</p>
+<ul>
+<li>sudo passwd +用户名</li>
+</ul>
+<p>删除用户：</p>
+<ul>
+<li>sudo deluser + 用户名</li>
+<li>sudo userdel -r itcast （选项-r是把用户的主目录也一起删除）</li>
+</ul>
+<h4 id="ftp服务器：vsftp"><a href="#ftp服务器：vsftp" class="headerlink" title="ftp服务器：vsftp"></a>ftp服务器：vsftp</h4><p>作用：负责文件的上传和下载</p>
+<p>put/get file</p>
+<p>不允许操作目录，如果想操作目录，打包</p>
+<p>lftp：客户端工具</p>
+<h4 id="scp"><a href="#scp" class="headerlink" title="scp"></a>scp</h4><p>使用格式：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">scp -r 目标用户名@目标主机IP地址:/目标文件的绝对路径 /保存到本机的绝对（相对）路径</span><br></pre></td></tr></table></figure>
+<p>拷贝目录需要加参数 -r</p>
+<h4 id="man-和echo"><a href="#man-和echo" class="headerlink" title="man 和echo"></a>man 和echo</h4><p>alias 查看命令是否被封装（设置或查看别名）</p>
+<ul>
+<li>查看 alias</li>
+<li>设置: alias pag=’ps aux | grep’（需要长久有效需要设置配置文件: .bashrc）</li>
+</ul>
+<h4 id="vim"><a href="#vim" class="headerlink" title="vim"></a>vim</h4><p>工作模式</p>
+<ul>
+<li><p>命令模式：打开文件之后，默认进入命令模式</p>
+<ul>
+<li>光标的移动：H J K L（前，下，上，后），0到行首，$到行尾。gg到文件首，G到文件尾部，500G到第五百行</li>
+</ul>
+</li>
+<li>删除操作：X删除光标前面的，x删除光标后面的，dw删除一个单词，u撤回删除操作，d0删除当前词行之前的， d$删除后面的。D删除光标后面的。dd删除一行 。5D删除(剪切)5行=5dd<ul>
+<li>粘贴：p不换行，P换行</li>
+</ul>
+</li>
+<li><p>复制：yy复制行，<strong>可视模式下y复制，d删除</strong></p>
+<ul>
+<li><p>查找：</p>
+<ul>
+<li><p>/stdio:从光标位置，向下，最下边之后返回到头部。</p>
+</li>
+<li><p>?stdio:从光标位置，向上查找，顶部之后，返回到尾部。</p>
+</li>
+</ul>
+</li>
+<li>找到相应的要查找字符串，按#键盘可查找<ul>
+<li>缩进：&lt;&lt;, &gt;&gt;</li>
+</ul>
+</li>
+<li>shift+k进入man文档， 3+shift+k进入man 文档第三章</li>
+</ul>
+</li>
+<li><p>编辑模式</p>
+</li>
+<li><p>末行模式：在末行模式下可以输入一些指令</p>
+</li>
+</ul>
+<p>可视模式：命令模式下 v进入</p>
+<h2 id="系统调用"><a href="#系统调用" class="headerlink" title="系统调用"></a>系统调用</h2><h3 id="C库函数"><a href="#C库函数" class="headerlink" title="C库函数"></a>C库函数</h3><p>fopen, fclose, fread, fwrite, fgets,fputs, fscanf,fprintf,fseek, fgetc, fputc, ftell, feof, flush…</p>
+<p>硬盘为什么慢：大部分硬盘都是机械硬盘，读取寻道时间和写入寻道时间都是毫秒级。内存是纳秒级别。</p>
+<p>通过文件描述符可以索引到文件对应的磁盘文件。</p>
+<p>文件读写指针位置：读写文件过程中指针的实际位置。</p>
+<p>I/O缓冲区（内存地址）：通过寻址找到对应的内存块。</p>
+<p>为什么需要I/O缓冲区：减少对硬盘的访问，读的放到缓冲区，当缓冲区满之后再放入到硬盘中。</p>
+<p>把缓存中的数据存到硬盘上：</p>
+<ul>
+<li>刷新缓冲区：fflush</li>
+<li>缓冲区已满</li>
+<li>正常关闭文件<ul>
+<li>fclose</li>
+<li>return（main函数）</li>
+<li>exit（main函数）</li>
+</ul>
+</li>
+</ul>
+<p>对于32位系统，linux为每一个运行的程序（进程）分配一个0-4G的地址空间（虚拟地址空间）</p>
+<p>内核空间：受保护，用户不能对该空间进行读写操作，否则会出现段错误。</p>
+<p>linux内核中有PCB进程控制块：文件描述符表(数组)：存储文件描述符，每打开一个新文件则占用一个文件描述符，而且使用的是空闲的最小的一个文件描述符。默认文件描述符的0,1,2是打开的，分别对应：标准输入(STDIN_FILENO)，标准输出(STDOUT_FILENO，标准错误。</p>
+<p>用户空间：</p>
+<p>linux下可执行文件格式：ELF</p>
+<ul>
+<li>ELF区中包含的区域：.bss(未初始化全局变量)，.data(已初始化全局变量)，.txt(代码段，二进制机器指令)，其他的只读数据段，符号段等</li>
+<li>受保护的地址(0-4K)， 例如：#define NULL(void *) 0</li>
+<li>栈空间（小）：局部变量存储</li>
+<li>堆空间（大）：用户申请内存</li>
+<li>共享库：动态库，生成与位置无关的代码，相对地址</li>
+<li>命令行参数</li>
+<li>环境变量(env)</li>
+</ul>
+<p>cpu为什么需要使用虚拟地址空间与物理地址空间映射？</p>
+<ul>
+<li>方便编译器和操作系统安排程序的地址分离：程序可以使用一系列相邻的虚拟地址来访问物理内存中不相邻的大内存缓冲区</li>
+<li>方便进程之间的隔离：不同进程使用的虚拟地址彼此隔离。一个进程中的代码无法更改正在由另一进程使用的物理内存</li>
+<li>方便OS使用较少的内存。程序可以使用一序列虚拟地址来访问大于可用物理内存的内容缓冲区。当物理内存供应量变小时。内存管理器会将物理内存页（通常为4KB)保存到磁盘文件。数据或代码页会根据需要在物理内存与磁盘间移动。</li>
+</ul>
+<h3 id="C库函数与系统函数的关系"><a href="#C库函数与系统函数的关系" class="headerlink" title="C库函数与系统函数的关系"></a>C库函数与系统函数的关系</h3><p>linux<strong>系统的API分为三层：应用层，系统调用，内核层。层层调用。</strong></p>
+<p>man 2 + 函数可以查找系统调用的帮助手册</p>
+<h4 id="open函数："><a href="#open函数：" class="headerlink" title="open函数："></a>open函数：</h4><p>打开方式：</p>
+<p>​    必选项：</p>
+<p>​        O_RDONLY</p>
+<p>​        O_WRONLY</p>
+<p>​        O_EDWR</p>
+<p>​    可选项：</p>
+<p>​        O_CREATE 文件权限：本地有一个掩码（unmask可以显示,也可以修改: unmask 0002），</p>
+<p>​        文件的实际权限：给定的权限 与本地掩码取反进行按位&amp;操作 111111111&amp; 111111101 得到775</p>
+<p>​        O_EXCL</p>
+<p>​        O_TRUNC  文件截断为0，类似清空</p>
+<p>​        O_APPEND                </p>
+<p>直接看man 2 open</p>
+<p>errno: 文件出错的时候的返回值，定义在errno.h中的全局变量，错误宏定义位置</p>
+<p>void perror(const char  *s)，头文件 stdio.h.用来将上一个函数发生错误的原因输出到标准设备(stderr) 。参数s所指的字符串会先打印，后面再加上错误原因字符串。此错误原因依照全局变量errno的值来决定要输出的字符串。</p>
+<p><strong>shift +k + 数字可以跳转到对应的帮助文档</strong></p>
+<h4 id="read-write-lseek"><a href="#read-write-lseek" class="headerlink" title="read,write,lseek"></a>read,write,lseek</h4><p>read(int fd, void *buf, size_t count);</p>
+<p>返回值：</p>
+<p>​    -1 读文件失败</p>
+<p>​    0 文件读完</p>
+<p>​    >0 读取的字节数</p>
+<p>write(int fd, const void *buf, size_t count);</p>
+<p>off_t lseek(int fd, off_t offset, int whence); //移动文件指针，获取文件的长度</p>
+<h3 id="复习"><a href="#复习" class="headerlink" title="复习"></a>复习</h3><p>gdb 命令</p>
+<ol>
+<li><p>前提条件，可执行文件必须包含调试信息 gcc -g</p>
+</li>
+<li><p>gdb + 文件名 启动dgb调试</p>
+</li>
+<li>查看代码的命令<ol>
+<li>当前文件： list +行号（或函数的名字）</li>
+<li>指定文件：文件名:行号（函数名）</li>
+</ol>
+</li>
+<li>设置断点<ol>
+<li>当前文件： b + 行号（函数名）</li>
+<li>指定文件: b+ 行号（函数名）</li>
+<li>设置条件断点： b + 行号 if value == 3</li>
+<li>查看断点信息： info</li>
+<li>删除断点： d + 断点编号</li>
+</ol>
+</li>
+<li>开始调试<ol>
+<li>只执行一行代码： start ,继续执行停在断点处：continue — c</li>
+<li>直接停在断点处：run — r</li>
+</ol>
+</li>
+<li>单步调试<ol>
+<li>进入到函数体： step — s<ol>
+<li>跳出函数体： finish(如果在循环处有断点，需要删除断点)</li>
+</ol>
+</li>
+<li>不进入函数体： next — n</li>
+</ol>
+</li>
+<li>追踪变量<ol>
+<li>自动打印变量的值：display 变量名</li>
+<li>取消变量的追踪： undisplay 编号<ol>
+<li>获取编号： info display</li>
+</ol>
+</li>
+<li>手动打印变量的值： print - p</li>
+<li>获取变量对应的类型: ptype</li>
+</ol>
+</li>
+<li>跳出当前循环： u</li>
+<li>退出gdb :quit</li>
+</ol>
+<p>Makefile</p>
+<ol>
+<li><p>一个规则</p>
+<ol>
+<li><p>三要素：目标，依赖，命令</p>
+<p>目标: 依赖</p>
+<p>​    命令</p>
+</li>
+<li><p>第一条规则是用来生成终极目标的规则</p>
+<ol>
+<li>如果规则中的依赖不存在，向下查找其他的规则</li>
+<li>更新机制：比较的是目标文件和依赖文件的时间</li>
+</ol>
+</li>
+</ol>
+</li>
+<li><p>两个函数</p>
+<ol>
+<li>查找指定目录下，知道类型的文件 src = $(vildcard ~/aa/*.c)取到所有的.c文件名</li>
+<li>匹配替换函数 obj = $(partsubs %.c %.o $(src))  obj得到所有.o文件</li>
+</ol>
+</li>
+<li><p>三个自动变量</p>
+<ol>
+<li>$&lt; 规则中的第一个依赖</li>
+<li>$” 规则中的所有依赖</li>
+<li>$@ 规则中的目标</li>
+<li>三个自动变量只能在规则命令中使用</li>
+</ol>
+</li>
+<li><p>模式规则</p>
+<ol>
+<li>%.o:%.c    gcc -c $&lt; -o $@</li>
+</ol>
+</li>
+</ol>
+<p>Linux 系统IO函数</p>
+<ol>
+<li><p>文件描述符</p>
+<ol>
+<li>int 类型</li>
+<li>一个进程最多可以打开1024个文件</li>
+</ol>
+</li>
+<li><p>PCB ：进程控制块</p>
+<ol>
+<li>在其中有一个文件描述符号表 数组[1024]</li>
+</ol>
+</li>
+<li><p>虚拟地址空间</p>
+<ol>
+<li>用户区，内核区</li>
+<li>代码段</li>
+<li>已经初始化的全局变量</li>
+<li>未被初始化的全局变量</li>
+<li>堆：从下往上增长</li>
+<li>共享库</li>
+<li>栈：从下往上</li>
+<li>环境变量</li>
+<li>内核区</li>
+</ol>
+</li>
+<li>读大文件然后写入另外一个文件<ol>
+<li>read write 每次读一个byte</li>
+<li>getc putc 每次读一个byte 效率更高，标准c库函数内部有一个缓冲区</li>
+<li>两种方式，哪个效率高</li>
+</ol>
+</li>
+</ol>
+<h4 id="read-write函数读写文件"><a href="#read-write函数读写文件" class="headerlink" title="read write函数读写文件"></a>read write函数读写文件</h4><p>read_write.c</p>
+<h4 id="lseek-函数"><a href="#lseek-函数" class="headerlink" title="lseek 函数"></a>lseek 函数</h4><ol>
+<li>获取文件大小</li>
+<li>移动文件指针</li>
+<li>文件拓展</li>
+</ol>
+<h4 id="Linux文件操作相关函数"><a href="#Linux文件操作相关函数" class="headerlink" title="Linux文件操作相关函数"></a>Linux文件操作相关函数</h4><ol>
+<li>stat函数 对应stat命令<ol>
+<li>穿透函数 — 相对软链接而言, 操作：vi</li>
+</ol>
+</li>
+<li>lstat函数<ol>
+<li>不穿透，不追踪</li>
+<li>不追踪链接的操作：ls -al ,rm </li>
+</ol>
+</li>
+<li>access函数：测试文件是否拥有某种权限</li>
+<li>chmod函数</li>
+<li>chown函数</li>
+<li>truncate函数：文化扩展函数<ol>
+<li>文件长度为100,第二个参数指定为20,20以后的被覆盖，第二个参数为300,文件拓展。</li>
+</ol>
+</li>
+<li>链接<ol>
+<li>link</li>
+<li>symlink</li>
+<li>readlink</li>
+<li>unlink:删除一个文件的目录项并减少对它的链接数。如果是符号链接，删除符号链接。如果是硬连接，硬链接数减1,当减少为0时，释放数据块和inode。如果文件硬链接数为0,但有进程已经打开这个文件，并持有文件的描述符，则等该进程关闭该文件时，kernel才真正删除该文件。利用该特性创建临时文件（例如：缓存文件），先open,create，然后unlink,接着还可以操作文件。</li>
+</ol>
+</li>
+<li>rename</li>
+<li>chdir</li>
+<li>getcwd</li>
+<li>mkdir</li>
+<li>rmdir</li>
+<li>opendir<ol>
+<li>man 3 opendir</li>
+</ol>
+</li>
+<li>readdir</li>
+<li>closedir</li>
+</ol>
+<p>递归获取目录个数：myFileNum.c</p>
+<ol>
+<li>dup 和dup2<ol>
+<li>用于复制文件描述符</li>
+<li>dup返回的是文件描述表中没被占用的最小的文件描述符</li>
+<li>dup2(old, new)<ol>
+<li>old-&gt;new 如果new是一个被打开的文件描述符，在拷贝前先关掉new</li>
+<li>old和new是同一个文件描述符，new不会被关掉，直接返回old</li>
+</ol>
+</li>
+</ol>
+</li>
+<li>fcntl函数：改变已经打开的文件的属性：获得/设置文件描述标记符，获得/设置文件状态标记，获得/设置异步I/O所有权，获得/设置记录锁<ol>
+<li>打开文件的时候：只读</li>
+<li>要向文件中添加内容，需要修改文件的属性</li>
+</ol>
+</li>
+</ol>
+<p>索引结点inode:保存的其实是实际的数据的一些信息，这些信息称为“元数据”（也就是对文件属性的描述）。例如：文件大小，设备标识符，用户组标识符，文件模式，扩展属性，文件读取或修改的时间戳，链接数量，指向存储该内容的磁盘区块的指针，文件分类等。</p>
+<p>注意：数据分为：元数据+数据本身</p>
+<p>注意inode号：inode号是惟一的，表示不同的文件。其实在linux内部的时候，访问文件都是通过inode号来进行的，所谓文件名仅仅是给用户容易使用的。当我们打开一个文件的时候。首先，系统找到这个文件名对应的inode号;然后通过inode号得到inode信息。最后，又inode找到文件数据所在的block，这样就可以处理文件数据了。</p>
+<p>inode和文件的关系：当创建一个文件的时候，就给文件分配了一个inode。一个inode只对应一个实际文件，一个文件也只会有一个inode。inode最大数量就是文件的最大数量。</p>
 
       
     </div>
