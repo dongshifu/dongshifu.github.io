@@ -1056,6 +1056,93 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/01/Go_struct_2%E7%BC%96%E8%AF%91%E5%99%A8%E8%87%AA%E5%8A%A8%E6%A3%80%E6%B5%8B%E7%B1%BB%E5%9E%8B%E6%98%AF%E5%90%A6%E5%AE%9E%E7%8E%B0%E6%8E%A5%E5%8F%A3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/01/01/Go_struct_2%E7%BC%96%E8%AF%91%E5%99%A8%E8%87%AA%E5%8A%A8%E6%A3%80%E6%B5%8B%E7%B1%BB%E5%9E%8B%E6%98%AF%E5%90%A6%E5%AE%9E%E7%8E%B0%E6%8E%A5%E5%8F%A3/" class="post-title-link" itemprop="url">Go 编译器自动检测类型是否实现接口</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-01-01 20:29:16" itemprop="dateCreated datePublished" datetime="2020-01-01T20:29:16+08:00">2020-01-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-08 14:50:36" itemprop="dateModified" datetime="2021-03-08T14:50:36+08:00">2021-03-08</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Go-struct/" itemprop="url" rel="index">
+                    <span itemprop="name">Go struct</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="Go-编译器自动检测类型是否实现接口"><a href="#Go-编译器自动检测类型是否实现接口" class="headerlink" title="Go 编译器自动检测类型是否实现接口"></a>Go 编译器自动检测类型是否实现接口</h3><p>开源库里会有一些类似下面这种奇怪的用法：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> _ io.Writer = (*myWriter)(<span class="literal">nil</span>)</span><br></pre></td></tr></table></figure>
+<p>这时候会有点懵，不知道作者想要干什么，实际上这就是此问题的答案。<strong>编译器会由此检查 <code>*myWriter</code> 类型是否实现了 <code>io.Writer</code> 接口。</strong></p>
+<p>例子：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"io"</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> myWriter <span class="keyword">struct</span> &#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*func (w myWriter) Write(p []byte) (n int, err error) &#123;</span></span><br><span class="line"><span class="comment">	return</span></span><br><span class="line"><span class="comment">&#125;*/</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="comment">// 检查 *myWriter 类型是否实现了 io.Writer 接口</span></span><br><span class="line">    <span class="keyword">var</span> _ io.Writer = (*myWriter)(<span class="literal">nil</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 检查 myWriter 类型是否实现了 io.Writer 接口</span></span><br><span class="line">    <span class="keyword">var</span> _ io.Writer = myWriter&#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注释掉为 myWriter 定义的 Write 函数后，运行程序：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> <span class="built_in">command</span>-line-arguments</span></span><br><span class="line">src/learn/tongbu/tongbu.go:14:6: cannot use (*myWriter)(nil) (type *myWriter) as type io.Writer in assignment:</span><br><span class="line">	*myWriter does not implement io.Writer (missing Write method)</span><br><span class="line">src/learn/tongbu/tongbu.go:17:6: cannot use myWriter&#123;&#125; (type myWriter) as type io.Writer in assignment:</span><br><span class="line">	myWriter does not implement io.Writer (missing Write method)</span><br></pre></td></tr></table></figure>
+<p>报错信息：<strong>*myWriter/myWriter 未实现 io.Writer 接口，也就是未实现 Write 方法。</strong></p>
+<p>解除注释后，运行程序不报错。</p>
+<p>实际上，上述赋值语句会发生<strong>隐式地类型转换</strong>，<strong>在转换的过程中，编译器会检测等号右边的类型是否实现了等号左边接口所规定的函数。</strong></p>
+<p>总结: 可通过在代码中添加类似如下的代码，用来检测类型是否实现了接口：</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> _ io.Writer = (*myWriter)(<span class="literal">nil</span>)</span><br><span class="line"><span class="keyword">var</span> _ io.Writer = myWriter&#123;&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/01/Go_struct_1%E5%80%BC%E6%8E%A5%E6%94%B6%E8%80%85%E5%92%8C%E6%8C%87%E9%92%88%E6%8E%A5%E6%94%B6%E8%80%85%E7%9A%84%E5%8C%BA%E5%88%AB/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2316,97 +2403,6 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/27/linux_server/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/11/27/linux_server/" class="post-title-link" itemprop="url">Linux服务管理</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-11-27 19:29:16" itemprop="dateCreated datePublished" datetime="2019-11-27T19:29:16+08:00">2019-11-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-12-20 15:26:32" itemprop="dateModified" datetime="2019-12-20T15:26:32+08:00">2019-12-20</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/linux/" itemprop="url" rel="index">
-                    <span itemprop="name">linux</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="Linux服务管理"><a href="#Linux服务管理" class="headerlink" title="Linux服务管理"></a>Linux服务管理</h2><h3 id="服务分类"><a href="#服务分类" class="headerlink" title="服务分类"></a>服务分类</h3><p>Linux服务</p>
-<ul>
-<li><p>RPM包默认安装的服务</p>
-<p>— 独立的服务</p>
-<p>— 基于xinetd服务</p>
-</li>
-<li><p>源码包安装的服务</p>
-</li>
-</ul>
-<p>启动与自启动</p>
-<ul>
-<li>服务启动：在当前系统中让服务运行，并提供功能</li>
-<li>服务自启动：服务在系统开机或重启之后，随着系统的启动而自动启动服务</li>
-</ul>
-<p>RPM安装服务和源码安装服务区别就在于安装位置的不同。</p>
-<p>service不可以启动RPM安装的软件</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
@@ -2457,7 +2453,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">14</span>
+          <span class="site-state-item-count">15</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -2470,7 +2466,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-count">14</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

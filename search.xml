@@ -660,6 +660,29 @@
       </tags>
   </entry>
   <entry>
+    <title>Go 编译器自动检测类型是否实现接口</title>
+    <url>/2020/01/01/Go_struct_2%E7%BC%96%E8%AF%91%E5%99%A8%E8%87%AA%E5%8A%A8%E6%A3%80%E6%B5%8B%E7%B1%BB%E5%9E%8B%E6%98%AF%E5%90%A6%E5%AE%9E%E7%8E%B0%E6%8E%A5%E5%8F%A3/</url>
+    <content><![CDATA[<h3 id="Go-编译器自动检测类型是否实现接口"><a href="#Go-编译器自动检测类型是否实现接口" class="headerlink" title="Go 编译器自动检测类型是否实现接口"></a>Go 编译器自动检测类型是否实现接口</h3><p>开源库里会有一些类似下面这种奇怪的用法：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> _ io.Writer = (*myWriter)(<span class="literal">nil</span>)</span><br></pre></td></tr></table></figure>
+<p>这时候会有点懵，不知道作者想要干什么，实际上这就是此问题的答案。<strong>编译器会由此检查 <code>*myWriter</code> 类型是否实现了 <code>io.Writer</code> 接口。</strong></p>
+<p>例子：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"io"</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> myWriter <span class="keyword">struct</span> &#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*func (w myWriter) Write(p []byte) (n int, err error) &#123;</span></span><br><span class="line"><span class="comment">	return</span></span><br><span class="line"><span class="comment">&#125;*/</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="comment">// 检查 *myWriter 类型是否实现了 io.Writer 接口</span></span><br><span class="line">    <span class="keyword">var</span> _ io.Writer = (*myWriter)(<span class="literal">nil</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 检查 myWriter 类型是否实现了 io.Writer 接口</span></span><br><span class="line">    <span class="keyword">var</span> _ io.Writer = myWriter&#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注释掉为 myWriter 定义的 Write 函数后，运行程序：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> <span class="built_in">command</span>-line-arguments</span></span><br><span class="line">src/learn/tongbu/tongbu.go:14:6: cannot use (*myWriter)(nil) (type *myWriter) as type io.Writer in assignment:</span><br><span class="line">	*myWriter does not implement io.Writer (missing Write method)</span><br><span class="line">src/learn/tongbu/tongbu.go:17:6: cannot use myWriter&#123;&#125; (type myWriter) as type io.Writer in assignment:</span><br><span class="line">	myWriter does not implement io.Writer (missing Write method)</span><br></pre></td></tr></table></figure>
+<p>报错信息：<strong>*myWriter/myWriter 未实现 io.Writer 接口，也就是未实现 Write 方法。</strong></p>
+<p>解除注释后，运行程序不报错。</p>
+<p>实际上，上述赋值语句会发生<strong>隐式地类型转换</strong>，<strong>在转换的过程中，编译器会检测等号右边的类型是否实现了等号左边接口所规定的函数。</strong></p>
+<p>总结: 可通过在代码中添加类似如下的代码，用来检测类型是否实现了接口：</p>
+<figure class="highlight golang"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> _ io.Writer = (*myWriter)(<span class="literal">nil</span>)</span><br><span class="line"><span class="keyword">var</span> _ io.Writer = myWriter&#123;&#125;</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>Go struct</category>
+      </categories>
+      <tags>
+        <tag>Golang struct检测</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Go struct方法的值接收者与指针接收者区别</title>
     <url>/2020/01/01/Go_struct_1%E5%80%BC%E6%8E%A5%E6%94%B6%E8%80%85%E5%92%8C%E6%8C%87%E9%92%88%E6%8E%A5%E6%94%B6%E8%80%85%E7%9A%84%E5%8C%BA%E5%88%AB/</url>
     <content><![CDATA[<h3 id="方法介绍"><a href="#方法介绍" class="headerlink" title="方法介绍"></a>方法介绍</h3><p>方法能<strong>给用户自定义的类型添加新的行为</strong>。和函数的区别在于<strong>方法有一个接收者，给一个函数添加一个接收者，那么它就变成了方法。接收者可以是<code>值接收者</code>，也可以是<code>指针接收者</code>。</strong></p>
