@@ -576,10 +576,10 @@
 <figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">//结构体数组做函数参数</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">student</span> <span class="title">ss</span>;</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">student</span>&#123;</span></span><br><span class="line">    <span class="keyword">char</span> name[<span class="number">21</span>];</span><br><span class="line">    <span class="keyword">int</span> age;</span><br><span class="line">    <span class="keyword">int</span> score;</span><br><span class="line">    <span class="keyword">char</span> addr[<span class="number">21</span>];</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">//数组作为函数参数退化为指针，丢失元素精度，需要传递个数</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">BubbleSort</span><span class="params">(ss stu[],<span class="keyword">int</span> len)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i&lt;len<span class="number">-1</span>; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> j = <span class="number">0</span>; j&lt;len-i<span class="number">-1</span>; j++)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span>(stu[j].age &gt;stu[j+<span class="number">1</span>].age)</span><br><span class="line">            &#123;</span><br><span class="line">                ss temp = stu[j];</span><br><span class="line">                stu[j] = stu[j+<span class="number">1</span>];</span><br><span class="line">                stu[j+<span class="number">1</span>] = temp; </span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ss stu[<span class="number">3</span>] = </span><br><span class="line">    &#123;</span><br><span class="line">        &#123;<span class="string">"鲁智深"</span>,<span class="number">30</span>,<span class="number">78</span>,<span class="string">"五台山"</span>&#125;,</span><br><span class="line">        &#123;<span class="string">"呼吁"</span>,<span class="number">29</span>,<span class="number">78</span>,<span class="string">"三台山"</span>&#125;,</span><br><span class="line">        &#123;<span class="string">"呈共"</span>,<span class="number">31</span>,<span class="number">87</span>,<span class="string">"滇池"</span>&#125;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    BubbleSort(stu, <span class="number">3</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">3</span>;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%s\t%d\t%d\t%s\n"</span>,stu[i].name,stu[i].age,stu[i].score,stu[i].addr);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 ]]></content>
       <categories>
-        <category>c</category>
+        <category>C</category>
       </categories>
       <tags>
-        <tag>c学习笔记</tag>
+        <tag>C学习笔记</tag>
       </tags>
   </entry>
   <entry>
@@ -619,7 +619,7 @@
 <p>【各种面向对象的名词】<a href="https://cyent.github.io/golang/other/oo/" target="_blank" rel="noopener">https://cyent.github.io/golang/other/oo/</a></p>
 ]]></content>
       <categories>
-        <category>Go接口</category>
+        <category>Go interface</category>
       </categories>
       <tags>
         <tag>接口 鸭子类型</tag>
@@ -653,7 +653,7 @@
 </ul>
 ]]></content>
       <categories>
-        <category>Go接口</category>
+        <category>Go interface</category>
       </categories>
       <tags>
         <tag>接口</tag>
@@ -733,6 +733,40 @@
       </categories>
       <tags>
         <tag>Go值接收者 指针接收者</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Go 用interface实现多态</title>
+    <url>/2019/12/30/Go%20%E6%8E%A5%E5%8F%A3_0Go%E7%94%A8%20interface%20%E5%AE%9E%E7%8E%B0%E5%A4%9A%E6%80%81/</url>
+    <content><![CDATA[<h3 id="Go-用interface实现多态"><a href="#Go-用interface实现多态" class="headerlink" title="Go 用interface实现多态"></a>Go 用interface实现多态</h3><p>Go 语言并没有设计诸如虚函数、纯虚函数、继承、多重继承等概念，但它通过接口却非常优雅地支持了面向对象的特性。</p>
+<p>多态是一种运行期的行为，它有以下几个特点：</p>
+<blockquote>
+<ol>
+<li>一种类型具有多种类型的能力</li>
+<li>允许不同的对象对同一消息做出灵活的反应</li>
+<li>以一种通用的方式对待个使用的对象</li>
+<li>非动态语言必须通过继承和接口的方式来实现</li>
+</ol>
+</blockquote>
+<p>看一个实现了多态的代码例子：</p>
+<figure class="highlight golang"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	qcrao := Student&#123;age: <span class="number">18</span>&#125;</span><br><span class="line">	whatJob(&amp;qcrao)</span><br><span class="line"></span><br><span class="line">	growUp(&amp;qcrao)</span><br><span class="line">	fmt.Println(qcrao)</span><br><span class="line"></span><br><span class="line">	stefno := Programmer&#123;age: <span class="number">100</span>&#125;</span><br><span class="line">	whatJob(stefno)</span><br><span class="line"></span><br><span class="line">	growUp(stefno)</span><br><span class="line">	fmt.Println(stefno)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">whatJob</span><span class="params">(p Person)</span></span> &#123;</span><br><span class="line">	p.job()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">growUp</span><span class="params">(p Person)</span></span> &#123;</span><br><span class="line">	p.growUp()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Person <span class="keyword">interface</span> &#123;</span><br><span class="line">	job()</span><br><span class="line">	growUp()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Student <span class="keyword">struct</span> &#123;</span><br><span class="line">	age <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p Student)</span> <span class="title">job</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Println(<span class="string">"I am a student."</span>)</span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *Student)</span> <span class="title">growUp</span><span class="params">()</span></span> &#123;</span><br><span class="line">	p.age += <span class="number">1</span></span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Programmer <span class="keyword">struct</span> &#123;</span><br><span class="line">	age <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p Programmer)</span> <span class="title">job</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Println(<span class="string">"I am a programmer."</span>)</span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p Programmer)</span> <span class="title">growUp</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="comment">// 程序员老得太快 ^_^</span></span><br><span class="line">	p.age += <span class="number">10</span></span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>代码里先定义了 1 个 <code>Person</code> 接口，包含两个函数：</p>
+<figure class="highlight golang"><table><tr><td class="code"><pre><span class="line">job()</span><br><span class="line">growUp()</span><br></pre></td></tr></table></figure>
+<p>然后，又定义了 2 个结构体，<code>Student</code> 和 <code>Programmer</code>，同时，类型 <code>*Student</code>、<code>Programmer</code> 实现了 <code>Person</code> 接口定义的两个函数。注意，<code>*Student</code> 类型实现了接口， <code>Student</code> 类型却没有。</p>
+<p>之后，我又定义了函数参数是 <code>Person</code> 接口的两个函数：</p>
+<figure class="highlight golang"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">whatJob</span><span class="params">(p Person)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">growUp</span><span class="params">(p Person)</span></span></span><br></pre></td></tr></table></figure>
+<p><code>main</code> 函数里先生成 <code>Student</code> 和 <code>Programmer</code> 的对象，再将它们分别传入到函数 <code>whatJob</code> 和 <code>growUp</code>。函数中，直接调用接口函数，实际执行的时候是看最终传入的实体类型是什么，调用的是实体类型实现的函数。于是，不同对象针对同一消息就有多种表现，<code>多态</code>就实现了。</p>
+<p>更深入一点来说的话，在函数 <code>whatJob()</code> 或者 <code>growUp()</code> 内部，接口 <code>person</code> 绑定了实体类型 <code>*Student</code> 或者 <code>Programmer</code>。根据前面分析的 <code>iface</code> 源码，这里会直接调用 <code>fun</code> 里保存的函数，类似于： <code>s.tab-&gt;fun[0]</code>，而因为 <code>fun</code> 数组里保存的是实体类型实现的函数，所以当函数传入不同的实体类型时，调用的实际上是不同的函数实现，从而实现多态。</p>
+<p>运行一下代码：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">I am a student.</span><br><span class="line">&#123;19&#125;</span><br><span class="line">I am a programmer.</span><br><span class="line">&#123;100&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><p>【各种面向对象的名词】<a href="https://cyent.github.io/golang/other/oo/" target="_blank" rel="noopener">https://cyent.github.io/golang/other/oo/</a></p>
+<p>【多态与鸭子类型】<a href="https://www.jb51.net/article/116025.htm" target="_blank" rel="noopener">https://www.jb51.net/article/116025.htm</a></p>
+]]></content>
+      <categories>
+        <category>Go interface</category>
+      </categories>
+      <tags>
+        <tag>go interface</tag>
       </tags>
   </entry>
   <entry>
@@ -1424,7 +1458,7 @@
   </entry>
   <entry>
     <title>Linux 文件系统</title>
-    <url>/2019/11/27/file/</url>
+    <url>/2019/11/27/linux_file/</url>
     <content><![CDATA[<h2 id="1-分区类型"><a href="#1-分区类型" class="headerlink" title="1.分区类型"></a>1.分区类型</h2><ul>
 <li>主分区：最多只能有四个</li>
 <li>扩展分区：最多一个，算作主分区的一种，主分区加扩展分区最多有四个。扩展分区不能存储数据和格式化，必须再划分为逻辑分区才可以使用。</li>
@@ -1507,7 +1541,7 @@
   </entry>
   <entry>
     <title>Linux服务管理</title>
-    <url>/2019/11/27/server/</url>
+    <url>/2019/11/27/linux_server/</url>
     <content><![CDATA[<h2 id="Linux服务管理"><a href="#Linux服务管理" class="headerlink" title="Linux服务管理"></a>Linux服务管理</h2><h3 id="服务分类"><a href="#服务分类" class="headerlink" title="服务分类"></a>服务分类</h3><p>Linux服务</p>
 <ul>
 <li><p>RPM包默认安装的服务</p>
@@ -1533,43 +1567,8 @@
       </tags>
   </entry>
   <entry>
-    <title>Linux 系统管理</title>
-    <url>/2019/11/27/system/</url>
-    <content><![CDATA[<h2 id="Linux系统管理"><a href="#Linux系统管理" class="headerlink" title="Linux系统管理"></a>Linux系统管理</h2><h3 id="进程管理"><a href="#进程管理" class="headerlink" title="进程管理"></a>进程管理</h3><h4 id="进程查看"><a href="#进程查看" class="headerlink" title="进程查看"></a>进程查看</h4><p>作用：判断服务器健康状态，查看系统中所有进程，杀死进程</p>
-<p>查看系统中所有进程：</p>
-<ul>
-<li>ps aux :使用系统中所有进程，使用BSD操作系统格式</li>
-<li>ps -le 查看系统中所有进程，使用Linux标准命令格式</li>
-</ul>
-<p>查看系统健康状态：</p>
-<ul>
-<li>top[选项]</li>
-</ul>
-<p>查看进程树：</p>
-<ul>
-<li>pstree</li>
-</ul>
-<h4 id="终止进程"><a href="#终止进程" class="headerlink" title="终止进程"></a>终止进程</h4><p>1.kill命令</p>
-<p>kill -l 查看可用的进程信号</p>
-<p>kill -1 进程id 重启进程</p>
-<p>kill -9 进程id 强制杀死进程</p>
-<p>2.killall命令</p>
-<p>killall -9 进程名</p>
-<p>3.pkill </p>
-<p>按照终端号踢出用户</p>
-<p>w 使用w命令查询本机已经登录的用户</p>
-<p>pkill -t -9 pts/1 强制杀死从pts/1虚拟终端登录的进程</p>
-]]></content>
-      <categories>
-        <category>linux</category>
-      </categories>
-      <tags>
-        <tag>linux 系统管理</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Linux shell学习</title>
-    <url>/2019/11/27/shell/</url>
+    <url>/2019/11/27/linux_shell/</url>
     <content><![CDATA[<h3 id="shell简介"><a href="#shell简介" class="headerlink" title="shell简介"></a>shell简介</h3><h4 id="基本定义"><a href="#基本定义" class="headerlink" title="基本定义"></a>基本定义</h4><ul>
 <li>一个用 C 语言编写的程序，它是用户使用 Linux 的桥梁。</li>
 <li><p>Shell 既是一种<strong>命令语言</strong>，又是一种<strong>程序设计语言</strong>。</p>
@@ -1759,6 +1758,41 @@
       </tags>
   </entry>
   <entry>
+    <title>Linux 系统管理</title>
+    <url>/2019/11/27/linux_system/</url>
+    <content><![CDATA[<h2 id="Linux系统管理"><a href="#Linux系统管理" class="headerlink" title="Linux系统管理"></a>Linux系统管理</h2><h3 id="进程管理"><a href="#进程管理" class="headerlink" title="进程管理"></a>进程管理</h3><h4 id="进程查看"><a href="#进程查看" class="headerlink" title="进程查看"></a>进程查看</h4><p>作用：判断服务器健康状态，查看系统中所有进程，杀死进程</p>
+<p>查看系统中所有进程：</p>
+<ul>
+<li>ps aux :使用系统中所有进程，使用BSD操作系统格式</li>
+<li>ps -le 查看系统中所有进程，使用Linux标准命令格式</li>
+</ul>
+<p>查看系统健康状态：</p>
+<ul>
+<li>top[选项]</li>
+</ul>
+<p>查看进程树：</p>
+<ul>
+<li>pstree</li>
+</ul>
+<h4 id="终止进程"><a href="#终止进程" class="headerlink" title="终止进程"></a>终止进程</h4><p>1.kill命令</p>
+<p>kill -l 查看可用的进程信号</p>
+<p>kill -1 进程id 重启进程</p>
+<p>kill -9 进程id 强制杀死进程</p>
+<p>2.killall命令</p>
+<p>killall -9 进程名</p>
+<p>3.pkill </p>
+<p>按照终端号踢出用户</p>
+<p>w 使用w命令查询本机已经登录的用户</p>
+<p>pkill -t -9 pts/1 强制杀死从pts/1虚拟终端登录的进程</p>
+]]></content>
+      <categories>
+        <category>linux</category>
+      </categories>
+      <tags>
+        <tag>linux 系统管理</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>hexo基本操作</title>
     <url>/2019/11/26/hexo-operate/</url>
     <content><![CDATA[<h2 id="hexo-文章管理"><a href="#hexo-文章管理" class="headerlink" title="hexo 文章管理"></a>hexo 文章管理</h2><h3 id="1-增加文章"><a href="#1-增加文章" class="headerlink" title="1.增加文章"></a>1.增加文章</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">hexo new xx</span><br></pre></td></tr></table></figure>
@@ -1797,11 +1831,6 @@
       <tags>
         <tag>hexo 基本操作</tag>
       </tags>
-  </entry>
-  <entry>
-    <title>http</title>
-    <url>/2019/11/26/http/</url>
-    <content><![CDATA[]]></content>
   </entry>
   <entry>
     <title>hexo 测试</title>

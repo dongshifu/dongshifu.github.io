@@ -47,17 +47,18 @@
   };
 </script>
 
-  <meta name="description" content="记录生活， 记录学习， 分享知识">
-<meta name="keywords" content="生活，C++, C, go, java, OS, 网络， 存储， 联邦学习， 机器学习，python">
-<meta property="og:type" content="website">
-<meta property="og:title" content="ShifuDong">
-<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;categories&#x2F;c&#x2F;index.html">
+  <meta name="description" content="Linux服务管理服务分类Linux服务  RPM包默认安装的服务 — 独立的服务 — 基于xinetd服务  源码包安装的服务   启动与自启动  服务启动：在当前系统中让服务运行，并提供功能 服务自启动：服务在系统开机或重启之后，随着系统的启动而自动启动服务  RPM安装服务和源码安装服务区别就在于安装位置的不同。 service不可以启动RPM安装的软件">
+<meta name="keywords" content="linux 服务">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux服务管理">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;11&#x2F;27&#x2F;linux_server&#x2F;index.html">
 <meta property="og:site_name" content="ShifuDong">
-<meta property="og:description" content="记录生活， 记录学习， 分享知识">
+<meta property="og:description" content="Linux服务管理服务分类Linux服务  RPM包默认安装的服务 — 独立的服务 — 基于xinetd服务  源码包安装的服务   启动与自启动  服务启动：在当前系统中让服务运行，并提供功能 服务自启动：服务在系统开机或重启之后，随着系统的启动而自动启动服务  RPM安装服务和源码安装服务区别就在于安装位置的不同。 service不可以启动RPM安装的软件">
 <meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-12-20T07:26:32.750Z">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://yoursite.com/categories/c/">
+<link rel="canonical" href="http://yoursite.com/2019/11/27/linux_server/">
 
 
 <script id="page-configurations">
@@ -65,13 +66,13 @@
   CONFIG.page = {
     sidebar: "",
     isHome: false,
-    isPost: false,
+    isPost: true,
     isPage: false,
     isArchive: false
   };
 </script>
 
-  <title>分类: c | ShifuDong</title>
+  <title>Linux服务管理 | ShifuDong</title>
   
 
 
@@ -200,54 +201,121 @@
           <div class="content">
             
 
+  <div class="posts-expand">
+      
   
   
-  
-  <div class="post-block">
-    <div class="posts-collapse">
-      <div class="collection-title">
-        <h1 class="collection-header">c
-          <small>分类</small>
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/27/linux_server/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Linux服务管理
         </h1>
-      </div>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-11-27 19:29:16" itemprop="dateCreated datePublished" datetime="2019-11-27T19:29:16+08:00">2019-11-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-12-20 15:26:32" itemprop="dateModified" datetime="2019-12-20T15:26:32+08:00">2019-12-20</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux/" itemprop="url" rel="index">
+                    <span itemprop="name">linux</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
       
-    <div class="collection-year">
-      <h1 class="collection-header">2020</h1>
+        <h2 id="Linux服务管理"><a href="#Linux服务管理" class="headerlink" title="Linux服务管理"></a>Linux服务管理</h2><h3 id="服务分类"><a href="#服务分类" class="headerlink" title="服务分类"></a>服务分类</h3><p>Linux服务</p>
+<ul>
+<li><p>RPM包默认安装的服务</p>
+<p>— 独立的服务</p>
+<p>— 基于xinetd服务</p>
+</li>
+<li><p>源码包安装的服务</p>
+</li>
+</ul>
+<p>启动与自启动</p>
+<ul>
+<li>服务启动：在当前系统中让服务运行，并提供功能</li>
+<li>服务自启动：服务在系统开机或重启之后，随着系统的启动而自动启动服务</li>
+</ul>
+<p>RPM安装服务和源码安装服务区别就在于安装位置的不同。</p>
+<p>service不可以启动RPM安装的软件</p>
+
     </div>
 
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
+    
+    
+    
 
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2020-01-06T11:29:16+08:00"
-              content="2020-01-06">
-          01-06
-        </time>
-      </div>
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/linux-%E6%9C%8D%E5%8A%A1/" rel="tag"># linux 服务</a>
+          </div>
 
-      <h2 class="post-title">
-          <a class="post-title-link" href="/2020/01/06/c%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" itemprop="url">
-            <span itemprop="name">Linux 文件系统</span>
-          </a>
-      </h2>
+        
 
-    </header>
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/11/27/linux_shell/" rel="prev" title="Linux shell学习">
+      <i class="fa fa-chevron-left"></i> Linux shell学习
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/11/27/linux_file/" rel="next" title="Linux 文件系统">
+      Linux 文件系统 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
   </article>
+  
+  
+  
 
-    </div>
   </div>
-  
-  
-  
-
-  
-
 
 
           </div>
           
+    <div class="comments" id="gitalk-container"></div>
 
         </div>
           
@@ -272,6 +340,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Linux服务管理"><span class="nav-number">1.</span> <span class="nav-text">Linux服务管理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#服务分类"><span class="nav-number">1.1.</span> <span class="nav-text">服务分类</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -294,13 +363,13 @@
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-count">5</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-count">13</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -454,6 +523,23 @@ window.addEventListener('pjax:success', () => {
 
   
 
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'a6ee5b68c97a3db64850',
+      clientSecret: '1dfa06f32032431e4af79b80f9ddf9dfd13dbda2',
+      repo: 'dongshifu.github.io',
+      owner: 'dongshifu',
+      admin: ['dongshifu'],
+      id: '6b48e7ac476448cf669c2c95c9b00b3e',
+        language: 'zh-CN',
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
 
     </div>
 </body>
