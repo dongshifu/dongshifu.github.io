@@ -205,6 +205,84 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/03/09/%E5%8D%9A%E5%AE%A2%E6%B7%BB%E5%8A%A0%E8%AF%84%E8%AE%BA/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/03/09/%E5%8D%9A%E5%AE%A2%E6%B7%BB%E5%8A%A0%E8%AF%84%E8%AE%BA/" class="post-title-link" itemprop="url">hexo搭建博客并添加评论</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-03-09 15:03:58 / 修改时间：16:55:32" itemprop="dateCreated datePublished" datetime="2021-03-09T15:03:58+08:00">2021-03-09</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B7%A5%E5%85%B7/" itemprop="url" rel="index">
+                    <span itemprop="name">工具</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="hexo搭建博客并添加评论"><a href="#hexo搭建博客并添加评论" class="headerlink" title="hexo搭建博客并添加评论"></a>hexo搭建博客并添加评论</h3><p>之前搭建博客评论功能的时候使用的是gitalk, 但使用gitalk必须创建issue来进行评论，使用起来并不是很方便。</p>
+<p>经过网上查找，发现了一款好用的第三方评论工具：<a href="https://www.livere.com" target="_blank" rel="noopener">livere(来必力)</a>。这款工具只需要注册并得到一个<code>livere_uid</code>值就可以在自己的网页上添加评论功能，登录后台管理还可以对评论进行管理。白嫖可真相！！！</p>
+<p>现在说下主要步骤：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">打开 https://livere.com/ 网站进行用户注册（注册的时候是韩文，可以有道或者百度翻译对应一下内容，其实也就是邮箱，名称和密码这几项），注册完成后选择【安装】，然后点击“现在安装”。</span><br><span class="line"> </span><br><span class="line">在“现在安装”页面填写相关的信息，然后获取授权ID码(主要需要填写自己的网站链接)</span><br><span class="line"></span><br><span class="line">获取到授权ID码之后会打开主题目录下的配置文件，修改“livere_uid”的值为授权ID码</span><br></pre></td></tr></table></figure>
+<p><img src="http://note.youdao.com/yws/public/resource/b75486e024e4abe4339e8068b52ef37f/xmlnote/WEBRESOURCE2a260d1f0b15a04f9ef32732c9ae5c85/4528" alt="livere_uid获取"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">在自己的博客主体目录下找到_config.yml文件(我的是~/blog/dongshifu/themes/next/_config.yml)然后找到livere_uid选项，将livere管理页面中的代码管理打开并找到data-uid，复制到livere_uid后面保存即可</span><br></pre></td></tr></table></figure>
+<p><img src="http://note.youdao.com/yws/public/resource/b75486e024e4abe4339e8068b52ef37f/xmlnote/WEBRESOURCEcda4c2d033aec89de3efdbe7afaf8ac0/4530" alt="_config.yaml配置"></p>
+<p>重新部署自己的网站到github就可以看到添加的评论功能了。(授权的时候可以用QQ,微信等方式，真的是很方便了)</p>
+<p><img src="http://note.youdao.com/yws/public/resource/b75486e024e4abe4339e8068b52ef37f/xmlnote/WEBRESOURCE65532c3d27bdb577b7c70ba945ae81db/4533" alt="博客评论功能添加"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/03/08/git-1-md/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1751,93 +1829,6 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/01/Go_struct_2%E7%BC%96%E8%AF%91%E5%99%A8%E8%87%AA%E5%8A%A8%E6%A3%80%E6%B5%8B%E7%B1%BB%E5%9E%8B%E6%98%AF%E5%90%A6%E5%AE%9E%E7%8E%B0%E6%8E%A5%E5%8F%A3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/01/01/Go_struct_2%E7%BC%96%E8%AF%91%E5%99%A8%E8%87%AA%E5%8A%A8%E6%A3%80%E6%B5%8B%E7%B1%BB%E5%9E%8B%E6%98%AF%E5%90%A6%E5%AE%9E%E7%8E%B0%E6%8E%A5%E5%8F%A3/" class="post-title-link" itemprop="url">Go 编译器自动检测类型是否实现接口</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-01-01 20:29:16" itemprop="dateCreated datePublished" datetime="2020-01-01T20:29:16+08:00">2020-01-01</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-08 14:50:36" itemprop="dateModified" datetime="2021-03-08T14:50:36+08:00">2021-03-08</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Go-struct/" itemprop="url" rel="index">
-                    <span itemprop="name">Go struct</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="Go-编译器自动检测类型是否实现接口"><a href="#Go-编译器自动检测类型是否实现接口" class="headerlink" title="Go 编译器自动检测类型是否实现接口"></a>Go 编译器自动检测类型是否实现接口</h3><p>开源库里会有一些类似下面这种奇怪的用法：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> _ io.Writer = (*myWriter)(<span class="literal">nil</span>)</span><br></pre></td></tr></table></figure>
-<p>这时候会有点懵，不知道作者想要干什么，实际上这就是此问题的答案。<strong>编译器会由此检查 <code>*myWriter</code> 类型是否实现了 <code>io.Writer</code> 接口。</strong></p>
-<p>例子：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"io"</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> myWriter <span class="keyword">struct</span> &#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*func (w myWriter) Write(p []byte) (n int, err error) &#123;</span></span><br><span class="line"><span class="comment">	return</span></span><br><span class="line"><span class="comment">&#125;*/</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="comment">// 检查 *myWriter 类型是否实现了 io.Writer 接口</span></span><br><span class="line">    <span class="keyword">var</span> _ io.Writer = (*myWriter)(<span class="literal">nil</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 检查 myWriter 类型是否实现了 io.Writer 接口</span></span><br><span class="line">    <span class="keyword">var</span> _ io.Writer = myWriter&#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>注释掉为 myWriter 定义的 Write 函数后，运行程序：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> <span class="built_in">command</span>-line-arguments</span></span><br><span class="line">src/learn/tongbu/tongbu.go:14:6: cannot use (*myWriter)(nil) (type *myWriter) as type io.Writer in assignment:</span><br><span class="line">	*myWriter does not implement io.Writer (missing Write method)</span><br><span class="line">src/learn/tongbu/tongbu.go:17:6: cannot use myWriter&#123;&#125; (type myWriter) as type io.Writer in assignment:</span><br><span class="line">	myWriter does not implement io.Writer (missing Write method)</span><br></pre></td></tr></table></figure>
-<p>报错信息：<strong>*myWriter/myWriter 未实现 io.Writer 接口，也就是未实现 Write 方法。</strong></p>
-<p>解除注释后，运行程序不报错。</p>
-<p>实际上，上述赋值语句会发生<strong>隐式地类型转换</strong>，<strong>在转换的过程中，编译器会检测等号右边的类型是否实现了等号左边接口所规定的函数。</strong></p>
-<p>总结: 可通过在代码中添加类似如下的代码，用来检测类型是否实现了接口：</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> _ io.Writer = (*myWriter)(<span class="literal">nil</span>)</span><br><span class="line"><span class="keyword">var</span> _ io.Writer = myWriter&#123;&#125;</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
@@ -1888,7 +1879,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-count">22</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1901,7 +1892,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-count">19</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

@@ -47,18 +47,18 @@
   };
 </script>
 
-  <meta name="description" content="接口设计的意义 泛型编程：使用 interface 可以实现泛型编程 隐藏具体实现：设计一个函数返回一个 interface，那么只能通过 interface 里面的方法来做一些操作，但是内部的具体实现是完全不知道的。  golang中的接口接口定义了一种规范，描述了类的行为和功能，而不做具体实现。 Interface定义了一个或一组method(s)，这些method(s)只有函数签名，没有具体">
-<meta name="keywords" content="接口">
+  <meta name="description" content="1.分区类型 主分区：最多只能有四个 扩展分区：最多一个，算作主分区的一种，主分区加扩展分区最多有四个。扩展分区不能存储数据和格式化，必须再划分为逻辑分区才可以使用。 逻辑分区：在扩展分区中划分  逻辑分区的编号从5开始 2.文件系统 ext2:ext文件系统的升级版。最大支持16TB的分区和最大2TB的文件。 ext3:ext2的升级，增加日志功能。 ext4:ext3升级版本，主流使用，功能强">
+<meta name="keywords" content="linux">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Go接口与C++接口的异同">
-<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;01&#x2F;02&#x2F;Go%20%E6%8E%A5%E5%8F%A3_1Go%E4%B8%8E%20C++%20%E6%8E%A5%E5%8F%A3%E6%9C%89%E4%BD%95%E5%BC%82%E5%90%8C&#x2F;index.html">
+<meta property="og:title" content="Linux 文件和目录">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;11&#x2F;27&#x2F;linux_01%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95&#x2F;index.html">
 <meta property="og:site_name" content="ShifuDong">
-<meta property="og:description" content="接口设计的意义 泛型编程：使用 interface 可以实现泛型编程 隐藏具体实现：设计一个函数返回一个 interface，那么只能通过 interface 里面的方法来做一些操作，但是内部的具体实现是完全不知道的。  golang中的接口接口定义了一种规范，描述了类的行为和功能，而不做具体实现。 Interface定义了一个或一组method(s)，这些method(s)只有函数签名，没有具体">
+<meta property="og:description" content="1.分区类型 主分区：最多只能有四个 扩展分区：最多一个，算作主分区的一种，主分区加扩展分区最多有四个。扩展分区不能存储数据和格式化，必须再划分为逻辑分区才可以使用。 逻辑分区：在扩展分区中划分  逻辑分区的编号从5开始 2.文件系统 ext2:ext文件系统的升级版。最大支持16TB的分区和最大2TB的文件。 ext3:ext2的升级，增加日志功能。 ext4:ext3升级版本，主流使用，功能强">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2021-03-08T06:33:32.714Z">
+<meta property="og:updated_time" content="2021-03-09T08:23:42.558Z">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://yoursite.com/2020/01/02/Go%20%E6%8E%A5%E5%8F%A3_1Go%E4%B8%8E%20C++%20%E6%8E%A5%E5%8F%A3%E6%9C%89%E4%BD%95%E5%BC%82%E5%90%8C/">
+<link rel="canonical" href="http://yoursite.com/2019/11/27/linux_01%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/">
 
 
 <script id="page-configurations">
@@ -72,7 +72,7 @@
   };
 </script>
 
-  <title>Go接口与C++接口的异同 | ShifuDong</title>
+  <title>Linux 文件和目录 | ShifuDong</title>
   
 
 
@@ -206,7 +206,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/02/Go%20%E6%8E%A5%E5%8F%A3_1Go%E4%B8%8E%20C++%20%E6%8E%A5%E5%8F%A3%E6%9C%89%E4%BD%95%E5%BC%82%E5%90%8C/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/27/linux_01%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -219,7 +219,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Go接口与C++接口的异同
+          Linux 文件和目录
         </h1>
 
         <div class="post-meta">
@@ -229,14 +229,14 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2020-01-02 21:29:16" itemprop="dateCreated datePublished" datetime="2020-01-02T21:29:16+08:00">2020-01-02</time>
+              <time title="创建时间：2019-11-27 21:29:16" itemprop="dateCreated datePublished" datetime="2019-11-27T21:29:16+08:00">2019-11-27</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-08 14:33:32" itemprop="dateModified" datetime="2021-03-08T14:33:32+08:00">2021-03-08</time>
+                <time title="修改时间：2021-03-09 16:23:42" itemprop="dateModified" datetime="2021-03-09T16:23:42+08:00">2021-03-09</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -244,8 +244,8 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Go-interface/" itemprop="url" rel="index">
-                    <span itemprop="name">Go interface</span>
+                  <a href="/categories/linux/" itemprop="url" rel="index">
+                    <span itemprop="name">linux</span>
                   </a>
                 </span>
             </span>
@@ -261,29 +261,78 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h3 id="接口设计的意义"><a href="#接口设计的意义" class="headerlink" title="接口设计的意义"></a>接口设计的意义</h3><ul>
-<li>泛型编程：使用 interface 可以实现泛型编程</li>
-<li>隐藏具体实现：设计一个函数返回一个 interface，那么<strong>只能通过 interface 里面的方法来做一些操作，但是内部的具体实现是完全不知道的。</strong></li>
+        <h2 id="1-分区类型"><a href="#1-分区类型" class="headerlink" title="1.分区类型"></a>1.分区类型</h2><ul>
+<li>主分区：最多只能有四个</li>
+<li>扩展分区：最多一个，算作主分区的一种，主分区加扩展分区最多有四个。扩展分区不能存储数据和格式化，必须再划分为逻辑分区才可以使用。</li>
+<li>逻辑分区：在扩展分区中划分</li>
 </ul>
-<h3 id="golang中的接口"><a href="#golang中的接口" class="headerlink" title="golang中的接口"></a>golang中的接口</h3><p>接口定义了一种<strong>规范，描述了类的行为和功能，而不做具体实现</strong>。</p>
-<p>Interface定义了一个或一组method(s)，<strong>这些method(s)只有函数签名，没有具体的实现代码</strong>.</p>
-<p>若某个数据类型实现了Interface中定义的那些被称为”methods”的函数，则称这些<strong>数据类型实现（implement）了interface。</strong></p>
-<h3 id="C-中的接口实现方法"><a href="#C-中的接口实现方法" class="headerlink" title="C++中的接口实现方法"></a>C++中的接口实现方法</h3><p>C++ 的接口是使用<strong>抽象类</strong>来实现的，如果类中至少有一个函数被声明为<strong>纯虚函数</strong>，则这个类就是抽象类。<strong>纯虚函数是通过在声明中使用 “= 0” 来指定的</strong>。例如：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Shape</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">   <span class="keyword">public</span>:</span><br><span class="line">      <span class="comment">// 纯虚函数</span></span><br><span class="line">      <span class="function"><span class="keyword">virtual</span> <span class="keyword">double</span> <span class="title">getArea</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">   <span class="keyword">private</span>:</span><br><span class="line">      <span class="built_in">string</span> name;      <span class="comment">// 名称</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>设计抽象类的目的:<strong>为了给其他类提供一个可以继承的适当的基类。抽象类不能被用于实例化对象，它只能作为接口使用。</strong></p>
-<p><strong>派生类需要明确地声明它继承自基类，并且需要实现基类中所有的纯虚函数</strong>。</p>
-<h3 id="golang接口与C-接口区别"><a href="#golang接口与C-接口区别" class="headerlink" title="golang接口与C++接口区别"></a>golang接口与C++接口区别</h3><ul>
-<li><p>C++ 定义接口的方式称为“侵入式”</p>
-</li>
-<li><p>Go 采用的是 “非侵入式”，<strong>不需要显式声明，只需要实现接口定义的函数，编译器自动会识别。</strong></p>
-</li>
-<li><p>底层实现不同</p>
-<ul>
-<li>实现方式：C++ 通过<strong>虚函数表来实现基类调用派生类的函数</strong>；而 Go 通过 <code>itab</code> 中的 <code>fun</code> 字段来实现接口变量调用实体类型的函数。</li>
-<li>编译生成过程：C++ 中的<strong>虚函数表是在编译期生成</strong>的；而 Go 的 <code>itab</code> 中的 <code>fun</code> 字段是在<strong>运行期间动态生成</strong>的。原因在于，<strong>Go 中实体类型可能会无意中实现 N 多接口，很多接口并不是本来需要的，所以不能为类型实现的所有接口都生成一个 <code>itab</code></strong>， 这也是“非侵入式”带来的影响；这在 C++ 中是不存在的，因为派生需要显示声明它继承自哪个基类。</li>
+<p>逻辑分区的编号从5开始</p>
+<h2 id="2-文件系统"><a href="#2-文件系统" class="headerlink" title="2.文件系统"></a>2.文件系统</h2><ul>
+<li>ext2:ext文件系统的升级版。最大支持16TB的分区和最大2TB的文件。</li>
+<li>ext3:ext2的升级，增加日志功能。</li>
+<li>ext4:ext3升级版本，主流使用，功能强大</li>
 </ul>
-</li>
-</ul>
+<h3 id="2-1常用命令"><a href="#2-1常用命令" class="headerlink" title="2.1常用命令"></a>2.1常用命令</h3><h4 id="df-du-fsck-dump2fs"><a href="#df-du-fsck-dump2fs" class="headerlink" title="df, du, fsck, dump2fs"></a>df, du, fsck, dump2fs</h4><h4 id="1-文件系统查看命令df"><a href="#1-文件系统查看命令df" class="headerlink" title="1.文件系统查看命令df"></a>1.文件系统查看命令df</h4><p>df [选项][挂载点]</p>
+<p>-a 所有文件系统信息</p>
+<p>-h 使用习惯单位显示容量，如kB,MB,GB</p>
+<p>ls 只统计目录下的大小，而不会统计子目录下的数据大小。</p>
+<h4 id="2-统计目录或文件大小"><a href="#2-统计目录或文件大小" class="headerlink" title="2.统计目录或文件大小"></a>2.统计目录或文件大小</h4><p>-a</p>
+<p>-h </p>
+<p>-s</p>
+<p>df命令从文件系统考虑，不光要考虑文件占用的空间，还要统计被命令或程序占用的空间（eg. 文件已经被删除，但程序并没有释放空间）</p>
+<p>du命令面向文件，只会计算文件或目录占用的空间。</p>
+<h4 id="3-文件系统修复命令fsck"><a href="#3-文件系统修复命令fsck" class="headerlink" title="3.文件系统修复命令fsck"></a>3.文件系统修复命令fsck</h4><p>fsck[选项]分区设备文件名</p>
+<h4 id="4-显示磁盘状态命令dumpe2fs"><a href="#4-显示磁盘状态命令dumpe2fs" class="headerlink" title="4.显示磁盘状态命令dumpe2fs"></a>4.显示磁盘状态命令dumpe2fs</h4><p>dumpe2fs 分区设备文件名</p>
+<h3 id="2-2-文件系统常用命令-挂载命令"><a href="#2-2-文件系统常用命令-挂载命令" class="headerlink" title="2.2 文件系统常用命令-挂载命令"></a>2.2 文件系统常用命令-挂载命令</h3><h4 id="1-查询与自动挂载"><a href="#1-查询与自动挂载" class="headerlink" title="1.查询与自动挂载"></a>1.查询与自动挂载</h4><p>mount [-l]：查询系统中已经挂载的设备，-l会显示卷标名称</p>
+<p>mount -a 依据配置文件/etc/fastb的内容，自动挂载</p>
+<h4 id="2-挂载命令格式"><a href="#2-挂载命令格式" class="headerlink" title="2.挂载命令格式"></a>2.挂载命令格式</h4><p>mount [-t 文件系统] [-L 卷标名] [-o 特殊选项] 设备文件名 挂载点</p>
+<p>选项：</p>
+<p>-t 文件系统：加入文件系统类型来指定挂载的类型，可以ext3，ext4,iso9660等文件系统</p>
+<p>-L 卷标名：挂载指定卷标的分区，而不是安装设备文件名挂载</p>
+<p>-o 特殊指令（remount …）</p>
+<p>mount -o remount ,noexec /home</p>
+<h4 id="3-挂载光盘与U盘"><a href="#3-挂载光盘与U盘" class="headerlink" title="3 挂载光盘与U盘"></a>3 挂载光盘与U盘</h4><p>1.挂载光盘</p>
+<p>mkdir /mnt/cdrom/ 建立挂载点</p>
+<p>mount -t iso9660 /dev/cdrom /mnt/cdrom 挂载光盘</p>
+<p>mount /dev/sr0 /mnt/cdrom</p>
+<p> 2.卸载命令</p>
+<p>umount 设备文件名或挂载点</p>
+<p>umount /mnt/cdrom</p>
+<p>3.挂载U盘</p>
+<p>fdisk -l 查看U盘设备文件名</p>
+<p>mount -t vfat /dev/sdb1 /mnt/usb/</p>
+<p>linux默认不支持NTFS文件系统</p>
+<h4 id="4支持NTFS文件系统"><a href="#4支持NTFS文件系统" class="headerlink" title="4支持NTFS文件系统"></a>4支持NTFS文件系统</h4><p>重新编译内核</p>
+<p>第三方软件</p>
+<p>NTFS-3G插件</p>
+<h3 id="2-3-fdisk分区"><a href="#2-3-fdisk分区" class="headerlink" title="2.3 fdisk分区"></a>2.3 fdisk分区</h3><h4 id="fdisk命令分区过程"><a href="#fdisk命令分区过程" class="headerlink" title="fdisk命令分区过程"></a>fdisk命令分区过程</h4><p>1.添加硬盘，虚拟机必须在关机的情况下添加</p>
+<p>2.查看新硬盘 fdisk -l</p>
+<p>3.使用fdisk命令分区</p>
+<p>fdisk /dev/sdb</p>
+<p> 4.重新读取分区表信息</p>
+<p>partprobe</p>
+<p>5.格式化分区</p>
+<p>扩展分区不可以格式化</p>
+<p>mkfs -t ext4 /dev/sdb1</p>
+<p>6.建立挂载分区</p>
+<h4 id="分区自动挂载与fstab文件修复"><a href="#分区自动挂载与fstab文件修复" class="headerlink" title="分区自动挂载与fstab文件修复"></a>分区自动挂载与fstab文件修复</h4><p>将挂载写入/etc/fstab文件，一定要写对</p>
+<p>mount -a 依据配置文件 /etc/fstab的内容，自动挂载</p>
+<p>/etc/fstab文件修复</p>
+<p>mount -o remount,rm /</p>
+<h3 id="2-4-分配swap分区"><a href="#2-4-分配swap分区" class="headerlink" title="2.4 分配swap分区"></a>2.4 分配swap分区</h3><p>1.free命令</p>
+<p>查看内存与swap分区使用情况</p>
+<p>cached(缓存):加速数据的读取过程</p>
+<p>buffer(缓冲)：写入数据过程中，将分散的写入操作保存到内存中，当达到一定的程度再集中写入硬盘，加速数据的写入过程。</p>
+<p>2.新建swap分区</p>
+<p>fdisk /dev/sdb</p>
+<p>还需将分区ID改为82</p>
+<p>3.格式化</p>
+<p>mkswap /dev/sdb6</p>
+<p>4.加入swap分区</p>
+<p>swapon /dev/sdb6 加入swap分区</p>
+<p>swapoff /dev/sdb6 取消swap分区</p>
+<p>5.swap分区开机自动挂载</p>
+<p>vi /etc/fstab</p>
 
     </div>
 
@@ -293,7 +342,7 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/%E6%8E%A5%E5%8F%A3/" rel="tag"># 接口</a>
+              <a href="/tags/linux/" rel="tag"># linux</a>
           </div>
 
         
@@ -302,12 +351,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2020/01/01/Go_struct_2%E7%BC%96%E8%AF%91%E5%99%A8%E8%87%AA%E5%8A%A8%E6%A3%80%E6%B5%8B%E7%B1%BB%E5%9E%8B%E6%98%AF%E5%90%A6%E5%AE%9E%E7%8E%B0%E6%8E%A5%E5%8F%A3/" rel="prev" title="Go 编译器自动检测类型是否实现接口">
-      <i class="fa fa-chevron-left"></i> Go 编译器自动检测类型是否实现接口
+    <a href="/2019/11/27/linux_system/" rel="prev" title="Linux 系统管理">
+      <i class="fa fa-chevron-left"></i> Linux 系统管理
     </a></div>
       <div class="post-nav-item">
-    <a href="/2020/01/02/Go%20%E6%8E%A5%E5%8F%A3_2Go%E8%AF%AD%E8%A8%80%E4%B8%8E%E9%B8%AD%E5%AD%90%E7%B1%BB%E5%9E%8B%E7%9A%84%E5%85%B3%E7%B3%BB/" rel="next" title="Go鸭子类似">
-      Go鸭子类似 <i class="fa fa-chevron-right"></i>
+    <a href="/2019/12/26/linux%E6%93%8D%E4%BD%9C%E7%AC%94%E8%AE%B0/" rel="next" title="linux相关操作笔记">
+      linux相关操作笔记 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -380,7 +429,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#接口设计的意义"><span class="nav-number">1.</span> <span class="nav-text">接口设计的意义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#golang中的接口"><span class="nav-number">2.</span> <span class="nav-text">golang中的接口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#C-中的接口实现方法"><span class="nav-number">3.</span> <span class="nav-text">C++中的接口实现方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#golang接口与C-接口区别"><span class="nav-number">4.</span> <span class="nav-text">golang接口与C++接口区别</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-分区类型"><span class="nav-number">1.</span> <span class="nav-text">1.分区类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-文件系统"><span class="nav-number">2.</span> <span class="nav-text">2.文件系统</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1常用命令"><span class="nav-number">2.1.</span> <span class="nav-text">2.1常用命令</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#df-du-fsck-dump2fs"><span class="nav-number">2.1.1.</span> <span class="nav-text">df, du, fsck, dump2fs</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-文件系统查看命令df"><span class="nav-number">2.1.2.</span> <span class="nav-text">1.文件系统查看命令df</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-统计目录或文件大小"><span class="nav-number">2.1.3.</span> <span class="nav-text">2.统计目录或文件大小</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-文件系统修复命令fsck"><span class="nav-number">2.1.4.</span> <span class="nav-text">3.文件系统修复命令fsck</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-显示磁盘状态命令dumpe2fs"><span class="nav-number">2.1.5.</span> <span class="nav-text">4.显示磁盘状态命令dumpe2fs</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-文件系统常用命令-挂载命令"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 文件系统常用命令-挂载命令</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-查询与自动挂载"><span class="nav-number">2.2.1.</span> <span class="nav-text">1.查询与自动挂载</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-挂载命令格式"><span class="nav-number">2.2.2.</span> <span class="nav-text">2.挂载命令格式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-挂载光盘与U盘"><span class="nav-number">2.2.3.</span> <span class="nav-text">3 挂载光盘与U盘</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4支持NTFS文件系统"><span class="nav-number">2.2.4.</span> <span class="nav-text">4支持NTFS文件系统</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-fdisk分区"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 fdisk分区</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#fdisk命令分区过程"><span class="nav-number">2.3.1.</span> <span class="nav-text">fdisk命令分区过程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#分区自动挂载与fstab文件修复"><span class="nav-number">2.3.2.</span> <span class="nav-text">分区自动挂载与fstab文件修复</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-分配swap分区"><span class="nav-number">2.4.</span> <span class="nav-text">2.4 分配swap分区</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -573,7 +622,7 @@ window.addEventListener('pjax:success', () => {
       repo: 'dongshifu.github.io',
       owner: 'dongshifu',
       admin: ['dongshifu'],
-      id: '21df53a0a006b88d0c0107929b7f31e3',
+      id: 'a77f2415bf1c2c096674fe7f85d2840f',
         language: 'zh-CN',
       distractionFreeMode: 'true'
     });

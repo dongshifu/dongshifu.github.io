@@ -47,18 +47,22 @@
   };
 </script>
 
-  <meta name="description" content="1.分区类型 主分区：最多只能有四个 扩展分区：最多一个，算作主分区的一种，主分区加扩展分区最多有四个。扩展分区不能存储数据和格式化，必须再划分为逻辑分区才可以使用。 逻辑分区：在扩展分区中划分  逻辑分区的编号从5开始 2.文件系统 ext2:ext文件系统的升级版。最大支持16TB的分区和最大2TB的文件。 ext3:ext2的升级，增加日志功能。 ext4:ext3升级版本，主流使用，功能强">
-<meta name="keywords" content="linux 文件系统">
+  <meta name="description" content="hexo搭建博客并添加评论之前搭建博客评论功能的时候使用的是gitalk, 但使用gitalk必须创建issue来进行评论，使用起来并不是很方便。 经过网上查找，发现了一款好用的第三方评论工具：livere(来必力)。这款工具只需要注册并得到一个livere_uid值就可以在自己的网页上添加评论功能，登录后台管理还可以对评论进行管理。白嫖可真相！！！ 现在说下主要步骤： 12345打开 https">
+<meta name="keywords" content="工具">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Linux 文件系统">
-<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;11&#x2F;27&#x2F;linux_file&#x2F;index.html">
+<meta property="og:title" content="hexo搭建博客并添加评论">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2021&#x2F;03&#x2F;09&#x2F;%E5%8D%9A%E5%AE%A2%E6%B7%BB%E5%8A%A0%E8%AF%84%E8%AE%BA&#x2F;index.html">
 <meta property="og:site_name" content="ShifuDong">
-<meta property="og:description" content="1.分区类型 主分区：最多只能有四个 扩展分区：最多一个，算作主分区的一种，主分区加扩展分区最多有四个。扩展分区不能存储数据和格式化，必须再划分为逻辑分区才可以使用。 逻辑分区：在扩展分区中划分  逻辑分区的编号从5开始 2.文件系统 ext2:ext文件系统的升级版。最大支持16TB的分区和最大2TB的文件。 ext3:ext2的升级，增加日志功能。 ext4:ext3升级版本，主流使用，功能强">
+<meta property="og:description" content="hexo搭建博客并添加评论之前搭建博客评论功能的时候使用的是gitalk, 但使用gitalk必须创建issue来进行评论，使用起来并不是很方便。 经过网上查找，发现了一款好用的第三方评论工具：livere(来必力)。这款工具只需要注册并得到一个livere_uid值就可以在自己的网页上添加评论功能，登录后台管理还可以对评论进行管理。白嫖可真相！！！ 现在说下主要步骤： 12345打开 https">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2021-03-08T06:34:35.623Z">
+<meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;b75486e024e4abe4339e8068b52ef37f&#x2F;xmlnote&#x2F;WEBRESOURCE2a260d1f0b15a04f9ef32732c9ae5c85&#x2F;4528">
+<meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;b75486e024e4abe4339e8068b52ef37f&#x2F;xmlnote&#x2F;WEBRESOURCEcda4c2d033aec89de3efdbe7afaf8ac0&#x2F;4530">
+<meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;b75486e024e4abe4339e8068b52ef37f&#x2F;xmlnote&#x2F;WEBRESOURCE65532c3d27bdb577b7c70ba945ae81db&#x2F;4533">
+<meta property="og:updated_time" content="2021-03-09T08:55:32.455Z">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;b75486e024e4abe4339e8068b52ef37f&#x2F;xmlnote&#x2F;WEBRESOURCE2a260d1f0b15a04f9ef32732c9ae5c85&#x2F;4528">
 
-<link rel="canonical" href="http://yoursite.com/2019/11/27/linux_file/">
+<link rel="canonical" href="http://yoursite.com/2021/03/09/%E5%8D%9A%E5%AE%A2%E6%B7%BB%E5%8A%A0%E8%AF%84%E8%AE%BA/">
 
 
 <script id="page-configurations">
@@ -72,7 +76,7 @@
   };
 </script>
 
-  <title>Linux 文件系统 | ShifuDong</title>
+  <title>hexo搭建博客并添加评论 | ShifuDong</title>
   
 
 
@@ -206,7 +210,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/27/linux_file/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/03/09/%E5%8D%9A%E5%AE%A2%E6%B7%BB%E5%8A%A0%E8%AF%84%E8%AE%BA/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -219,7 +223,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Linux 文件系统
+          hexo搭建博客并添加评论
         </h1>
 
         <div class="post-meta">
@@ -228,24 +232,18 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
+              
 
-              <time title="创建时间：2019-11-27 21:29:16" itemprop="dateCreated datePublished" datetime="2019-11-27T21:29:16+08:00">2019-11-27</time>
+              <time title="创建时间：2021-03-09 15:03:58 / 修改时间：16:55:32" itemprop="dateCreated datePublished" datetime="2021-03-09T15:03:58+08:00">2021-03-09</time>
             </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-08 14:34:35" itemprop="dateModified" datetime="2021-03-08T14:34:35+08:00">2021-03-08</time>
-              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="fa fa-folder-o"></i>
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/linux/" itemprop="url" rel="index">
-                    <span itemprop="name">linux</span>
+                  <a href="/categories/%E5%B7%A5%E5%85%B7/" itemprop="url" rel="index">
+                    <span itemprop="name">工具</span>
                   </a>
                 </span>
             </span>
@@ -261,78 +259,15 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h2 id="1-分区类型"><a href="#1-分区类型" class="headerlink" title="1.分区类型"></a>1.分区类型</h2><ul>
-<li>主分区：最多只能有四个</li>
-<li>扩展分区：最多一个，算作主分区的一种，主分区加扩展分区最多有四个。扩展分区不能存储数据和格式化，必须再划分为逻辑分区才可以使用。</li>
-<li>逻辑分区：在扩展分区中划分</li>
-</ul>
-<p>逻辑分区的编号从5开始</p>
-<h2 id="2-文件系统"><a href="#2-文件系统" class="headerlink" title="2.文件系统"></a>2.文件系统</h2><ul>
-<li>ext2:ext文件系统的升级版。最大支持16TB的分区和最大2TB的文件。</li>
-<li>ext3:ext2的升级，增加日志功能。</li>
-<li>ext4:ext3升级版本，主流使用，功能强大</li>
-</ul>
-<h3 id="2-1常用命令"><a href="#2-1常用命令" class="headerlink" title="2.1常用命令"></a>2.1常用命令</h3><h4 id="df-du-fsck-dump2fs"><a href="#df-du-fsck-dump2fs" class="headerlink" title="df, du, fsck, dump2fs"></a>df, du, fsck, dump2fs</h4><h4 id="1-文件系统查看命令df"><a href="#1-文件系统查看命令df" class="headerlink" title="1.文件系统查看命令df"></a>1.文件系统查看命令df</h4><p>df [选项][挂载点]</p>
-<p>-a 所有文件系统信息</p>
-<p>-h 使用习惯单位显示容量，如kB,MB,GB</p>
-<p>ls 只统计目录下的大小，而不会统计子目录下的数据大小。</p>
-<h4 id="2-统计目录或文件大小"><a href="#2-统计目录或文件大小" class="headerlink" title="2.统计目录或文件大小"></a>2.统计目录或文件大小</h4><p>-a</p>
-<p>-h </p>
-<p>-s</p>
-<p>df命令从文件系统考虑，不光要考虑文件占用的空间，还要统计被命令或程序占用的空间（eg. 文件已经被删除，但程序并没有释放空间）</p>
-<p>du命令面向文件，只会计算文件或目录占用的空间。</p>
-<h4 id="3-文件系统修复命令fsck"><a href="#3-文件系统修复命令fsck" class="headerlink" title="3.文件系统修复命令fsck"></a>3.文件系统修复命令fsck</h4><p>fsck[选项]分区设备文件名</p>
-<h4 id="4-显示磁盘状态命令dumpe2fs"><a href="#4-显示磁盘状态命令dumpe2fs" class="headerlink" title="4.显示磁盘状态命令dumpe2fs"></a>4.显示磁盘状态命令dumpe2fs</h4><p>dumpe2fs 分区设备文件名</p>
-<h3 id="2-2-文件系统常用命令-挂载命令"><a href="#2-2-文件系统常用命令-挂载命令" class="headerlink" title="2.2 文件系统常用命令-挂载命令"></a>2.2 文件系统常用命令-挂载命令</h3><h4 id="1-查询与自动挂载"><a href="#1-查询与自动挂载" class="headerlink" title="1.查询与自动挂载"></a>1.查询与自动挂载</h4><p>mount [-l]：查询系统中已经挂载的设备，-l会显示卷标名称</p>
-<p>mount -a 依据配置文件/etc/fastb的内容，自动挂载</p>
-<h4 id="2-挂载命令格式"><a href="#2-挂载命令格式" class="headerlink" title="2.挂载命令格式"></a>2.挂载命令格式</h4><p>mount [-t 文件系统] [-L 卷标名] [-o 特殊选项] 设备文件名 挂载点</p>
-<p>选项：</p>
-<p>-t 文件系统：加入文件系统类型来指定挂载的类型，可以ext3，ext4,iso9660等文件系统</p>
-<p>-L 卷标名：挂载指定卷标的分区，而不是安装设备文件名挂载</p>
-<p>-o 特殊指令（remount …）</p>
-<p>mount -o remount ,noexec /home</p>
-<h4 id="3-挂载光盘与U盘"><a href="#3-挂载光盘与U盘" class="headerlink" title="3 挂载光盘与U盘"></a>3 挂载光盘与U盘</h4><p>1.挂载光盘</p>
-<p>mkdir /mnt/cdrom/ 建立挂载点</p>
-<p>mount -t iso9660 /dev/cdrom /mnt/cdrom 挂载光盘</p>
-<p>mount /dev/sr0 /mnt/cdrom</p>
-<p> 2.卸载命令</p>
-<p>umount 设备文件名或挂载点</p>
-<p>umount /mnt/cdrom</p>
-<p>3.挂载U盘</p>
-<p>fdisk -l 查看U盘设备文件名</p>
-<p>mount -t vfat /dev/sdb1 /mnt/usb/</p>
-<p>linux默认不支持NTFS文件系统</p>
-<h4 id="4支持NTFS文件系统"><a href="#4支持NTFS文件系统" class="headerlink" title="4支持NTFS文件系统"></a>4支持NTFS文件系统</h4><p>重新编译内核</p>
-<p>第三方软件</p>
-<p>NTFS-3G插件</p>
-<h3 id="2-3-fdisk分区"><a href="#2-3-fdisk分区" class="headerlink" title="2.3 fdisk分区"></a>2.3 fdisk分区</h3><h4 id="fdisk命令分区过程"><a href="#fdisk命令分区过程" class="headerlink" title="fdisk命令分区过程"></a>fdisk命令分区过程</h4><p>1.添加硬盘，虚拟机必须在关机的情况下添加</p>
-<p>2.查看新硬盘 fdisk -l</p>
-<p>3.使用fdisk命令分区</p>
-<p>fdisk /dev/sdb</p>
-<p> 4.重新读取分区表信息</p>
-<p>partprobe</p>
-<p>5.格式化分区</p>
-<p>扩展分区不可以格式化</p>
-<p>mkfs -t ext4 /dev/sdb1</p>
-<p>6.建立挂载分区</p>
-<h4 id="分区自动挂载与fstab文件修复"><a href="#分区自动挂载与fstab文件修复" class="headerlink" title="分区自动挂载与fstab文件修复"></a>分区自动挂载与fstab文件修复</h4><p>将挂载写入/etc/fstab文件，一定要写对</p>
-<p>mount -a 依据配置文件 /etc/fstab的内容，自动挂载</p>
-<p>/etc/fstab文件修复</p>
-<p>mount -o remount,rm /</p>
-<h3 id="2-4-分配swap分区"><a href="#2-4-分配swap分区" class="headerlink" title="2.4 分配swap分区"></a>2.4 分配swap分区</h3><p>1.free命令</p>
-<p>查看内存与swap分区使用情况</p>
-<p>cached(缓存):加速数据的读取过程</p>
-<p>buffer(缓冲)：写入数据过程中，将分散的写入操作保存到内存中，当达到一定的程度再集中写入硬盘，加速数据的写入过程。</p>
-<p>2.新建swap分区</p>
-<p>fdisk /dev/sdb</p>
-<p>还需将分区ID改为82</p>
-<p>3.格式化</p>
-<p>mkswap /dev/sdb6</p>
-<p>4.加入swap分区</p>
-<p>swapon /dev/sdb6 加入swap分区</p>
-<p>swapoff /dev/sdb6 取消swap分区</p>
-<p>5.swap分区开机自动挂载</p>
-<p>vi /etc/fstab</p>
+        <h3 id="hexo搭建博客并添加评论"><a href="#hexo搭建博客并添加评论" class="headerlink" title="hexo搭建博客并添加评论"></a>hexo搭建博客并添加评论</h3><p>之前搭建博客评论功能的时候使用的是gitalk, 但使用gitalk必须创建issue来进行评论，使用起来并不是很方便。</p>
+<p>经过网上查找，发现了一款好用的第三方评论工具：<a href="https://www.livere.com" target="_blank" rel="noopener">livere(来必力)</a>。这款工具只需要注册并得到一个<code>livere_uid</code>值就可以在自己的网页上添加评论功能，登录后台管理还可以对评论进行管理。白嫖可真相！！！</p>
+<p>现在说下主要步骤：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">打开 https://livere.com/ 网站进行用户注册（注册的时候是韩文，可以有道或者百度翻译对应一下内容，其实也就是邮箱，名称和密码这几项），注册完成后选择【安装】，然后点击“现在安装”。</span><br><span class="line"> </span><br><span class="line">在“现在安装”页面填写相关的信息，然后获取授权ID码(主要需要填写自己的网站链接)</span><br><span class="line"></span><br><span class="line">获取到授权ID码之后会打开主题目录下的配置文件，修改“livere_uid”的值为授权ID码</span><br></pre></td></tr></table></figure>
+<p><img src="http://note.youdao.com/yws/public/resource/b75486e024e4abe4339e8068b52ef37f/xmlnote/WEBRESOURCE2a260d1f0b15a04f9ef32732c9ae5c85/4528" alt="livere_uid获取"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">在自己的博客主体目录下找到_config.yml文件(我的是~/blog/dongshifu/themes/next/_config.yml)然后找到livere_uid选项，将livere管理页面中的代码管理打开并找到data-uid，复制到livere_uid后面保存即可</span><br></pre></td></tr></table></figure>
+<p><img src="http://note.youdao.com/yws/public/resource/b75486e024e4abe4339e8068b52ef37f/xmlnote/WEBRESOURCEcda4c2d033aec89de3efdbe7afaf8ac0/4530" alt="_config.yaml配置"></p>
+<p>重新部署自己的网站到github就可以看到添加的评论功能了。(授权的时候可以用QQ,微信等方式，真的是很方便了)</p>
+<p><img src="http://note.youdao.com/yws/public/resource/b75486e024e4abe4339e8068b52ef37f/xmlnote/WEBRESOURCE65532c3d27bdb577b7c70ba945ae81db/4533" alt="博客评论功能添加"></p>
 
     </div>
 
@@ -342,7 +277,7 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/linux-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/" rel="tag"># linux 文件系统</a>
+              <a href="/tags/%E5%B7%A5%E5%85%B7/" rel="tag"># 工具</a>
           </div>
 
         
@@ -351,13 +286,10 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2019/11/27/linux_server/" rel="prev" title="Linux服务管理">
-      <i class="fa fa-chevron-left"></i> Linux服务管理
+    <a href="/2021/03/08/git-1-md/" rel="prev" title="设置git的用户名和邮箱">
+      <i class="fa fa-chevron-left"></i> 设置git的用户名和邮箱
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2019/12/26/linux%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/" rel="next" title="linux环境变量设置">
-      linux环境变量设置 <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -429,7 +361,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-分区类型"><span class="nav-number">1.</span> <span class="nav-text">1.分区类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-文件系统"><span class="nav-number">2.</span> <span class="nav-text">2.文件系统</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1常用命令"><span class="nav-number">2.1.</span> <span class="nav-text">2.1常用命令</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#df-du-fsck-dump2fs"><span class="nav-number">2.1.1.</span> <span class="nav-text">df, du, fsck, dump2fs</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-文件系统查看命令df"><span class="nav-number">2.1.2.</span> <span class="nav-text">1.文件系统查看命令df</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-统计目录或文件大小"><span class="nav-number">2.1.3.</span> <span class="nav-text">2.统计目录或文件大小</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-文件系统修复命令fsck"><span class="nav-number">2.1.4.</span> <span class="nav-text">3.文件系统修复命令fsck</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-显示磁盘状态命令dumpe2fs"><span class="nav-number">2.1.5.</span> <span class="nav-text">4.显示磁盘状态命令dumpe2fs</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-文件系统常用命令-挂载命令"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 文件系统常用命令-挂载命令</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-查询与自动挂载"><span class="nav-number">2.2.1.</span> <span class="nav-text">1.查询与自动挂载</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-挂载命令格式"><span class="nav-number">2.2.2.</span> <span class="nav-text">2.挂载命令格式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-挂载光盘与U盘"><span class="nav-number">2.2.3.</span> <span class="nav-text">3 挂载光盘与U盘</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4支持NTFS文件系统"><span class="nav-number">2.2.4.</span> <span class="nav-text">4支持NTFS文件系统</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-fdisk分区"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 fdisk分区</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#fdisk命令分区过程"><span class="nav-number">2.3.1.</span> <span class="nav-text">fdisk命令分区过程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#分区自动挂载与fstab文件修复"><span class="nav-number">2.3.2.</span> <span class="nav-text">分区自动挂载与fstab文件修复</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-分配swap分区"><span class="nav-number">2.4.</span> <span class="nav-text">2.4 分配swap分区</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#hexo搭建博客并添加评论"><span class="nav-number">1.</span> <span class="nav-text">hexo搭建博客并添加评论</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -445,7 +377,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-count">22</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -458,7 +390,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-count">19</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -622,7 +554,7 @@ window.addEventListener('pjax:success', () => {
       repo: 'dongshifu.github.io',
       owner: 'dongshifu',
       admin: ['dongshifu'],
-      id: '8f7fc0c507fe08c626469a1528a25b0c',
+      id: '3ae884185104fb7a5cd5d8444b4f7ac1',
         language: 'zh-CN',
       distractionFreeMode: 'true'
     });

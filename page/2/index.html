@@ -205,6 +205,93 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/01/Go_struct_2%E7%BC%96%E8%AF%91%E5%99%A8%E8%87%AA%E5%8A%A8%E6%A3%80%E6%B5%8B%E7%B1%BB%E5%9E%8B%E6%98%AF%E5%90%A6%E5%AE%9E%E7%8E%B0%E6%8E%A5%E5%8F%A3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/01/01/Go_struct_2%E7%BC%96%E8%AF%91%E5%99%A8%E8%87%AA%E5%8A%A8%E6%A3%80%E6%B5%8B%E7%B1%BB%E5%9E%8B%E6%98%AF%E5%90%A6%E5%AE%9E%E7%8E%B0%E6%8E%A5%E5%8F%A3/" class="post-title-link" itemprop="url">Go 编译器自动检测类型是否实现接口</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-01-01 20:29:16" itemprop="dateCreated datePublished" datetime="2020-01-01T20:29:16+08:00">2020-01-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-08 14:50:36" itemprop="dateModified" datetime="2021-03-08T14:50:36+08:00">2021-03-08</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Go-struct/" itemprop="url" rel="index">
+                    <span itemprop="name">Go struct</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="Go-编译器自动检测类型是否实现接口"><a href="#Go-编译器自动检测类型是否实现接口" class="headerlink" title="Go 编译器自动检测类型是否实现接口"></a>Go 编译器自动检测类型是否实现接口</h3><p>开源库里会有一些类似下面这种奇怪的用法：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> _ io.Writer = (*myWriter)(<span class="literal">nil</span>)</span><br></pre></td></tr></table></figure>
+<p>这时候会有点懵，不知道作者想要干什么，实际上这就是此问题的答案。<strong>编译器会由此检查 <code>*myWriter</code> 类型是否实现了 <code>io.Writer</code> 接口。</strong></p>
+<p>例子：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"io"</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> myWriter <span class="keyword">struct</span> &#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*func (w myWriter) Write(p []byte) (n int, err error) &#123;</span></span><br><span class="line"><span class="comment">	return</span></span><br><span class="line"><span class="comment">&#125;*/</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="comment">// 检查 *myWriter 类型是否实现了 io.Writer 接口</span></span><br><span class="line">    <span class="keyword">var</span> _ io.Writer = (*myWriter)(<span class="literal">nil</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 检查 myWriter 类型是否实现了 io.Writer 接口</span></span><br><span class="line">    <span class="keyword">var</span> _ io.Writer = myWriter&#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注释掉为 myWriter 定义的 Write 函数后，运行程序：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> <span class="built_in">command</span>-line-arguments</span></span><br><span class="line">src/learn/tongbu/tongbu.go:14:6: cannot use (*myWriter)(nil) (type *myWriter) as type io.Writer in assignment:</span><br><span class="line">	*myWriter does not implement io.Writer (missing Write method)</span><br><span class="line">src/learn/tongbu/tongbu.go:17:6: cannot use myWriter&#123;&#125; (type myWriter) as type io.Writer in assignment:</span><br><span class="line">	myWriter does not implement io.Writer (missing Write method)</span><br></pre></td></tr></table></figure>
+<p>报错信息：<strong>*myWriter/myWriter 未实现 io.Writer 接口，也就是未实现 Write 方法。</strong></p>
+<p>解除注释后，运行程序不报错。</p>
+<p>实际上，上述赋值语句会发生<strong>隐式地类型转换</strong>，<strong>在转换的过程中，编译器会检测等号右边的类型是否实现了等号左边接口所规定的函数。</strong></p>
+<p>总结: 可通过在代码中添加类似如下的代码，用来检测类型是否实现了接口：</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> _ io.Writer = (*myWriter)(<span class="literal">nil</span>)</span><br><span class="line"><span class="keyword">var</span> _ io.Writer = myWriter&#123;&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/01/Go_struct_1%E5%80%BC%E6%8E%A5%E6%94%B6%E8%80%85%E5%92%8C%E6%8C%87%E9%92%88%E6%8E%A5%E6%94%B6%E8%80%85%E7%9A%84%E5%8C%BA%E5%88%AB/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -525,6 +612,115 @@
 <p>再如，两个宏都存在时编译代码A，否则编译代码B： </p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> NUM1 10</span></span><br><span class="line"><span class="comment">// #define NUM2 20</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">if</span> (defined NUM1 &amp;&amp; defined NUM2)</span></span><br><span class="line">        <span class="comment">//代码A</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"NUM1: %d, NUM2: %d\n"</span>, NUM1, NUM2);</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line">        <span class="comment">//代码B</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"Error\n"</span>);</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h1 id="ifdef-可以认为是-if-defined-的缩写"><a href="#ifdef-可以认为是-if-defined-的缩写" class="headerlink" title="ifdef 可以认为是 #if defined 的缩写"></a>ifdef 可以认为是 #if defined 的缩写</h1>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/26/linux%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/12/26/linux%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/" class="post-title-link" itemprop="url">linux环境变量设置</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-12-26 15:29:16" itemprop="dateCreated datePublished" datetime="2019-12-26T15:29:16+08:00">2019-12-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-02-27 15:56:07" itemprop="dateModified" datetime="2021-02-27T15:56:07+08:00">2021-02-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux/" itemprop="url" rel="index">
+                    <span itemprop="name">linux</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="Ubuntu环境变量的添加和删除"><a href="#Ubuntu环境变量的添加和删除" class="headerlink" title="Ubuntu环境变量的添加和删除"></a>Ubuntu环境变量的添加和删除</h3><h4 id="添加环境变量的位置"><a href="#添加环境变量的位置" class="headerlink" title="添加环境变量的位置"></a>添加环境变量的位置</h4><ul>
+<li>/etc/profile 该文件为系统的每个用户设置环境信息，当用户第一次登录时，该文件被执行，并从/etc/profile.d目录的配置文件中搜集shell的设置。</li>
+<li>/etc/environment 登录操作系统使用的第二个文件，系统在读取自己的profile之前，设置环境文件的环境变量</li>
+<li>/etc/bashrc 为每一个运行bash shell的用户执行该文件。当bash shell被打开时，该文件被读取</li>
+<li>~/.profile 每个用户都可以使用该文件输入专用于自己使用的shell信息，当用户登录时，该文件仅仅执行一次。默认情况下设置一些环境变量，执行用户的.bashrc文件</li>
+<li>~/.bashrc 该文件包含专用的bash shell的bash信息，当登录以及每次打开新的shell时，该文件被读取。</li>
+</ul>
+<h4 id="添加方法"><a href="#添加方法" class="headerlink" title="添加方法"></a>添加方法</h4><ul>
+<li>方法一：直接修改/etc/enviroment文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">打开/etc/environment文件，其内容如下：</span></span><br><span class="line">PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games" </span><br><span class="line"><span class="meta">#</span><span class="bash">在环境变量PATH中添加你要添加的路径即可。</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>方法二：修改/etc/profile文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">这个文件不是保存环境变量信息的文件，在登录时，系统只是根据它的内容对环境变量进行设置。</span></span><br><span class="line">export PATH=$PATH:[your path1]:[your path2]:[...]  </span><br><span class="line">export PATH=[your path1]:[your path2]:[...]:$PATH #其中，各个PATH之间用冒号分隔，$PATH指代添加your path前的环境变量。</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>方法三：修改/etc/bashrc或者~/.bashrc文件，这两个文件<strong>不是为了保存环境变量，只是在使用bash shell时进行设置而已，所以设置方法和二中一样。对于/etc/bashrc文件，修改的作用于所有用户，但对于~/.bashrc文件，修改的仅仅作用于当前用户。这种修改的作用也是永久性的。</strong></p>
+</li>
+<li><p>方法四：<strong>修改~/.profile文件，作用仅限于当前用户，但同样也是永久性的。这种方法和修改/etc/profile本质上是一样的，这种之不过是仅仅修改了当前用户自己的配置文件。所以作用仅限于当前用户，但同样也是永久性的。</strong></p>
+</li>
+<li><p>方法五：在Terminal中使用shell命令，只在当前Terminal中起作用，关闭了当前Terminal就无效了。对其他Terminal也无效</p>
+</li>
+</ul>
+<h4 id="显示环境变量"><a href="#显示环境变量" class="headerlink" title="显示环境变量"></a>显示环境变量</h4><ul>
+<li>显示所有环境变量</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">env #打印所有的环境变量</span><br></pre></td></tr></table></figure>
+<ul>
+<li>显示指定环境变量</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo $PATH #打印PATH环境变量</span><br></pre></td></tr></table></figure>
+<h4 id="让修改生效"><a href="#让修改生效" class="headerlink" title="让修改生效"></a>让修改生效</h4><p>使用source命令也可以让修改立即生效。使用方法为：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">source [file name]  # file name 指的是上面修改过的文件的file name</span><br></pre></td></tr></table></figure>
+<h4 id="删除对环境变量的修改"><a href="#删除对环境变量的修改" class="headerlink" title="删除对环境变量的修改"></a>删除对环境变量的修改</h4><p>将以上方法中对配置文件的修改还原回去即可。另外，由于第五种方法由于是临时性质的且局部的，只需要关闭这个Terminal就好了。</p>
+
       
     </div>
 
@@ -1213,7 +1409,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/26/linux%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/27/linux_01%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -1227,116 +1423,7 @@
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
           
-            <a href="/2019/12/26/linux%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/" class="post-title-link" itemprop="url">linux环境变量设置</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-12-26 15:29:16" itemprop="dateCreated datePublished" datetime="2019-12-26T15:29:16+08:00">2019-12-26</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-02-27 15:56:07" itemprop="dateModified" datetime="2021-02-27T15:56:07+08:00">2021-02-27</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/linux/" itemprop="url" rel="index">
-                    <span itemprop="name">linux</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="Ubuntu环境变量的添加和删除"><a href="#Ubuntu环境变量的添加和删除" class="headerlink" title="Ubuntu环境变量的添加和删除"></a>Ubuntu环境变量的添加和删除</h3><h4 id="添加环境变量的位置"><a href="#添加环境变量的位置" class="headerlink" title="添加环境变量的位置"></a>添加环境变量的位置</h4><ul>
-<li>/etc/profile 该文件为系统的每个用户设置环境信息，当用户第一次登录时，该文件被执行，并从/etc/profile.d目录的配置文件中搜集shell的设置。</li>
-<li>/etc/environment 登录操作系统使用的第二个文件，系统在读取自己的profile之前，设置环境文件的环境变量</li>
-<li>/etc/bashrc 为每一个运行bash shell的用户执行该文件。当bash shell被打开时，该文件被读取</li>
-<li>~/.profile 每个用户都可以使用该文件输入专用于自己使用的shell信息，当用户登录时，该文件仅仅执行一次。默认情况下设置一些环境变量，执行用户的.bashrc文件</li>
-<li>~/.bashrc 该文件包含专用的bash shell的bash信息，当登录以及每次打开新的shell时，该文件被读取。</li>
-</ul>
-<h4 id="添加方法"><a href="#添加方法" class="headerlink" title="添加方法"></a>添加方法</h4><ul>
-<li>方法一：直接修改/etc/enviroment文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">打开/etc/environment文件，其内容如下：</span></span><br><span class="line">PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games" </span><br><span class="line"><span class="meta">#</span><span class="bash">在环境变量PATH中添加你要添加的路径即可。</span></span><br></pre></td></tr></table></figure>
-<ul>
-<li>方法二：修改/etc/profile文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">这个文件不是保存环境变量信息的文件，在登录时，系统只是根据它的内容对环境变量进行设置。</span></span><br><span class="line">export PATH=$PATH:[your path1]:[your path2]:[...]  </span><br><span class="line">export PATH=[your path1]:[your path2]:[...]:$PATH #其中，各个PATH之间用冒号分隔，$PATH指代添加your path前的环境变量。</span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>方法三：修改/etc/bashrc或者~/.bashrc文件，这两个文件<strong>不是为了保存环境变量，只是在使用bash shell时进行设置而已，所以设置方法和二中一样。对于/etc/bashrc文件，修改的作用于所有用户，但对于~/.bashrc文件，修改的仅仅作用于当前用户。这种修改的作用也是永久性的。</strong></p>
-</li>
-<li><p>方法四：<strong>修改~/.profile文件，作用仅限于当前用户，但同样也是永久性的。这种方法和修改/etc/profile本质上是一样的，这种之不过是仅仅修改了当前用户自己的配置文件。所以作用仅限于当前用户，但同样也是永久性的。</strong></p>
-</li>
-<li><p>方法五：在Terminal中使用shell命令，只在当前Terminal中起作用，关闭了当前Terminal就无效了。对其他Terminal也无效</p>
-</li>
-</ul>
-<h4 id="显示环境变量"><a href="#显示环境变量" class="headerlink" title="显示环境变量"></a>显示环境变量</h4><ul>
-<li>显示所有环境变量</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">env #打印所有的环境变量</span><br></pre></td></tr></table></figure>
-<ul>
-<li>显示指定环境变量</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo $PATH #打印PATH环境变量</span><br></pre></td></tr></table></figure>
-<h4 id="让修改生效"><a href="#让修改生效" class="headerlink" title="让修改生效"></a>让修改生效</h4><p>使用source命令也可以让修改立即生效。使用方法为：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">source [file name]  # file name 指的是上面修改过的文件的file name</span><br></pre></td></tr></table></figure>
-<h4 id="删除对环境变量的修改"><a href="#删除对环境变量的修改" class="headerlink" title="删除对环境变量的修改"></a>删除对环境变量的修改</h4><p>将以上方法中对配置文件的修改还原回去即可。另外，由于第五种方法由于是临时性质的且局部的，只需要关闭这个Terminal就好了。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/27/linux_file/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/11/27/linux_file/" class="post-title-link" itemprop="url">Linux 文件系统</a>
+            <a href="/2019/11/27/linux_01%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/" class="post-title-link" itemprop="url">Linux 文件和目录</a>
         </h1>
 
         <div class="post-meta">
@@ -1353,7 +1440,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-08 14:34:35" itemprop="dateModified" datetime="2021-03-08T14:34:35+08:00">2021-03-08</time>
+                <time title="修改时间：2021-03-09 16:23:42" itemprop="dateModified" datetime="2021-03-09T16:23:42+08:00">2021-03-09</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1450,6 +1537,105 @@
 <p>swapoff /dev/sdb6 取消swap分区</p>
 <p>5.swap分区开机自动挂载</p>
 <p>vi /etc/fstab</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/27/linux_system/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/11/27/linux_system/" class="post-title-link" itemprop="url">Linux 系统管理</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-11-27 19:29:16" itemprop="dateCreated datePublished" datetime="2019-11-27T19:29:16+08:00">2019-11-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-12-20 15:26:57" itemprop="dateModified" datetime="2019-12-20T15:26:57+08:00">2019-12-20</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux/" itemprop="url" rel="index">
+                    <span itemprop="name">linux</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="Linux系统管理"><a href="#Linux系统管理" class="headerlink" title="Linux系统管理"></a>Linux系统管理</h2><h3 id="进程管理"><a href="#进程管理" class="headerlink" title="进程管理"></a>进程管理</h3><h4 id="进程查看"><a href="#进程查看" class="headerlink" title="进程查看"></a>进程查看</h4><p>作用：判断服务器健康状态，查看系统中所有进程，杀死进程</p>
+<p>查看系统中所有进程：</p>
+<ul>
+<li>ps aux :使用系统中所有进程，使用BSD操作系统格式</li>
+<li>ps -le 查看系统中所有进程，使用Linux标准命令格式</li>
+</ul>
+<p>查看系统健康状态：</p>
+<ul>
+<li>top[选项]</li>
+</ul>
+<p>查看进程树：</p>
+<ul>
+<li>pstree</li>
+</ul>
+<h4 id="终止进程"><a href="#终止进程" class="headerlink" title="终止进程"></a>终止进程</h4><p>1.kill命令</p>
+<p>kill -l 查看可用的进程信号</p>
+<p>kill -1 进程id 重启进程</p>
+<p>kill -9 进程id 强制杀死进程</p>
+<p>2.killall命令</p>
+<p>killall -9 进程名</p>
+<p>3.pkill </p>
+<p>按照终端号踢出用户</p>
+<p>w 使用w命令查询本机已经登录的用户</p>
+<p>pkill -t -9 pts/1 强制杀死从pts/1虚拟终端登录的进程</p>
 
       
     </div>
@@ -1811,209 +1997,6 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/27/linux_system/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/11/27/linux_system/" class="post-title-link" itemprop="url">Linux 系统管理</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-11-27 19:29:16" itemprop="dateCreated datePublished" datetime="2019-11-27T19:29:16+08:00">2019-11-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-12-20 15:26:57" itemprop="dateModified" datetime="2019-12-20T15:26:57+08:00">2019-12-20</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/linux/" itemprop="url" rel="index">
-                    <span itemprop="name">linux</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="Linux系统管理"><a href="#Linux系统管理" class="headerlink" title="Linux系统管理"></a>Linux系统管理</h2><h3 id="进程管理"><a href="#进程管理" class="headerlink" title="进程管理"></a>进程管理</h3><h4 id="进程查看"><a href="#进程查看" class="headerlink" title="进程查看"></a>进程查看</h4><p>作用：判断服务器健康状态，查看系统中所有进程，杀死进程</p>
-<p>查看系统中所有进程：</p>
-<ul>
-<li>ps aux :使用系统中所有进程，使用BSD操作系统格式</li>
-<li>ps -le 查看系统中所有进程，使用Linux标准命令格式</li>
-</ul>
-<p>查看系统健康状态：</p>
-<ul>
-<li>top[选项]</li>
-</ul>
-<p>查看进程树：</p>
-<ul>
-<li>pstree</li>
-</ul>
-<h4 id="终止进程"><a href="#终止进程" class="headerlink" title="终止进程"></a>终止进程</h4><p>1.kill命令</p>
-<p>kill -l 查看可用的进程信号</p>
-<p>kill -1 进程id 重启进程</p>
-<p>kill -9 进程id 强制杀死进程</p>
-<p>2.killall命令</p>
-<p>killall -9 进程名</p>
-<p>3.pkill </p>
-<p>按照终端号踢出用户</p>
-<p>w 使用w命令查询本机已经登录的用户</p>
-<p>pkill -t -9 pts/1 强制杀死从pts/1虚拟终端登录的进程</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/26/hexo-operate/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/11/26/hexo-operate/" class="post-title-link" itemprop="url">hexo基本操作</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-11-26 19:29:16" itemprop="dateCreated datePublished" datetime="2019-11-26T19:29:16+08:00">2019-11-26</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-12-20 15:26:17" itemprop="dateModified" datetime="2019-12-20T15:26:17+08:00">2019-12-20</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E5%B7%A5%E5%85%B7/" itemprop="url" rel="index">
-                    <span itemprop="name">工具</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="hexo-文章管理"><a href="#hexo-文章管理" class="headerlink" title="hexo 文章管理"></a>hexo 文章管理</h2><h3 id="1-增加文章"><a href="#1-增加文章" class="headerlink" title="1.增加文章"></a>1.增加文章</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo new xx</span><br></pre></td></tr></table></figure>
-<p>创建的文件自动保存在source/_post文件夹下，为MarkDown格式</p>
-<p>可以在文件中开头通过：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">---</span><br><span class="line">title: 标题 # 自动创建，如 hello-world</span><br><span class="line">date: 日期 # 自动创建，如 2019-09-22 01:47:21</span><br><span class="line">tags: </span><br><span class="line">- 标签1</span><br><span class="line">- 标签2</span><br><span class="line">- 标签3</span><br><span class="line">categories:</span><br><span class="line">- 分类1</span><br><span class="line">- 分类2</span><br><span class="line">---</span><br></pre></td></tr></table></figure>
-<p>来添加文章的必要信息。</p>
-<h3 id="2-标签页添加"><a href="#2-标签页添加" class="headerlink" title="2.标签页添加"></a>2.标签页添加</h3><p>在项目的根目录下执行命令</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo new page tags</span><br></pre></td></tr></table></figure>
-<p>执行命令后自动生成一个source/tags/index.md文件，内容如下：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">---</span><br><span class="line">title: tags</span><br><span class="line">date: 2019-09-26 16:44:17</span><br><span class="line">---</span><br></pre></td></tr></table></figure>
-<p>可以为其增加type字段指定页面的类型:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">type: tags</span><br><span class="line">comments: false</span><br></pre></td></tr></table></figure>
-<p>在使用的主题_config.yml文件将页面的链接加到主菜单中，修改menu字段：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">menu:</span><br><span class="line">  home: / || home</span><br><span class="line">  #about: /about/ || user</span><br><span class="line">  tags: /tags/ || tags</span><br><span class="line">  #categories: /categories/ || th</span><br><span class="line">  archives: /archives/ || archive</span><br><span class="line">  #schedule: /schedule/ || calendar</span><br><span class="line">  #sitemap: /sitemap.xml || sitemap</span><br><span class="line">  #commonweal: /404/ || heartbeat</span><br></pre></td></tr></table></figure>
-<p>本地服务重启，可以观察到页面状态变化(左侧导航出现标签，点击之后会显示标签的列表)。</p>
-<h3 id="3-分类页"><a href="#3-分类页" class="headerlink" title="3.分类页"></a>3.分类页</h3><p>对文章进行归类，一个文章可以对应某个或多个分类，可以通过以下命令创建分类页：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo new page categories</span><br></pre></td></tr></table></figure>
-<p>生成一个/source/categories/index.md文件。</p>
-<p>在其中增加type字段来指定页面的类型：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">type: categories </span><br><span class="line">comments: false</span><br></pre></td></tr></table></figure>
-<p>然后在使用的主题_config.yml文件中将页面链接加入到主菜单中，修改menu字段：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">menu:</span><br><span class="line">  home: / || home</span><br><span class="line"><span class="meta">  #</span><span class="bash">about: /about/ || user</span></span><br><span class="line">  tags: /tags/ || tags</span><br><span class="line">  categories: /categories/ || th</span><br><span class="line">  archives: /archives/ || archive</span><br><span class="line"><span class="meta">  #</span><span class="bash">schedule: /schedule/ || calendar</span></span><br><span class="line"><span class="meta">  #</span><span class="bash">sitemap: /sitemap.xml || sitemap</span></span><br><span class="line"><span class="meta">  #</span><span class="bash">commonweal: /404/ || heartbeat</span></span><br></pre></td></tr></table></figure>
-<h4 id="4-添加搜索页"><a href="#4-添加搜索页" class="headerlink" title="4.添加搜索页"></a>4.添加搜索页</h4><p>需要搜索全站的内容，所以一个搜索功能的支持也是很有必要的，要添加搜索的支持，需要先安装一个插件，叫做 hexo-generator-searchdb，命令如下：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-generator-searchdb --save</span><br></pre></td></tr></table></figure>
-<p>然后在<strong>项目</strong>的_config.yml中添加搜索设置如下:</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">search:</span><br><span class="line">  path: search.xml</span><br><span class="line">  field: post</span><br><span class="line">  format: html</span><br><span class="line">  limit: 10000</span><br></pre></td></tr></table></figure>
-<p>然后在主题的 _config.yml 里面修改如下：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> Local search</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> Dependencies: https://github.com/wzpan/hexo-generator-search</span></span><br><span class="line">local_search:</span><br><span class="line">  enable: true</span><br><span class="line"><span class="meta">  #</span><span class="bash"> If auto, trigger search by changing input.</span></span><br><span class="line"><span class="meta">  #</span><span class="bash"> If manual, trigger search by pressing enter key or search button.</span></span><br><span class="line">  trigger: auto</span><br><span class="line"><span class="meta">  #</span><span class="bash"> Show top n results per article, show all results by setting to -1</span></span><br><span class="line">  top_n_per_article: 5</span><br><span class="line"><span class="meta">  #</span><span class="bash"> Unescape html strings to the readable one.</span></span><br><span class="line">  unescape: false</span><br><span class="line"><span class="meta">  #</span><span class="bash"> Preload the search data when the page loads.</span></span><br><span class="line">  preload: false</span><br></pre></td></tr></table></figure>
-<h3 id="5-404页面添加"><a href="#5-404页面添加" class="headerlink" title="5.404页面添加"></a>5.404页面添加</h3><p>若需要添加一个 404 页面，直接在根目录 source 文件夹新建一个 404.md 文件，内容可以仿照如下：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">---</span><br><span class="line">title: 404 Not Found</span><br><span class="line">date: 2019-11-27 10:41:27</span><br><span class="line">---</span><br><span class="line"> </span><br><span class="line">&lt;center&gt;</span><br><span class="line">对不起，您所访问的页面不存在或者已删除。</span><br><span class="line">您可以&lt;a href="https://dongshifu.github.io&gt;"&gt;点击此处&lt;/a&gt;返回首页。</span><br><span class="line">或访问&lt;a href="https://blog.csdn.net/dongshifo"&gt;查看更多内容。</span><br><span class="line">&lt;/center&gt;</span><br><span class="line"> </span><br><span class="line">&lt;blockquote class="blockquote-center"&gt;</span><br><span class="line">    Dongshifu</span><br><span class="line">&lt;/blockquote&gt;</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
@@ -2064,7 +2047,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-count">22</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -2077,7 +2060,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-count">19</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
