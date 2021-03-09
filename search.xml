@@ -35,6 +35,431 @@
       </tags>
   </entry>
   <entry>
+    <title>Linux常用命令使用</title>
+    <url>/2020/03/02/linux-02linux%E5%91%BD%E4%BB%A4%E4%BD%BF%E7%94%A8/</url>
+    <content><![CDATA[<h3 id="Linux终端命令格式"><a href="#Linux终端命令格式" class="headerlink" title="Linux终端命令格式"></a>Linux终端命令格式</h3><h4 id="终端命令格式"><a href="#终端命令格式" class="headerlink" title="终端命令格式"></a>终端命令格式</h4><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">command</span> [-options] [parameter]</span><br></pre></td></tr></table></figure>
+<p>说明：</p>
+<ul>
+<li><code>command</code>：命令名，相应功能的英文单词或单词的缩写</li>
+<li><code>[-options]</code>：选项，可用来对命令进行控制，也可以省略</li>
+<li><code>parameter</code>：传给命令的参数，可以是 <strong>零个</strong>、<strong>一个</strong> 或者 <strong>多个</strong></li>
+<li><code>[]</code> 代表可选 </li>
+</ul>
+<h4 id="查阅命令帮助信息"><a href="#查阅命令帮助信息" class="headerlink" title="查阅命令帮助信息"></a>查阅命令帮助信息</h4><h6 id="help"><a href="#help" class="headerlink" title="help"></a>help</h6><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">command</span> --<span class="built_in">help</span></span><br></pre></td></tr></table></figure>
+<p>说明：</p>
+<ul>
+<li>显示 <code>command</code> 命令的帮助信息</li>
+</ul>
+<h6 id="man"><a href="#man" class="headerlink" title="man"></a>man</h6><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">man <span class="built_in">command</span></span><br></pre></td></tr></table></figure>
+<p>说明：</p>
+<ul>
+<li>查阅 <code>command</code> 命令的使用手册</li>
+</ul>
+<p><code>man</code> 是 <strong>manual</strong> 的缩写，是 Linux 提供的一个 <strong>手册</strong>，包含了绝大部分的命令、函数的详细使用说明</p>
+<p>使用 <code>man</code> 时的操作键：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>操作键</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>空格键</td>
+<td>显示手册页的下一屏</td>
+</tr>
+<tr>
+<td>Enter 键</td>
+<td>一次滚动手册页的一行</td>
+</tr>
+<tr>
+<td>b</td>
+<td>回滚一屏</td>
+</tr>
+<tr>
+<td>f</td>
+<td>前滚一屏</td>
+</tr>
+<tr>
+<td>q</td>
+<td>退出</td>
+</tr>
+<tr>
+<td>/word</td>
+<td>搜索 <strong>word</strong> 字符串</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="常用的Linux命令"><a href="#常用的Linux命令" class="headerlink" title="常用的Linux命令"></a>常用的Linux命令</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>命令</th>
+<th>对应英文</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>01</td>
+<td>ls</td>
+<td>list</td>
+<td>查看当前文件夹下的内容</td>
+</tr>
+<tr>
+<td>02</td>
+<td>pwd</td>
+<td>print wrok directory</td>
+<td>查看当前所在文件夹</td>
+</tr>
+<tr>
+<td>03</td>
+<td>cd [目录名]</td>
+<td>change directory</td>
+<td>切换文件夹</td>
+</tr>
+<tr>
+<td>04</td>
+<td>touch [文件名]</td>
+<td>touch</td>
+<td>如果文件不存在，新建文件</td>
+</tr>
+<tr>
+<td>05</td>
+<td>mkdir [目录名]</td>
+<td>make directory</td>
+<td>创建目录</td>
+</tr>
+<tr>
+<td>06</td>
+<td>rm [文件名]</td>
+<td>remove</td>
+<td>删除指定的文件名</td>
+</tr>
+<tr>
+<td>07</td>
+<td>clear</td>
+<td>clear</td>
+<td>清屏</td>
+</tr>
+</tbody>
+</table>
+</div>
+<blockquote>
+<p>小技巧</p>
+<ul>
+<li><code>ctrl + shift + =</code> <strong>放大</strong>终端窗口的字体显示</li>
+<li><code>ctrl + -</code> <strong>缩小</strong>终端窗口的字体显示</li>
+<li>在敲出 <code>文件``目录``命令``tab</code><ul>
+<li>如果输入的没有歧义，系统会自动补全</li>
+<li>如果还存在其他 <code>文件</code>／<code>目录</code>／<code>命令</code>，再按一下 <code>tab</code> 键，系统会提示可能存在的命令</li>
+</ul>
+</li>
+<li>按 <code>上</code>／<code>下</code> 光标键可以在曾经使用过的命令之间来回切换</li>
+<li>如果想要退出选择，并且不想执行当前选中的命令，可以按 <code>ctrl + c</code></li>
+</ul>
+</blockquote>
+]]></content>
+      <categories>
+        <category>linux</category>
+      </categories>
+      <tags>
+        <tag>linux</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Linux 文件和目录及相关操作</title>
+    <url>/2020/03/01/linux_01%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/</url>
+    <content><![CDATA[<h3 id="单用户操作系统和多用户操作系统"><a href="#单用户操作系统和多用户操作系统" class="headerlink" title="单用户操作系统和多用户操作系统"></a>单用户操作系统和多用户操作系统</h3><ul>
+<li><strong>单用户操作系统</strong>：指一台计算机在同一时间 <strong>只能由一个用户</strong> 使用，<strong>一个用户独自享用系统的全部硬件和软件资源</strong><ul>
+<li><strong>Windows XP</strong> 之前的版本都是单用户操作系统</li>
+</ul>
+</li>
+<li><strong>多用户操作系统</strong>：指一台计算机在同一时间可以由 <strong>多个用户</strong> 使用，多个用户共<strong>同享用系统的全部硬件和软件资源</strong><ul>
+<li><strong>Unix</strong> 和 <strong>Linux</strong> 的设计初衷就是多用户操作系统</li>
+</ul>
+</li>
+</ul>
+<h3 id="linux下的文件系统"><a href="#linux下的文件系统" class="headerlink" title="linux下的文件系统"></a>linux下的文件系统</h3><h4 id="文件结构"><a href="#文件结构" class="headerlink" title="文件结构"></a>文件结构</h4><ul>
+<li><p>在 <code>Windows</code> 下，打开 “计算机”，看到的是一个个的驱动器盘符：eg: C盘，D盘…。</p>
+<ul>
+<li>每个驱动器都有自己的根目录结构，形成多个树并列的情形。</li>
+</ul>
+</li>
+<li><p>在 <code>Linux</code> 下，看不到驱动器盘符，看到的是<strong>文件夹（目录）</strong></p>
+<ul>
+<li>linux没有盘符概念，只有一个根目录 <code>/</code>，所有文件都在它下面</li>
+</ul>
+</li>
+</ul>
+<p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE176901b2234a4a2fcab1e598a568ca75/4537" alt="linux文件系统"></p>
+<ul>
+<li><p>用户目录</p>
+<ul>
+<li><p>位于 <code>/home/xxx</code>，称之为用户工作目录或家目录，表示方式：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">/home/xx</span><br><span class="line">~</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>/：根目录，<strong>一般根目录下只存放目录</strong>，在 linux 下有且只有一个根目录，所有的东西都是从这里开始 </p>
+<ul>
+<li>当在终端里输入 <code>cd /home</code>，其实是在告诉电脑，先从 <code>/</code>（根目录）开始，再进入到 <code>home</code> 目录</li>
+</ul>
+</li>
+<li><p>/bin、/usr/bin：可执行二进制文件的目录，如<strong>常用的命令 ls、tar、mv、cat</strong> 等</p>
+</li>
+<li><p>/boot：放置 linux <strong>系统启动</strong>时用到的一些文件，如 linux 的<strong>内核</strong>文件：<code>/boot/vmlinuz</code>，<strong>系统引导</strong>管理器：<code>/boot/grub</code></p>
+</li>
+<li><p>/dev：存放linux系统下的<strong>设备文件</strong>，<strong>访问该目录下某个文件，相当于访问某个设备</strong>，常用的是挂载光驱<code>mount /dev/cdrom /mnt</code></p>
+</li>
+<li><p>/etc：<strong>系统配置文件</strong>存放的目录，不建议在此目录下存放可执行文件，重要的配置文件有  </p>
+<ul>
+<li>/etc/inittab</li>
+<li>/etc/fstab</li>
+<li>/etc/init.d</li>
+<li>/etc/X11</li>
+<li>/etc/sysconfig</li>
+<li><p>/etc/xinetd.d</p>
+</li>
+<li><p>/etc/profile</p>
+</li>
+</ul>
+</li>
+<li><p>/home：系统默认的用户家目录，新增用户账号时，用户的家目录都存放在此目录下 </p>
+<ul>
+<li><strong><code>~</code> 表示当前用户的家目录</strong></li>
+<li><code>~xxx</code> 表示用户 <code>xxx</code> 的家目录</li>
+</ul>
+</li>
+<li><p>/lib、/usr/lib、/usr/local/lib：<strong>系统使用的函数库的目录，程序在执行过程中，需要调用一些额外的参数时需要函数库的协助</strong></p>
+</li>
+<li><p>/lost+fount：系统异常产生错误时，会将一些遗失的片段放置于此目录下</p>
+</li>
+<li><p>/mnt: /media：光盘默认<strong>挂载点</strong>，通常光盘挂载于 /mnt/cdrom 下，也不一定，可以选择任意位置进行挂载</p>
+</li>
+<li><p>/opt：给主机<strong>额外安装软件所摆放的目录</strong></p>
+</li>
+<li><p>/proc：<strong>此目录的数据都在内存中，如系统核心，外部设备，网络状态，由于数据都存放于内存中，所以不占用磁盘空间</strong>，比较重要的文件有：/proc/cpuinfo、/proc/interrupts、/proc/dma、/proc/ioports、/proc/net/* 等</p>
+</li>
+<li><p>/root：<strong>系统管理员root的家目录</strong></p>
+</li>
+<li><p>/sbin、/usr/sbin、/usr/local/sbin：放置<strong>系统管理员使用的可执行命令</strong>，如 fdisk、shutdown、mount 等。与 /bin 不同的是，这几个目录是给系统管理员 root 使用的命令<strong>，一般用户只能”查看”而不能设置和使用</strong></p>
+</li>
+<li><p>/tmp：一般用户或正在执行的程序<strong>临时存放文件的目录</strong>，任何人都可以访问，<strong>重要数据不可放置在此目录下</strong></p>
+</li>
+<li><p>/srv：<strong>服务启动之后需要访问的数据目录</strong>，如 www 服务需要访问的网页数据存放在 /srv/www 内</p>
+</li>
+<li><p>/usr：<strong>应用程序存</strong>放目录 </p>
+<ul>
+<li>/usr/bin：存放应用程序</li>
+<li>/usr/share：存放共享数据</li>
+<li>/usr/lib：存放不能直接运行的，<strong>却是许多程序运行所必需的一些函数库文件</strong></li>
+<li>/usr/local：存放<strong>软件升级包</strong></li>
+<li>/usr/share/doc：系统说明文件存放目录</li>
+<li>/usr/share/man：程序说明文件存放目录</li>
+</ul>
+</li>
+<li><p>/var：放置系统执行过程中<strong>经常变化的文件</strong> </p>
+<ul>
+<li>/var/log：随时更改的<strong>日志</strong>文件 </li>
+<li>/var/spool/mail：邮件存放的目录</li>
+<li>/var/run：程序或服务启动后，其 PID 存放在该目录下</li>
+</ul>
+</li>
+</ul>
+<h4 id="文件和目录常用命令"><a href="#文件和目录常用命令" class="headerlink" title="文件和目录常用命令"></a>文件和目录常用命令</h4><ul>
+<li>查看目录内容 <ul>
+<li><code>ls</code></li>
+</ul>
+</li>
+<li>切换目录 <ul>
+<li><code>cd</code></li>
+</ul>
+</li>
+<li>创建和删除操作 <ul>
+<li><code>touch</code></li>
+<li><code>rm</code></li>
+<li><code>mkdir</code></li>
+</ul>
+</li>
+<li>拷贝和移动文件 <ul>
+<li><code>cp</code></li>
+<li><code>mv</code></li>
+</ul>
+</li>
+<li>查看文件内容 <ul>
+<li><code>cat</code></li>
+<li><code>more</code></li>
+<li><code>grep</code></li>
+</ul>
+</li>
+<li>其他 <ul>
+<li><code>echo</code></li>
+<li>重定向 <code>&gt;</code> 和 <code>&gt;&gt;</code></li>
+<li>管道 <code>|</code></li>
+</ul>
+</li>
+</ul>
+<h6 id="查看目录ls-命令说明"><a href="#查看目录ls-命令说明" class="headerlink" title="查看目录ls 命令说明"></a>查看目录<code>ls</code> 命令说明</h6><ul>
+<li><code>ls</code> 是英文单词 <strong>list</strong> 的简写，其功能为列出目录的内容，是用户最常用的命令之一，类似于 <strong>DOS</strong> 下的 <code>dir</code> 命令</li>
+</ul>
+<h6 id="Linux-下文件和目录的特点"><a href="#Linux-下文件和目录的特点" class="headerlink" title="Linux 下文件和目录的特点"></a>Linux 下文件和目录的特点</h6><ul>
+<li>Linux <strong>文件</strong> 或者 <strong>目录</strong> 名称最长可以有 <code>256</code> 个字符</li>
+<li>以 <code>.</code> 开头的文件为隐藏文件，需要用 -a 参数才能显示</li>
+<li><strong>.</strong> 代表当前目录</li>
+<li><strong>..</strong> 代表上一级目录</li>
+</ul>
+<h6 id="ls-常用选项"><a href="#ls-常用选项" class="headerlink" title="ls 常用选项"></a>ls 常用选项</h6><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>-a</td>
+<td>显示指定目录下所有子目录与文件，包括隐藏文件</td>
+</tr>
+<tr>
+<td>-l</td>
+<td>以列表方式显示文件的详细信息</td>
+</tr>
+<tr>
+<td>-h</td>
+<td>配合 -l 以人性化的方式显示文件大小</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h6 id="计算机中文件大小的表示方式"><a href="#计算机中文件大小的表示方式" class="headerlink" title="计算机中文件大小的表示方式"></a>计算机中文件大小的表示方式</h6><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>单位</th>
+<th>英文</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>字节</td>
+<td>B（Byte）</td>
+<td>在计算机中作为一个数字单元，一般为 8 位二进制数</td>
+</tr>
+<tr>
+<td>千</td>
+<td>K（Kibibyte）</td>
+<td>1 KB = 1024 B，千字节 （1024 = 2 ** 10）</td>
+</tr>
+<tr>
+<td>兆</td>
+<td>M（Mebibyte）</td>
+<td>1 MB = 1024 KB，百万字节</td>
+</tr>
+<tr>
+<td>千兆</td>
+<td>G（Gigabyte）</td>
+<td>1 GB = 1024 MB，十亿字节，千兆字节</td>
+</tr>
+<tr>
+<td>太</td>
+<td>T（Terabyte）</td>
+<td>1 TB = 1024 GB，万亿字节，太字节</td>
+</tr>
+<tr>
+<td>拍</td>
+<td>P（Petabyte）</td>
+<td>1 PB = 1024 TB，千万亿字节，拍字节</td>
+</tr>
+<tr>
+<td>艾</td>
+<td>E（Exabyte）</td>
+<td>1 EB = 1024 PB，百亿亿字节，艾字节</td>
+</tr>
+<tr>
+<td>泽</td>
+<td>Z（Zettabyte）</td>
+<td>1 ZB = 1024 EB，十万亿亿字节，泽字节</td>
+</tr>
+<tr>
+<td>尧</td>
+<td>Y（Yottabyte）</td>
+<td>1 YB = 1024 ZB，一亿亿亿字节，尧字节</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h6 id="ls-通配符的使用"><a href="#ls-通配符的使用" class="headerlink" title="ls 通配符的使用"></a>ls 通配符的使用</h6><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>通配符</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>*</td>
+<td>代表任意个数个字符</td>
+</tr>
+<tr>
+<td>?</td>
+<td>代表任意一个字符，至少 1 个</td>
+</tr>
+<tr>
+<td>[]</td>
+<td>表示可以匹配字符组中的任一一个</td>
+</tr>
+<tr>
+<td>[abc]</td>
+<td>匹配 a、b、c 中的任意一个</td>
+</tr>
+<tr>
+<td>[a-f]</td>
+<td>匹配从 a 到 f 范围内的的任意一个字符</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h4 id="磁盘分区类型"><a href="#磁盘分区类型" class="headerlink" title="磁盘分区类型"></a>磁盘分区类型</h4><ul>
+<li>主分区：最多只能有四个</li>
+<li>扩展分区：最多一个，算作主分区的一种，主分区加扩展分区最多有四个。扩展分区不能存储数据和格式化，必须再划分为逻辑分区才可以使用。</li>
+<li>逻辑分区：在扩展分区中划分</li>
+</ul>
+<p>逻辑分区的编号从5开始</p>
+<h4 id="支持的文件系统"><a href="#支持的文件系统" class="headerlink" title="支持的文件系统"></a>支持的文件系统</h4><ul>
+<li>ext2:ext文件系统的升级版。最大支持16TB的分区和最大2TB的文件。</li>
+<li>ext3:ext2的升级，增加日志功能。</li>
+<li>ext4:ext3升级版本，主流使用，功能强大</li>
+</ul>
+<h4 id="文件系统常用命令"><a href="#文件系统常用命令" class="headerlink" title="文件系统常用命令"></a>文件系统常用命令</h4><h4 id="df-du-fsck-dump2fs"><a href="#df-du-fsck-dump2fs" class="headerlink" title="df, du, fsck, dump2fs"></a>df, du, fsck, dump2fs</h4><h6 id="文件系统查看命令df"><a href="#文件系统查看命令df" class="headerlink" title="文件系统查看命令df"></a>文件系统查看命令df</h6><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">df \[选项][挂载点]</span><br><span class="line"></span><br><span class="line">-a 所有文件系统信息</span><br><span class="line"></span><br><span class="line">-h 使用习惯单位显示容量，如kB,MB,GB</span><br><span class="line"></span><br><span class="line">ls 只统计目录下的大小，而不会统计子目录下的数据大小。</span><br></pre></td></tr></table></figure>
+<h6 id="统计目录或文件大小du"><a href="#统计目录或文件大小du" class="headerlink" title="统计目录或文件大小du"></a>统计目录或文件大小du</h6><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-a , -h , -s</span><br></pre></td></tr></table></figure>
+<p>df命令从文件系统考虑，不光要考虑文件占用的空间，还要统计被命令或程序占用的空间（eg. 文件已经被删除，但程序并没有释放空间）</p>
+<p><strong>du命令面向文件，只会计算文件或目录占用的空间。</strong></p>
+<h6 id="文件系统修复命令fsck"><a href="#文件系统修复命令fsck" class="headerlink" title="文件系统修复命令fsck"></a>文件系统修复命令fsck</h6><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">fsck[选项]分区设备文件名</span><br></pre></td></tr></table></figure>
+<h6 id="显示磁盘状态命令dumpe2fs"><a href="#显示磁盘状态命令dumpe2fs" class="headerlink" title="显示磁盘状态命令dumpe2fs"></a>显示磁盘状态命令dumpe2fs</h6><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">dumpe2fs 分区设备文件名</span><br></pre></td></tr></table></figure>
+<h4 id="文件系统常用命令-挂载命令"><a href="#文件系统常用命令-挂载命令" class="headerlink" title="文件系统常用命令-挂载命令"></a>文件系统常用命令-挂载命令</h4><h6 id="查询与自动挂载"><a href="#查询与自动挂载" class="headerlink" title="查询与自动挂载"></a>查询与自动挂载</h6><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">mount [-l]：查询系统中已经挂载的设备，-l会显示卷标名称</span><br><span class="line"></span><br><span class="line">mount -a 依据配置文件/etc/fastb的内容，自动挂载</span><br></pre></td></tr></table></figure>
+<h6 id="挂载命令格式"><a href="#挂载命令格式" class="headerlink" title="挂载命令格式"></a>挂载命令格式</h6><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">mount [-t 文件系统] [-L 卷标名] [-o 特殊选项] 设备文件名 挂载点</span><br><span class="line"></span><br><span class="line">选项：</span><br><span class="line"></span><br><span class="line">-t 文件系统：加入文件系统类型来指定挂载的类型，可以ext3，ext4,iso9660等文件系统</span><br><span class="line"></span><br><span class="line">-L 卷标名：挂载指定卷标的分区，而不是安装设备文件名挂载</span><br><span class="line"></span><br><span class="line">-o 特殊指令（remount ...）</span><br><span class="line"></span><br><span class="line">mount -o remount ,noexec /home</span><br></pre></td></tr></table></figure>
+<h6 id="挂载光盘与U盘"><a href="#挂载光盘与U盘" class="headerlink" title="挂载光盘与U盘"></a>挂载光盘与U盘</h6><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">挂载光盘</span></span><br><span class="line"></span><br><span class="line">mkdir /mnt/cdrom/ #建立挂载点</span><br><span class="line"></span><br><span class="line">mount -t iso9660 /dev/cdrom /mnt/cdrom #挂载光盘</span><br><span class="line"></span><br><span class="line">mount /dev/sr0 /mnt/cdrom</span><br></pre></td></tr></table></figure>
+<h6 id="卸载命令"><a href="#卸载命令" class="headerlink" title="卸载命令"></a>卸载命令</h6><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">umount 设备文件名或挂载点</span><br><span class="line"></span><br><span class="line">umount /mnt/cdrom</span><br></pre></td></tr></table></figure>
+<h6 id="挂载U盘"><a href="#挂载U盘" class="headerlink" title="挂载U盘"></a>挂载U盘</h6><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">fdisk -l 查看U盘设备文件名</span><br><span class="line"></span><br><span class="line">mount -t vfat /dev/sdb1 /mnt/usb/</span><br><span class="line"></span><br><span class="line">linux默认不支持NTFS文件系统</span><br></pre></td></tr></table></figure>
+<h4 id="fdisk分区"><a href="#fdisk分区" class="headerlink" title="fdisk分区"></a>fdisk分区</h4><h6 id="fdisk命令分区过程"><a href="#fdisk命令分区过程" class="headerlink" title="fdisk命令分区过程"></a>fdisk命令分区过程</h6><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">1.添加硬盘，虚拟机必须在关机的情况下添加</span><br><span class="line"></span><br><span class="line">2.查看新硬盘 fdisk -l</span><br><span class="line"></span><br><span class="line">3.使用fdisk命令分区</span><br><span class="line"></span><br><span class="line">fdisk /dev/sdb</span><br><span class="line"></span><br><span class="line">4.重新读取分区表信息</span><br><span class="line"></span><br><span class="line">partprobe</span><br><span class="line"></span><br><span class="line">5.格式化分区</span><br><span class="line"></span><br><span class="line">扩展分区不可以格式化</span><br><span class="line"></span><br><span class="line">mkfs -t ext4 /dev/sdb1</span><br><span class="line"></span><br><span class="line">6.建立挂载分区</span><br></pre></td></tr></table></figure>
+<h6 id="分区自动挂载与fstab文件修复"><a href="#分区自动挂载与fstab文件修复" class="headerlink" title="分区自动挂载与fstab文件修复"></a>分区自动挂载与fstab文件修复</h6><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">将挂载写入/etc/fstab文件，一定要写对</span><br><span class="line"></span><br><span class="line">mount -a 依据配置文件 /etc/fstab的内容，自动挂载</span><br><span class="line"></span><br><span class="line">/etc/fstab文件修复</span><br><span class="line"></span><br><span class="line">mount -o remount,rm /</span><br></pre></td></tr></table></figure>
+<h4 id="分配swap分区"><a href="#分配swap分区" class="headerlink" title="分配swap分区"></a>分配swap分区</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">1.free命令</span><br><span class="line">查看内存与swap分区使用情况</span><br><span class="line">cached(缓存):加速数据的读取过程</span><br><span class="line">buffer(缓冲)：写入数据过程中，将分散的写入操作保存到内存中，当达到一定的程度再集中写入硬盘，加速数据的写入过程。</span><br><span class="line"></span><br><span class="line">2.新建swap分区</span><br><span class="line">fdisk /dev/sdb</span><br><span class="line">还需将分区ID改为82</span><br><span class="line"></span><br><span class="line">3.格式化</span><br><span class="line">mkswap /dev/sdb6</span><br><span class="line"></span><br><span class="line">4.加入swap分区</span><br><span class="line">swapon /dev/sdb6 加入swap分区</span><br><span class="line">swapoff /dev/sdb6 取消swap分区</span><br><span class="line"></span><br><span class="line">5.swap分区开机自动挂载</span><br><span class="line">vi /etc/fstab</span><br></pre></td></tr></table></figure>]]></content>
+      <categories>
+        <category>linux</category>
+      </categories>
+      <tags>
+        <tag>linux</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Linux 文件系统</title>
     <url>/2020/01/06/c%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</url>
     <content><![CDATA[<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>安全方向</p>
@@ -1812,89 +2237,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Linux 文件和目录</title>
-    <url>/2019/11/27/linux_01%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/</url>
-    <content><![CDATA[<h2 id="1-分区类型"><a href="#1-分区类型" class="headerlink" title="1.分区类型"></a>1.分区类型</h2><ul>
-<li>主分区：最多只能有四个</li>
-<li>扩展分区：最多一个，算作主分区的一种，主分区加扩展分区最多有四个。扩展分区不能存储数据和格式化，必须再划分为逻辑分区才可以使用。</li>
-<li>逻辑分区：在扩展分区中划分</li>
-</ul>
-<p>逻辑分区的编号从5开始</p>
-<h2 id="2-文件系统"><a href="#2-文件系统" class="headerlink" title="2.文件系统"></a>2.文件系统</h2><ul>
-<li>ext2:ext文件系统的升级版。最大支持16TB的分区和最大2TB的文件。</li>
-<li>ext3:ext2的升级，增加日志功能。</li>
-<li>ext4:ext3升级版本，主流使用，功能强大</li>
-</ul>
-<h3 id="2-1常用命令"><a href="#2-1常用命令" class="headerlink" title="2.1常用命令"></a>2.1常用命令</h3><h4 id="df-du-fsck-dump2fs"><a href="#df-du-fsck-dump2fs" class="headerlink" title="df, du, fsck, dump2fs"></a>df, du, fsck, dump2fs</h4><h4 id="1-文件系统查看命令df"><a href="#1-文件系统查看命令df" class="headerlink" title="1.文件系统查看命令df"></a>1.文件系统查看命令df</h4><p>df [选项][挂载点]</p>
-<p>-a 所有文件系统信息</p>
-<p>-h 使用习惯单位显示容量，如kB,MB,GB</p>
-<p>ls 只统计目录下的大小，而不会统计子目录下的数据大小。</p>
-<h4 id="2-统计目录或文件大小"><a href="#2-统计目录或文件大小" class="headerlink" title="2.统计目录或文件大小"></a>2.统计目录或文件大小</h4><p>-a</p>
-<p>-h </p>
-<p>-s</p>
-<p>df命令从文件系统考虑，不光要考虑文件占用的空间，还要统计被命令或程序占用的空间（eg. 文件已经被删除，但程序并没有释放空间）</p>
-<p>du命令面向文件，只会计算文件或目录占用的空间。</p>
-<h4 id="3-文件系统修复命令fsck"><a href="#3-文件系统修复命令fsck" class="headerlink" title="3.文件系统修复命令fsck"></a>3.文件系统修复命令fsck</h4><p>fsck[选项]分区设备文件名</p>
-<h4 id="4-显示磁盘状态命令dumpe2fs"><a href="#4-显示磁盘状态命令dumpe2fs" class="headerlink" title="4.显示磁盘状态命令dumpe2fs"></a>4.显示磁盘状态命令dumpe2fs</h4><p>dumpe2fs 分区设备文件名</p>
-<h3 id="2-2-文件系统常用命令-挂载命令"><a href="#2-2-文件系统常用命令-挂载命令" class="headerlink" title="2.2 文件系统常用命令-挂载命令"></a>2.2 文件系统常用命令-挂载命令</h3><h4 id="1-查询与自动挂载"><a href="#1-查询与自动挂载" class="headerlink" title="1.查询与自动挂载"></a>1.查询与自动挂载</h4><p>mount [-l]：查询系统中已经挂载的设备，-l会显示卷标名称</p>
-<p>mount -a 依据配置文件/etc/fastb的内容，自动挂载</p>
-<h4 id="2-挂载命令格式"><a href="#2-挂载命令格式" class="headerlink" title="2.挂载命令格式"></a>2.挂载命令格式</h4><p>mount [-t 文件系统] [-L 卷标名] [-o 特殊选项] 设备文件名 挂载点</p>
-<p>选项：</p>
-<p>-t 文件系统：加入文件系统类型来指定挂载的类型，可以ext3，ext4,iso9660等文件系统</p>
-<p>-L 卷标名：挂载指定卷标的分区，而不是安装设备文件名挂载</p>
-<p>-o 特殊指令（remount …）</p>
-<p>mount -o remount ,noexec /home</p>
-<h4 id="3-挂载光盘与U盘"><a href="#3-挂载光盘与U盘" class="headerlink" title="3 挂载光盘与U盘"></a>3 挂载光盘与U盘</h4><p>1.挂载光盘</p>
-<p>mkdir /mnt/cdrom/ 建立挂载点</p>
-<p>mount -t iso9660 /dev/cdrom /mnt/cdrom 挂载光盘</p>
-<p>mount /dev/sr0 /mnt/cdrom</p>
-<p> 2.卸载命令</p>
-<p>umount 设备文件名或挂载点</p>
-<p>umount /mnt/cdrom</p>
-<p>3.挂载U盘</p>
-<p>fdisk -l 查看U盘设备文件名</p>
-<p>mount -t vfat /dev/sdb1 /mnt/usb/</p>
-<p>linux默认不支持NTFS文件系统</p>
-<h4 id="4支持NTFS文件系统"><a href="#4支持NTFS文件系统" class="headerlink" title="4支持NTFS文件系统"></a>4支持NTFS文件系统</h4><p>重新编译内核</p>
-<p>第三方软件</p>
-<p>NTFS-3G插件</p>
-<h3 id="2-3-fdisk分区"><a href="#2-3-fdisk分区" class="headerlink" title="2.3 fdisk分区"></a>2.3 fdisk分区</h3><h4 id="fdisk命令分区过程"><a href="#fdisk命令分区过程" class="headerlink" title="fdisk命令分区过程"></a>fdisk命令分区过程</h4><p>1.添加硬盘，虚拟机必须在关机的情况下添加</p>
-<p>2.查看新硬盘 fdisk -l</p>
-<p>3.使用fdisk命令分区</p>
-<p>fdisk /dev/sdb</p>
-<p> 4.重新读取分区表信息</p>
-<p>partprobe</p>
-<p>5.格式化分区</p>
-<p>扩展分区不可以格式化</p>
-<p>mkfs -t ext4 /dev/sdb1</p>
-<p>6.建立挂载分区</p>
-<h4 id="分区自动挂载与fstab文件修复"><a href="#分区自动挂载与fstab文件修复" class="headerlink" title="分区自动挂载与fstab文件修复"></a>分区自动挂载与fstab文件修复</h4><p>将挂载写入/etc/fstab文件，一定要写对</p>
-<p>mount -a 依据配置文件 /etc/fstab的内容，自动挂载</p>
-<p>/etc/fstab文件修复</p>
-<p>mount -o remount,rm /</p>
-<h3 id="2-4-分配swap分区"><a href="#2-4-分配swap分区" class="headerlink" title="2.4 分配swap分区"></a>2.4 分配swap分区</h3><p>1.free命令</p>
-<p>查看内存与swap分区使用情况</p>
-<p>cached(缓存):加速数据的读取过程</p>
-<p>buffer(缓冲)：写入数据过程中，将分散的写入操作保存到内存中，当达到一定的程度再集中写入硬盘，加速数据的写入过程。</p>
-<p>2.新建swap分区</p>
-<p>fdisk /dev/sdb</p>
-<p>还需将分区ID改为82</p>
-<p>3.格式化</p>
-<p>mkswap /dev/sdb6</p>
-<p>4.加入swap分区</p>
-<p>swapon /dev/sdb6 加入swap分区</p>
-<p>swapoff /dev/sdb6 取消swap分区</p>
-<p>5.swap分区开机自动挂载</p>
-<p>vi /etc/fstab</p>
-]]></content>
-      <categories>
-        <category>linux</category>
-      </categories>
-      <tags>
-        <tag>linux</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Linux服务管理</title>
     <url>/2019/11/27/linux_server/</url>
     <content><![CDATA[<h2 id="Linux服务管理"><a href="#Linux服务管理" class="headerlink" title="Linux服务管理"></a>Linux服务管理</h2><h3 id="服务分类"><a href="#服务分类" class="headerlink" title="服务分类"></a>服务分类</h3><p>Linux服务</p>
@@ -1919,6 +2261,41 @@
       </categories>
       <tags>
         <tag>linux 服务</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Linux 系统管理</title>
+    <url>/2019/11/27/linux_system/</url>
+    <content><![CDATA[<h2 id="Linux系统管理"><a href="#Linux系统管理" class="headerlink" title="Linux系统管理"></a>Linux系统管理</h2><h3 id="进程管理"><a href="#进程管理" class="headerlink" title="进程管理"></a>进程管理</h3><h4 id="进程查看"><a href="#进程查看" class="headerlink" title="进程查看"></a>进程查看</h4><p>作用：判断服务器健康状态，查看系统中所有进程，杀死进程</p>
+<p>查看系统中所有进程：</p>
+<ul>
+<li>ps aux :使用系统中所有进程，使用BSD操作系统格式</li>
+<li>ps -le 查看系统中所有进程，使用Linux标准命令格式</li>
+</ul>
+<p>查看系统健康状态：</p>
+<ul>
+<li>top[选项]</li>
+</ul>
+<p>查看进程树：</p>
+<ul>
+<li>pstree</li>
+</ul>
+<h4 id="终止进程"><a href="#终止进程" class="headerlink" title="终止进程"></a>终止进程</h4><p>1.kill命令</p>
+<p>kill -l 查看可用的进程信号</p>
+<p>kill -1 进程id 重启进程</p>
+<p>kill -9 进程id 强制杀死进程</p>
+<p>2.killall命令</p>
+<p>killall -9 进程名</p>
+<p>3.pkill </p>
+<p>按照终端号踢出用户</p>
+<p>w 使用w命令查询本机已经登录的用户</p>
+<p>pkill -t -9 pts/1 强制杀死从pts/1虚拟终端登录的进程</p>
+]]></content>
+      <categories>
+        <category>linux</category>
+      </categories>
+      <tags>
+        <tag>linux 系统管理</tag>
       </tags>
   </entry>
   <entry>
@@ -2110,41 +2487,6 @@
       </categories>
       <tags>
         <tag>linux shell</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Linux 系统管理</title>
-    <url>/2019/11/27/linux_system/</url>
-    <content><![CDATA[<h2 id="Linux系统管理"><a href="#Linux系统管理" class="headerlink" title="Linux系统管理"></a>Linux系统管理</h2><h3 id="进程管理"><a href="#进程管理" class="headerlink" title="进程管理"></a>进程管理</h3><h4 id="进程查看"><a href="#进程查看" class="headerlink" title="进程查看"></a>进程查看</h4><p>作用：判断服务器健康状态，查看系统中所有进程，杀死进程</p>
-<p>查看系统中所有进程：</p>
-<ul>
-<li>ps aux :使用系统中所有进程，使用BSD操作系统格式</li>
-<li>ps -le 查看系统中所有进程，使用Linux标准命令格式</li>
-</ul>
-<p>查看系统健康状态：</p>
-<ul>
-<li>top[选项]</li>
-</ul>
-<p>查看进程树：</p>
-<ul>
-<li>pstree</li>
-</ul>
-<h4 id="终止进程"><a href="#终止进程" class="headerlink" title="终止进程"></a>终止进程</h4><p>1.kill命令</p>
-<p>kill -l 查看可用的进程信号</p>
-<p>kill -1 进程id 重启进程</p>
-<p>kill -9 进程id 强制杀死进程</p>
-<p>2.killall命令</p>
-<p>killall -9 进程名</p>
-<p>3.pkill </p>
-<p>按照终端号踢出用户</p>
-<p>w 使用w命令查询本机已经登录的用户</p>
-<p>pkill -t -9 pts/1 强制杀死从pts/1虚拟终端登录的进程</p>
-]]></content>
-      <categories>
-        <category>linux</category>
-      </categories>
-      <tags>
-        <tag>linux 系统管理</tag>
       </tags>
   </entry>
   <entry>
