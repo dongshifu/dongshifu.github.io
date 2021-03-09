@@ -50,15 +50,15 @@
   <meta name="description" content="通过前面提到的 iface 的源码可以看到，实际上它包含接口的类型 interfacetype 和 实体类型的类型 _type，这两者都是 iface 的字段 itab 的成员。也就是说生成一个 itab 同时需要接口的类型和实体的类型。   -&amp;gt;itable  当判定一种类型是否满足某个接口时，Go 使用类型的方法集和接口所需要的方法集进行匹配，如果类型的方法集完全包含接口的方法集，则可认">
 <meta name="keywords" content="生活，C++, C, go, java, OS, 网络， 存储， 联邦学习， 机器学习，python">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Go 接口_5接口转换的原理">
-<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2021&#x2F;03&#x2F;08&#x2F;Go%20%E6%8E%A5%E5%8F%A3_5%E6%8E%A5%E5%8F%A3%E8%BD%AC%E6%8D%A2%E7%9A%84%E5%8E%9F%E7%90%86&#x2F;index.html">
+<meta property="og:title" content="Go 接口_6接口转换的原理">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2021&#x2F;03&#x2F;08&#x2F;Go%20%E6%8E%A5%E5%8F%A3_6%E6%8E%A5%E5%8F%A3%E8%BD%AC%E6%8D%A2%E7%9A%84%E5%8E%9F%E7%90%86&#x2F;index.html">
 <meta property="og:site_name" content="ShifuDong">
 <meta property="og:description" content="通过前面提到的 iface 的源码可以看到，实际上它包含接口的类型 interfacetype 和 实体类型的类型 _type，这两者都是 iface 的字段 itab 的成员。也就是说生成一个 itab 同时需要接口的类型和实体的类型。   -&amp;gt;itable  当判定一种类型是否满足某个接口时，Go 使用类型的方法集和接口所需要的方法集进行匹配，如果类型的方法集完全包含接口的方法集，则可认">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2021-01-12T02:27:58.887Z">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://yoursite.com/2021/03/08/Go%20%E6%8E%A5%E5%8F%A3_5%E6%8E%A5%E5%8F%A3%E8%BD%AC%E6%8D%A2%E7%9A%84%E5%8E%9F%E7%90%86/">
+<link rel="canonical" href="http://yoursite.com/2021/03/08/Go%20%E6%8E%A5%E5%8F%A3_6%E6%8E%A5%E5%8F%A3%E8%BD%AC%E6%8D%A2%E7%9A%84%E5%8E%9F%E7%90%86/">
 
 
 <script id="page-configurations">
@@ -72,7 +72,7 @@
   };
 </script>
 
-  <title>Go 接口_5接口转换的原理 | ShifuDong</title>
+  <title>Go 接口_6接口转换的原理 | ShifuDong</title>
   
 
 
@@ -206,7 +206,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/03/08/Go%20%E6%8E%A5%E5%8F%A3_5%E6%8E%A5%E5%8F%A3%E8%BD%AC%E6%8D%A2%E7%9A%84%E5%8E%9F%E7%90%86/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/03/08/Go%20%E6%8E%A5%E5%8F%A3_6%E6%8E%A5%E5%8F%A3%E8%BD%AC%E6%8D%A2%E7%9A%84%E5%8E%9F%E7%90%86/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -219,7 +219,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Go 接口_5接口转换的原理
+          Go 接口_6接口转换的原理
         </h1>
 
         <div class="post-meta">
@@ -365,7 +365,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-count">21</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -378,7 +378,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-count">17</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -542,7 +542,7 @@ window.addEventListener('pjax:success', () => {
       repo: 'dongshifu.github.io',
       owner: 'dongshifu',
       admin: ['dongshifu'],
-      id: '98b44ad2dbfc093f90f3a75c5f459a03',
+      id: '11cc10a7edca6b4079af396eb62c7e4f',
         language: 'zh-CN',
       distractionFreeMode: 'true'
     });
