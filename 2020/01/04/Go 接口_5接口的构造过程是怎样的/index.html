@@ -47,18 +47,18 @@
   };
 </script>
 
-  <meta name="description" content="我们已经看过了 iface 和 eface 的源码，知道 iface 最重要的是 itab 和 _type。 为了研究清楚接口是如何构造的，接下来我会拿起汇编的武器，还原背后的真相。 来看一个示例代码： 12345678910111213141516171819202122package mainimport &quot;fmt&quot;type Person interface &amp;#123;	growUp()&amp;#">
-<meta name="keywords" content="生活，C++, C, go, java, OS, 网络， 存储， 联邦学习， 机器学习，python">
+  <meta name="description" content="Go 接口的构造过程博客Go接口的底层实现源码分析可以看到 iface 和 eface 的源码，知道 iface 最重要的是 itab 和 _type。 为了研究清楚接口是如何构造的，接下来利用汇编还原背后的真相。 示例代码： 12345678910111213141516171819202122package mainimport &quot;fmt&quot;type Person interface &amp;#123">
+<meta name="keywords" content="Go 接口">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Go 接口_5接口的构造过程是怎样的">
-<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2021&#x2F;03&#x2F;09&#x2F;Go%20%E6%8E%A5%E5%8F%A3_5%E6%8E%A5%E5%8F%A3%E7%9A%84%E6%9E%84%E9%80%A0%E8%BF%87%E7%A8%8B%E6%98%AF%E6%80%8E%E6%A0%B7%E7%9A%84&#x2F;index.html">
+<meta property="og:title" content="Go 接口的构造过程">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;01&#x2F;04&#x2F;Go%20%E6%8E%A5%E5%8F%A3_5%E6%8E%A5%E5%8F%A3%E7%9A%84%E6%9E%84%E9%80%A0%E8%BF%87%E7%A8%8B%E6%98%AF%E6%80%8E%E6%A0%B7%E7%9A%84&#x2F;index.html">
 <meta property="og:site_name" content="ShifuDong">
-<meta property="og:description" content="我们已经看过了 iface 和 eface 的源码，知道 iface 最重要的是 itab 和 _type。 为了研究清楚接口是如何构造的，接下来我会拿起汇编的武器，还原背后的真相。 来看一个示例代码： 12345678910111213141516171819202122package mainimport &quot;fmt&quot;type Person interface &amp;#123;	growUp()&amp;#">
+<meta property="og:description" content="Go 接口的构造过程博客Go接口的底层实现源码分析可以看到 iface 和 eface 的源码，知道 iface 最重要的是 itab 和 _type。 为了研究清楚接口是如何构造的，接下来利用汇编还原背后的真相。 示例代码： 12345678910111213141516171819202122package mainimport &quot;fmt&quot;type Person interface &amp;#123">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2021-01-12T02:27:58.887Z">
+<meta property="og:updated_time" content="2021-03-09T05:35:24.815Z">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://yoursite.com/2021/03/09/Go%20%E6%8E%A5%E5%8F%A3_5%E6%8E%A5%E5%8F%A3%E7%9A%84%E6%9E%84%E9%80%A0%E8%BF%87%E7%A8%8B%E6%98%AF%E6%80%8E%E6%A0%B7%E7%9A%84/">
+<link rel="canonical" href="http://yoursite.com/2020/01/04/Go%20%E6%8E%A5%E5%8F%A3_5%E6%8E%A5%E5%8F%A3%E7%9A%84%E6%9E%84%E9%80%A0%E8%BF%87%E7%A8%8B%E6%98%AF%E6%80%8E%E6%A0%B7%E7%9A%84/">
 
 
 <script id="page-configurations">
@@ -72,7 +72,7 @@
   };
 </script>
 
-  <title>Go 接口_5接口的构造过程是怎样的 | ShifuDong</title>
+  <title>Go 接口的构造过程 | ShifuDong</title>
   
 
 
@@ -206,7 +206,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/03/09/Go%20%E6%8E%A5%E5%8F%A3_5%E6%8E%A5%E5%8F%A3%E7%9A%84%E6%9E%84%E9%80%A0%E8%BF%87%E7%A8%8B%E6%98%AF%E6%80%8E%E6%A0%B7%E7%9A%84/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/04/Go%20%E6%8E%A5%E5%8F%A3_5%E6%8E%A5%E5%8F%A3%E7%9A%84%E6%9E%84%E9%80%A0%E8%BF%87%E7%A8%8B%E6%98%AF%E6%80%8E%E6%A0%B7%E7%9A%84/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -219,7 +219,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Go 接口_5接口的构造过程是怎样的
+          Go 接口的构造过程
         </h1>
 
         <div class="post-meta">
@@ -229,15 +229,26 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2021-03-09 08:27:08" itemprop="dateCreated datePublished" datetime="2021-03-09T08:27:08+08:00">2021-03-09</time>
+              <time title="创建时间：2020-01-04 22:29:16" itemprop="dateCreated datePublished" datetime="2020-01-04T22:29:16+08:00">2020-01-04</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-01-12 10:27:58" itemprop="dateModified" datetime="2021-01-12T10:27:58+08:00">2021-01-12</time>
+                <time title="修改时间：2021-03-09 13:35:24" itemprop="dateModified" datetime="2021-03-09T13:35:24+08:00">2021-03-09</time>
               </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Go-interface/" itemprop="url" rel="index">
+                    <span itemprop="name">Go interface</span>
+                  </a>
+                </span>
+            </span>
 
           
 
@@ -250,15 +261,15 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>我们已经看过了 <code>iface</code> 和 <code>eface</code> 的源码，知道 <code>iface</code> 最重要的是 <code>itab</code> 和 <code>_type</code>。</p>
-<p>为了研究清楚接口是如何构造的，接下来我会拿起汇编的武器，还原背后的真相。</p>
-<p>来看一个示例代码：</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Person <span class="keyword">interface</span> &#123;</span><br><span class="line">	growUp()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Student <span class="keyword">struct</span> &#123;</span><br><span class="line">	age <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p Student)</span> <span class="title">growUp</span><span class="params">()</span></span> &#123;</span><br><span class="line">	p.age += <span class="number">1</span></span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> qcrao = Person(Student&#123;age: <span class="number">18</span>&#125;)</span><br><span class="line"></span><br><span class="line">	fmt.Println(qcrao)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+        <h3 id="Go-接口的构造过程"><a href="#Go-接口的构造过程" class="headerlink" title="Go 接口的构造过程"></a>Go 接口的构造过程</h3><p>博客<a href="https://dongshifu.github.io/2020/01/03/Go%20%E6%8E%A5%E5%8F%A3_3iface%20%E5%92%8C%20eface%20%E7%9A%84%E5%8C%BA%E5%88%AB%E6%98%AF%E4%BB%80%E4%B9%88/" target="_blank" rel="noopener">Go接口的底层实现</a>源码分析可以看到 <code>iface</code> 和 <code>eface</code> 的源码，知道 <code>iface</code> 最重要的是 <code>itab</code> 和 <code>_type</code>。</p>
+<p>为了研究清楚接口是如何构造的，接下来利用汇编还原背后的真相。</p>
+<p>示例代码：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Person <span class="keyword">interface</span> &#123;</span><br><span class="line">	growUp()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Student <span class="keyword">struct</span> &#123;</span><br><span class="line">	age <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p Student)</span> <span class="title">growUp</span><span class="params">()</span></span> &#123;</span><br><span class="line">	p.age += <span class="number">1</span></span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> qcrao = Person(Student&#123;age: <span class="number">18</span>&#125;)</span><br><span class="line"></span><br><span class="line">	fmt.Println(qcrao)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>执行命令：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">go tool compile -S main.go</span><br></pre></td></tr></table></figure>
 <p>得到 main 函数的汇编代码如下：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">0x0000 00000 (./src/main.go:30) TEXT    &quot;&quot;.main(SB), $80-0</span><br><span class="line">0x0000 00000 (./src/main.go:30) MOVQ    (TLS), CX</span><br><span class="line">0x0009 00009 (./src/main.go:30) CMPQ    SP, 16(CX)</span><br><span class="line">0x000d 00013 (./src/main.go:30) JLS     157</span><br><span class="line">0x0013 00019 (./src/main.go:30) SUBQ    $80, SP</span><br><span class="line">0x0017 00023 (./src/main.go:30) MOVQ    BP, 72(SP)</span><br><span class="line">0x001c 00028 (./src/main.go:30) LEAQ    72(SP), BP</span><br><span class="line">0x0021 00033 (./src/main.go:30) FUNCDATA$0, gclocals·69c1753bd5f81501d95132d08af04464(SB)</span><br><span class="line">0x0021 00033 (./src/main.go:30) FUNCDATA$1, gclocals·e226d4ae4a7cad8835311c6a4683c14f(SB)</span><br><span class="line">0x0021 00033 (./src/main.go:31) MOVQ    $18, &quot;&quot;..autotmp_1+48(SP)</span><br><span class="line">0x002a 00042 (./src/main.go:31) LEAQ    go.itab.&quot;&quot;.Student,&quot;&quot;.Person(SB), AX</span><br><span class="line">0x0031 00049 (./src/main.go:31) MOVQ    AX, (SP)</span><br><span class="line">0x0035 00053 (./src/main.go:31) LEAQ    &quot;&quot;..autotmp_1+48(SP), AX</span><br><span class="line">0x003a 00058 (./src/main.go:31) MOVQ    AX, 8(SP)</span><br><span class="line">0x003f 00063 (./src/main.go:31) PCDATA  $0, $0</span><br><span class="line">0x003f 00063 (./src/main.go:31) CALL    runtime.convT2I64(SB)</span><br><span class="line">0x0044 00068 (./src/main.go:31) MOVQ    24(SP), AX</span><br><span class="line">0x0049 00073 (./src/main.go:31) MOVQ    16(SP), CX</span><br><span class="line">0x004e 00078 (./src/main.go:33) TESTQ   CX, CX</span><br><span class="line">0x0051 00081 (./src/main.go:33) JEQ     87</span><br><span class="line">0x0053 00083 (./src/main.go:33) MOVQ    8(CX), CX</span><br><span class="line">0x0057 00087 (./src/main.go:33) MOVQ    $0, &quot;&quot;..autotmp_2+56(SP)</span><br><span class="line">0x0060 00096 (./src/main.go:33) MOVQ    $0, &quot;&quot;..autotmp_2+64(SP)</span><br><span class="line">0x0069 00105 (./src/main.go:33) MOVQ    CX, &quot;&quot;..autotmp_2+56(SP)</span><br><span class="line">0x006e 00110 (./src/main.go:33) MOVQ    AX, &quot;&quot;..autotmp_2+64(SP)</span><br><span class="line">0x0073 00115 (./src/main.go:33) LEAQ    &quot;&quot;..autotmp_2+56(SP), AX</span><br><span class="line">0x0078 00120 (./src/main.go:33) MOVQ    AX, (SP)</span><br><span class="line">0x007c 00124 (./src/main.go:33) MOVQ    $1, 8(SP)</span><br><span class="line">0x0085 00133 (./src/main.go:33) MOVQ    $1, 16(SP)</span><br><span class="line">0x008e 00142 (./src/main.go:33) PCDATA  $0, $1</span><br><span class="line">0x008e 00142 (./src/main.go:33) CALL    fmt.Println(SB)</span><br><span class="line">0x0093 00147 (./src/main.go:34) MOVQ    72(SP), BP</span><br><span class="line">0x0098 00152 (./src/main.go:34) ADDQ    $80, SP</span><br><span class="line">0x009c 00156 (./src/main.go:34) RET</span><br><span class="line">0x009d 00157 (./src/main.go:34) NOP</span><br><span class="line">0x009d 00157 (./src/main.go:30) PCDATA  $0, $-1</span><br><span class="line">0x009d 00157 (./src/main.go:30) CALL    runtime.morestack_noctxt(SB)</span><br><span class="line">0x00a2 00162 (./src/main.go:30) JMP     0</span><br></pre></td></tr></table></figure>
-<p>我们从第 10 行开始看，如果不理解前面几行汇编代码的话，可以回去看看公众号前面两篇文章，这里我就省略了。</p>
+<p>从第 10 行开始看：</p>
 <div class="table-container">
 <table>
 <thead>
@@ -270,21 +281,21 @@
 <tbody>
 <tr>
 <td>10-14</td>
-<td>构造调用 <code>runtime.convT2I64(SB)</code> 的参数</td>
+<td>构造调用 <code>runtime.convT2I64(SB)</code> 的<strong>参数</strong></td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>我们来看下这个函数的参数形式：</p>
+<p>函数的参数形式：</p>
 <figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">convT2I64</span><span class="params">(tab *itab, elem unsafe.Pointer)</span> <span class="params">(i iface)</span></span> &#123;</span><br><span class="line">	<span class="comment">// ……</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><code>convT2I64</code> 会构造出一个 <code>inteface</code>，也就是我们的 <code>Person</code> 接口。</p>
-<p>第一个参数的位置是 <code>(SP)</code>，这里被赋上了 <code>go.itab.&quot;&quot;.Student,&quot;&quot;.Person(SB)</code> 的地址。</p>
+<p><strong><code>convT2I64</code> 会构造出一个 <code>inteface</code>，也就是我们的 <code>Person</code> 接口。</strong></p>
+<p><strong>第一个参数的位置是 <code>(SP)</code>，这里被赋上了 <code>go.itab.&quot;&quot;.Student,&quot;&quot;.Person(SB)</code> 的地址。</strong></p>
 <p>我们从生成的汇编找到：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">go.itab.&quot;&quot;.Student,&quot;&quot;.Person SNOPTRDATA dupok size=40</span><br><span class="line">        0x0000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  </span><br><span class="line">        0x0010 00 00 00 00 00 00 00 00 da 9f 20 d4              </span><br><span class="line">        rel 0+8 t=1 type.&quot;&quot;.Person+0</span><br><span class="line">        rel 8+8 t=1 type.&quot;&quot;.Student+0</span><br></pre></td></tr></table></figure>
 <p><code>size=40</code> 大小为40字节，回顾一下：</p>
 <figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> itab <span class="keyword">struct</span> &#123;</span><br><span class="line">	inter  *interfacetype <span class="comment">// 8字节</span></span><br><span class="line">	_type  *_type <span class="comment">// 8字节</span></span><br><span class="line">	link   *itab <span class="comment">// 8字节</span></span><br><span class="line">	hash   <span class="keyword">uint32</span> <span class="comment">// 4字节</span></span><br><span class="line">	bad    <span class="keyword">bool</span>   <span class="comment">// 1字节</span></span><br><span class="line">	inhash <span class="keyword">bool</span>   <span class="comment">// 1字节</span></span><br><span class="line">	unused [<span class="number">2</span>]<span class="keyword">byte</span> <span class="comment">// 2字节</span></span><br><span class="line">	fun    [<span class="number">1</span>]<span class="keyword">uintptr</span> <span class="comment">// variable sized // 8字节</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>把每个字段的大小相加，<code>itab</code> 结构体的大小就是 40 字节。上面那一串数字实际上是 <code>itab</code> 序列化后的内容，注意到大部分数字是 0，从 24 字节开始的 4 个字节 <code>da 9f 20 d4</code> 实际上是 <code>itab</code> 的 <code>hash</code> 值，这在判断两个类型是否相同的时候会用到。</p>
-<p>下面两行是链接指令，简单说就是将所有源文件综合起来，给每个符号赋予一个全局的位置值。这里的意思也比较明确：前8个字节最终存储的是 <code>type.&quot;&quot;.Person</code> 的地址，对应 <code>itab</code> 里的 <code>inter</code> 字段，表示接口类型；8-16 字节最终存储的是 <code>type.&quot;&quot;.Student</code> 的地址，对应 <code>itab</code> 里 <code>_type</code> 字段，表示具体类型。</p>
+<p><strong>把每个字段的大小相加，<code>itab</code> 结构体的大小就是 40 字节。上面那一串数字实际上是 <code>itab</code> 序列化后的内容</strong>，注意到大部分数字是 0，从 24 字节开始的 4 个字节 <code>da 9f 20 d4</code> 实际上是 <code>itab</code> 的 <code>hash</code> 值，这在<strong>判断两个类型是否相同的时候会用到。</strong></p>
+<p>下面两行是<strong>链接指令，简单说就是将所有源文件综合起来，给每个符号赋予一个全局的位置值。这里的意思也比较明确：前8个字节最终存储的是 <code>type.&quot;&quot;.Person</code> 的地址，对应 <code>itab</code> 里的 <code>inter</code> 字段，表示接口类型；8-16 字节最终存储的是 <code>type.&quot;&quot;.Student</code> 的地址，对应 <code>itab</code> 里 <code>_type</code> 字段，表示具体类型。</strong></p>
 <p>第二个参数就比较简单了，它就是数字 <code>18</code> 的地址，这也是初始化 <code>Student</code> 结构体的时候会用到。</p>
 <div class="table-container">
 <table>
@@ -303,8 +314,8 @@
 </table>
 </div>
 <p>具体看下代码：</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">convT2I64</span><span class="params">(tab *itab, elem unsafe.Pointer)</span> <span class="params">(i iface)</span></span> &#123;</span><br><span class="line">	t := tab._type</span><br><span class="line">	</span><br><span class="line">	<span class="comment">//...</span></span><br><span class="line">	</span><br><span class="line">	<span class="keyword">var</span> x unsafe.Pointer</span><br><span class="line">	<span class="keyword">if</span> *(*<span class="keyword">uint64</span>)(elem) == <span class="number">0</span> &#123;</span><br><span class="line">		x = unsafe.Pointer(&amp;zeroVal[<span class="number">0</span>])</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		x = mallocgc(<span class="number">8</span>, t, <span class="literal">false</span>)</span><br><span class="line">		*(*<span class="keyword">uint64</span>)(x) = *(*<span class="keyword">uint64</span>)(elem)</span><br><span class="line">	&#125;</span><br><span class="line">	i.tab = tab</span><br><span class="line">	i.data = x</span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这块代码比较简单，把 <code>tab</code> 赋给了 <code>iface</code> 的 <code>tab</code> 字段；<code>data</code> 部分则是在堆上申请了一块内存，然后将 <code>elem</code> 指向的 <code>18</code> 拷贝过去。这样 <code>iface</code> 就组装好了。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">convT2I64</span><span class="params">(tab *itab, elem unsafe.Pointer)</span> <span class="params">(i iface)</span></span> &#123;</span><br><span class="line">	t := tab._type</span><br><span class="line">	</span><br><span class="line">	<span class="comment">//...</span></span><br><span class="line">	</span><br><span class="line">	<span class="keyword">var</span> x unsafe.Pointer</span><br><span class="line">	<span class="keyword">if</span> *(*<span class="keyword">uint64</span>)(elem) == <span class="number">0</span> &#123;</span><br><span class="line">		x = unsafe.Pointer(&amp;zeroVal[<span class="number">0</span>])</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		x = mallocgc(<span class="number">8</span>, t, <span class="literal">false</span>)</span><br><span class="line">		*(*<span class="keyword">uint64</span>)(x) = *(*<span class="keyword">uint64</span>)(elem)</span><br><span class="line">	&#125;</span><br><span class="line">	i.tab = tab</span><br><span class="line">	i.data = x</span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这块代码比较简单，<strong>把 <code>tab</code> 赋给了 <code>iface</code> 的 <code>tab</code> 字段；<code>data</code> 部分则是在堆上申请了一块内存，然后将 <code>elem</code> 指向的 <code>18</code> 拷贝过去。这样 <code>iface</code> 就组装好了。</strong></p>
 <div class="table-container">
 <table>
 <thead>
@@ -324,22 +335,22 @@
 </tr>
 <tr>
 <td>19-21</td>
-<td>检测 <code>i.tab</code> 是否是 nil，如果不是的话，把 CX 移动 8 个字节，也就是把 <code>itab</code> 的 <code>_type</code> 字段赋给了 CX，这也是接口的实体类型，最终要作为 <code>fmt.Println</code> 函数的参数</td>
+<td><strong>检测 <code>i.tab</code> 是否是 nil，如果不是的话，把 CX 移动 8 个字节，也就是把 <code>itab</code> 的 <code>_type</code> 字段赋给了 CX，这也是接口的实体类型，最终要作为 <code>fmt.Println</code> 函数的参数</strong></td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>后面，就是调用 <code>fmt.Println</code> 函数及之前的参数准备工作了，不再赘述。</p>
+<p>后面，就是调用 <code>fmt.Println</code> 函数及之前的参数准备工作了.</p>
 <p>这样，我们就把一个 <code>interface</code> 的构造过程说完了。</p>
 <p>【引申1】<br>如何打印出接口类型的 <code>Hash</code> 值？</p>
-<p>这里参考曹大神翻译的一篇文章，参考资料里会写上。具体做法如下：</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> iface <span class="keyword">struct</span> &#123;</span><br><span class="line">	tab  *itab</span><br><span class="line">	data unsafe.Pointer</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">type</span> itab <span class="keyword">struct</span> &#123;</span><br><span class="line">	inter <span class="keyword">uintptr</span></span><br><span class="line">	_type <span class="keyword">uintptr</span></span><br><span class="line">	link <span class="keyword">uintptr</span></span><br><span class="line">	hash  <span class="keyword">uint32</span></span><br><span class="line">	_     [<span class="number">4</span>]<span class="keyword">byte</span></span><br><span class="line">	fun   [<span class="number">1</span>]<span class="keyword">uintptr</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> qcrao = Person(Student&#123;age: <span class="number">18</span>&#125;)</span><br><span class="line"></span><br><span class="line">	iface := (*iface)(unsafe.Pointer(&amp;qcrao))</span><br><span class="line">	fmt.Printf(<span class="string">"iface.tab.hash = %#x\n"</span>, iface.tab.hash)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里参考一篇文章<a href="https://xargin.com/go-and-interface/#reconstructing-an-itab-from-an-executable" target="_blank" rel="noopener">Go和interface探究</a>。具体做法如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> iface <span class="keyword">struct</span> &#123;</span><br><span class="line">	tab  *itab</span><br><span class="line">	data unsafe.Pointer</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">type</span> itab <span class="keyword">struct</span> &#123;</span><br><span class="line">	inter <span class="keyword">uintptr</span></span><br><span class="line">	_type <span class="keyword">uintptr</span></span><br><span class="line">	link <span class="keyword">uintptr</span></span><br><span class="line">	hash  <span class="keyword">uint32</span></span><br><span class="line">	_     [<span class="number">4</span>]<span class="keyword">byte</span></span><br><span class="line">	fun   [<span class="number">1</span>]<span class="keyword">uintptr</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> qcrao = Person(Student&#123;age: <span class="number">18</span>&#125;)</span><br><span class="line"></span><br><span class="line">	iface := (*iface)(unsafe.Pointer(&amp;qcrao))</span><br><span class="line">	fmt.Printf(<span class="string">"iface.tab.hash = %#x\n"</span>, iface.tab.hash)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>定义了一个<code>山寨版</code>的 <code>iface</code> 和 <code>itab</code>，说它<code>山寨</code>是因为 <code>itab</code> 里的一些关键数据结构都不具体展开了，比如 <code>_type</code>，对比一下正宗的定义就可以发现，但是<code>山寨版</code>依然能工作，因为 <code>_type</code> 就是一个指针而已嘛。</p>
-<p>在 <code>main</code> 函数里，先构造出一个接口对象 <code>qcrao</code>，然后强制类型转换，最后读取出 <code>hash</code> 值，非常妙！你也可以自己动手试一下。</p>
+<p>在 <code>main</code> 函数里，先构造出一个接口对象 <code>qcrao</code>，然后强制类型转换，最后读取出 <code>hash</code> 值！</p>
 <p>运行结果：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iface.tab.hash = 0xd4209fda</span><br></pre></td></tr></table></figure>
-<p>值得一提的是，构造接口 <code>qcrao</code> 的时候，即使我把 <code>age</code> 写成其他值，得到的 <code>hash</code> 值依然不变的，这应该是可以预料的，<code>hash</code> 值只和他的字段、方法相关。</p>
-<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><p>【曹大神翻译的文章，非常硬核】<a href="http://xargin.com/go-and-interface/#reconstructing-an-itab-from-an-executable" target="_blank" rel="noopener">http://xargin.com/go-and-interface/#reconstructing-an-itab-from-an-executable</a></p>
+<p>值得一提的是，构造接口 <code>qcrao</code> 的时候，即使把 <code>age</code> 写成其他值，得到的 <code>hash</code> 值依然不变的，这应该是可以预料的，<strong><code>hash</code> 值只和他的字段、方法相关。</strong></p>
+<h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><p><a href="http://xargin.com/go-and-interface/#reconstructing-an-itab-from-an-executable" target="_blank" rel="noopener">http://xargin.com/go-and-interface/#reconstructing-an-itab-from-an-executable</a></p>
 
     </div>
 
@@ -348,6 +359,9 @@
     
 
       <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Go-%E6%8E%A5%E5%8F%A3/" rel="tag"># Go 接口</a>
+          </div>
 
         
 
@@ -355,12 +369,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2021/03/08/git-1-md/" rel="prev" title="设置git的用户名和邮箱">
-      <i class="fa fa-chevron-left"></i> 设置git的用户名和邮箱
+    <a href="/2020/01/04/Go%20%E6%8E%A5%E5%8F%A3_4%E6%8E%A5%E5%8F%A3%E7%9A%84%E5%8A%A8%E6%80%81%E7%B1%BB%E5%9E%8B%E5%92%8C%E5%8A%A8%E6%80%81%E5%80%BC/" rel="prev" title="Go 接口的动态类型和动态值">
+      <i class="fa fa-chevron-left"></i> Go 接口的动态类型和动态值
     </a></div>
       <div class="post-nav-item">
-    <a href="/2021/03/09/Go%E6%8E%A5%E5%8F%A3_7%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E5%92%8C%E6%96%AD%E8%A8%80%E7%9A%84%E5%8C%BA%E5%88%AB/" rel="next" title="Go接口_7类型转换和断言的区别">
-      Go接口_7类型转换和断言的区别 <i class="fa fa-chevron-right"></i>
+    <a href="/2020/01/05/Go%E6%8E%A5%E5%8F%A3_7%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E5%92%8C%E6%96%AD%E8%A8%80%E7%9A%84%E5%8C%BA%E5%88%AB/" rel="next" title="Go 类型转换和断言">
+      Go 类型转换和断言 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -400,7 +414,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#参考资料"><span class="nav-number">1.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Go-接口的构造过程"><span class="nav-number">1.</span> <span class="nav-text">Go 接口的构造过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考资料"><span class="nav-number">2.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -429,7 +443,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-count">18</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -593,7 +607,7 @@ window.addEventListener('pjax:success', () => {
       repo: 'dongshifu.github.io',
       owner: 'dongshifu',
       admin: ['dongshifu'],
-      id: 'b5b4c4671005d4df3081621425174030',
+      id: '153ab0bda7c5a66e72bb6432637f5133',
         language: 'zh-CN',
       distractionFreeMode: 'true'
     });
