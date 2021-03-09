@@ -47,15 +47,15 @@
   };
 </script>
 
-  <meta name="description" content="Go 接口转换原理通过前面提到的 iface 的源码可以看到，实际上它包含接口的类型 *interface type 和 实体类型的类型 *_type，这两者都是 iface 的字段 *itab 的成员。也就是说生成一个 itab 同时需要接口的类型和实体的类型。   -&amp;gt;itable  当判定一种类型是否满足某个接口时，Go 使用类型的方法集和接口所需要的方法集进行匹配，如果类型的方法集完">
+  <meta name="description" content="Go 接口转换原理通过前面提到的 iface 的源码可以看到，实际上它包含接口的类型 *interface type 和 实体类型的类型 *_type，这两者都是 iface 的字段 *itab 的成员。也就是说生成一个 itab 同时需要接口的类型和实体的类型。 1&amp;lt;interface 类型， 实体类型&amp;gt; -&amp;gt;itable 当判定一种类型是否满足某个接口时，Go 使用类型的方法">
 <meta name="keywords" content="Go 接口">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Go 接口转换原理">
 <meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;01&#x2F;05&#x2F;Go%20%E6%8E%A5%E5%8F%A3_6%E6%8E%A5%E5%8F%A3%E8%BD%AC%E6%8D%A2%E7%9A%84%E5%8E%9F%E7%90%86&#x2F;index.html">
 <meta property="og:site_name" content="ShifuDong">
-<meta property="og:description" content="Go 接口转换原理通过前面提到的 iface 的源码可以看到，实际上它包含接口的类型 *interface type 和 实体类型的类型 *_type，这两者都是 iface 的字段 *itab 的成员。也就是说生成一个 itab 同时需要接口的类型和实体的类型。   -&amp;gt;itable  当判定一种类型是否满足某个接口时，Go 使用类型的方法集和接口所需要的方法集进行匹配，如果类型的方法集完">
+<meta property="og:description" content="Go 接口转换原理通过前面提到的 iface 的源码可以看到，实际上它包含接口的类型 *interface type 和 实体类型的类型 *_type，这两者都是 iface 的字段 *itab 的成员。也就是说生成一个 itab 同时需要接口的类型和实体的类型。 1&amp;lt;interface 类型， 实体类型&amp;gt; -&amp;gt;itable 当判定一种类型是否满足某个接口时，Go 使用类型的方法">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2021-03-09T05:57:32.561Z">
+<meta property="og:updated_time" content="2021-03-09T10:24:20.051Z">
 <meta name="twitter:card" content="summary">
 
 <link rel="canonical" href="http://yoursite.com/2020/01/05/Go%20%E6%8E%A5%E5%8F%A3_6%E6%8E%A5%E5%8F%A3%E8%BD%AC%E6%8D%A2%E7%9A%84%E5%8E%9F%E7%90%86/">
@@ -236,7 +236,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-09 13:57:32" itemprop="dateModified" datetime="2021-03-09T13:57:32+08:00">2021-03-09</time>
+                <time title="修改时间：2021-03-09 18:24:20" itemprop="dateModified" datetime="2021-03-09T18:24:20+08:00">2021-03-09</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -244,8 +244,8 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Go-interface/" itemprop="url" rel="index">
-                    <span itemprop="name">Go interface</span>
+                  <a href="/categories/Go-%E6%8E%A5%E5%8F%A3/" itemprop="url" rel="index">
+                    <span itemprop="name">Go 接口</span>
                   </a>
                 </span>
             </span>
@@ -262,9 +262,7 @@
 
       
         <h3 id="Go-接口转换原理"><a href="#Go-接口转换原理" class="headerlink" title="Go 接口转换原理"></a>Go 接口转换原理</h3><p>通过前面提到的 <code>iface</code> 的源码可以看到，实际上它包含接口的类型 <code>*interface type</code> 和 实体类型的类型 <code>*_type</code>，这两者都是 <code>iface</code> 的字段 <code>*itab</code> 的成员。也就是说<strong>生成一个 <code>itab</code> 同时需要接口的类型和实体的类型。</strong></p>
-<blockquote>
-<p><interface 类型， 实体类型> -&gt;itable</p>
-</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;interface 类型， 实体类型&gt; -&gt;itable</span><br></pre></td></tr></table></figure>
 <p><strong>当判定一种类型是否满足某个接口时，Go 使用类型的方法集和接口所需要的方法集进行匹配，如果类型的方法集完全包含接口的方法集，则可认为该类型实现了该接口。</strong></p>
 <p>例如某类型有 <code>m</code> 个方法，某接口有 <code>n</code> 个方法，则很容易知道这种判定的时间复杂度为 <code>O(mn)</code>，<strong>Go 会对方法集的函数按照函数名的字典序进行排序，所以实际的时间复杂度为 <code>O(m+n)</code>。</strong></p>
 <p>探索将一个接口转换给另外一个接口背后的原理，当然<strong>，能转换的原因必然是类型兼容</strong>。</p>
@@ -298,7 +296,6 @@
 <h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><p>【接口赋值、反射】<a href="http://wudaijun.com/2018/01/go-interface-implement/" target="_blank" rel="noopener">http://wudaijun.com/2018/01/go-interface-implement/</a></p>
 <p>【itab】<a href="http://legendtkl.com/2017/07/01/golang-interface-implement/" target="_blank" rel="noopener">http://legendtkl.com/2017/07/01/golang-interface-implement/</a></p>
 <p>【和 C++ 的对比】<a href="https://www.jianshu.com/p/b38b1719636e" target="_blank" rel="noopener">https://www.jianshu.com/p/b38b1719636e</a></p>
-<p>【itab 原理】<a href="https://ninokop.github.io/2017/10/29/Go-%E6%96%B9%E6%B3%95%E8%B0%83%E7%94%A8%E4%B8%8E%E6%8E%A5%E5%8F%A3/" target="_blank" rel="noopener">https://ninokop.github.io/2017/10/29/Go-%E6%96%B9%E6%B3%95%E8%B0%83%E7%94%A8%E4%B8%8E%E6%8E%A5%E5%8F%A3/</a></p>
 <p>【getitab源码说明】<a href="https://www.twblogs.net/a/5c245d59bd9eee16b3db561d" target="_blank" rel="noopener">https://www.twblogs.net/a/5c245d59bd9eee16b3db561d</a></p>
 
     </div>
@@ -419,7 +416,7 @@
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-count">6</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
