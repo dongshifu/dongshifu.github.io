@@ -495,7 +495,7 @@
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
           
-            <a href="/2019/03/06/linux_%E7%BD%91%E7%BB%9C01%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80/" class="post-title-link" itemprop="url">Linux服务管理</a>
+            <a href="/2019/03/06/linux_%E7%BD%91%E7%BB%9C01%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80/" class="post-title-link" itemprop="url">网络基础-1</a>
         </h1>
 
         <div class="post-meta">
@@ -512,7 +512,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-12 14:57:49" itemprop="dateModified" datetime="2021-03-12T14:57:49+08:00">2021-03-12</time>
+                <time title="修改时间：2021-03-12 15:12:38" itemprop="dateModified" datetime="2021-03-12T15:12:38+08:00">2021-03-12</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -610,125 +610,6 @@
 <p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE92061dfc6ebbb29f1358200962d530e0/4563" alt="数据包传输过程"></p>
 <p>以太网驱动程序首先根据以太网首部中的“上层协议”字段确定该数据帧的有效载荷（<strong>payload，指除去协议首部之外实际传输的数据</strong>）是IP、ARP还是RARP协议的数据报，然后交给相应的协议处理。<strong>假如是IP数据报，IP协议再根据IP首部中的“上层协议”字段确定该数据报的有效载荷是TCP、UDP、ICMP还是IGMP，然后交给相应的协议处理。假如是TCP段或UDP段，TCP或UDP协议再根据TCP首部或UDP首部的“端口号”字段确定应该将应用层数据交给哪个用户进程。IP地址是标识网络中不同主机的地址，而端口号就是同一台主机上标识不同进程的地址，IP地址和端口号合起来标识网络中唯一的进程。</strong></p>
 <p>虽然IP、ARP和RARP数据报都需要以太网驱动程序来封装成帧，但是从功能上划分，ARP和RARP属于链路层，IP属于网络层。虽然ICMP、IGMP、TCP、UDP的数据都需要IP协议来封装成数据报，但是从功能上划分，ICMP、IGMP与IP同属于网络层，TCP和UDP属于传输层。</p>
-<h3 id="协议格式"><a href="#协议格式" class="headerlink" title="协议格式"></a>协议格式</h3><h4 id="数据包封装"><a href="#数据包封装" class="headerlink" title="数据包封装"></a>数据包封装</h4><p>传输层及其以下的机制由<strong>内核提供</strong>，<strong>应用层由用户进程提供</strong>。<strong>应用程序对通讯数据的含义进行解释，而传输层及其以下处理通讯的细节，将数据从一台计算机通过一定的路径发送到另一台计算机。</strong> <strong>应用层数据通过协议栈发到网络上时，每层协议都要加上一个数据首部（header），称为封装（Encapsulation）</strong>，如下图所示：</p>
-<p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE943321ff202288b2913e1285069de8e5/4565" alt="数据包封装"></p>
-<p>不同的协议层对数据包有不同的称谓，<strong>在传输层叫做段（segment），在网络层叫做数据报（datagram），在链路层叫做帧（frame）</strong>。数据封装成帧后发到传输介质上，到达目的主机后每层协议再剥掉相应的首部，最后将应用层数据交给应用程序处理。</p>
-<h4 id="以太网帧格式"><a href="#以太网帧格式" class="headerlink" title="以太网帧格式"></a>以太网帧格式</h4><p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE937a40d8066c97295abb3b803bcb27ce/4567" alt="以太网帧格式"></p>
-<p>其中的源地址和目的地址是指网卡的硬件地址（也叫<strong>MAC地址</strong>），长度是48位，是在网卡出厂时<strong>固化</strong>的。可在shell中使用ifconfig命令查看，“<strong>00:50:56:c0:00:01</strong>”部分就是硬件地址。类型字段有三种值，<strong>分别对应IP、ARP、RARP。帧尾是CRC校验码。</strong></p>
-<p>以太网帧中的数据长度规定最小46字节，最大1500字节，ARP和RARP数据包的长度不够46字节，要在后面补填充位。<strong>最大值1500称为以太网的最大传输单元（MTU）</strong>，不同的网络类型有不同的MTU，如果一个数据包从以太网路由到拨号链路上，数据包长度大于拨号链路的MTU，则需要对数据包进行<strong>分片</strong>（fragmentation）。ifconfig命令输出中也<strong>MTU:1500</strong>.注意，<strong>MTU指指数据帧中有效载荷的最大长度，不包括帧头长度。</strong></p>
-<h4 id="ARP数据报格式"><a href="#ARP数据报格式" class="headerlink" title="ARP数据报格式"></a>ARP数据报格式</h4><p>在网络通讯时，<strong>源主机的应用程序知道目的主机的IP地址和端口号，却不知道目的主机的硬件地址，而数据包首先是被网卡接收到再去处理上层协议的，如果接收到的数据包的硬件地址与本机不符，则直接丢弃。因此在通讯前必须获得目的主机的硬件地址</strong>。ARP协议就起到这个作用。<strong>源主机发出ARP请求，询问“IP地址是192.168.0.1的主机的硬件地址是多少”，并将这个请求广播到本地网段（以太网帧首部的硬件地址填FF:FF:FF:FF:FF:FF表示广播），目的主机接收到广播的ARP请求，发现其中的IP地址与本机相符，则发送一个ARP应答数据包给源主机，将自己的硬件地址填写在应答包中。</strong></p>
-<p>每台主机都维护一个ARP缓存表，可以用arp -a命令查看。缓存表中的表项有过期时间（一般为20分钟），如果20分钟内没有再次使用某个表项，则该表项失效，下次还要发ARP请求来获得目的主机的硬件地址。</p>
-<p>ARP数据报的格式如下所示：</p>
-<p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE8790e76a5bfd1e36879973c44556bb91/4569" alt="ARP数据报格式"></p>
-<p>源MAC地址、目的MAC地址在以太网首部和ARP请求中各出现一次，对于链路层为以太网的情况是多余的，但<strong>如果链路层是其它类型的网络则有可能是必要的</strong>。硬件类型指链路层网络类型，1为以太网，协议类型指要转换的地址类型，0x0800为IP地址，后面两个地址长度对于以太网地址和IP地址分别为6和4（字节），op字段为1表示ARP请求，op字段为2表示ARP应答。</p>
-<p>看一个具体的例子。</p>
-<p>请求帧如下（为了清晰在每行的前面加了字节计数，每行16个字节）：</p>
-<p>以太网首部（14字节）</p>
-<p>0000: ff ff ff ff ff ff 00 05 5d 61 58 a8 08 06</p>
-<p>ARP帧（28字节）</p>
-<p>0000: 00 01</p>
-<p>0010: 08 00 06 04 00 01 00 05 5d 61 58 a8 c0 a8 00 37</p>
-<p>0020: 00 00 00 00 00 00 c0 a8 00 02</p>
-<p>填充位（18字节）</p>
-<p>0020: 00 77 31 d2 50 10</p>
-<p>0030: fd 78 41 d3 00 00 00 00 00 00 00 00</p>
-<p>以太网首部：<strong>目的主机采用广播地址</strong>，源主机的MAC地址是00:05:5d:61:58:a8，上层协议类型0x0806表示ARP。</p>
-<p>ARP帧：硬件类型0x0001表示<strong>以太网</strong>，协议类型0x0800表示<strong>IP协议</strong>，硬件地址（MAC地址）长度为6，协议地址（IP地址）长度为4，op为0x0001表示请求目的主机的MAC地址，源主机MAC地址为00:05:5d:61:58:a8，源主机IP地址为c0 a8 00 37（192.168.0.55）<strong>，目的主机MAC地址全0待填写，目的主机IP地址为c0 a8 00 02（192.168.0.2）。</strong></p>
-<p>由于以太网规定最小数据长度为46字节，ARP帧长度只有28字节，因此有18字节填充位，填充位的内容没有定义，与具体实现相关。</p>
-<p><strong>应答帧</strong>如下：</p>
-<p>以太网首部</p>
-<p>0000: <strong>00 05 5d 61 58 a8</strong> 00 05 5d a1 b8 40 08 06</p>
-<p>ARP帧</p>
-<p>0000: 00 01</p>
-<p>0010: 08 00 06 04 00 02 <strong>00 05 5d a1 b8 40</strong> c0 a8 00 02</p>
-<p>0020: 00 05 5d 61 58 a8 c0 a8 00 37</p>
-<p>填充位</p>
-<p>0020: 00 77 31 d2 50 10</p>
-<p>0030: fd 78 41 d3 00 00 00 00 00 00 00 00</p>
-<p>以太网首部：<strong>目的主机的MAC地址是00:05:5d:61:58:a8，源主机的MAC地址是00:05:5d:a1:b8:40，</strong>上层协议类型0x0806表示ARP。</p>
-<p>ARP帧：硬件类型0x0001表示以太网，协议类型0x0800表示IP协议，硬件地址（MAC地址）长度为6，协议地址（IP地址）长度为4，op为0x0002表示应答，源主机MAC地址为00:05:5d:a1:b8:40，源主机IP地址为c0 a8 00 02（192.168.0.2），目的主机MAC地址为00:05:5d:61:58:a8，目的主机IP地址为c0 a8 00 37（192.168.0.55）。</p>
-<p>如果源主机和目的主机不在同一网段，ARP请求的广播帧无法穿过路由器，源主机如何与目的主机通信？</p>
-<p>在网段通信时，数据包中的地址就是源IP，目标IP，源MAC，目标MAC，根本用不到网关，而当检测到需要把数据包发到远程网络时，这时，目标MAC就必须改变了，<strong>在还没有出内网时，目标MAC必须写成网关的MAC地址发出去，当网关收到时，再把目标MAC地址改成下一跳的MAC地址发出去，而源IP和源MAC以及目标IP不曾改变，就算到达了公网上，目标MAC仍然在不断改变着，直到最后，这个数据包到达目标IP的网络，最终通信结束！</strong></p>
-<p><strong>不同网段的主机通信时，主机会封装网关（通常是路由器）的mac地址，然后主机将数据发送给路由器，后续路由进行路由转发，通过arp解析目标地址的mac地址，然后将数据包送达目的地。</strong>可参考：<a href="https://blog.csdn.net/weixin_43166958/article/details/86503506" target="_blank" rel="noopener">https://blog.csdn.net/weixin_43166958/article/details/86503506</a></p>
-<h4 id="IP段格式"><a href="#IP段格式" class="headerlink" title="IP段格式"></a>IP段格式</h4><p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE0e1f09c9e2bd41d557d2442aca16ef13/4571" alt="IP段格式"></p>
-<ul>
-<li><p>IP数据报的首部长度和数据长度都是可变长的，<strong>但总是4字节的整数倍</strong>。对于IPv4，4位版本字段是4。</p>
-</li>
-<li><p>4位首部长度的数值是以4字节为单位的，<strong>最小值为5</strong>，也就是说首部长度最小是4x5=20字节，也就是不带任何选项的IP首部，4位能表示的最大值是15，也就是说<strong>首部长度最大是60字节</strong>。</p>
-</li>
-<li>8位TOS字段有3个位用来指定IP数据报的优先级（目前已经废弃不用），还有4个位表示可选的服务类型（最小延迟、最大?吐量、最大可靠性、最小成本），还有一个位总是0。</li>
-<li>总长度是整个数据报（包括IP首部和IP层payload）的字节数。</li>
-<li><strong>每传一个IP数据报，16位的标识加1，可用于分片和重新组装数据报。</strong></li>
-<li><strong>3位标志和13位片偏移用于分片。</strong></li>
-<li>TTL（Time to live)是这样用的：源主机为数据包设定一个<strong>生存时间</strong>，比如64，<strong>每过一个路由器就把该值减1，如果减到0就表示路由已经太长了仍然找不到目的主机的网络，就丢弃该包，因此这个生存时间的单位不是秒，而是跳（hop）。</strong></li>
-<li>协议字段指示上层协议是TCP、UDP、ICMP还是IGMP。</li>
-<li>校验和，<strong>只校验IP首部，数据的校验由更高层协议负责。</strong>IPv4的IP地址长度为32位。</li>
-</ul>
-<h4 id="UDP数据报格式"><a href="#UDP数据报格式" class="headerlink" title="UDP数据报格式"></a>UDP数据报格式</h4><p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCEc8142b69b8328ae98ab01b333ad577ca/4573" alt="udp数据报格式"></p>
-<p>下面分析一帧<strong>基于UDP的TFTP协议帧</strong>。</p>
-<p>以太网首部</p>
-<p>0000: 00 05 5d 67 d0 b1 00 05 5d 61 58 a8 08 00</p>
-<p>IP首部</p>
-<p>0000: 45 00</p>
-<p>0010: 00 53 93 25 00 00 80 11 25 ec c0 a8 00 37 c0 a8</p>
-<p>0020: 00 01</p>
-<p>UDP首部</p>
-<p>0020： 05 d4 00 45 00 3f ac 40</p>
-<p>TFTP协议</p>
-<p>0020: 00 01 ‘c’’:’’\’’q’</p>
-<p>0030: ‘w’’e’’r’’q’’.’’q’’w’’e’00 ‘n’’e’’t’’a’’s’’c’’i’</p>
-<p>0040: ‘i’00 ‘b’’l’’k’’s’’i’’z’’e’00 ‘5’’1’’2’00 ‘t’’i’</p>
-<p>0050: ‘m’’e’’o’’u’’t’00 ‘1’’0’00 ‘t’’s’’i’’z’’e’00 ‘0’</p>
-<p>0060: 00</p>
-<ul>
-<li><p>以太网首部：源MAC地址是00:05:5d:61:58:a8，目的MAC地址是00:05:5d:67:d0:b1，上层协议类型0x0800表示IP。</p>
-</li>
-<li><p>IP首部：</p>
-<ul>
-<li>每一个字节45包含4位版本号和4位首部长度，版本号为4，即IPv4。</li>
-<li><strong>首部长度为5，说明IP首部不带有选项字段</strong>。</li>
-<li>服务类型为0，没有使用服务。</li>
-<li>16位总长度字段（<strong>包括IP首部和IP层payload的长度</strong>）为0x0053，即83字节，加上以太网首部14字节可知整个帧长度是97字节。</li>
-<li>IP报标识是0x9325</li>
-<li>标志字段和片偏移字段设置为0x0000，就是DF=0允许分片，MF=0此数据报没有更多分片，没有分片偏移。</li>
-<li>TTL是0x80，也就是128。</li>
-<li>上层协议0x11表示UDP协议。</li>
-<li>IP首部校验和为0x25ec</li>
-<li>源主机IP是c0 a8 00 37（192.168.0.55）</li>
-<li>目的主机IP是c0 a8 00 01（192.168.0.1）。</li>
-</ul>
-</li>
-<li><p>UDP首部：</p>
-<ul>
-<li>源端口号0x05d4（1492）是客户端的端口号</li>
-<li>目的端口号0x0045（69）是TFTP服务的well-known端口号。</li>
-<li>UDP报长度为0x003f，即63字节，包括UDP首部和UDP层pay-load的长度。</li>
-<li>UDP首部和UDP层payload的校验和为0xac40。</li>
-</ul>
-</li>
-<li><p>TFTP是基于文本的协议，各字段之间用字节0分隔，开头的00 01表示请求读取一个文件，接下来的各字段是：</p>
-<ul>
-<li><pre><code class="lang-text">c:\qwerq.qwe
-netascii
-blksize 512
-timeout 10
-tsize 0
-</code></pre>
-</li>
-</ul>
-</li>
-</ul>
-<p>一般的网络通信都是像TFTP协议这样，通信的双方分别是客户端和服务器，<strong>客户端主动发起请求（上面的例子就是客户端发起的请求帧），而服务器被动地等待、接收和应答请求。</strong></p>
-<p>客户端的<strong>IP地址和端口号唯一标识了该主机上的TFTP客户端进程</strong>，<strong>服务器的IP地址和端口号唯一标识了该主机上的TFTP服务进程</strong>，由于客户端是主动发起请求的一方，它必须知道服务器的IP地址和TFTP服务进程的端口号，所以，<strong>一些常见的网络协议有默认的服务器端口，例如HTTP服务默认TCP协议的80端口，FTP服务默认TCP协议的21端口，TFTP服务默认UDP协议的69端口</strong>。</p>
-<p>在使用客户端程序时，必须指定服务器的主机名或IP地址，如果不明确指定端口号则采用默认端口，请读者查阅ftp、tftp等程序的man page了解如何指定端口号。</p>
-<p>/etc/services中列出了所有well-known的服务端口和对应的传输层协议，这是由IANA（Internet Assigned Numbers Authority）规定的，其中有些服务既可以用TCP也可以用UDP，为了清晰，IANA规定这样的服务采用相同的TCP或UDP默认端口号，而另外一些TCP和UDP的相同端口号却对应不同的服务。</p>
-<p><strong>很多服务有well-known的端口号，然而客户端程序的端口号却不必是well-known的，往往是每次运行客户端程序时由系统自动分配一个空闲的端口号，用完就释放掉，称为ephemeral的端口号</strong>。</p>
-<p>前面提过，UDP协议不面向连接，也不保证传输的可靠性，例如：</p>
-<p>发送端的UDP协议层只管把应用层传来的数据封装成段交给IP协议层就算完成任务了，如果因为网络故障该段无法发到对方，<strong>UDP协议层也不会给应用层返回任何错误信息。</strong></p>
-<p>接收端的UDP协议层只管把收到的数据根据端口号交给相应的应用程序就算完成任务了，如果发送端发来多个数据包并且在网络上经过不同的路由，到达接收端时顺序已经错乱了，<strong>UDP协议层也不保证按发送时的顺序交给应用层。</strong></p>
-<p>通常接收端的UDP协议层将收到的数据放在一个固定大小的<strong>缓冲区</strong>中等待应用程序来提取和处理，<strong>如果应用程序提取和处理的速度很慢，而发送端发送的速度很快，就会丢失数据包，UDP协议层并不报告这种错误。</strong></p>
-<p>因此，使用UDP协议的应用程序必须考虑到这些可能的问题并实现适当的解决方案，例如等待应答、超时重发、为数据包编号、流量控制等。<strong>一般使用UDP协议的应用程序实现都比较简单，只是发送一些对可靠性要求不高的消息，而不发送大量的数据。</strong>例如，基于UDP的TFTP协议一般只用于传送小文件（所以才叫trivial的ftp），而基于TCP的FTP协议适用于各种文件的传输。</p>
-<h4 id="TCP数据报格式"><a href="#TCP数据报格式" class="headerlink" title="TCP数据报格式"></a>TCP数据报格式</h4><p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCEfb083f48267eafa5f86eeb2ad99a94ab/4575" alt="TCP数据报格式"></p>
 
       
     </div>
