@@ -1377,7 +1377,7 @@
       </tags>
   </entry>
   <entry>
-    <title>Linux shell学习</title>
+    <title>C基础</title>
     <url>/2020/01/06/c%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</url>
     <content><![CDATA[<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>优点：执行速度快，功能强大，编程自由。代码量小：dll封装等</p>
 <p>缺点：编程周期长，可移植性较差，过于自由，容易出错，对于平台库依赖较多。</p>
