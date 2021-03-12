@@ -47,31 +47,39 @@
   };
 </script>
 
-  <meta name="description" content="记录生活， 记录学习， 分享知识">
-<meta name="keywords" content="生活，C++, C, go, java, OS, 网络， 存储， 联邦学习， 机器学习，python">
-<meta property="og:type" content="website">
-<meta property="og:title" content="ShifuDong">
-<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;page&#x2F;3&#x2F;index.html">
+  <meta name="description" content="协议格式数据包封装传输层及其以下的机制由内核提供，应用层由用户进程提供。应用程序对通讯数据的含义进行解释，而传输层及其以下处理通讯的细节，将数据从一台计算机通过一定的路径发送到另一台计算机。 应用层数据通过协议栈发到网络上时，每层协议都要加上一个数据首部（header），称为封装（Encapsulation），如下图所示：  不同的协议层对数据包有不同的称谓，在传输层叫做段（segment），在网">
+<meta name="keywords" content="网络">
+<meta property="og:type" content="article">
+<meta property="og:title" content="网络基础-2">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;03&#x2F;06&#x2F;linux_%E7%BD%91%E7%BB%9C02%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80-1&#x2F;index.html">
 <meta property="og:site_name" content="ShifuDong">
-<meta property="og:description" content="记录生活， 记录学习， 分享知识">
+<meta property="og:description" content="协议格式数据包封装传输层及其以下的机制由内核提供，应用层由用户进程提供。应用程序对通讯数据的含义进行解释，而传输层及其以下处理通讯的细节，将数据从一台计算机通过一定的路径发送到另一台计算机。 应用层数据通过协议栈发到网络上时，每层协议都要加上一个数据首部（header），称为封装（Encapsulation），如下图所示：  不同的协议层对数据包有不同的称谓，在传输层叫做段（segment），在网">
 <meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;8e6e18c29e30a8985cd881b2ee57f5c9&#x2F;xmlnote&#x2F;WEBRESOURCE943321ff202288b2913e1285069de8e5&#x2F;4565">
+<meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;8e6e18c29e30a8985cd881b2ee57f5c9&#x2F;xmlnote&#x2F;WEBRESOURCE937a40d8066c97295abb3b803bcb27ce&#x2F;4567">
+<meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;8e6e18c29e30a8985cd881b2ee57f5c9&#x2F;xmlnote&#x2F;WEBRESOURCE8790e76a5bfd1e36879973c44556bb91&#x2F;4569">
+<meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;8e6e18c29e30a8985cd881b2ee57f5c9&#x2F;xmlnote&#x2F;WEBRESOURCE0e1f09c9e2bd41d557d2442aca16ef13&#x2F;4571">
+<meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;8e6e18c29e30a8985cd881b2ee57f5c9&#x2F;xmlnote&#x2F;WEBRESOURCEc8142b69b8328ae98ab01b333ad577ca&#x2F;4573">
+<meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;8e6e18c29e30a8985cd881b2ee57f5c9&#x2F;xmlnote&#x2F;WEBRESOURCEde02a2ac39f3de7ba31ee51751bdca95&#x2F;4579">
+<meta property="og:updated_time" content="2021-03-12T09:02:53.745Z">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;8e6e18c29e30a8985cd881b2ee57f5c9&#x2F;xmlnote&#x2F;WEBRESOURCE943321ff202288b2913e1285069de8e5&#x2F;4565">
 
-<link rel="canonical" href="http://yoursite.com/page/3/">
+<link rel="canonical" href="http://yoursite.com/2019/03/06/linux_%E7%BD%91%E7%BB%9C02%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80-1/">
 
 
 <script id="page-configurations">
   // https://hexo.io/docs/variables.html
   CONFIG.page = {
     sidebar: "",
-    isHome: true,
-    isPost: false,
+    isHome: false,
+    isPost: true,
     isPage: false,
     isArchive: false
   };
 </script>
 
-  <title>ShifuDong</title>
+  <title>网络基础-2 | ShifuDong</title>
   
 
 
@@ -201,286 +209,10 @@
             
 
   <div class="posts-expand">
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/27/linux_system/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/11/27/linux_system/" class="post-title-link" itemprop="url">Linux 系统管理</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-11-27 19:29:16" itemprop="dateCreated datePublished" datetime="2019-11-27T19:29:16+08:00">2019-11-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-12-20 15:26:57" itemprop="dateModified" datetime="2019-12-20T15:26:57+08:00">2019-12-20</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/linux/" itemprop="url" rel="index">
-                    <span itemprop="name">linux</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
       
-          <h2 id="Linux系统管理"><a href="#Linux系统管理" class="headerlink" title="Linux系统管理"></a>Linux系统管理</h2><h3 id="进程管理"><a href="#进程管理" class="headerlink" title="进程管理"></a>进程管理</h3><h4 id="进程查看"><a href="#进程查看" class="headerlink" title="进程查看"></a>进程查看</h4><p>作用：判断服务器健康状态，查看系统中所有进程，杀死进程</p>
-<p>查看系统中所有进程：</p>
-<ul>
-<li>ps aux :使用系统中所有进程，使用BSD操作系统格式</li>
-<li>ps -le 查看系统中所有进程，使用Linux标准命令格式</li>
-</ul>
-<p>查看系统健康状态：</p>
-<ul>
-<li>top[选项]</li>
-</ul>
-<p>查看进程树：</p>
-<ul>
-<li>pstree</li>
-</ul>
-<h4 id="终止进程"><a href="#终止进程" class="headerlink" title="终止进程"></a>终止进程</h4><p>1.kill命令</p>
-<p>kill -l 查看可用的进程信号</p>
-<p>kill -1 进程id 重启进程</p>
-<p>kill -9 进程id 强制杀死进程</p>
-<p>2.killall命令</p>
-<p>killall -9 进程名</p>
-<p>3.pkill </p>
-<p>按照终端号踢出用户</p>
-<p>w 使用w命令查询本机已经登录的用户</p>
-<p>pkill -t -9 pts/1 强制杀死从pts/1虚拟终端登录的进程</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
   
   
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/26/hexo-operate/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/11/26/hexo-operate/" class="post-title-link" itemprop="url">hexo基本操作</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-11-26 19:29:16" itemprop="dateCreated datePublished" datetime="2019-11-26T19:29:16+08:00">2019-11-26</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-12-20 15:26:17" itemprop="dateModified" datetime="2019-12-20T15:26:17+08:00">2019-12-20</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E5%B7%A5%E5%85%B7/" itemprop="url" rel="index">
-                    <span itemprop="name">工具</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="hexo-文章管理"><a href="#hexo-文章管理" class="headerlink" title="hexo 文章管理"></a>hexo 文章管理</h2><h3 id="1-增加文章"><a href="#1-增加文章" class="headerlink" title="1.增加文章"></a>1.增加文章</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo new xx</span><br></pre></td></tr></table></figure>
-<p>创建的文件自动保存在source/_post文件夹下，为MarkDown格式</p>
-<p>可以在文件中开头通过：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">---</span><br><span class="line">title: 标题 # 自动创建，如 hello-world</span><br><span class="line">date: 日期 # 自动创建，如 2019-09-22 01:47:21</span><br><span class="line">tags: </span><br><span class="line">- 标签1</span><br><span class="line">- 标签2</span><br><span class="line">- 标签3</span><br><span class="line">categories:</span><br><span class="line">- 分类1</span><br><span class="line">- 分类2</span><br><span class="line">---</span><br></pre></td></tr></table></figure>
-<p>来添加文章的必要信息。</p>
-<h3 id="2-标签页添加"><a href="#2-标签页添加" class="headerlink" title="2.标签页添加"></a>2.标签页添加</h3><p>在项目的根目录下执行命令</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo new page tags</span><br></pre></td></tr></table></figure>
-<p>执行命令后自动生成一个source/tags/index.md文件，内容如下：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">---</span><br><span class="line">title: tags</span><br><span class="line">date: 2019-09-26 16:44:17</span><br><span class="line">---</span><br></pre></td></tr></table></figure>
-<p>可以为其增加type字段指定页面的类型:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">type: tags</span><br><span class="line">comments: false</span><br></pre></td></tr></table></figure>
-<p>在使用的主题_config.yml文件将页面的链接加到主菜单中，修改menu字段：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">menu:</span><br><span class="line">  home: / || home</span><br><span class="line">  #about: /about/ || user</span><br><span class="line">  tags: /tags/ || tags</span><br><span class="line">  #categories: /categories/ || th</span><br><span class="line">  archives: /archives/ || archive</span><br><span class="line">  #schedule: /schedule/ || calendar</span><br><span class="line">  #sitemap: /sitemap.xml || sitemap</span><br><span class="line">  #commonweal: /404/ || heartbeat</span><br></pre></td></tr></table></figure>
-<p>本地服务重启，可以观察到页面状态变化(左侧导航出现标签，点击之后会显示标签的列表)。</p>
-<h3 id="3-分类页"><a href="#3-分类页" class="headerlink" title="3.分类页"></a>3.分类页</h3><p>对文章进行归类，一个文章可以对应某个或多个分类，可以通过以下命令创建分类页：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo new page categories</span><br></pre></td></tr></table></figure>
-<p>生成一个/source/categories/index.md文件。</p>
-<p>在其中增加type字段来指定页面的类型：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">type: categories </span><br><span class="line">comments: false</span><br></pre></td></tr></table></figure>
-<p>然后在使用的主题_config.yml文件中将页面链接加入到主菜单中，修改menu字段：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">menu:</span><br><span class="line">  home: / || home</span><br><span class="line"><span class="meta">  #</span><span class="bash">about: /about/ || user</span></span><br><span class="line">  tags: /tags/ || tags</span><br><span class="line">  categories: /categories/ || th</span><br><span class="line">  archives: /archives/ || archive</span><br><span class="line"><span class="meta">  #</span><span class="bash">schedule: /schedule/ || calendar</span></span><br><span class="line"><span class="meta">  #</span><span class="bash">sitemap: /sitemap.xml || sitemap</span></span><br><span class="line"><span class="meta">  #</span><span class="bash">commonweal: /404/ || heartbeat</span></span><br></pre></td></tr></table></figure>
-<h4 id="4-添加搜索页"><a href="#4-添加搜索页" class="headerlink" title="4.添加搜索页"></a>4.添加搜索页</h4><p>需要搜索全站的内容，所以一个搜索功能的支持也是很有必要的，要添加搜索的支持，需要先安装一个插件，叫做 hexo-generator-searchdb，命令如下：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-generator-searchdb --save</span><br></pre></td></tr></table></figure>
-<p>然后在<strong>项目</strong>的_config.yml中添加搜索设置如下:</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">search:</span><br><span class="line">  path: search.xml</span><br><span class="line">  field: post</span><br><span class="line">  format: html</span><br><span class="line">  limit: 10000</span><br></pre></td></tr></table></figure>
-<p>然后在主题的 _config.yml 里面修改如下：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> Local search</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> Dependencies: https://github.com/wzpan/hexo-generator-search</span></span><br><span class="line">local_search:</span><br><span class="line">  enable: true</span><br><span class="line"><span class="meta">  #</span><span class="bash"> If auto, trigger search by changing input.</span></span><br><span class="line"><span class="meta">  #</span><span class="bash"> If manual, trigger search by pressing enter key or search button.</span></span><br><span class="line">  trigger: auto</span><br><span class="line"><span class="meta">  #</span><span class="bash"> Show top n results per article, show all results by setting to -1</span></span><br><span class="line">  top_n_per_article: 5</span><br><span class="line"><span class="meta">  #</span><span class="bash"> Unescape html strings to the readable one.</span></span><br><span class="line">  unescape: false</span><br><span class="line"><span class="meta">  #</span><span class="bash"> Preload the search data when the page loads.</span></span><br><span class="line">  preload: false</span><br></pre></td></tr></table></figure>
-<h3 id="5-404页面添加"><a href="#5-404页面添加" class="headerlink" title="5.404页面添加"></a>5.404页面添加</h3><p>若需要添加一个 404 页面，直接在根目录 source 文件夹新建一个 404.md 文件，内容可以仿照如下：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">---</span><br><span class="line">title: 404 Not Found</span><br><span class="line">date: 2019-11-27 10:41:27</span><br><span class="line">---</span><br><span class="line"> </span><br><span class="line">&lt;center&gt;</span><br><span class="line">对不起，您所访问的页面不存在或者已删除。</span><br><span class="line">您可以&lt;a href="https://dongshifu.github.io&gt;"&gt;点击此处&lt;/a&gt;返回首页。</span><br><span class="line">或访问&lt;a href="https://blog.csdn.net/dongshifo"&gt;查看更多内容。</span><br><span class="line">&lt;/center&gt;</span><br><span class="line"> </span><br><span class="line">&lt;blockquote class="blockquote-center"&gt;</span><br><span class="line">    Dongshifu</span><br><span class="line">&lt;/blockquote&gt;</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/25/hello-world/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/11/25/hello-world/" class="post-title-link" itemprop="url">hexo 测试</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-11-25 19:31:00" itemprop="dateCreated datePublished" datetime="2019-11-25T19:31:00+08:00">2019-11-25</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-12-20 15:25:58" itemprop="dateModified" datetime="2019-12-20T15:25:58+08:00">2019-12-20</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html" target="_blank" rel="noopener">Deployment</a></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/03/06/linux_%E7%BD%91%E7%BB%9C02%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80-1/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -494,8 +226,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/03/06/linux_%E7%BD%91%E7%BB%9C02%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80-1/" class="post-title-link" itemprop="url">网络基础-2</a>
+          网络基础-2
         </h1>
 
         <div class="post-meta">
@@ -537,7 +268,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h3 id="协议格式"><a href="#协议格式" class="headerlink" title="协议格式"></a>协议格式</h3><h4 id="数据包封装"><a href="#数据包封装" class="headerlink" title="数据包封装"></a>数据包封装</h4><p>传输层及其以下的机制由<strong>内核提供</strong>，<strong>应用层由用户进程提供</strong>。<strong>应用程序对通讯数据的含义进行解释，而传输层及其以下处理通讯的细节，将数据从一台计算机通过一定的路径发送到另一台计算机。</strong> <strong>应用层数据通过协议栈发到网络上时，每层协议都要加上一个数据首部（header），称为封装（Encapsulation）</strong>，如下图所示：</p>
+        <h3 id="协议格式"><a href="#协议格式" class="headerlink" title="协议格式"></a>协议格式</h3><h4 id="数据包封装"><a href="#数据包封装" class="headerlink" title="数据包封装"></a>数据包封装</h4><p>传输层及其以下的机制由<strong>内核提供</strong>，<strong>应用层由用户进程提供</strong>。<strong>应用程序对通讯数据的含义进行解释，而传输层及其以下处理通讯的细节，将数据从一台计算机通过一定的路径发送到另一台计算机。</strong> <strong>应用层数据通过协议栈发到网络上时，每层协议都要加上一个数据首部（header），称为封装（Encapsulation）</strong>，如下图所示：</p>
 <p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE943321ff202288b2913e1285069de8e5/4565" alt="数据包封装"></p>
 <p>不同的协议层对数据包有不同的称谓，<strong>在传输层叫做段（segment），在网络层叫做数据报（datagram），在链路层叫做帧（frame）</strong>。数据封装成帧后发到传输介质上，到达目的主机后每层协议再剥掉相应的首部，最后将应用层数据交给应用程序处理。</p>
 <h4 id="以太网帧格式"><a href="#以太网帧格式" class="headerlink" title="以太网帧格式"></a>以太网帧格式</h4><p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE937a40d8066c97295abb3b803bcb27ce/4567" alt="以太网帧格式"></p>
@@ -651,163 +382,33 @@
 <p>上图在接收端用小方块表示1K数据，实心的小方块表示已接收到的数据，虚线框表示接收缓冲区，因此套在虚线框中的空心小方块表示窗口大小，从图中可以看出，随着应用程序提走数据，虚线框是向右滑动的，因此称为滑动窗口。</p>
 <p>从这个例子还可以看出，发送端是一K一K地发送数据，而接收端的应用程序可以两K两K地提走数据，当然也有可能一次提走3K或6K数据，或者一次只提走几个字节的数据。也就是说，应用程序所看到的数据是一个整体，或说是一个流（stream），在底层通讯中这些数据可能被拆成很多数据包来发送，但是一个数据包有多少字节对应用程序是不可见的，因此TCP协议是面向流的协议。而UDP是面向消息的协议，每个UDP段都是一条消息，应用程序必须以消息为单位提取数据，不能一次提取任意字节的数据，这一点和TCP是很不同的。</p>
 
-      
     </div>
 
     
     
     
+
       <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
+          <div class="post-tags">
+              <a href="/tags/%E7%BD%91%E7%BB%9C/" rel="tag"># 网络</a>
+          </div>
 
         
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/03/06/linux_%E7%BD%91%E7%BB%9C01%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80/">
 
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
 
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/03/06/linux_%E7%BD%91%E7%BB%9C01%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80/" class="post-title-link" itemprop="url">网络基础-1</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-03-06 19:29:16" itemprop="dateCreated datePublished" datetime="2019-03-06T19:29:16+08:00">2019-03-06</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-12 15:12:38" itemprop="dateModified" datetime="2021-03-12T15:12:38+08:00">2021-03-12</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index">
-                    <span itemprop="name">网络</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="协议"><a href="#协议" class="headerlink" title="协议"></a>协议</h3><p>从应用的角度出发，协议可理解为“规则”，是数据传输和数据解释的规则。</p>
-<p>协议双发之间遵守的协议中可以称为<strong>原始协议</strong>。当此协议被更多的人采用，不断的增加、改进、维护、完善。最终形成一个稳定的、完整的协议，被广泛应用于各种应用中，此时该协议就可以成为一个<strong>标准协议</strong>。</p>
-<p>TCP协议注重数据的<strong>传输</strong>。http协议着重于数据的<strong>解释</strong>。</p>
-<h4 id="典型协议"><a href="#典型协议" class="headerlink" title="典型协议"></a>典型协议</h4><ul>
-<li>应用层 常见的协议有HTTP协议，FTP协议。<ul>
-<li>HTTP(超文本传输协议，Hyper Text Transfer Protocol）是互联网上应用最为广泛的一种网络协议</li>
-<li>FTP文件传输协议（File Transfer Protocol）。</li>
-</ul>
-</li>
-<li><p>传输层 常见协议有TCP/UDP协议。</p>
-<ul>
-<li>TCP（传输控制协议，Transmission Control Protocol）是一种面向连接的、可靠的、基于字节流的传输层通信协议。</li>
-<li>UDP用户数据报协议（User Datagram Protocol）是OSI参考模型中一种无连接的传输层协议，提供面向事务的简单不可靠信息传送服务。</li>
-</ul>
-</li>
-<li><p>网络层 常见协议有IP协议、ICMP协议、IGMP协议。</p>
-<ul>
-<li>IP协议是因特网互联协议（Internet Protocol）。</li>
-<li>ICMP协议是Internet控制报文协议（Internet Control Message Protocol）它是TCP/IP协议族的一个子协议，用于在IP主机、路由器之间传递控制消息。</li>
-<li>IGMP协议是 Internet 组管理协议（Internet Group Management Protocol），是因特网协议家族中的一个组播协议。该协议运行在主机和组播路由器之间。</li>
-</ul>
-</li>
-<li><p>网络接口层 常见协议有ARP协议、RARP协议。</p>
-<ul>
-<li>ARP协议是正向地址解析协议Address Resolution Protocol，通过已知的IP，寻找对应主机的MAC</li>
-<li>RARP是反向地址转换协议，通过MAC地址确定IP地址。</li>
-</ul>
-</li>
-</ul>
-<h3 id="网络应用程序设计模式"><a href="#网络应用程序设计模式" class="headerlink" title="网络应用程序设计模式"></a>网络应用程序设计模式</h3><h4 id="C-S模式"><a href="#C-S模式" class="headerlink" title="C/S模式"></a>C/S模式</h4><p>传统的网络应用设计模式，客户机(client)/服务器(server)模式。需要<strong>在通讯两端各自部署客户机和服务器来完成数据通信。</strong></p>
-<p>优点：</p>
-<ul>
-<li><p>客户端位于目标主机上可以保证性能，将数据缓存至客户端本地，从而<strong>提高数据传输效率</strong>。</p>
-</li>
-<li><p>c端和s端都需要自己定义，协议使用灵活</p>
-</li>
-<li>可以提前在本地进行<strong>大量数据的缓存处理，</strong>从而提高观感</li>
-</ul>
-<p>缺点：</p>
-<ul>
-<li>从用户角度出发，需要将客户端安插至用户主机上，对用户主机的<strong>安全性构成威胁</strong>。</li>
-<li>开发工作量大，调试困难</li>
-</ul>
-<h4 id="B-S模式"><a href="#B-S模式" class="headerlink" title="B/S模式"></a>B/S模式</h4><p>浏览器(browser)/服务器(server)模式。只需在<strong>一端部署服务器</strong>，而另外一端使用每台PC都默认配置的<strong>浏览器</strong>即可完成数据的传输。</p>
-<p>优点：</p>
-<ul>
-<li>使用标准浏览器作为客户端，其工作<strong>开发量较小</strong>。<strong>只需开发服务器端</strong>即可。</li>
-<li>由于其采用浏览器显示数据，因此<strong>移植性非常好</strong>，<strong>不受平台限制</strong>。</li>
-</ul>
-<p>缺点：</p>
-<ul>
-<li><strong>网络应用支持受限</strong>。</li>
-<li>没有客户端放到对方主机上，<strong>缓存数据不尽如人意</strong>，从而传输数据量受到限制。应用的观感大打折扣。</li>
-<li>必须与浏览器一样，采用标准http协议进行通信，<strong>协议选择不灵活</strong>。</li>
-</ul>
-<h3 id="分层模型"><a href="#分层模型" class="headerlink" title="分层模型"></a>分层模型</h3><p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE3d9424e51d6b2ac2e8fe2728441e3161/4555" alt="分层模型图"></p>
-<p>四层模型(TCP/IP模型)：</p>
-<p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE1cf2e4cebb2017a705ff317f17e9d386/4557" alt="四层模型"></p>
-<p>一般在应用开发过程中，讨论最多的是TCP/IP模型。</p>
-<h4 id="通信过程"><a href="#通信过程" class="headerlink" title="通信过程"></a>通信过程</h4><p>两台计算机通过TCP/IP协议通讯的过程如下所示：</p>
-<p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE808825184e078024bd1e6579f8badc78/4559" alt="两台计算机通过TCP/IP协议通讯的过程"></p>
-<p>上图对应两台计算机在<strong>同一网段中</strong>的情况，如果<strong>两台计算机在不同的网段</strong>中，那么数据<strong>从一台计算机到另一台计算机传输过程中要经过一个或多个路由器</strong>，如下图所示：</p>
-<p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE82ddd64ede0163775ec686aa8c4f2ef4/4561" alt="不同网段通信过程"></p>
-<h6 id="链路层工作"><a href="#链路层工作" class="headerlink" title="链路层工作"></a>链路层工作</h6><p>链路层有<strong>以太网、令牌环网</strong>等标准，<strong>链路层负责网卡设备的驱动、帧同步</strong>（即从网线上检测到什么信号算作新帧的开始）、<strong>冲突检测</strong>（如果检测到冲突就自动重发）、<strong>数据差错校验</strong>等工作。交换机是工作在链路层的网络设备，可以在不同的链路层网络之间转发数据帧（比如十兆以太网和百兆以太网之间、以太网和令牌环网之间），由于不同链路层的帧格式不同<strong>，交换机要将进来的数据包拆掉链路层首部重新封装之后再转发。</strong></p>
-<h6 id="网络层工作"><a href="#网络层工作" class="headerlink" title="网络层工作"></a>网络层工作</h6><p>网络层的IP协议是构成Internet的基础。<strong>Internet上的主机通过IP地址来标识</strong>，Internet上有大量<strong>路由器负责根据IP地址选择合适的路径转发数据包，数据包从Internet上的源主机到目的主机往往要经过十多个路由器</strong>。<strong>路由器是工作在第三层的网络设备，同时兼有交换机的功能，可以在不同的链路层接口之间转发数据包，因此路由器需要将进来的数据包拆掉网络层和链路层两层首部并重新封装。</strong> <strong>IP协议不保证传输的可靠性，数据包在传输过程中可能丢失，可靠性可以在上层协议或应用程序中提供支持。</strong></p>
-<p>网络层负责点到点（ptop，point-to-point）的传输（这里的“点”指主机或路由器）</p>
-<h6 id="传输层工作"><a href="#传输层工作" class="headerlink" title="传输层工作"></a>传输层工作</h6><p>传输层负责<strong>端到端</strong>（end-to-end）的传输（这里的“端”指源主机和目的主机）。传输层可选择TCP或UDP协议。</p>
-<p>TCP是一种面向连接的、可靠的协议，有点像打电话，双方拿起电话互通身份之后就建立了连接，然后说话就行了，这边说的话那边保证听得到，并且是按说话的顺序听到的，说完话挂机断开连接。<strong>也就是说TCP传输的双方需要首先建立连接，之后由TCP协议保证数据收发的可靠性，丢失的数据包自动重发，上层应用程序收到的总是可靠的数据流，通讯之后关闭连接。</strong></p>
-<p>UDP是无连接的传输协议，不保证可靠性，有点像寄信，信写好放到邮筒里，既不能保证信件在邮递过程中不会丢失，也不能保证信件寄送顺序。<strong>使用UDP协议的应用程序需要自己完成丢包重发、消息排序等工作。</strong></p>
-<p>目的主机收到数据包后，如何经过各层协议栈最后到达应用程序呢？其过程如下图所示：</p>
-<p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE92061dfc6ebbb29f1358200962d530e0/4563" alt="数据包传输过程"></p>
-<p>以太网驱动程序首先根据以太网首部中的“上层协议”字段确定该数据帧的有效载荷（<strong>payload，指除去协议首部之外实际传输的数据</strong>）是IP、ARP还是RARP协议的数据报，然后交给相应的协议处理。<strong>假如是IP数据报，IP协议再根据IP首部中的“上层协议”字段确定该数据报的有效载荷是TCP、UDP、ICMP还是IGMP，然后交给相应的协议处理。假如是TCP段或UDP段，TCP或UDP协议再根据TCP首部或UDP首部的“端口号”字段确定应该将应用层数据交给哪个用户进程。IP地址是标识网络中不同主机的地址，而端口号就是同一台主机上标识不同进程的地址，IP地址和端口号合起来标识网络中唯一的进程。</strong></p>
-<p>虽然IP、ARP和RARP数据报都需要以太网驱动程序来封装成帧，但是从功能上划分，ARP和RARP属于链路层，IP属于网络层。虽然ICMP、IGMP、TCP、UDP的数据都需要IP协议来封装成数据报，但是从功能上划分，ICMP、IGMP与IP同属于网络层，TCP和UDP属于传输层。</p>
-
-      
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/03/06/linux_%E7%BD%91%E7%BB%9C01%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80/" rel="prev" title="网络基础-1">
+      <i class="fa fa-chevron-left"></i> 网络基础-1
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/11/25/hello-world/" rel="next" title="hexo 测试">
+      hexo 测试 <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
       </footer>
+    
   </article>
   
   
@@ -815,15 +416,43 @@
 
   </div>
 
-  
-  <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span>
-  </nav>
-
-
 
           </div>
           
+      <div class="tabs tabs-comment">
+        <ul class="nav-tabs">
+            <li class="tab"><a href="#comment-gitalk">gitalk</a></li>
+            <li class="tab"><a href="#comment-livere">livere</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane gitalk" id="comment-gitalk">
+              <div class="comments" id="gitalk-container"></div>
+            </div>
+            <div class="tab-pane livere" id="comment-livere">
+              
+  <div class="comments" id="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81MjkwMy8yOTM4MA=="></div>
+  </div>
+  
+            </div>
+        </div>
+      </div>
+      <script>
+        window.addEventListener('tabs:register', () => {
+          let activeClass = 'gitalk';
+            activeClass = localStorage.getItem('comments_active') || activeClass;
+          if (activeClass) {
+            let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+            if (activeTab) {
+              activeTab.click();
+            }
+          }
+        });
+        window.addEventListener('tabs:click', event => {
+          let commentClass = event.target.classList[1];
+          localStorage.setItem('comments_active', commentClass);
+        });
+      </script>
 
         </div>
           
@@ -848,6 +477,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#协议格式"><span class="nav-number">1.</span> <span class="nav-text">协议格式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#数据包封装"><span class="nav-number">1.1.</span> <span class="nav-text">数据包封装</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#以太网帧格式"><span class="nav-number">1.2.</span> <span class="nav-text">以太网帧格式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ARP数据报格式"><span class="nav-number">1.3.</span> <span class="nav-text">ARP数据报格式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#IP段格式"><span class="nav-number">1.4.</span> <span class="nav-text">IP段格式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#UDP数据报格式"><span class="nav-number">1.5.</span> <span class="nav-text">UDP数据报格式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#数据传输过程"><span class="nav-number">1.6.</span> <span class="nav-text">数据传输过程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#四次挥手"><span class="nav-number">1.7.</span> <span class="nav-text">四次挥手</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#滑动窗口-TCP流量控制"><span class="nav-number">1.8.</span> <span class="nav-text">滑动窗口(TCP流量控制)</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -1030,7 +660,37 @@ window.addEventListener('pjax:success', () => {
 
   
 
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
 
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'a6ee5b68c97a3db64850',
+      clientSecret: '1dfa06f32032431e4af79b80f9ddf9dfd13dbda2',
+      repo: 'dongshifu.github.io',
+      owner: 'dongshifu',
+      admin: ['dongshifu'],
+      id: '3eed02c9cd374f6190cf443bb7a82c4c',
+        language: 'zh-CN',
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script>
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+</script>
 
     </div>
 </body>
