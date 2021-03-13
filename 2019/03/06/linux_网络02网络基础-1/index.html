@@ -61,7 +61,8 @@
 <meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;8e6e18c29e30a8985cd881b2ee57f5c9&#x2F;xmlnote&#x2F;WEBRESOURCE0e1f09c9e2bd41d557d2442aca16ef13&#x2F;4571">
 <meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;8e6e18c29e30a8985cd881b2ee57f5c9&#x2F;xmlnote&#x2F;WEBRESOURCEc8142b69b8328ae98ab01b333ad577ca&#x2F;4573">
 <meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;8e6e18c29e30a8985cd881b2ee57f5c9&#x2F;xmlnote&#x2F;WEBRESOURCEde02a2ac39f3de7ba31ee51751bdca95&#x2F;4579">
-<meta property="og:updated_time" content="2021-03-12T09:02:53.745Z">
+<meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;8e6e18c29e30a8985cd881b2ee57f5c9&#x2F;xmlnote&#x2F;WEBRESOURCE11e02e250025cfccd7fa1221edf57327&#x2F;4581">
+<meta property="og:updated_time" content="2021-03-12T11:28:13.100Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;8e6e18c29e30a8985cd881b2ee57f5c9&#x2F;xmlnote&#x2F;WEBRESOURCE943321ff202288b2913e1285069de8e5&#x2F;4565">
 
@@ -243,7 +244,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-12 17:02:53" itemprop="dateModified" datetime="2021-03-12T17:02:53+08:00">2021-03-12</time>
+                <time title="修改时间：2021-03-12 19:28:13" itemprop="dateModified" datetime="2021-03-12T19:28:13+08:00">2021-03-12</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -372,15 +373,25 @@
 </li>
 <li><p>接收端的应用程序提走2K数据，接收缓冲区又有了2K空闲，接收端发出段10，在应答已收到6K数据的同时声明窗口大小为2K。</p>
 </li>
+<li><p>接收端的应用程序又提走2K数据，接收缓冲区有4K空闲，接收端发出段11，重新声明窗口大小为4K。</p>
+</li>
+<li><p>发送端发出段12-13，每个段带2K数据，段13同时还包含FIN位。</p>
+</li>
+<li><p>接收端应答接收到的2K数据（6145-8192），<strong>再加上FIN位占一个序号8193，因此应答序号是8194，连接处于半关闭状态，接收端同时声明窗口大小为2K。</strong></p>
+</li>
+<li><p>接收端的应用程序提走2K数据，接收端重新声明窗口大小为4K。</p>
+</li>
+<li><p>接收端的应用程序提走剩下的2K数据，接收缓冲区全空，接收端重新声明窗口大小为6K。</p>
+</li>
+<li><p>接收端的应用程序在提走全部数据后，决定关闭连接，发出段17包含FIN位，发送端应答，连接完全关闭。</p>
+</li>
 </ul>
-<p>\4. 接收端的应用程序又提走2K数据，接收缓冲区有4K空闲，接收端发出段11，重新声明窗口大小为4K。</p>
-<p>\5. 发送端发出段12-13，每个段带2K数据，段13同时还包含FIN位。</p>
-<p>\6. 接收端应答接收到的2K数据（6145-8192），再加上FIN位占一个序号8193，因此应答序号是8194，连接处于半关闭状态，接收端同时声明窗口大小为2K。</p>
-<p>\7. 接收端的应用程序提走2K数据，接收端重新声明窗口大小为4K。</p>
-<p>\8. 接收端的应用程序提走剩下的2K数据，接收缓冲区全空，接收端重新声明窗口大小为6K。</p>
-<p>\9. 接收端的应用程序在提走全部数据后，决定关闭连接，发出段17包含FIN位，发送端应答，连接完全关闭。</p>
-<p>上图在接收端用小方块表示1K数据，实心的小方块表示已接收到的数据，虚线框表示接收缓冲区，因此套在虚线框中的空心小方块表示窗口大小，从图中可以看出，随着应用程序提走数据，虚线框是向右滑动的，因此称为滑动窗口。</p>
-<p>从这个例子还可以看出，发送端是一K一K地发送数据，而接收端的应用程序可以两K两K地提走数据，当然也有可能一次提走3K或6K数据，或者一次只提走几个字节的数据。也就是说，应用程序所看到的数据是一个整体，或说是一个流（stream），在底层通讯中这些数据可能被拆成很多数据包来发送，但是一个数据包有多少字节对应用程序是不可见的，因此TCP协议是面向流的协议。而UDP是面向消息的协议，每个UDP段都是一条消息，应用程序必须以消息为单位提取数据，不能一次提取任意字节的数据，这一点和TCP是很不同的。</p>
+<p>上图在接收端用小方块表示1K数据，实心的小方块表示已接收到的数据，<strong>虚线框表示接收缓冲区</strong>，因此套在虚线框中的空心小方块表示窗口大小，从图中可以看出，<strong>随着应用程序提走数据，虚线框是向右滑动的，因此称为滑动窗口。</strong></p>
+<p>从这个例子还可以看出，发送端是一K一K地发送数据，而接收端的应用程序可以两K两K地提走数据，当然也有可能一次提走3K或6K数据，或者一次只提走几个字节的数据。也就是说，<strong>应用程序所看到的数据是一个整体，或说是一个流（stream），在底层通讯中这些数据可能被拆成很多数据包来发送，但是一个数据包有多少字节对应用程序是不可见的，因此TCP协议是面向流的协议。</strong>而UDP是面向消息的协议，<strong>每个UDP段都是一条消息，应用程序必须以消息为单位提取数据，不能一次提取任意字节的数据</strong>，这一点和TCP是很不同的。</p>
+<h4 id="TCP-状态转移"><a href="#TCP-状态转移" class="headerlink" title="TCP 状态转移"></a>TCP 状态转移</h4><p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE11e02e250025cfccd7fa1221edf57327/4581" alt="TCP状态转移"></p>
+<p>实线一部分：主动发起连接，主动关闭连接。主动发起连接才会出现FIN_WAIT_2状态。TIME_WAIT的时间：不确定对方是否收到发送的ACK。</p>
+<p>虚线一部分：被动发起连接，被动关闭连接</p>
+<p>小细线一部分：两端同时操作</p>
 
     </div>
 
@@ -477,7 +488,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#协议格式"><span class="nav-number">1.</span> <span class="nav-text">协议格式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#数据包封装"><span class="nav-number">1.1.</span> <span class="nav-text">数据包封装</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#以太网帧格式"><span class="nav-number">1.2.</span> <span class="nav-text">以太网帧格式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ARP数据报格式"><span class="nav-number">1.3.</span> <span class="nav-text">ARP数据报格式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#IP段格式"><span class="nav-number">1.4.</span> <span class="nav-text">IP段格式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#UDP数据报格式"><span class="nav-number">1.5.</span> <span class="nav-text">UDP数据报格式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#数据传输过程"><span class="nav-number">1.6.</span> <span class="nav-text">数据传输过程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#四次挥手"><span class="nav-number">1.7.</span> <span class="nav-text">四次挥手</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#滑动窗口-TCP流量控制"><span class="nav-number">1.8.</span> <span class="nav-text">滑动窗口(TCP流量控制)</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#协议格式"><span class="nav-number">1.</span> <span class="nav-text">协议格式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#数据包封装"><span class="nav-number">1.1.</span> <span class="nav-text">数据包封装</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#以太网帧格式"><span class="nav-number">1.2.</span> <span class="nav-text">以太网帧格式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ARP数据报格式"><span class="nav-number">1.3.</span> <span class="nav-text">ARP数据报格式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#IP段格式"><span class="nav-number">1.4.</span> <span class="nav-text">IP段格式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#UDP数据报格式"><span class="nav-number">1.5.</span> <span class="nav-text">UDP数据报格式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#数据传输过程"><span class="nav-number">1.6.</span> <span class="nav-text">数据传输过程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#四次挥手"><span class="nav-number">1.7.</span> <span class="nav-text">四次挥手</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#滑动窗口-TCP流量控制"><span class="nav-number">1.8.</span> <span class="nav-text">滑动窗口(TCP流量控制)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#TCP-状态转移"><span class="nav-number">1.9.</span> <span class="nav-text">TCP 状态转移</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
