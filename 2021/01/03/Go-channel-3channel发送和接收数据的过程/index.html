@@ -47,18 +47,18 @@
   };
 </script>
 
-  <meta name="description" content="记录生活， 记录学习， 分享知识">
-<meta name="keywords" content="生活，C++, C, go, java, OS, 网络， 存储， 联邦学习， 机器学习，python">
+  <meta name="description" content="channel发送和接收元素的本质12All transfer of value on the go channels happens with the copy of value.channel 的发送和接收操作本质上都是 “值的拷贝”，无论是从 sender goroutine 的栈到 chan buf，还是从 chan buf 到 receiver goroutine，或者是直接从 send">
+<meta name="keywords" content="Go">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Go_channel_3channel发送和接收数据的过程">
-<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2021&#x2F;03&#x2F;13&#x2F;Go-channel-3channel%E5%8F%91%E9%80%81%E5%92%8C%E6%8E%A5%E6%94%B6%E6%95%B0%E6%8D%AE%E7%9A%84%E8%BF%87%E7%A8%8B&#x2F;index.html">
+<meta property="og:title" content="channel发送和接收数据的过程">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2021&#x2F;01&#x2F;03&#x2F;Go-channel-3channel%E5%8F%91%E9%80%81%E5%92%8C%E6%8E%A5%E6%94%B6%E6%95%B0%E6%8D%AE%E7%9A%84%E8%BF%87%E7%A8%8B&#x2F;index.html">
 <meta property="og:site_name" content="ShifuDong">
-<meta property="og:description" content="记录生活， 记录学习， 分享知识">
+<meta property="og:description" content="channel发送和接收元素的本质12All transfer of value on the go channels happens with the copy of value.channel 的发送和接收操作本质上都是 “值的拷贝”，无论是从 sender goroutine 的栈到 chan buf，还是从 chan buf 到 receiver goroutine，或者是直接从 send">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2021-03-13T12:03:28.931Z">
+<meta property="og:updated_time" content="2021-03-13T13:00:43.341Z">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://yoursite.com/2021/03/13/Go-channel-3channel%E5%8F%91%E9%80%81%E5%92%8C%E6%8E%A5%E6%94%B6%E6%95%B0%E6%8D%AE%E7%9A%84%E8%BF%87%E7%A8%8B/">
+<link rel="canonical" href="http://yoursite.com/2021/01/03/Go-channel-3channel%E5%8F%91%E9%80%81%E5%92%8C%E6%8E%A5%E6%94%B6%E6%95%B0%E6%8D%AE%E7%9A%84%E8%BF%87%E7%A8%8B/">
 
 
 <script id="page-configurations">
@@ -72,7 +72,7 @@
   };
 </script>
 
-  <title>Go_channel_3channel发送和接收数据的过程 | ShifuDong</title>
+  <title>channel发送和接收数据的过程 | ShifuDong</title>
   
 
 
@@ -206,7 +206,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/03/13/Go-channel-3channel%E5%8F%91%E9%80%81%E5%92%8C%E6%8E%A5%E6%94%B6%E6%95%B0%E6%8D%AE%E7%9A%84%E8%BF%87%E7%A8%8B/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/03/Go-channel-3channel%E5%8F%91%E9%80%81%E5%92%8C%E6%8E%A5%E6%94%B6%E6%95%B0%E6%8D%AE%E7%9A%84%E8%BF%87%E7%A8%8B/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -219,7 +219,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Go_channel_3channel发送和接收数据的过程
+          channel发送和接收数据的过程
         </h1>
 
         <div class="post-meta">
@@ -228,9 +228,26 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2021-03-13 20:03:09 / 修改时间：20:03:28" itemprop="dateCreated datePublished" datetime="2021-03-13T20:03:09+08:00">2021-03-13</time>
+              <time title="创建时间：2021-01-03 20:03:09" itemprop="dateCreated datePublished" datetime="2021-01-03T20:03:09+08:00">2021-01-03</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-13 21:00:43" itemprop="dateModified" datetime="2021-03-13T21:00:43+08:00">2021-03-13</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Go-Channel/" itemprop="url" rel="index">
+                    <span itemprop="name">Go Channel</span>
+                  </a>
+                </span>
             </span>
 
           
@@ -244,7 +261,10 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        
+        <h3 id="channel发送和接收元素的本质"><a href="#channel发送和接收元素的本质" class="headerlink" title="channel发送和接收元素的本质"></a>channel发送和接收元素的本质</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">All transfer of value on the go channels happens with the copy of value.</span><br><span class="line">channel 的发送和接收操作本质上都是 “值的拷贝”，无论是从 sender goroutine 的栈到 chan buf，还是从 chan buf 到 receiver goroutine，或者是直接从 sender goroutine 到 receiver goroutine。</span><br></pre></td></tr></table></figure>
+<p>举例分析：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"fmt"</span></span><br><span class="line">	<span class="string">"time"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> user <span class="keyword">struct</span> &#123;</span><br><span class="line">	name <span class="keyword">string</span></span><br><span class="line">	age  <span class="keyword">int8</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> u = user&#123;name: <span class="string">"Ankur"</span>, age: <span class="number">25</span>&#125;</span><br><span class="line"><span class="keyword">var</span> g = &amp;u</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">modifyUser</span><span class="params">(pu *user)</span></span> &#123;</span><br><span class="line">	fmt.Println(<span class="string">"modifyUser Received Vaule"</span>, pu)</span><br><span class="line">	pu.name = <span class="string">"Anand"</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">printUser</span><span class="params">(u &lt;-<span class="keyword">chan</span> *user)</span></span> &#123;</span><br><span class="line">	time.Sleep(<span class="number">2</span> * time.Second)</span><br><span class="line">	fmt.Println(<span class="string">"printUser goRoutine called"</span>, &lt;-u)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	c := <span class="built_in">make</span>(<span class="keyword">chan</span> *user, <span class="number">5</span>)</span><br><span class="line">	c &lt;- g</span><br><span class="line">	fmt.Println(g)</span><br><span class="line">	<span class="comment">// modify g</span></span><br><span class="line">	g = &amp;user&#123;name: <span class="string">"Ankur Anand"</span>, age: <span class="number">100</span>&#125;</span><br><span class="line">	<span class="keyword">go</span> printUser(c)</span><br><span class="line">	<span class="keyword">go</span> modifyUser(g)</span><br><span class="line">	time.Sleep(<span class="number">5</span> * time.Second)</span><br><span class="line">	fmt.Println(g)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
     </div>
 
     
@@ -252,6 +272,9 @@
     
 
       <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Go/" rel="tag"># Go</a>
+          </div>
 
         
 
@@ -259,10 +282,13 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2021/03/09/%E5%8D%9A%E5%AE%A2%E6%B7%BB%E5%8A%A0%E8%AF%84%E8%AE%BA/" rel="prev" title="hexo搭建博客并添加评论">
-      <i class="fa fa-chevron-left"></i> hexo搭建博客并添加评论
+    <a href="/2021/01/02/Go-channel-2%E5%BA%95%E5%B1%82%E5%AE%9E%E7%8E%B0/" rel="prev" title="channel的底层实现原理">
+      <i class="fa fa-chevron-left"></i> channel的底层实现原理
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2021/03/08/git-1-md/" rel="next" title="设置git的用户名和邮箱">
+      设置git的用户名和邮箱 <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -334,6 +360,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#channel发送和接收元素的本质"><span class="nav-number">1.</span> <span class="nav-text">channel发送和接收元素的本质</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -356,7 +383,7 @@
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-count">7</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
@@ -526,7 +553,7 @@ window.addEventListener('pjax:success', () => {
       repo: 'dongshifu.github.io',
       owner: 'dongshifu',
       admin: ['dongshifu'],
-      id: '2f2eb5864630f81afa1e735833beb2ed',
+      id: 'bc5a2fbce53e2aae9544f905497c78d8',
         language: 'zh-CN',
       distractionFreeMode: 'true'
     });
