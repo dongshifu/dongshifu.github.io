@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Go_channel_3channel发送和接收数据的过程</title>
+    <url>/2021/03/13/Go-channel-3channel%E5%8F%91%E9%80%81%E5%92%8C%E6%8E%A5%E6%94%B6%E6%95%B0%E6%8D%AE%E7%9A%84%E8%BF%87%E7%A8%8B/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
     <title>hexo搭建博客并添加评论</title>
     <url>/2021/03/09/%E5%8D%9A%E5%AE%A2%E6%B7%BB%E5%8A%A0%E8%AF%84%E8%AE%BA/</url>
     <content><![CDATA[<h3 id="hexo搭建博客并添加评论"><a href="#hexo搭建博客并添加评论" class="headerlink" title="hexo搭建博客并添加评论"></a>hexo搭建博客并添加评论</h3><p>之前搭建博客评论功能的时候使用的是gitalk, 但使用gitalk必须创建issue来进行评论，使用起来并不是很方便。</p>
@@ -32,6 +37,45 @@
       </categories>
       <tags>
         <tag>git</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>channel的底层实现原理</title>
+    <url>/2021/01/02/Go-channel-2%E5%BA%95%E5%B1%82%E5%AE%9E%E7%8E%B0/</url>
+    <content><![CDATA[<h3 id="底层数据结构"><a href="#底层数据结构" class="headerlink" title="底层数据结构"></a>底层数据结构</h3><p>源码( go 1.9.2)</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> hchan <span class="keyword">struct</span> &#123;</span><br><span class="line">	<span class="comment">// chan 里元素数量</span></span><br><span class="line">	qcount   <span class="keyword">uint</span></span><br><span class="line">	<span class="comment">// chan 底层循环数组的长度</span></span><br><span class="line">	dataqsiz <span class="keyword">uint</span></span><br><span class="line">	<span class="comment">// 指向底层循环数组的指针</span></span><br><span class="line">	<span class="comment">// 只针对有缓冲的 channel</span></span><br><span class="line">	buf      unsafe.Pointer</span><br><span class="line">	<span class="comment">// chan 中元素大小</span></span><br><span class="line">	elemsize <span class="keyword">uint16</span></span><br><span class="line">	<span class="comment">// chan 是否被关闭的标志</span></span><br><span class="line">	closed   <span class="keyword">uint32</span></span><br><span class="line">	<span class="comment">// chan 中元素类型</span></span><br><span class="line">	elemtype *_type <span class="comment">// element type</span></span><br><span class="line">	<span class="comment">// 已发送元素在循环数组中的索引</span></span><br><span class="line">	sendx    <span class="keyword">uint</span>   <span class="comment">// send index</span></span><br><span class="line">	<span class="comment">// 已接收元素在循环数组中的索引</span></span><br><span class="line">	recvx    <span class="keyword">uint</span>   <span class="comment">// receive index</span></span><br><span class="line">	<span class="comment">// 等待接收的 goroutine 队列</span></span><br><span class="line">	recvq    waitq  <span class="comment">// list of recv waiters</span></span><br><span class="line">	<span class="comment">// 等待发送的 goroutine 队列</span></span><br><span class="line">	sendq    waitq  <span class="comment">// list of send waiters</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// 保护 hchan 中所有字段</span></span><br><span class="line">	lock mutex</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="重点字段"><a href="#重点字段" class="headerlink" title="重点字段"></a>重点字段</h4><ul>
+<li><p><code>buf</code> <strong>指向底层循环数组</strong>，只有<strong>缓冲型</strong>的 channel 才有。</p>
+</li>
+<li><p><code>sendx</code>，<code>recvx</code> 均指向底层循环数组，表示<strong>当前可以发送和接收的元素位置索引值（相对于底层数组）</strong>。</p>
+</li>
+<li><p><code>sendq</code>，<code>recvq</code> 分别表示<strong>被阻塞的 goroutine</strong>，这些 goroutine 由于尝试读取 channel 或向 channel 发送数据而被阻塞。</p>
+</li>
+<li><p><code>waitq</code> 是 <code>sudog</code> 的一个<strong>双向链表</strong>，而 <code>sudog</code> 实际上是对 goroutine 的一个封装：</p>
+</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">type</span> waitq <span class="keyword">struct</span> &#123;</span><br><span class="line">	first *sudog</span><br><span class="line">	last  *sudog</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>lock</code> 用来保证每个读 channel 或写 channel 的操作都是原子的。</li>
+</ul>
+<p>例如，创建一个容量为 6 的，元素为 int 型的 channel 数据结构如下 ：</p>
+<p><img src="http://note.youdao.com/yws/public/resource/8941a5b166d00686542939a34ab5b824/xmlnote/WEBRESOURCE3916a664143d80da2e06a6a133c64dc5/4598" alt="channel数据结构"></p>
+<h3 id="channel的创建过程"><a href="#channel的创建过程" class="headerlink" title="channel的创建过程"></a>channel的创建过程</h3><p>通道有两个方向，发送和接收。理论上来说，可以创建一个只发送或只接收的通道，但是这种通道创建出来后，怎么使用呢？一个只能发的通道，怎么接收呢？同样，一个只能收的通道，如何向其发送数据呢？</p>
+<p>一般而言，使用 <code>make</code> 创建一个能收能发的通道：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 无缓冲通道</span></span><br><span class="line">ch1 := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>)</span><br><span class="line"><span class="comment">// 有缓冲通道</span></span><br><span class="line">ch2 := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>, <span class="number">10</span>)</span><br></pre></td></tr></table></figure>
+<p>创建 chan 的函数是 <code>makechan</code>：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">makechan</span><span class="params">(t *chantype, size <span class="keyword">int64</span>)</span> *<span class="title">hchan</span></span></span><br></pre></td></tr></table></figure>
+<p>从函数原型来看，<strong>创建的 chan 是一个指针。所以能在函数间直接传递 channel，而不用传递 channel 的指针。</strong></p>
+<p>具体过程：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> hchanSize = unsafe.Sizeof(hchan&#123;&#125;) + <span class="keyword">uintptr</span>(-<span class="keyword">int</span>(unsafe.Sizeof(hchan&#123;&#125;))&amp;(maxAlign<span class="number">-1</span>))</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">makechan</span><span class="params">(t *chantype, size <span class="keyword">int64</span>)</span> *<span class="title">hchan</span></span> &#123;</span><br><span class="line">	elem := t.elem</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 省略了检查 channel size，align 的代码</span></span><br><span class="line">	<span class="comment">// ……</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">var</span> c *hchan</span><br><span class="line">	<span class="comment">// 如果元素类型不含指针 或者 size 大小为 0（无缓冲类型）</span></span><br><span class="line">	<span class="comment">// 只进行一次内存分配</span></span><br><span class="line">	<span class="keyword">if</span> elem.kind&amp;kindNoPointers != <span class="number">0</span> || size == <span class="number">0</span> &#123;</span><br><span class="line">		<span class="comment">// 如果 hchan 结构体中不含指针，GC 就不会扫描 chan 中的元素</span></span><br><span class="line">		<span class="comment">// 只分配 "hchan 结构体大小 + 元素大小*个数" 的内存</span></span><br><span class="line">		c = (*hchan)(mallocgc(hchanSize+<span class="keyword">uintptr</span>(size)*elem.size, <span class="literal">nil</span>, <span class="literal">true</span>))</span><br><span class="line">		<span class="comment">// 如果是缓冲型 channel 且元素大小不等于 0（大小等于 0的元素类型：struct&#123;&#125;）</span></span><br><span class="line">		<span class="keyword">if</span> size &gt; <span class="number">0</span> &amp;&amp; elem.size != <span class="number">0</span> &#123;</span><br><span class="line">			c.buf = add(unsafe.Pointer(c), hchanSize)</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			<span class="comment">// race detector uses this l是ocation for synchronization</span></span><br><span class="line">			<span class="comment">// Also prevents us from pointing beyond the allocation (see issue 9401).</span></span><br><span class="line">			<span class="comment">// 1. 非缓冲型的，buf 没用，直接指向 chan 起始地址处</span></span><br><span class="line">			<span class="comment">// 2. 缓冲型的，能进入到这里，说明元素无指针且元素类型为 struct&#123;&#125;，也无影响</span></span><br><span class="line">			<span class="comment">// 因为只会用到接收和发送游标，不会真正拷贝东西到 c.buf 处（这会覆盖 chan的内容）</span></span><br><span class="line">			c.buf = unsafe.Pointer(c)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		<span class="comment">// 进行两次内存分配操作</span></span><br><span class="line">		c = <span class="built_in">new</span>(hchan)</span><br><span class="line">		c.buf = newarray(elem, <span class="keyword">int</span>(size))</span><br><span class="line">	&#125;</span><br><span class="line">	c.elemsize = <span class="keyword">uint16</span>(elem.size)</span><br><span class="line">	c.elemtype = elem</span><br><span class="line">	<span class="comment">// 循环数组长度</span></span><br><span class="line">	c.dataqsiz = <span class="keyword">uint</span>(size)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 返回 hchan 指针</span></span><br><span class="line">	<span class="keyword">return</span> c</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>新建一个 chan 后，<strong>内存在堆上分配</strong>，大概长这样：</p>
+<p><img src="http://note.youdao.com/yws/public/resource/8941a5b166d00686542939a34ab5b824/xmlnote/WEBRESOURCE0c7d74b959d2189789319c7591df5c82/4600" alt="chan的内存分配情况"></p>
+]]></content>
+      <categories>
+        <category>Go Channel</category>
+      </categories>
+      <tags>
+        <tag>Go</tag>
       </tags>
   </entry>
   <entry>

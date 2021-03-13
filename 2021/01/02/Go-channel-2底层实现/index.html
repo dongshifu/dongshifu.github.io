@@ -47,18 +47,21 @@
   };
 </script>
 
-  <meta name="description" content="CSPGo的并发依赖CSP模型，基于channel实现。 12Do not communicate by sharing memory; instead, share memory by communicating.不要通过共享内存来通信，而要通过通信来实现内存共享。 CSP 全称是 “Communicating Sequential Processes”，用于描述两个独立的并发实体通过共享 ch">
+  <meta name="description" content="底层数据结构源码( go 1.9.2) 1234567891011121314151617181920212223242526type hchan struct &amp;#123;	&#x2F;&#x2F; chan 里元素数量	qcount   uint	&#x2F;&#x2F; chan 底层循环数组的长度	dataqsiz uint	&#x2F;&#x2F; 指向底层循环数组的指针	&#x2F;&#x2F; 只针对有缓冲的 channel	buf      unsafe.Po">
 <meta name="keywords" content="Go">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Channel用法">
-<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2021&#x2F;01&#x2F;02&#x2F;Go-channel_1%E4%BD%BF%E7%94%A8&#x2F;index.html">
+<meta property="og:title" content="channel的底层实现原理">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2021&#x2F;01&#x2F;02&#x2F;Go-channel-2%E5%BA%95%E5%B1%82%E5%AE%9E%E7%8E%B0&#x2F;index.html">
 <meta property="og:site_name" content="ShifuDong">
-<meta property="og:description" content="CSPGo的并发依赖CSP模型，基于channel实现。 12Do not communicate by sharing memory; instead, share memory by communicating.不要通过共享内存来通信，而要通过通信来实现内存共享。 CSP 全称是 “Communicating Sequential Processes”，用于描述两个独立的并发实体通过共享 ch">
+<meta property="og:description" content="底层数据结构源码( go 1.9.2) 1234567891011121314151617181920212223242526type hchan struct &amp;#123;	&#x2F;&#x2F; chan 里元素数量	qcount   uint	&#x2F;&#x2F; chan 底层循环数组的长度	dataqsiz uint	&#x2F;&#x2F; 指向底层循环数组的指针	&#x2F;&#x2F; 只针对有缓冲的 channel	buf      unsafe.Po">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2021-03-13T11:08:39.035Z">
+<meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;8941a5b166d00686542939a34ab5b824&#x2F;xmlnote&#x2F;WEBRESOURCE3916a664143d80da2e06a6a133c64dc5&#x2F;4598">
+<meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;8941a5b166d00686542939a34ab5b824&#x2F;xmlnote&#x2F;WEBRESOURCE0c7d74b959d2189789319c7591df5c82&#x2F;4600">
+<meta property="og:updated_time" content="2021-03-13T12:01:56.230Z">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;8941a5b166d00686542939a34ab5b824&#x2F;xmlnote&#x2F;WEBRESOURCE3916a664143d80da2e06a6a133c64dc5&#x2F;4598">
 
-<link rel="canonical" href="http://yoursite.com/2021/01/02/Go-channel_1%E4%BD%BF%E7%94%A8/">
+<link rel="canonical" href="http://yoursite.com/2021/01/02/Go-channel-2%E5%BA%95%E5%B1%82%E5%AE%9E%E7%8E%B0/">
 
 
 <script id="page-configurations">
@@ -72,7 +75,7 @@
   };
 </script>
 
-  <title>Channel用法 | ShifuDong</title>
+  <title>channel的底层实现原理 | ShifuDong</title>
   
 
 
@@ -206,7 +209,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/02/Go-channel_1%E4%BD%BF%E7%94%A8/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/02/Go-channel-2%E5%BA%95%E5%B1%82%E5%AE%9E%E7%8E%B0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -219,7 +222,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Channel用法
+          channel的底层实现原理
         </h1>
 
         <div class="post-meta">
@@ -229,14 +232,14 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2021-01-02 14:29:34" itemprop="dateCreated datePublished" datetime="2021-01-02T14:29:34+08:00">2021-01-02</time>
+              <time title="创建时间：2021-01-02 19:06:50" itemprop="dateCreated datePublished" datetime="2021-01-02T19:06:50+08:00">2021-01-02</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-13 19:08:39" itemprop="dateModified" datetime="2021-03-13T19:08:39+08:00">2021-03-13</time>
+                <time title="修改时间：2021-03-13 20:01:56" itemprop="dateModified" datetime="2021-03-13T20:01:56+08:00">2021-03-13</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -261,45 +264,34 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h3 id="CSP"><a href="#CSP" class="headerlink" title="CSP"></a>CSP</h3><p>Go的并发依赖CSP模型，基于channel实现。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Do not communicate by sharing memory; instead, share memory by communicating.</span><br><span class="line">不要通过共享内存来通信，而要通过通信来实现内存共享。</span><br></pre></td></tr></table></figure>
-<p>CSP 全称是 “Communicating Sequential Processes”，用于描述两个独立的并发实体通过共享 channel（管道）进行通信的并发模型。Go语言并没有完全实现了 CSP 并发模型的所有理论，仅仅是实现了 process 和 channel 这两个概念。process 就是Go语言中的 goroutine，每个 goroutine 之间是通过 channel 通讯来实现数据共享。</p>
-<p>大多数的编程语言的并发编程模型是基于线程和内存同步访问控制，Go 的并发编程的模型则用 goroutine 和 channel 来替代。Goroutine 和线程类似，channel 和 mutex (用于内存同步访问控制)类似。</p>
-<p>Go 的并发原则非常优秀，目标就是<strong>简单</strong>：尽量使用 channel；把 goroutine 当作免费的资源，随便用。</p>
-<h3 id="操作channel的结果"><a href="#操作channel的结果" class="headerlink" title="操作channel的结果"></a>操作channel的结果</h3><div class="table-container">
-<table>
-<thead>
-<tr>
-<th>操作</th>
-<th>nil channel</th>
-<th>closed channel</th>
-<th>not nil, not closed channel</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>close</td>
-<td>panic</td>
-<td>panic</td>
-<td>正常关闭</td>
-</tr>
-<tr>
-<td>读 &lt;- ch</td>
-<td>阻塞</td>
-<td><strong>读到对应类型的零值</strong></td>
-<td><strong>阻塞或正常读取数据</strong>。缓冲型 channel 为空或非缓冲型 channel 没有等待发送者时会阻塞</td>
-</tr>
-<tr>
-<td>写 ch &lt;-</td>
-<td>阻塞</td>
-<td>panic</td>
-<td>阻塞或正常写入数据。非缓冲型 channel 没有等待接收者或缓冲型 channel buf 满时会被阻塞</td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>总结一下，<strong>发生 panic 的情况有三种：向一个关闭的 channel 进行写操作；关闭一个 nil 的 channel；重复关闭一个 channel。</strong></p>
-<p>读、写一个 nil channel 都会被阻塞。</p>
+        <h3 id="底层数据结构"><a href="#底层数据结构" class="headerlink" title="底层数据结构"></a>底层数据结构</h3><p>源码( go 1.9.2)</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> hchan <span class="keyword">struct</span> &#123;</span><br><span class="line">	<span class="comment">// chan 里元素数量</span></span><br><span class="line">	qcount   <span class="keyword">uint</span></span><br><span class="line">	<span class="comment">// chan 底层循环数组的长度</span></span><br><span class="line">	dataqsiz <span class="keyword">uint</span></span><br><span class="line">	<span class="comment">// 指向底层循环数组的指针</span></span><br><span class="line">	<span class="comment">// 只针对有缓冲的 channel</span></span><br><span class="line">	buf      unsafe.Pointer</span><br><span class="line">	<span class="comment">// chan 中元素大小</span></span><br><span class="line">	elemsize <span class="keyword">uint16</span></span><br><span class="line">	<span class="comment">// chan 是否被关闭的标志</span></span><br><span class="line">	closed   <span class="keyword">uint32</span></span><br><span class="line">	<span class="comment">// chan 中元素类型</span></span><br><span class="line">	elemtype *_type <span class="comment">// element type</span></span><br><span class="line">	<span class="comment">// 已发送元素在循环数组中的索引</span></span><br><span class="line">	sendx    <span class="keyword">uint</span>   <span class="comment">// send index</span></span><br><span class="line">	<span class="comment">// 已接收元素在循环数组中的索引</span></span><br><span class="line">	recvx    <span class="keyword">uint</span>   <span class="comment">// receive index</span></span><br><span class="line">	<span class="comment">// 等待接收的 goroutine 队列</span></span><br><span class="line">	recvq    waitq  <span class="comment">// list of recv waiters</span></span><br><span class="line">	<span class="comment">// 等待发送的 goroutine 队列</span></span><br><span class="line">	sendq    waitq  <span class="comment">// list of send waiters</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// 保护 hchan 中所有字段</span></span><br><span class="line">	lock mutex</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="重点字段"><a href="#重点字段" class="headerlink" title="重点字段"></a>重点字段</h4><ul>
+<li><p><code>buf</code> <strong>指向底层循环数组</strong>，只有<strong>缓冲型</strong>的 channel 才有。</p>
+</li>
+<li><p><code>sendx</code>，<code>recvx</code> 均指向底层循环数组，表示<strong>当前可以发送和接收的元素位置索引值（相对于底层数组）</strong>。</p>
+</li>
+<li><p><code>sendq</code>，<code>recvq</code> 分别表示<strong>被阻塞的 goroutine</strong>，这些 goroutine 由于尝试读取 channel 或向 channel 发送数据而被阻塞。</p>
+</li>
+<li><p><code>waitq</code> 是 <code>sudog</code> 的一个<strong>双向链表</strong>，而 <code>sudog</code> 实际上是对 goroutine 的一个封装：</p>
+</li>
+</ul>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> waitq <span class="keyword">struct</span> &#123;</span><br><span class="line">	first *sudog</span><br><span class="line">	last  *sudog</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>lock</code> 用来保证每个读 channel 或写 channel 的操作都是原子的。</li>
+</ul>
+<p>例如，创建一个容量为 6 的，元素为 int 型的 channel 数据结构如下 ：</p>
+<p><img src="http://note.youdao.com/yws/public/resource/8941a5b166d00686542939a34ab5b824/xmlnote/WEBRESOURCE3916a664143d80da2e06a6a133c64dc5/4598" alt="channel数据结构"></p>
+<h3 id="channel的创建过程"><a href="#channel的创建过程" class="headerlink" title="channel的创建过程"></a>channel的创建过程</h3><p>通道有两个方向，发送和接收。理论上来说，可以创建一个只发送或只接收的通道，但是这种通道创建出来后，怎么使用呢？一个只能发的通道，怎么接收呢？同样，一个只能收的通道，如何向其发送数据呢？</p>
+<p>一般而言，使用 <code>make</code> 创建一个能收能发的通道：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 无缓冲通道</span></span><br><span class="line">ch1 := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>)</span><br><span class="line"><span class="comment">// 有缓冲通道</span></span><br><span class="line">ch2 := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>, <span class="number">10</span>)</span><br></pre></td></tr></table></figure>
+<p>创建 chan 的函数是 <code>makechan</code>：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">makechan</span><span class="params">(t *chantype, size <span class="keyword">int64</span>)</span> *<span class="title">hchan</span></span></span><br></pre></td></tr></table></figure>
+<p>从函数原型来看，<strong>创建的 chan 是一个指针。所以能在函数间直接传递 channel，而不用传递 channel 的指针。</strong></p>
+<p>具体过程：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> hchanSize = unsafe.Sizeof(hchan&#123;&#125;) + <span class="keyword">uintptr</span>(-<span class="keyword">int</span>(unsafe.Sizeof(hchan&#123;&#125;))&amp;(maxAlign<span class="number">-1</span>))</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">makechan</span><span class="params">(t *chantype, size <span class="keyword">int64</span>)</span> *<span class="title">hchan</span></span> &#123;</span><br><span class="line">	elem := t.elem</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 省略了检查 channel size，align 的代码</span></span><br><span class="line">	<span class="comment">// ……</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">var</span> c *hchan</span><br><span class="line">	<span class="comment">// 如果元素类型不含指针 或者 size 大小为 0（无缓冲类型）</span></span><br><span class="line">	<span class="comment">// 只进行一次内存分配</span></span><br><span class="line">	<span class="keyword">if</span> elem.kind&amp;kindNoPointers != <span class="number">0</span> || size == <span class="number">0</span> &#123;</span><br><span class="line">		<span class="comment">// 如果 hchan 结构体中不含指针，GC 就不会扫描 chan 中的元素</span></span><br><span class="line">		<span class="comment">// 只分配 "hchan 结构体大小 + 元素大小*个数" 的内存</span></span><br><span class="line">		c = (*hchan)(mallocgc(hchanSize+<span class="keyword">uintptr</span>(size)*elem.size, <span class="literal">nil</span>, <span class="literal">true</span>))</span><br><span class="line">		<span class="comment">// 如果是缓冲型 channel 且元素大小不等于 0（大小等于 0的元素类型：struct&#123;&#125;）</span></span><br><span class="line">		<span class="keyword">if</span> size &gt; <span class="number">0</span> &amp;&amp; elem.size != <span class="number">0</span> &#123;</span><br><span class="line">			c.buf = add(unsafe.Pointer(c), hchanSize)</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			<span class="comment">// race detector uses this l是ocation for synchronization</span></span><br><span class="line">			<span class="comment">// Also prevents us from pointing beyond the allocation (see issue 9401).</span></span><br><span class="line">			<span class="comment">// 1. 非缓冲型的，buf 没用，直接指向 chan 起始地址处</span></span><br><span class="line">			<span class="comment">// 2. 缓冲型的，能进入到这里，说明元素无指针且元素类型为 struct&#123;&#125;，也无影响</span></span><br><span class="line">			<span class="comment">// 因为只会用到接收和发送游标，不会真正拷贝东西到 c.buf 处（这会覆盖 chan的内容）</span></span><br><span class="line">			c.buf = unsafe.Pointer(c)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		<span class="comment">// 进行两次内存分配操作</span></span><br><span class="line">		c = <span class="built_in">new</span>(hchan)</span><br><span class="line">		c.buf = newarray(elem, <span class="keyword">int</span>(size))</span><br><span class="line">	&#125;</span><br><span class="line">	c.elemsize = <span class="keyword">uint16</span>(elem.size)</span><br><span class="line">	c.elemtype = elem</span><br><span class="line">	<span class="comment">// 循环数组长度</span></span><br><span class="line">	c.dataqsiz = <span class="keyword">uint</span>(size)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 返回 hchan 指针</span></span><br><span class="line">	<span class="keyword">return</span> c</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>新建一个 chan 后，<strong>内存在堆上分配</strong>，大概长这样：</p>
+<p><img src="http://note.youdao.com/yws/public/resource/8941a5b166d00686542939a34ab5b824/xmlnote/WEBRESOURCE0c7d74b959d2189789319c7591df5c82/4600" alt="chan的内存分配情况"></p>
 
     </div>
 
@@ -318,12 +310,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2020/03/02/linux-02linux%E5%91%BD%E4%BB%A4%E4%BD%BF%E7%94%A8/" rel="prev" title="Linux常用命令使用">
-      <i class="fa fa-chevron-left"></i> Linux常用命令使用
+    <a href="/2021/01/02/Go-channel_1%E4%BD%BF%E7%94%A8/" rel="prev" title="Channel用法">
+      <i class="fa fa-chevron-left"></i> Channel用法
     </a></div>
       <div class="post-nav-item">
-    <a href="/2021/01/02/Go-channel-2%E5%BA%95%E5%B1%82%E5%AE%9E%E7%8E%B0/" rel="next" title="channel的底层实现原理">
-      channel的底层实现原理 <i class="fa fa-chevron-right"></i>
+    <a href="/2021/03/08/git-1-md/" rel="next" title="设置git的用户名和邮箱">
+      设置git的用户名和邮箱 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -396,7 +388,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#CSP"><span class="nav-number">1.</span> <span class="nav-text">CSP</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#操作channel的结果"><span class="nav-number">2.</span> <span class="nav-text">操作channel的结果</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#底层数据结构"><span class="nav-number">1.</span> <span class="nav-text">底层数据结构</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#重点字段"><span class="nav-number">1.1.</span> <span class="nav-text">重点字段</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#channel的创建过程"><span class="nav-number">2.</span> <span class="nav-text">channel的创建过程</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -589,7 +581,7 @@ window.addEventListener('pjax:success', () => {
       repo: 'dongshifu.github.io',
       owner: 'dongshifu',
       admin: ['dongshifu'],
-      id: '1a2a2e9a95bbb483d739f67dd9d2feaf',
+      id: '859e912fdee0461e652af46acfd7b6b5',
         language: 'zh-CN',
       distractionFreeMode: 'true'
     });
