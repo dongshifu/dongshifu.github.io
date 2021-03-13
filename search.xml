@@ -35,6 +35,56 @@
       </tags>
   </entry>
   <entry>
+    <title>Channel用法</title>
+    <url>/2021/01/02/Go-channel_1%E4%BD%BF%E7%94%A8/</url>
+    <content><![CDATA[<h3 id="CSP"><a href="#CSP" class="headerlink" title="CSP"></a>CSP</h3><p>Go的并发依赖CSP模型，基于channel实现。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Do not communicate by sharing memory; instead, share memory by communicating.</span><br><span class="line">不要通过共享内存来通信，而要通过通信来实现内存共享。</span><br></pre></td></tr></table></figure>
+<p>CSP 全称是 “Communicating Sequential Processes”，用于描述两个独立的并发实体通过共享 channel（管道）进行通信的并发模型。Go语言并没有完全实现了 CSP 并发模型的所有理论，仅仅是实现了 process 和 channel 这两个概念。process 就是Go语言中的 goroutine，每个 goroutine 之间是通过 channel 通讯来实现数据共享。</p>
+<p>大多数的编程语言的并发编程模型是基于线程和内存同步访问控制，Go 的并发编程的模型则用 goroutine 和 channel 来替代。Goroutine 和线程类似，channel 和 mutex (用于内存同步访问控制)类似。</p>
+<p>Go 的并发原则非常优秀，目标就是<strong>简单</strong>：尽量使用 channel；把 goroutine 当作免费的资源，随便用。</p>
+<h4 id="操作channel的结果"><a href="#操作channel的结果" class="headerlink" title="操作channel的结果"></a>操作channel的结果</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>nil channel</th>
+<th>closed channel</th>
+<th>not nil, not closed channel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>close</td>
+<td>panic</td>
+<td>panic</td>
+<td>正常关闭</td>
+</tr>
+<tr>
+<td>读 &lt;- ch</td>
+<td>阻塞</td>
+<td><strong>读到对应类型的零值</strong></td>
+<td><strong>阻塞或正常读取数据</strong>。缓冲型 channel 为空或非缓冲型 channel 没有等待发送者时会阻塞</td>
+</tr>
+<tr>
+<td>写 ch &lt;-</td>
+<td>阻塞</td>
+<td>panic</td>
+<td>阻塞或正常写入数据。非缓冲型 channel 没有等待接收者或缓冲型 channel buf 满时会被阻塞</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>总结一下，<strong>发生 panic 的情况有三种：向一个关闭的 channel 进行写操作；关闭一个 nil 的 channel；重复关闭一个 channel。</strong></p>
+<p>读、写一个 nil channel 都会被阻塞。</p>
+]]></content>
+      <categories>
+        <category>Go Channel</category>
+      </categories>
+      <tags>
+        <tag>Go</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Linux常用命令使用</title>
     <url>/2020/03/02/linux-02linux%E5%91%BD%E4%BB%A4%E4%BD%BF%E7%94%A8/</url>
     <content><![CDATA[<h3 id="Linux终端命令格式"><a href="#Linux终端命令格式" class="headerlink" title="Linux终端命令格式"></a>Linux终端命令格式</h3><h4 id="终端命令格式"><a href="#终端命令格式" class="headerlink" title="终端命令格式"></a>终端命令格式</h4><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">command</span> [-options] [parameter]</span><br></pre></td></tr></table></figure>
