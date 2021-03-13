@@ -42,7 +42,7 @@
 <p>CSP 全称是 “Communicating Sequential Processes”，用于描述两个独立的并发实体通过共享 channel（管道）进行通信的并发模型。Go语言并没有完全实现了 CSP 并发模型的所有理论，仅仅是实现了 process 和 channel 这两个概念。process 就是Go语言中的 goroutine，每个 goroutine 之间是通过 channel 通讯来实现数据共享。</p>
 <p>大多数的编程语言的并发编程模型是基于线程和内存同步访问控制，Go 的并发编程的模型则用 goroutine 和 channel 来替代。Goroutine 和线程类似，channel 和 mutex (用于内存同步访问控制)类似。</p>
 <p>Go 的并发原则非常优秀，目标就是<strong>简单</strong>：尽量使用 channel；把 goroutine 当作免费的资源，随便用。</p>
-<h4 id="操作channel的结果"><a href="#操作channel的结果" class="headerlink" title="操作channel的结果"></a>操作channel的结果</h4><div class="table-container">
+<h3 id="操作channel的结果"><a href="#操作channel的结果" class="headerlink" title="操作channel的结果"></a>操作channel的结果</h3><div class="table-container">
 <table>
 <thead>
 <tr>
