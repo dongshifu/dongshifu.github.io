@@ -39,7 +39,11 @@
     <url>/2021/01/03/Go-channel-3channel%E5%8F%91%E9%80%81%E5%92%8C%E6%8E%A5%E6%94%B6%E6%95%B0%E6%8D%AE%E7%9A%84%E8%BF%87%E7%A8%8B/</url>
     <content><![CDATA[<h3 id="channel发送和接收元素的本质"><a href="#channel发送和接收元素的本质" class="headerlink" title="channel发送和接收元素的本质"></a>channel发送和接收元素的本质</h3><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">All transfer of value on the go channels happens with the copy of value.</span><br><span class="line">channel 的发送和接收操作本质上都是 “值的拷贝”，无论是从 sender goroutine 的栈到 chan buf，还是从 chan buf 到 receiver goroutine，或者是直接从 sender goroutine 到 receiver goroutine。</span><br></pre></td></tr></table></figure>
 <p>举例分析：</p>
-<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"fmt"</span></span><br><span class="line">	<span class="string">"time"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> user <span class="keyword">struct</span> &#123;</span><br><span class="line">	name <span class="keyword">string</span></span><br><span class="line">	age  <span class="keyword">int8</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> u = user&#123;name: <span class="string">"Ankur"</span>, age: <span class="number">25</span>&#125;</span><br><span class="line"><span class="keyword">var</span> g = &amp;u</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">modifyUser</span><span class="params">(pu *user)</span></span> &#123;</span><br><span class="line">	fmt.Println(<span class="string">"modifyUser Received Vaule"</span>, pu)</span><br><span class="line">	pu.name = <span class="string">"Anand"</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">printUser</span><span class="params">(u &lt;-<span class="keyword">chan</span> *user)</span></span> &#123;</span><br><span class="line">	time.Sleep(<span class="number">2</span> * time.Second)</span><br><span class="line">	fmt.Println(<span class="string">"printUser goRoutine called"</span>, &lt;-u)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	c := <span class="built_in">make</span>(<span class="keyword">chan</span> *user, <span class="number">5</span>)</span><br><span class="line">	c &lt;- g</span><br><span class="line">	fmt.Println(g)</span><br><span class="line">	<span class="comment">// modify g</span></span><br><span class="line">	g = &amp;user&#123;name: <span class="string">"Ankur Anand"</span>, age: <span class="number">100</span>&#125;</span><br><span class="line">	<span class="keyword">go</span> printUser(c)</span><br><span class="line">	<span class="keyword">go</span> modifyUser(g)</span><br><span class="line">	time.Sleep(<span class="number">5</span> * time.Second)</span><br><span class="line">	fmt.Println(g)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"fmt"</span></span><br><span class="line">	<span class="string">"time"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> user <span class="keyword">struct</span> &#123;</span><br><span class="line">	name <span class="keyword">string</span></span><br><span class="line">	age  <span class="keyword">int8</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> u = user&#123;name: <span class="string">"Ankur"</span>, age: <span class="number">25</span>&#125;</span><br><span class="line"><span class="keyword">var</span> g = &amp;u</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">modifyUser</span><span class="params">(pu *user)</span></span> &#123;</span><br><span class="line">	fmt.Println(<span class="string">"modifyUser Received Vaule"</span>, pu)</span><br><span class="line">	pu.name = <span class="string">"Anand"</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">printUser</span><span class="params">(u &lt;-<span class="keyword">chan</span> *user)</span></span> &#123;</span><br><span class="line">	time.Sleep(<span class="number">2</span> * time.Second)</span><br><span class="line">	fmt.Println(<span class="string">"printUser goRoutine called"</span>, &lt;-u)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	c := <span class="built_in">make</span>(<span class="keyword">chan</span> *user, <span class="number">5</span>)</span><br><span class="line">	c &lt;- g</span><br><span class="line">	fmt.Println(g)</span><br><span class="line">	<span class="comment">// modify g</span></span><br><span class="line">	g = &amp;user&#123;name: <span class="string">"Ankur Anand"</span>, age: <span class="number">100</span>&#125;</span><br><span class="line">	<span class="keyword">go</span> printUser(c)</span><br><span class="line">	<span class="keyword">go</span> modifyUser(g)</span><br><span class="line">	time.Sleep(<span class="number">5</span> * time.Second)</span><br><span class="line">	fmt.Println(g)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/* 结果</span></span><br><span class="line"><span class="comment">&amp;&#123;Ankur 25&#125;</span></span><br><span class="line"><span class="comment">modifyUser Received Vaule &amp;&#123;Ankur Anand 100&#125;</span></span><br><span class="line"><span class="comment">printUser goRoutine called &amp;&#123;Ankur 25&#125;</span></span><br><span class="line"><span class="comment">&amp;&#123;Anand 100&#125;</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+<p>一开始构造一个结构体 u，地址是 0x56420，图中地址上方就是它的内容。接着把 <code>&amp;u</code> 赋值给指针 <code>g</code>，g 的地址是 0x565bb0，它的内容就是一个地址，指向 u。</p>
+<p>main 程序里，先把 g 发送到 c，根据 <code>copy value</code> 的本质，进入到 chan buf 里的就是 <code>0x56420</code>，它是指针 g 的值（不是它指向的内容），所以打印从 channel 接收到的元素时，它就是 <code>&amp;{Ankur 25}</code>。因此，这里并不是将指针 g “发送” 到了 channel 里，只是拷贝它的值而已。</p>
+<h3 id="向channel发送数据的过程"><a href="#向channel发送数据的过程" class="headerlink" title="向channel发送数据的过程"></a>向channel发送数据的过程</h3><p>发送操作最终转化为 <code>chansend</code> 函数，关注主流程(hchan源码分析见<a href="https://dongshifu.github.io/2021/01/02/Go-channel-2%E5%BA%95%E5%B1%82%E5%AE%9E%E7%8E%B0/" target="_blank" rel="noopener">channel底层实现原理</a>：</p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 位于 src/runtime/chan.go</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">chansend</span><span class="params">(c *hchan, ep unsafe.Pointer, block <span class="keyword">bool</span>, callerpc <span class="keyword">uintptr</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">	<span class="comment">// 如果 channel 是 nil</span></span><br><span class="line">	<span class="keyword">if</span> c == <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="comment">// 不能阻塞，直接返回 false，表示未发送成功</span></span><br><span class="line">		<span class="keyword">if</span> !block &#123;</span><br><span class="line">			<span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">// 当前 goroutine 被挂起</span></span><br><span class="line">		gopark(<span class="literal">nil</span>, <span class="literal">nil</span>, <span class="string">"chan send (nil chan)"</span>, traceEvGoStop, <span class="number">2</span>)</span><br><span class="line">		throw(<span class="string">"unreachable"</span>)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 省略 debug 相关……</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// 对于不阻塞的 send，快速检测失败场景</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">// 如果 channel 未关闭且 channel 没有多余的缓冲空间。这可能是：</span></span><br><span class="line">	<span class="comment">// 1. channel 是非缓冲型的，且等待接收队列里没有 goroutine</span></span><br><span class="line">	<span class="comment">// 2. channel 是缓冲型的，但循环数组已经装满了元素</span></span><br><span class="line">	<span class="keyword">if</span> !block &amp;&amp; c.closed == <span class="number">0</span> &amp;&amp; ((c.dataqsiz == <span class="number">0</span> &amp;&amp; c.recvq.first == <span class="literal">nil</span>) ||</span><br><span class="line">		(c.dataqsiz &gt; <span class="number">0</span> &amp;&amp; c.qcount == c.dataqsiz)) &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">var</span> t0 <span class="keyword">int64</span></span><br><span class="line">	<span class="keyword">if</span> blockprofilerate &gt; <span class="number">0</span> &#123;</span><br><span class="line">		t0 = cputicks()</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 锁住 channel，并发安全</span></span><br><span class="line">	lock(&amp;c.lock)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 如果 channel 关闭了</span></span><br><span class="line">	<span class="keyword">if</span> c.closed != <span class="number">0</span> &#123;</span><br><span class="line">		<span class="comment">// 解锁</span></span><br><span class="line">		unlock(&amp;c.lock)</span><br><span class="line">		<span class="comment">// 直接 panic</span></span><br><span class="line">		<span class="built_in">panic</span>(plainError(<span class="string">"send on closed channel"</span>))</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 如果接收队列里有 goroutine，直接将要发送的数据拷贝到接收 goroutine</span></span><br><span class="line">	<span class="keyword">if</span> sg := c.recvq.dequeue(); sg != <span class="literal">nil</span> &#123;</span><br><span class="line">		send(c, sg, ep, <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123; unlock(&amp;c.lock) &#125;, <span class="number">3</span>)</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 对于缓冲型的 channel，如果还有缓冲空间</span></span><br><span class="line">	<span class="keyword">if</span> c.qcount &lt; c.dataqsiz &#123;</span><br><span class="line">		<span class="comment">// qp 指向 buf 的 sendx 位置</span></span><br><span class="line">		qp := chanbuf(c, c.sendx)</span><br><span class="line"></span><br><span class="line">		<span class="comment">// ……</span></span><br><span class="line"></span><br><span class="line">		<span class="comment">// 将数据从 ep 处拷贝到 qp</span></span><br><span class="line">		typedmemmove(c.elemtype, qp, ep)</span><br><span class="line">		<span class="comment">// 发送游标值加 1</span></span><br><span class="line">		c.sendx++</span><br><span class="line">		<span class="comment">// 如果发送游标值等于容量值，游标值归 0</span></span><br><span class="line">		<span class="keyword">if</span> c.sendx == c.dataqsiz &#123;</span><br><span class="line">			c.sendx = <span class="number">0</span></span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">// 缓冲区的元素数量加一</span></span><br><span class="line">		c.qcount++</span><br><span class="line"></span><br><span class="line">		<span class="comment">// 解锁</span></span><br><span class="line">		unlock(&amp;c.lock)</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 如果不需要阻塞，则直接返回错误</span></span><br><span class="line">	<span class="keyword">if</span> !block &#123;</span><br><span class="line">		unlock(&amp;c.lock)</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// channel 满了，发送方会被阻塞。接下来会构造一个 sudog</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// 获取当前 goroutine 的指针</span></span><br><span class="line">	gp := getg()</span><br><span class="line">	mysg := acquireSudog()</span><br><span class="line">	mysg.releasetime = <span class="number">0</span></span><br><span class="line">	<span class="keyword">if</span> t0 != <span class="number">0</span> &#123;</span><br><span class="line">		mysg.releasetime = <span class="number">-1</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	mysg.elem = ep</span><br><span class="line">	mysg.waitlink = <span class="literal">nil</span></span><br><span class="line">	mysg.g = gp</span><br><span class="line">	mysg.selectdone = <span class="literal">nil</span></span><br><span class="line">	mysg.c = c</span><br><span class="line">	gp.waiting = mysg</span><br><span class="line">	gp.param = <span class="literal">nil</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// 当前 goroutine 进入发送等待队列</span></span><br><span class="line">	c.sendq.enqueue(mysg)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 当前 goroutine 被挂起</span></span><br><span class="line">	goparkunlock(&amp;c.lock, <span class="string">"chan send"</span>, traceEvGoBlockSend, <span class="number">3</span>)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 从这里开始被唤醒了（channel 有机会可以发送了）</span></span><br><span class="line">	<span class="keyword">if</span> mysg != gp.waiting &#123;</span><br><span class="line">		throw(<span class="string">"G waiting list is corrupted"</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	gp.waiting = <span class="literal">nil</span></span><br><span class="line">	<span class="keyword">if</span> gp.param == <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">if</span> c.closed == <span class="number">0</span> &#123;</span><br><span class="line">			throw(<span class="string">"chansend: spurious wakeup"</span>)</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">// 被唤醒后，channel 关闭了。坑爹啊，panic</span></span><br><span class="line">		<span class="built_in">panic</span>(plainError(<span class="string">"send on closed channel"</span>))</span><br><span class="line">	&#125;</span><br><span class="line">	gp.param = <span class="literal">nil</span></span><br><span class="line">	<span class="keyword">if</span> mysg.releasetime &gt; <span class="number">0</span> &#123;</span><br><span class="line">		blockevent(mysg.releasetime-t0, <span class="number">2</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 去掉 mysg 上绑定的 channel</span></span><br><span class="line">	mysg.c = <span class="literal">nil</span></span><br><span class="line">	releaseSudog(mysg)</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 ]]></content>
       <categories>
         <category>Go Channel</category>
@@ -135,6 +139,113 @@
       </categories>
       <tags>
         <tag>Go</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>mysql性能优化分析-索引</title>
+    <url>/2020/12/10/mysql-1mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E5%88%86%E6%9E%90-%E7%B4%A2%E5%BC%95/</url>
+    <content><![CDATA[<h3 id="索引"><a href="#索引" class="headerlink" title="索引"></a>索引</h3><p><strong>正确的</strong>创建<strong>合适的</strong>索引是提升数据库查询性能的基础。  </p>
+<h4 id="索引定义"><a href="#索引定义" class="headerlink" title="索引定义"></a>索引定义</h4><p>索引是为了<strong>加速对表中数据行的检索</strong>而创建的一种<strong>分散存储的数据结构</strong>(<strong>硬盘</strong>级)。</p>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCE6d92e7d19cdb6f66adccd590db707e73/4604" alt="索引"> </p>
+<h4 id="使用索引意义"><a href="#使用索引意义" class="headerlink" title="使用索引意义"></a>使用索引意义</h4><ul>
+<li>索引能极大的<strong>减少存储引擎需要扫描的数据</strong>量。  </li>
+<li>索引可以把<strong>随机IO变成顺序IO</strong>。  </li>
+<li>索引可以帮助我们在<strong>进行分组、排序等操作时，避免使用临时表</strong>。  </li>
+</ul>
+<h4 id="使用B-树的意义"><a href="#使用B-树的意义" class="headerlink" title="使用B+树的意义"></a>使用B+树的意义</h4><p>二叉查找树 Binary Search Tree  </p>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCEa2783e7fc27f7640275ce8564160dae6/4607" alt="二叉树"></p>
+<p>平衡二叉查找树 Balanced Binary Search Tree  </p>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCEfb3cb426ac5d92ba327f4c7db45713d7/4611" alt="平衡二叉查找树"></p>
+<p>二叉树和平衡二叉树的缺点：  </p>
+<ul>
+<li>树结构<strong>太深</strong>  </li>
+<li><p>因为<strong>每个节点都存有数据，数据处的(高)深度决定着他的IO操作次数，IO操作耗时大。</strong>  </p>
+</li>
+<li><p><strong>数据存储太小</strong>  </p>
+</li>
+<li><strong>每一个磁盘块(节点/页，单位4kb)保存的数据量(远远不足4k)太小了</strong>  </li>
+<li>没有很好的利用操作<strong>磁盘IO的数据交换特性</strong>，也没有利用好<strong>磁盘IO的预读能力(空间局部性原理，预读8k、12k等)</strong>，从而带来频繁的IO操作。  </li>
+</ul>
+<p>多路平衡查找树 B-Tree  :</p>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCEbec854b2614188e8b32a6e9074b303fb/4609" alt="绝对平衡树"></p>
+<p>平衡查找树的分支数量与关键字大小有关，可以大致认为：<strong>磁盘块的容量/关键字大小 = 平衡树分支数量。</strong>  </p>
+<p>加强版的多路平衡查找树 Mysql的B+Tree  :</p>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCEd97c9b5339c377c9da18eb444e16e096/4613" alt="B+树"></p>
+<p>B+Tree与B-Tree的区别  </p>
+<ul>
+<li>B+节点关键字搜索采用<strong>闭合区间</strong>  </li>
+<li>B+<strong>非叶节点不保存数据相关信息，只保存关键字和子节点的引用</strong>  </li>
+<li>B+<strong>关键字对应的数据保存在叶子节点中</strong>  </li>
+<li>B+<strong>叶子节点是顺序排列</strong>的，并且<strong>相邻节点具有顺序引用的关系</strong>  </li>
+</ul>
+<p>选择B+树的原因：</p>
+<ul>
+<li>B+树是B-树的变种(PLUS版)多路绝对平衡查找树，他拥有B-树的优势  </li>
+<li>B+树扫库、表能力更强  </li>
+<li>B+树的磁盘读写能力更强  </li>
+<li>B+树的排序能力更强   </li>
+<li>B+树的查询效率更加稳定  </li>
+</ul>
+<h4 id="MySql中B-Tree索引的体现形式"><a href="#MySql中B-Tree索引的体现形式" class="headerlink" title="MySql中B+Tree索引的体现形式"></a>MySql中B+Tree索引的体现形式</h4><p>Myisam:数据和索引分开存储，<strong>数据保存在MYD文件，索引文件为MYI。</strong>  </p>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCE2aeaf2ede7006bd37698f75838363e1f/4615" alt="myisam索引"></p>
+<p>Myisam双索引：</p>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCE0936db5edb235fde048200f263085ac5/4617" alt="Myisam双索引"></p>
+<p>Innodb 索引结构：</p>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCEf78151fc3b8d2cee32a0f2b365710735/4619" alt="Innodb聚集索引"></p>
+<p>未指定索引的情况下InnoDB会自动生成隐式索引:</p>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCEeb0299ef68511f0536eb4e4869882a6b/4621" alt="innoDB双索引"></p>
+<p>使用辅助索引查询某项具体信息时，需要反向到主键索引中查找相关信息（<strong>回表操作</strong>）。</p>
+<p>这样设计的好处就是在数据迁移的时候辅助索引可以不做作相应的指向改变。<br>对于InnoDB的辅助索引，它的<strong>叶子节点存储的是索引值和指向主键索引的位置</strong>。  </p>
+<p>Myisam 与InnoDB对比：</p>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCE1b9cb6be3ce0aa1aedc28039dcd88546/4623" alt="索引对比"></p>
+<h4 id="索引知识点汇总"><a href="#索引知识点汇总" class="headerlink" title="索引知识点汇总"></a>索引知识点汇总</h4><ul>
+<li>列的离散性 ：</li>
+</ul>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCE35d9141176763bbdb5f97dea76b54eb6/4626" alt="列的离散性"></p>
+<p><strong>离散性低的索引会造成选择性差，无法寻找合适的分支，数库会使用全局扫描。</strong>类似男女这种字段如果简历索引则要遍历位图索引。  </p>
+<ul>
+<li>最左匹配原则</li>
+</ul>
+<p>对索引中<strong>关键字进行计算(对比)，一定是从左往右依次进行(每一位)，且不可跳过。</strong></p>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCE375efc932b9f6749d9358428ff3bb6b8/4628" alt="最左匹配原则"></p>
+<ul>
+<li>联合索引  <ul>
+<li>单列索引：节点中关键字[name]  </li>
+<li>联合索引：节点中关键字[name,phoneNum]  </li>
+<li>单列索引是特殊的联合索引  </li>
+</ul>
+</li>
+<li><p>联合索引列选择原则  :</p>
+<ul>
+<li><strong>经常用的列优先</strong> 【最左匹配原则】  </li>
+<li><strong>选择性(离散度)高的列优先</strong>【离散度高原则】  </li>
+<li><strong>宽度小的列优先</strong>【最少空间原则】 </li>
+</ul>
+</li>
+<li><p>覆盖索引  </p>
+<ul>
+<li>如果<strong>索引包含所有满足查询需要的数据的索引成为覆盖索引(Covering Index)，也就是平时所说的不需要回表操作。</strong>  </li>
+<li>使用explain，可以通过输出的extra列来判断，<strong>对于一个索引覆盖查询，显示为using index，MySQL查询优化器在执行查询前会决定是否有索引覆盖查询。</strong>  </li>
+<li>覆盖索引可<strong>减少数据库IO，将随机IO变为顺序IO，可提高查询性能</strong>。</li>
+</ul>
+</li>
+</ul>
+<h4 id="索引使用的注意点"><a href="#索引使用的注意点" class="headerlink" title="索引使用的注意点"></a>索引使用的注意点</h4><ul>
+<li>索引列的数据长度能少则少。  </li>
+<li>索引一定不是越多越好，越全越好，一定是建合适的。  </li>
+<li>匹配列前缀可用到索引 like 9999%，like %9999%、like %9999用不到索引; Where 条件中 not in 和 &lt;&gt;操作无法使用索引;  </li>
+<li>匹配范围值，order by 也可用到索引;   </li>
+<li>多用指定列查询，只返回自己想到的数据列，少用select *;   </li>
+<li>联合索引中如果不是按照索引最左列开始查找，无法使用索引;   </li>
+<li>联合索引中精确匹配最左前列并范围匹配另外一列可以用到索引;   </li>
+<li>联合索引中如果查询中有某个列的范围查询，则其右边的所有列都无法使用索引;  </li>
+</ul>
+]]></content>
+      <categories>
+        <category>mysql</category>
+      </categories>
+      <tags>
+        <tag>mysql</tag>
       </tags>
   </entry>
   <entry>
