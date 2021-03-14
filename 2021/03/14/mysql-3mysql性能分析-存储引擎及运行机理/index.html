@@ -49,15 +49,16 @@
 
   <meta name="description" content="记录生活， 记录学习， 分享知识">
 <meta name="keywords" content="生活，C++, C, go, java, OS, 网络， 存储， 联邦学习， 机器学习，python">
-<meta property="og:type" content="website">
-<meta property="og:title" content="ShifuDong">
-<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;categories&#x2F;Go-interface&#x2F;index.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="mysql-3mysql性能分析-存储引擎及运行机理">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2021&#x2F;03&#x2F;14&#x2F;mysql-3mysql%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E%E5%8F%8A%E8%BF%90%E8%A1%8C%E6%9C%BA%E7%90%86&#x2F;index.html">
 <meta property="og:site_name" content="ShifuDong">
 <meta property="og:description" content="记录生活， 记录学习， 分享知识">
 <meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-03-14T01:38:25.327Z">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://yoursite.com/categories/Go-interface/">
+<link rel="canonical" href="http://yoursite.com/2021/03/14/mysql-3mysql%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E%E5%8F%8A%E8%BF%90%E8%A1%8C%E6%9C%BA%E7%90%86/">
 
 
 <script id="page-configurations">
@@ -65,13 +66,13 @@
   CONFIG.page = {
     sidebar: "",
     isHome: false,
-    isPost: false,
+    isPost: true,
     isPage: false,
     isArchive: false
   };
 </script>
 
-  <title>分类: Go interface | ShifuDong</title>
+  <title>mysql-3mysql性能分析-存储引擎及运行机理 | ShifuDong</title>
   
 
 
@@ -200,197 +201,114 @@
           <div class="content">
             
 
+  <div class="posts-expand">
+      
   
   
-  
-  <div class="post-block">
-    <div class="posts-collapse">
-      <div class="collection-title">
-        <h1 class="collection-header">Go interface
-          <small>分类</small>
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/03/14/mysql-3mysql%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E%E5%8F%8A%E8%BF%90%E8%A1%8C%E6%9C%BA%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          mysql-3mysql性能分析-存储引擎及运行机理
         </h1>
-      </div>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-03-14 09:38:25" itemprop="dateCreated datePublished" datetime="2021-03-14T09:38:25+08:00">2021-03-14</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
       
-    <div class="collection-year">
-      <h1 class="collection-header">2020</h1>
+        
     </div>
 
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
+    
+    
+    
 
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2020-01-05T22:29:16+08:00"
-              content="2020-01-05">
-          01-05
-        </time>
-      </div>
+      <footer class="post-footer">
 
-      <h2 class="post-title">
-          <a class="post-title-link" href="/2020/01/05/Go%20%E6%8E%A5%E5%8F%A3_6%E6%8E%A5%E5%8F%A3%E8%BD%AC%E6%8D%A2%E7%9A%84%E5%8E%9F%E7%90%86/" itemprop="url">
-            <span itemprop="name">Go 接口转换原理</span>
-          </a>
-      </h2>
+        
 
-    </header>
-  </article>
 
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2020-01-05T22:29:16+08:00"
-              content="2020-01-05">
-          01-05
-        </time>
-      </div>
-
-      <h2 class="post-title">
-          <a class="post-title-link" href="/2020/01/05/Go%E6%8E%A5%E5%8F%A3_7%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E5%92%8C%E6%96%AD%E8%A8%80%E7%9A%84%E5%8C%BA%E5%88%AB/" itemprop="url">
-            <span itemprop="name">Go 类型转换和断言</span>
-          </a>
-      </h2>
-
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2020-01-04T22:29:16+08:00"
-              content="2020-01-04">
-          01-04
-        </time>
-      </div>
-
-      <h2 class="post-title">
-          <a class="post-title-link" href="/2020/01/04/Go%20%E6%8E%A5%E5%8F%A3_5%E6%8E%A5%E5%8F%A3%E7%9A%84%E6%9E%84%E9%80%A0%E8%BF%87%E7%A8%8B%E6%98%AF%E6%80%8E%E6%A0%B7%E7%9A%84/" itemprop="url">
-            <span itemprop="name">Go 接口的构造过程</span>
-          </a>
-      </h2>
-
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2020-01-04T21:29:16+08:00"
-              content="2020-01-04">
-          01-04
-        </time>
-      </div>
-
-      <h2 class="post-title">
-          <a class="post-title-link" href="/2020/01/04/Go%20%E6%8E%A5%E5%8F%A3_4%E6%8E%A5%E5%8F%A3%E7%9A%84%E5%8A%A8%E6%80%81%E7%B1%BB%E5%9E%8B%E5%92%8C%E5%8A%A8%E6%80%81%E5%80%BC/" itemprop="url">
-            <span itemprop="name">Go 接口的动态类型和动态值</span>
-          </a>
-      </h2>
-
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2020-01-03T21:29:16+08:00"
-              content="2020-01-03">
-          01-03
-        </time>
-      </div>
-
-      <h2 class="post-title">
-          <a class="post-title-link" href="/2020/01/03/Go%20%E6%8E%A5%E5%8F%A3_3iface%20%E5%92%8C%20eface%20%E7%9A%84%E5%8C%BA%E5%88%AB%E6%98%AF%E4%BB%80%E4%B9%88/" itemprop="url">
-            <span itemprop="name">Go 接口的底层实现</span>
-          </a>
-      </h2>
-
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2020-01-02T21:30:16+08:00"
-              content="2020-01-02">
-          01-02
-        </time>
-      </div>
-
-      <h2 class="post-title">
-          <a class="post-title-link" href="/2020/01/02/Go%20%E6%8E%A5%E5%8F%A3_2Go%E8%AF%AD%E8%A8%80%E4%B8%8E%E9%B8%AD%E5%AD%90%E7%B1%BB%E5%9E%8B%E7%9A%84%E5%85%B3%E7%B3%BB/" itemprop="url">
-            <span itemprop="name">Go鸭子类型</span>
-          </a>
-      </h2>
-
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2020-01-02T21:29:16+08:00"
-              content="2020-01-02">
-          01-02
-        </time>
-      </div>
-
-      <h2 class="post-title">
-          <a class="post-title-link" href="/2020/01/02/Go%20%E6%8E%A5%E5%8F%A3_1Go%E4%B8%8E%20C++%20%E6%8E%A5%E5%8F%A3%E6%9C%89%E4%BD%95%E5%BC%82%E5%90%8C/" itemprop="url">
-            <span itemprop="name">Go接口与C++接口的异同</span>
-          </a>
-      </h2>
-
-    </header>
-  </article>
-    <div class="collection-year">
-      <h1 class="collection-header">2019</h1>
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/03/09/%E5%8D%9A%E5%AE%A2%E6%B7%BB%E5%8A%A0%E8%AF%84%E8%AE%BA/" rel="prev" title="hexo搭建博客并添加评论">
+      <i class="fa fa-chevron-left"></i> hexo搭建博客并添加评论
+    </a></div>
+      <div class="post-nav-item"></div>
     </div>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2019-12-30T21:29:16+08:00"
-              content="2019-12-30">
-          12-30
-        </time>
-      </div>
-
-      <h2 class="post-title">
-          <a class="post-title-link" href="/2019/12/30/Go%20%E6%8E%A5%E5%8F%A3_0Go%E7%94%A8%20interface%20%E5%AE%9E%E7%8E%B0%E5%A4%9A%E6%80%81/" itemprop="url">
-            <span itemprop="name">Go 用interface实现多态</span>
-          </a>
-      </h2>
-
-    </header>
+      </footer>
+    
   </article>
+  
+  
+  
 
-    </div>
   </div>
-  
-  
-  
-
-  
-
 
 
           </div>
           
+      <div class="tabs tabs-comment">
+        <ul class="nav-tabs">
+            <li class="tab"><a href="#comment-gitalk">gitalk</a></li>
+            <li class="tab"><a href="#comment-livere">livere</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane gitalk" id="comment-gitalk">
+              <div class="comments" id="gitalk-container"></div>
+            </div>
+            <div class="tab-pane livere" id="comment-livere">
+              
+  <div class="comments" id="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81MjkwMy8yOTM4MA=="></div>
+  </div>
+  
+            </div>
+        </div>
+      </div>
+      <script>
+        window.addEventListener('tabs:register', () => {
+          let activeClass = 'gitalk';
+            activeClass = localStorage.getItem('comments_active') || activeClass;
+          if (activeClass) {
+            let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+            if (activeTab) {
+              activeTab.click();
+            }
+          }
+        });
+        window.addEventListener('tabs:click', event => {
+          let commentClass = event.target.classList[1];
+          localStorage.setItem('comments_active', commentClass);
+        });
+      </script>
 
         </div>
           
@@ -597,7 +515,37 @@ window.addEventListener('pjax:success', () => {
 
   
 
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
 
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'a6ee5b68c97a3db64850',
+      clientSecret: '1dfa06f32032431e4af79b80f9ddf9dfd13dbda2',
+      repo: 'dongshifu.github.io',
+      owner: 'dongshifu',
+      admin: ['dongshifu'],
+      id: 'a0f3d4eb2b340883c916b515a2cd1b15',
+        language: 'zh-CN',
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script>
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+</script>
 
     </div>
 </body>
