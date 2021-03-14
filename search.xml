@@ -6,6 +6,101 @@
     <content><![CDATA[]]></content>
   </entry>
   <entry>
+    <title>mysql性能优化-存储引擎</title>
+    <url>/2021/03/14/mysql-2mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/</url>
+    <content><![CDATA[<h3 id="Mysql插拔式存储引擎"><a href="#Mysql插拔式存储引擎" class="headerlink" title="Mysql插拔式存储引擎"></a>Mysql插拔式存储引擎</h3><h4 id="mysql存储引擎简介"><a href="#mysql存储引擎简介" class="headerlink" title="mysql存储引擎简介"></a>mysql存储引擎简介</h4><ul>
+<li>插拔式的插件方式。  </li>
+<li><strong>存储引擎是指定在表之上的</strong>，即<strong>一个库中的每一个表都可以指定专用的存储引擎。</strong>  </li>
+<li>不管表采用什么样的存储引擎，都会在数据区产生对应的一个<strong>frm文件(表结构定义描述文件)。</strong></li>
+</ul>
+<h4 id="Innodb"><a href="#Innodb" class="headerlink" title="Innodb"></a>Innodb</h4><ul>
+<li><p>Mysql5.5及以后版本的默认存储引擎  </p>
+</li>
+<li><p>Key Advantages:  </p>
+<ul>
+<li>Its DML operations follow the ACID model [<strong>事务ACID</strong>]  </li>
+<li>Row-level locking[<strong>行级锁</strong>]  </li>
+<li>InnoDB tables arrange your data on disk to optimize queries based on primary keys[<strong>聚集索引(主键索引)方式进行数据存储</strong>]  </li>
+<li>To maintain data integrity, InnoDB supports FOREIGN KEY constraints[<strong>支持外键关系保证数据完整性</strong>]  </li>
+</ul>
+</li>
+</ul>
+<h4 id="Myisam"><a href="#Myisam" class="headerlink" title="Myisam"></a>Myisam</h4><ul>
+<li><p>Mysql5.5版本之前的默认存储引擎 ,较多的系统表也还是使用这个存储引,系统临时表也会用到Myisam存储引擎  </p>
+</li>
+<li><p>特点:  </p>
+<ul>
+<li>select count(*) from table 无需进行数据的扫描  </li>
+<li>数据(MYD)和索引(MYI)分开存储  </li>
+<li>表级锁  </li>
+<li>不支持事务  </li>
+</ul>
+</li>
+</ul>
+<h4 id="Memory存储引擎"><a href="#Memory存储引擎" class="headerlink" title="Memory存储引擎"></a>Memory存储引擎</h4><ul>
+<li><strong>数据都是存储在内存中，IO效率要比其他引擎高很多。</strong>  </li>
+<li><p><strong>服务重启数据丢失，内存数据表默认只有16M</strong>。  </p>
+</li>
+<li><p>特点:  </p>
+<ul>
+<li>支持hash索引，B tree索引，<strong>默认hash(查找复杂度0(1))</strong>  </li>
+<li>字段长度都是固定长度varchar(32)=char(32)   </li>
+<li>不支持大数据存储类型字段如 blog，text  </li>
+<li>表级锁  </li>
+</ul>
+</li>
+<li><p>应用场景:  </p>
+<ul>
+<li>等值查找热度较高数据  </li>
+<li>查询结果内存中的计算，大多数都是采用这种存储引擎  </li>
+<li>作为临时表存储需计算的数据  </li>
+</ul>
+</li>
+</ul>
+<h4 id="Archive存储引擎"><a href="#Archive存储引擎" class="headerlink" title="Archive存储引擎"></a>Archive存储引擎</h4><ul>
+<li><p>压缩协议进行数据的存储 ,数据存储为ARZ文件格式  </p>
+</li>
+<li><p>特点:  </p>
+<ul>
+<li>只支持insert和select两种操作   </li>
+<li>只允许自增ID列建立索引  </li>
+<li>行级锁  </li>
+<li>不支持事务  </li>
+<li>数据占用磁盘少  </li>
+</ul>
+</li>
+<li><p>应用场景:  </p>
+<ul>
+<li>日志系统  </li>
+<li>大量的设备数据采集 </li>
+</ul>
+</li>
+</ul>
+<h4 id="CSV存储引擎"><a href="#CSV存储引擎" class="headerlink" title="CSV存储引擎"></a>CSV存储引擎</h4><ul>
+<li>数据存储以CSV文件  </li>
+<li><p>特点:  </p>
+<ul>
+<li>不能定义索引、列定义必须为NOT NULL、不能设置自增列 —&gt;不适用大表或者数据的在线处理   </li>
+<li>CSV数据的存储用,隔开，可直接编辑CSV文件进行数据的编排 —&gt;数据安全性低  </li>
+<li>注:编辑之后，要生效使用flush table XXX 命令  </li>
+</ul>
+</li>
+<li><p>应用场景:  </p>
+<ul>
+<li>数据的快速导出导入 表格直接转换成CSV  </li>
+</ul>
+</li>
+</ul>
+<h4 id="各引擎对比"><a href="#各引擎对比" class="headerlink" title="各引擎对比"></a>各引擎对比</h4><p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCE5ceb2ce6ff860d63de3e2ec46528c1cc/4630" alt=""></p>
+]]></content>
+      <categories>
+        <category>mysql</category>
+      </categories>
+      <tags>
+        <tag>mysql</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>hexo搭建博客并添加评论</title>
     <url>/2021/03/09/%E5%8D%9A%E5%AE%A2%E6%B7%BB%E5%8A%A0%E8%AF%84%E8%AE%BA/</url>
     <content><![CDATA[<h3 id="hexo搭建博客并添加评论"><a href="#hexo搭建博客并添加评论" class="headerlink" title="hexo搭建博客并添加评论"></a>hexo搭建博客并添加评论</h3><p>之前搭建博客评论功能的时候使用的是gitalk, 但使用gitalk必须创建issue来进行评论，使用起来并不是很方便。</p>

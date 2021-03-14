@@ -205,6 +205,104 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/30/Go%20%E6%8E%A5%E5%8F%A3_0Go%E7%94%A8%20interface%20%E5%AE%9E%E7%8E%B0%E5%A4%9A%E6%80%81/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/12/30/Go%20%E6%8E%A5%E5%8F%A3_0Go%E7%94%A8%20interface%20%E5%AE%9E%E7%8E%B0%E5%A4%9A%E6%80%81/" class="post-title-link" itemprop="url">Go 用interface实现多态</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-12-30 21:29:16" itemprop="dateCreated datePublished" datetime="2019-12-30T21:29:16+08:00">2019-12-30</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-08 14:33:17" itemprop="dateModified" datetime="2021-03-08T14:33:17+08:00">2021-03-08</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Go-interface/" itemprop="url" rel="index">
+                    <span itemprop="name">Go interface</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="Go-用interface实现多态"><a href="#Go-用interface实现多态" class="headerlink" title="Go 用interface实现多态"></a>Go 用interface实现多态</h3><p>Go 语言并没有设计诸如虚函数、纯虚函数、继承、多重继承等概念，但它通过接口却非常优雅地支持了面向对象的特性。</p>
+<p>多态是一种运行期的行为，它有以下几个特点：</p>
+<blockquote>
+<ol>
+<li>一种类型具有多种类型的能力</li>
+<li>允许不同的对象对同一消息做出灵活的反应</li>
+<li>以一种通用的方式对待个使用的对象</li>
+<li>非动态语言必须通过继承和接口的方式来实现</li>
+</ol>
+</blockquote>
+<p>看一个实现了多态的代码例子：</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	qcrao := Student&#123;age: <span class="number">18</span>&#125;</span><br><span class="line">	whatJob(&amp;qcrao)</span><br><span class="line"></span><br><span class="line">	growUp(&amp;qcrao)</span><br><span class="line">	fmt.Println(qcrao)</span><br><span class="line"></span><br><span class="line">	stefno := Programmer&#123;age: <span class="number">100</span>&#125;</span><br><span class="line">	whatJob(stefno)</span><br><span class="line"></span><br><span class="line">	growUp(stefno)</span><br><span class="line">	fmt.Println(stefno)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">whatJob</span><span class="params">(p Person)</span></span> &#123;</span><br><span class="line">	p.job()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">growUp</span><span class="params">(p Person)</span></span> &#123;</span><br><span class="line">	p.growUp()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Person <span class="keyword">interface</span> &#123;</span><br><span class="line">	job()</span><br><span class="line">	growUp()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Student <span class="keyword">struct</span> &#123;</span><br><span class="line">	age <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p Student)</span> <span class="title">job</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Println(<span class="string">"I am a student."</span>)</span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *Student)</span> <span class="title">growUp</span><span class="params">()</span></span> &#123;</span><br><span class="line">	p.age += <span class="number">1</span></span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Programmer <span class="keyword">struct</span> &#123;</span><br><span class="line">	age <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p Programmer)</span> <span class="title">job</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Println(<span class="string">"I am a programmer."</span>)</span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p Programmer)</span> <span class="title">growUp</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="comment">// 程序员老得太快 ^_^</span></span><br><span class="line">	p.age += <span class="number">10</span></span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>代码里先定义了 1 个 <code>Person</code> 接口，包含两个函数：</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">job()</span><br><span class="line">growUp()</span><br></pre></td></tr></table></figure>
+<p>然后，又定义了 2 个结构体，<code>Student</code> 和 <code>Programmer</code>，同时，类型 <code>*Student</code>、<code>Programmer</code> 实现了 <code>Person</code> 接口定义的两个函数。注意，<code>*Student</code> 类型实现了接口， <code>Student</code> 类型却没有。</p>
+<p>之后，我又定义了函数参数是 <code>Person</code> 接口的两个函数：</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">whatJob</span><span class="params">(p Person)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">growUp</span><span class="params">(p Person)</span></span></span><br></pre></td></tr></table></figure>
+<p><code>main</code> 函数里先生成 <code>Student</code> 和 <code>Programmer</code> 的对象，再将它们分别传入到函数 <code>whatJob</code> 和 <code>growUp</code>。函数中，直接调用接口函数，实际执行的时候是看最终传入的实体类型是什么，调用的是实体类型实现的函数。于是，不同对象针对同一消息就有多种表现，<code>多态</code>就实现了。</p>
+<p>更深入一点来说的话，在函数 <code>whatJob()</code> 或者 <code>growUp()</code> 内部，接口 <code>person</code> 绑定了实体类型 <code>*Student</code> 或者 <code>Programmer</code>。根据前面分析的 <code>iface</code> 源码，这里会直接调用 <code>fun</code> 里保存的函数，类似于： <code>s.tab-&gt;fun[0]</code>，而因为 <code>fun</code> 数组里保存的是实体类型实现的函数，所以当函数传入不同的实体类型时，调用的实际上是不同的函数实现，从而实现多态。</p>
+<p>运行一下代码：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">I am a student.</span><br><span class="line">&#123;19&#125;</span><br><span class="line">I am a programmer.</span><br><span class="line">&#123;100&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><p>【各种面向对象的名词】<a href="https://cyent.github.io/golang/other/oo/" target="_blank" rel="noopener">https://cyent.github.io/golang/other/oo/</a></p>
+<p>【多态与鸭子类型】<a href="https://www.jb51.net/article/116025.htm" target="_blank" rel="noopener">https://www.jb51.net/article/116025.htm</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/27/c_%E6%9D%A1%E4%BB%B6%E7%BC%96%E8%AF%91/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1934,159 +2032,11 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/03/06/linux_%E7%BD%91%E7%BB%9C01%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/03/06/linux_%E7%BD%91%E7%BB%9C01%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80/" class="post-title-link" itemprop="url">网络基础-1</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-03-06 19:29:16" itemprop="dateCreated datePublished" datetime="2019-03-06T19:29:16+08:00">2019-03-06</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-12 15:12:38" itemprop="dateModified" datetime="2021-03-12T15:12:38+08:00">2021-03-12</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index">
-                    <span itemprop="name">网络</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="协议"><a href="#协议" class="headerlink" title="协议"></a>协议</h3><p>从应用的角度出发，协议可理解为“规则”，是数据传输和数据解释的规则。</p>
-<p>协议双发之间遵守的协议中可以称为<strong>原始协议</strong>。当此协议被更多的人采用，不断的增加、改进、维护、完善。最终形成一个稳定的、完整的协议，被广泛应用于各种应用中，此时该协议就可以成为一个<strong>标准协议</strong>。</p>
-<p>TCP协议注重数据的<strong>传输</strong>。http协议着重于数据的<strong>解释</strong>。</p>
-<h4 id="典型协议"><a href="#典型协议" class="headerlink" title="典型协议"></a>典型协议</h4><ul>
-<li>应用层 常见的协议有HTTP协议，FTP协议。<ul>
-<li>HTTP(超文本传输协议，Hyper Text Transfer Protocol）是互联网上应用最为广泛的一种网络协议</li>
-<li>FTP文件传输协议（File Transfer Protocol）。</li>
-</ul>
-</li>
-<li><p>传输层 常见协议有TCP/UDP协议。</p>
-<ul>
-<li>TCP（传输控制协议，Transmission Control Protocol）是一种面向连接的、可靠的、基于字节流的传输层通信协议。</li>
-<li>UDP用户数据报协议（User Datagram Protocol）是OSI参考模型中一种无连接的传输层协议，提供面向事务的简单不可靠信息传送服务。</li>
-</ul>
-</li>
-<li><p>网络层 常见协议有IP协议、ICMP协议、IGMP协议。</p>
-<ul>
-<li>IP协议是因特网互联协议（Internet Protocol）。</li>
-<li>ICMP协议是Internet控制报文协议（Internet Control Message Protocol）它是TCP/IP协议族的一个子协议，用于在IP主机、路由器之间传递控制消息。</li>
-<li>IGMP协议是 Internet 组管理协议（Internet Group Management Protocol），是因特网协议家族中的一个组播协议。该协议运行在主机和组播路由器之间。</li>
-</ul>
-</li>
-<li><p>网络接口层 常见协议有ARP协议、RARP协议。</p>
-<ul>
-<li>ARP协议是正向地址解析协议Address Resolution Protocol，通过已知的IP，寻找对应主机的MAC</li>
-<li>RARP是反向地址转换协议，通过MAC地址确定IP地址。</li>
-</ul>
-</li>
-</ul>
-<h3 id="网络应用程序设计模式"><a href="#网络应用程序设计模式" class="headerlink" title="网络应用程序设计模式"></a>网络应用程序设计模式</h3><h4 id="C-S模式"><a href="#C-S模式" class="headerlink" title="C/S模式"></a>C/S模式</h4><p>传统的网络应用设计模式，客户机(client)/服务器(server)模式。需要<strong>在通讯两端各自部署客户机和服务器来完成数据通信。</strong></p>
-<p>优点：</p>
-<ul>
-<li><p>客户端位于目标主机上可以保证性能，将数据缓存至客户端本地，从而<strong>提高数据传输效率</strong>。</p>
-</li>
-<li><p>c端和s端都需要自己定义，协议使用灵活</p>
-</li>
-<li>可以提前在本地进行<strong>大量数据的缓存处理，</strong>从而提高观感</li>
-</ul>
-<p>缺点：</p>
-<ul>
-<li>从用户角度出发，需要将客户端安插至用户主机上，对用户主机的<strong>安全性构成威胁</strong>。</li>
-<li>开发工作量大，调试困难</li>
-</ul>
-<h4 id="B-S模式"><a href="#B-S模式" class="headerlink" title="B/S模式"></a>B/S模式</h4><p>浏览器(browser)/服务器(server)模式。只需在<strong>一端部署服务器</strong>，而另外一端使用每台PC都默认配置的<strong>浏览器</strong>即可完成数据的传输。</p>
-<p>优点：</p>
-<ul>
-<li>使用标准浏览器作为客户端，其工作<strong>开发量较小</strong>。<strong>只需开发服务器端</strong>即可。</li>
-<li>由于其采用浏览器显示数据，因此<strong>移植性非常好</strong>，<strong>不受平台限制</strong>。</li>
-</ul>
-<p>缺点：</p>
-<ul>
-<li><strong>网络应用支持受限</strong>。</li>
-<li>没有客户端放到对方主机上，<strong>缓存数据不尽如人意</strong>，从而传输数据量受到限制。应用的观感大打折扣。</li>
-<li>必须与浏览器一样，采用标准http协议进行通信，<strong>协议选择不灵活</strong>。</li>
-</ul>
-<h3 id="分层模型"><a href="#分层模型" class="headerlink" title="分层模型"></a>分层模型</h3><p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE3d9424e51d6b2ac2e8fe2728441e3161/4555" alt="分层模型图"></p>
-<p>四层模型(TCP/IP模型)：</p>
-<p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE1cf2e4cebb2017a705ff317f17e9d386/4557" alt="四层模型"></p>
-<p>一般在应用开发过程中，讨论最多的是TCP/IP模型。</p>
-<h4 id="通信过程"><a href="#通信过程" class="headerlink" title="通信过程"></a>通信过程</h4><p>两台计算机通过TCP/IP协议通讯的过程如下所示：</p>
-<p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE808825184e078024bd1e6579f8badc78/4559" alt="两台计算机通过TCP/IP协议通讯的过程"></p>
-<p>上图对应两台计算机在<strong>同一网段中</strong>的情况，如果<strong>两台计算机在不同的网段</strong>中，那么数据<strong>从一台计算机到另一台计算机传输过程中要经过一个或多个路由器</strong>，如下图所示：</p>
-<p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE82ddd64ede0163775ec686aa8c4f2ef4/4561" alt="不同网段通信过程"></p>
-<h6 id="链路层工作"><a href="#链路层工作" class="headerlink" title="链路层工作"></a>链路层工作</h6><p>链路层有<strong>以太网、令牌环网</strong>等标准，<strong>链路层负责网卡设备的驱动、帧同步</strong>（即从网线上检测到什么信号算作新帧的开始）、<strong>冲突检测</strong>（如果检测到冲突就自动重发）、<strong>数据差错校验</strong>等工作。交换机是工作在链路层的网络设备，可以在不同的链路层网络之间转发数据帧（比如十兆以太网和百兆以太网之间、以太网和令牌环网之间），由于不同链路层的帧格式不同<strong>，交换机要将进来的数据包拆掉链路层首部重新封装之后再转发。</strong></p>
-<h6 id="网络层工作"><a href="#网络层工作" class="headerlink" title="网络层工作"></a>网络层工作</h6><p>网络层的IP协议是构成Internet的基础。<strong>Internet上的主机通过IP地址来标识</strong>，Internet上有大量<strong>路由器负责根据IP地址选择合适的路径转发数据包，数据包从Internet上的源主机到目的主机往往要经过十多个路由器</strong>。<strong>路由器是工作在第三层的网络设备，同时兼有交换机的功能，可以在不同的链路层接口之间转发数据包，因此路由器需要将进来的数据包拆掉网络层和链路层两层首部并重新封装。</strong> <strong>IP协议不保证传输的可靠性，数据包在传输过程中可能丢失，可靠性可以在上层协议或应用程序中提供支持。</strong></p>
-<p>网络层负责点到点（ptop，point-to-point）的传输（这里的“点”指主机或路由器）</p>
-<h6 id="传输层工作"><a href="#传输层工作" class="headerlink" title="传输层工作"></a>传输层工作</h6><p>传输层负责<strong>端到端</strong>（end-to-end）的传输（这里的“端”指源主机和目的主机）。传输层可选择TCP或UDP协议。</p>
-<p>TCP是一种面向连接的、可靠的协议，有点像打电话，双方拿起电话互通身份之后就建立了连接，然后说话就行了，这边说的话那边保证听得到，并且是按说话的顺序听到的，说完话挂机断开连接。<strong>也就是说TCP传输的双方需要首先建立连接，之后由TCP协议保证数据收发的可靠性，丢失的数据包自动重发，上层应用程序收到的总是可靠的数据流，通讯之后关闭连接。</strong></p>
-<p>UDP是无连接的传输协议，不保证可靠性，有点像寄信，信写好放到邮筒里，既不能保证信件在邮递过程中不会丢失，也不能保证信件寄送顺序。<strong>使用UDP协议的应用程序需要自己完成丢包重发、消息排序等工作。</strong></p>
-<p>目的主机收到数据包后，如何经过各层协议栈最后到达应用程序呢？其过程如下图所示：</p>
-<p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE92061dfc6ebbb29f1358200962d530e0/4563" alt="数据包传输过程"></p>
-<p>以太网驱动程序首先根据以太网首部中的“上层协议”字段确定该数据帧的有效载荷（<strong>payload，指除去协议首部之外实际传输的数据</strong>）是IP、ARP还是RARP协议的数据报，然后交给相应的协议处理。<strong>假如是IP数据报，IP协议再根据IP首部中的“上层协议”字段确定该数据报的有效载荷是TCP、UDP、ICMP还是IGMP，然后交给相应的协议处理。假如是TCP段或UDP段，TCP或UDP协议再根据TCP首部或UDP首部的“端口号”字段确定应该将应用层数据交给哪个用户进程。IP地址是标识网络中不同主机的地址，而端口号就是同一台主机上标识不同进程的地址，IP地址和端口号合起来标识网络中唯一的进程。</strong></p>
-<p>虽然IP、ARP和RARP数据报都需要以太网驱动程序来封装成帧，但是从功能上划分，ARP和RARP属于链路层，IP属于网络层。虽然ICMP、IGMP、TCP、UDP的数据都需要IP协议来封装成数据报，但是从功能上划分，ICMP、IGMP与IP同属于网络层，TCP和UDP属于传输层。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span>
+    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -2132,7 +2082,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">30</span>
+          <span class="site-state-item-count">31</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
