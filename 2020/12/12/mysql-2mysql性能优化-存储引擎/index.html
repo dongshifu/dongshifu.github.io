@@ -51,16 +51,16 @@
 <meta name="keywords" content="mysql">
 <meta property="og:type" content="article">
 <meta property="og:title" content="mysql性能优化-存储引擎">
-<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2021&#x2F;03&#x2F;14&#x2F;mysql-2mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E&#x2F;index.html">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;12&#x2F;12&#x2F;mysql-2mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E&#x2F;index.html">
 <meta property="og:site_name" content="ShifuDong">
 <meta property="og:description" content="Mysql插拔式存储引擎mysql存储引擎简介 插拔式的插件方式。   存储引擎是指定在表之上的，即一个库中的每一个表都可以指定专用的存储引擎。   不管表采用什么样的存储引擎，都会在数据区产生对应的一个frm文件(表结构定义描述文件)。  Innodb Mysql5.5及以后版本的默认存储引擎    Key Advantages:    Its DML operations follow the">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;42554684dcfc6e607deaa29d065ade7e&#x2F;xmlnote&#x2F;WEBRESOURCE5ceb2ce6ff860d63de3e2ec46528c1cc&#x2F;4630">
-<meta property="og:updated_time" content="2021-03-14T01:40:02.792Z">
+<meta property="og:updated_time" content="2021-03-14T01:43:59.760Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;42554684dcfc6e607deaa29d065ade7e&#x2F;xmlnote&#x2F;WEBRESOURCE5ceb2ce6ff860d63de3e2ec46528c1cc&#x2F;4630">
 
-<link rel="canonical" href="http://yoursite.com/2021/03/14/mysql-2mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/">
+<link rel="canonical" href="http://yoursite.com/2020/12/12/mysql-2mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/">
 
 
 <script id="page-configurations">
@@ -208,7 +208,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/03/14/mysql-2mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/12/mysql-2mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -230,10 +230,16 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2021-03-14 09:05:57 / 修改时间：09:40:02" itemprop="dateCreated datePublished" datetime="2021-03-14T09:05:57+08:00">2021-03-14</time>
+              <time title="创建时间：2020-12-12 09:05:57" itemprop="dateCreated datePublished" datetime="2020-12-12T09:05:57+08:00">2020-12-12</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-14 09:43:59" itemprop="dateModified" datetime="2021-03-14T09:43:59+08:00">2021-03-14</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="fa fa-folder-o"></i>
@@ -359,12 +365,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2021/03/09/%E5%8D%9A%E5%AE%A2%E6%B7%BB%E5%8A%A0%E8%AF%84%E8%AE%BA/" rel="prev" title="hexo搭建博客并添加评论">
-      <i class="fa fa-chevron-left"></i> hexo搭建博客并添加评论
+    <a href="/2020/12/10/mysql-1mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E5%88%86%E6%9E%90-%E7%B4%A2%E5%BC%95/" rel="prev" title="mysql性能优化分析-索引">
+      <i class="fa fa-chevron-left"></i> mysql性能优化分析-索引
     </a></div>
       <div class="post-nav-item">
-    <a href="/2021/03/14/mysql-3mysql%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E%E5%8F%8A%E8%BF%90%E8%A1%8C%E6%9C%BA%E7%90%86/" rel="next" title="mysql-3mysql性能分析-存储引擎及运行机理">
-      mysql-3mysql性能分析-存储引擎及运行机理 <i class="fa fa-chevron-right"></i>
+    <a href="/2020/12/14/mysql-3mysql%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90-%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E5%8F%8A%E8%BF%90%E8%A1%8C%E6%9C%BA%E7%90%86/" rel="next" title="mysql-3mysql性能分析-体系结构及运行机理">
+      mysql-3mysql性能分析-体系结构及运行机理 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -630,7 +636,7 @@ window.addEventListener('pjax:success', () => {
       repo: 'dongshifu.github.io',
       owner: 'dongshifu',
       admin: ['dongshifu'],
-      id: 'b8b67046b728f7212b43663d75a19012',
+      id: '9455b9f7b380189e3312fac154991e90',
         language: 'zh-CN',
       distractionFreeMode: 'true'
     });

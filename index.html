@@ -205,216 +205,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/03/14/mysql-3mysql%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E%E5%8F%8A%E8%BF%90%E8%A1%8C%E6%9C%BA%E7%90%86/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/03/14/mysql-3mysql%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E%E5%8F%8A%E8%BF%90%E8%A1%8C%E6%9C%BA%E7%90%86/" class="post-title-link" itemprop="url">mysql-3mysql性能分析-存储引擎及运行机理</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-03-14 09:38:25" itemprop="dateCreated datePublished" datetime="2021-03-14T09:38:25+08:00">2021-03-14</time>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/03/14/mysql-2mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/03/14/mysql-2mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/" class="post-title-link" itemprop="url">mysql性能优化-存储引擎</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2021-03-14 09:05:57 / 修改时间：09:40:02" itemprop="dateCreated datePublished" datetime="2021-03-14T09:05:57+08:00">2021-03-14</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/mysql/" itemprop="url" rel="index">
-                    <span itemprop="name">mysql</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="Mysql插拔式存储引擎"><a href="#Mysql插拔式存储引擎" class="headerlink" title="Mysql插拔式存储引擎"></a>Mysql插拔式存储引擎</h3><h4 id="mysql存储引擎简介"><a href="#mysql存储引擎简介" class="headerlink" title="mysql存储引擎简介"></a>mysql存储引擎简介</h4><ul>
-<li>插拔式的插件方式。  </li>
-<li><strong>存储引擎是指定在表之上的</strong>，即<strong>一个库中的每一个表都可以指定专用的存储引擎。</strong>  </li>
-<li>不管表采用什么样的存储引擎，都会在数据区产生对应的一个<strong>frm文件(表结构定义描述文件)。</strong></li>
-</ul>
-<h4 id="Innodb"><a href="#Innodb" class="headerlink" title="Innodb"></a>Innodb</h4><ul>
-<li><p>Mysql5.5及以后版本的默认存储引擎  </p>
-</li>
-<li><p>Key Advantages:  </p>
-<ul>
-<li>Its DML operations follow the ACID model [<strong>事务ACID</strong>]  </li>
-<li>Row-level locking[<strong>行级锁</strong>]  </li>
-<li>InnoDB tables arrange your data on disk to optimize queries based on primary keys[<strong>聚集索引(主键索引)方式进行数据存储</strong>]  </li>
-<li>To maintain data integrity, InnoDB supports FOREIGN KEY constraints[<strong>支持外键关系保证数据完整性</strong>]  </li>
-</ul>
-</li>
-</ul>
-<h4 id="Myisam"><a href="#Myisam" class="headerlink" title="Myisam"></a>Myisam</h4><ul>
-<li><p>Mysql5.5版本之前的默认存储引擎 ,较多的系统表也还是使用这个存储引,系统临时表也会用到Myisam存储引擎  </p>
-</li>
-<li><p>特点:  </p>
-<ul>
-<li>select count(*) from table 无需进行数据的扫描  </li>
-<li>数据(MYD)和索引(MYI)分开存储  </li>
-<li>表级锁  </li>
-<li>不支持事务  </li>
-</ul>
-</li>
-</ul>
-<h4 id="Memory存储引擎"><a href="#Memory存储引擎" class="headerlink" title="Memory存储引擎"></a>Memory存储引擎</h4><ul>
-<li><strong>数据都是存储在内存中，IO效率要比其他引擎高很多。</strong>  </li>
-<li><p><strong>服务重启数据丢失，内存数据表默认只有16M</strong>。  </p>
-</li>
-<li><p>特点:  </p>
-<ul>
-<li>支持hash索引，B tree索引，<strong>默认hash(查找复杂度0(1))</strong>  </li>
-<li>字段长度都是固定长度varchar(32)=char(32)   </li>
-<li>不支持大数据存储类型字段如 blog，text  </li>
-<li>表级锁  </li>
-</ul>
-</li>
-<li><p>应用场景:  </p>
-<ul>
-<li>等值查找热度较高数据  </li>
-<li>查询结果内存中的计算，大多数都是采用这种存储引擎  </li>
-<li>作为临时表存储需计算的数据  </li>
-</ul>
-</li>
-</ul>
-<h4 id="Archive存储引擎"><a href="#Archive存储引擎" class="headerlink" title="Archive存储引擎"></a>Archive存储引擎</h4><ul>
-<li><p>压缩协议进行数据的存储 ,数据存储为ARZ文件格式  </p>
-</li>
-<li><p>特点:  </p>
-<ul>
-<li>只支持insert和select两种操作   </li>
-<li>只允许自增ID列建立索引  </li>
-<li>行级锁  </li>
-<li>不支持事务  </li>
-<li>数据占用磁盘少  </li>
-</ul>
-</li>
-<li><p>应用场景:  </p>
-<ul>
-<li>日志系统  </li>
-<li>大量的设备数据采集 </li>
-</ul>
-</li>
-</ul>
-<h4 id="CSV存储引擎"><a href="#CSV存储引擎" class="headerlink" title="CSV存储引擎"></a>CSV存储引擎</h4><ul>
-<li>数据存储以CSV文件  </li>
-<li><p>特点:  </p>
-<ul>
-<li>不能定义索引、列定义必须为NOT NULL、不能设置自增列 —&gt;不适用大表或者数据的在线处理   </li>
-<li>CSV数据的存储用,隔开，可直接编辑CSV文件进行数据的编排 —&gt;数据安全性低  </li>
-<li>注:编辑之后，要生效使用flush table XXX 命令  </li>
-</ul>
-</li>
-<li><p>应用场景:  </p>
-<ul>
-<li>数据的快速导出导入 表格直接转换成CSV  </li>
-</ul>
-</li>
-</ul>
-<h4 id="各引擎对比"><a href="#各引擎对比" class="headerlink" title="各引擎对比"></a>各引擎对比</h4><p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCE5ceb2ce6ff860d63de3e2ec46528c1cc/4630" alt=""></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/03/09/%E5%8D%9A%E5%AE%A2%E6%B7%BB%E5%8A%A0%E8%AF%84%E8%AE%BA/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -851,6 +641,402 @@
 </div>
 <p>总结一下，<strong>发生 panic 的情况有三种：向一个关闭的 channel 进行写操作；关闭一个 nil 的 channel；重复关闭一个 channel。</strong></p>
 <p>读、写一个 nil channel 都会被阻塞。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/14/mysql-3mysql%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90-%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E5%8F%8A%E8%BF%90%E8%A1%8C%E6%9C%BA%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/12/14/mysql-3mysql%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90-%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E5%8F%8A%E8%BF%90%E8%A1%8C%E6%9C%BA%E7%90%86/" class="post-title-link" itemprop="url">mysql-3mysql性能分析-体系结构及运行机理</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-12-14 09:38:25" itemprop="dateCreated datePublished" datetime="2020-12-14T09:38:25+08:00">2020-12-14</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-15 10:17:15" itemprop="dateModified" datetime="2021-03-15T10:17:15+08:00">2021-03-15</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mysql/" itemprop="url" rel="index">
+                    <span itemprop="name">mysql</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="Mysql体系结构"><a href="#Mysql体系结构" class="headerlink" title="Mysql体系结构"></a>Mysql体系结构</h3><p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCEbd1b5f6d51598d464a432a11944e088c/4632" alt="mysql体系结构"></p>
+<ul>
+<li><p>Client Connectors  </p>
+<ul>
+<li>接入方 支持协议很多  </li>
+<li>Management Serveices &amp; Utilities 系统管理和控制工具，mysql dump、 mysql复制集群、分区管理等  </li>
+</ul>
+</li>
+<li><p>Connection Pool  </p>
+<ul>
+<li>连接池:管理缓冲用户连接、用户名、<strong>密码、权限校验</strong>、线程处理等需要缓存的需求  </li>
+</ul>
+</li>
+<li><p>SQL Interface  </p>
+<ul>
+<li>SQL接口:接受用户的SQL命令，并且返回用户需要查询的结果  </li>
+</ul>
+</li>
+<li><p>Parser  </p>
+<ul>
+<li>解析器，SQL命令传递到解析器的时候会被<strong>解析器验证和解析</strong>。解析器是由Lex和YACC实现的  </li>
+</ul>
+</li>
+<li><p>Optimizer  </p>
+<ul>
+<li>查询优化器，<strong>SQL语句在查询之前会使用查询优化器对查询进行优化</strong>  </li>
+</ul>
+</li>
+<li><p>Cache和Buffer(高速缓存区)  </p>
+<ul>
+<li>查询缓存，如果<strong>查询缓存有命中的查询结果，查询语句就可以直接去查询缓存中取数据</strong>  </li>
+</ul>
+</li>
+<li><p>pluggable storage Engines </p>
+<ul>
+<li>插件式存储引擎。<strong>存储引擎是MySql中具体的与文件打交道的子系统</strong>  </li>
+</ul>
+</li>
+<li><p>file system  </p>
+<ul>
+<li>文件系统，数据、日志(redo，undo)、索引、错误日志、查询记录、慢查询等</li>
+</ul>
+</li>
+</ul>
+<h3 id="Mysql查询优化"><a href="#Mysql查询优化" class="headerlink" title="Mysql查询优化"></a>Mysql查询优化</h3><p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCEf3f8d26d191aa00acd46ea3d0d894427/4635" alt="查询过程"></p>
+<h4 id="client-server通信"><a href="#client-server通信" class="headerlink" title="client/server通信"></a>client/server通信</h4><p>Mysql客户端与服务端的通信方式是<strong>“半双工”;</strong>  </p>
+<ul>
+<li>全双工:双向通信，发送同时也可以接收(tcp握手过程)  </li>
+<li>半双工:<strong>双向通信，同时只能接收或者是发送，无法同时做操作</strong>  <ul>
+<li>半双工通信: 在任何一个时刻，要么是有服务器向客户端发送数据，要么是客户端向服务端发送数据，这<strong>两个动作不能同时发生</strong>。所以我们无法也无需将一个消息切成小块进行传输。  </li>
+<li>特点和限制: 客户端一旦开始发送消息，另一端要接收完整个消息才能响应。  </li>
+<li>客户端一旦开始接收数据没法停下来发送指令。  </li>
+</ul>
+</li>
+<li>单工:只能单一方向传送  </li>
+</ul>
+<h4 id="查询状态"><a href="#查询状态" class="headerlink" title="查询状态"></a>查询状态</h4><p>对于一个mysql连接，或者说一个线程，时刻都有一个状态来标识这个连接正在做什么。</p>
+<p>查看命令 <code>show full processlist / show processlist</code>  </p>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCEd505d59205c0d3652ff78a82210901de/4637" alt="查询参数"></p>
+<ul>
+<li>Sleep:线程正在等待客户端发送数据  </li>
+<li>Query:连接线程正在执行查询</li>
+<li>Locked:线程正在等待表锁的释放  </li>
+<li>Sorting result:线程正在对结果进行排序  </li>
+<li>Sending data:向请求端返回数据</li>
+</ul>
+<p>可通过<code>kill {id}</code>的方式进行连接的杀掉 </p>
+<h4 id="查询缓存"><a href="#查询缓存" class="headerlink" title="查询缓存"></a>查询缓存</h4><ul>
+<li>工作原理:<ul>
+<li>缓存SELECT操作的结果集和SQL语句</li>
+<li>新的SELECT语句，先去查询缓存，判断是否存在可用的记录集</li>
+</ul>
+</li>
+<li>判断标准: <ul>
+<li>与缓存的SQL语句，<strong>是否完全一样</strong>，区分大小写(简单认为存储了一个key-value结构，<strong>key为sql，value为sql查询结果集</strong>)。</li>
+</ul>
+</li>
+<li>几个关键字<ul>
+<li>query_cache_type<ul>
+<li>值:0 -– <strong>不启用</strong>查询缓存，<strong>默认值</strong></li>
+<li>值:1 -– 启用查询缓存，<strong>只要符合查询缓存的要求，客户端的查询语句和记录集都可以缓存起来，供其他客户端使用，加上SQL_NO_CACHE将不缓存</strong></li>
+<li>值:2 -– 启用查询缓存，只要<strong>查询语句中添加了参数:SQL_CACHE，且符合查询缓存的要求</strong>，客户端的查询语句和记录集，则可以缓存起来，供其他客户端使用</li>
+</ul>
+</li>
+<li>query_cache_size  <ul>
+<li>允许设置query_cache_size的值最小为40K，默认1M，推荐设置为:64M/128M</li>
+</ul>
+</li>
+<li>query_cache_limit <ul>
+<li>限制查询缓存区最大能缓存的查询记录集，默认设置为1M </li>
+<li><code>show status like &#39;Qcache%&#39;</code>命令可查看缓存情况。  </li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>不会缓存的情况</p>
+<ul>
+<li>当查询语句中有一些不确定的数据时，则不会被缓存。如包含函数NOW()，CURRENT_DATE()等类似的函数，或者用户自定义的函数，存储函数，用户变量等都不会被缓存。</li>
+<li>当查询的结果大于query_cache_limit设置的值时，结果不会被缓存。</li>
+<li>对于InnoDB引擎来说，<strong>当一个语句在事务中修改了某个表，那么在这个事务提交之前，所有与这个表相关的查询都无法被缓存。因此长时间执行事务，会大大降低缓存命中率。</strong>  </li>
+<li>查询的表是系统表  </li>
+<li>查询语句不涉及到表</li>
+</ul>
+</li>
+<li><p>为什么mysql默认关闭了缓存开启  </p>
+<ul>
+<li>在查询之前必须<strong>先检查是否命中缓存,浪费计算资源。</strong></li>
+<li>如果这个查询可以被缓存，那么执行完成后，MySQL发现查询缓存中没有这个查询，则会将结果存入查询缓存，这会带来额外的系统消耗。</li>
+<li>针对表进行<strong>写入或更新数据时，将对应表的所有缓存都设置失效。</strong> </li>
+<li>如果<strong>查询缓存很大或者碎片很多</strong>时，这个操作可能带来很大的系统消耗。</li>
+</ul>
+</li>
+<li><p>缓存适用业务场景</p>
+<ul>
+<li>以<strong>读为主的业务</strong>，数据生成之后就不常改变的业务</li>
+<li>比如门户类、新闻类、报表类、论坛类等  </li>
+</ul>
+</li>
+</ul>
+<h4 id="查询优化处理"><a href="#查询优化处理" class="headerlink" title="查询优化处理"></a>查询优化处理</h4><p>查询优化处理的三个阶段:  </p>
+<ul>
+<li>解析:解析sql通过lex<strong>词法分析</strong>，yacc语法分析将sql语句解析成<strong>解析树</strong>。</li>
+<li>预处理阶段：根据mysql的语法的规则<strong>进一步检查解析树的合法性</strong>，如：<strong>检查数据的表和列是否存在，解析名字和别名的设置，还会进行权限的验证</strong>。</li>
+<li>查询优化器 ：优化器的主要作用就是<strong>找到最优的执行计划</strong>。</li>
+</ul>
+<p>查询优化器如何找到最优执行计划：</p>
+<ul>
+<li>使用等价变化规则  <ul>
+<li>数据表的关联并不总是按照查询语句的顺序进行。 </li>
+<li>5=5 and a&gt;5 改写成 a&gt;5  ，a<b and a=5 改写成 b>5 and a=5  </li>
+</ul>
+</li>
+<li>将外连接转化为内连接 <ul>
+<li>并不是所有的OUTER JOIN都必须以外链接的方式进行。  </li>
+</ul>
+</li>
+<li>优化count 、min、max等函数<ul>
+<li>min函数只需找索引<strong>最左边</strong></li>
+<li>max函数只需找索引最右边 </li>
+<li>myisam引擎count(*)  </li>
+</ul>
+</li>
+<li>覆盖索引扫描  </li>
+<li>子查询优化</li>
+<li>提前终止查询  <ul>
+<li>用了<strong>limit关键字</strong>或者使用<strong>不存在的条件</strong></li>
+</ul>
+</li>
+<li>IN的优化<ul>
+<li>先进行<strong>排序</strong>，再采用<strong>二分查找</strong>的方式</li>
+</ul>
+</li>
+</ul>
+<p>Mysql的查询优化器基于<strong>成本计算</strong>的原则，会尝试各种执行计划，<strong>以数据抽样的方式进行试验(随机的读取一个4K的数据块进行分析)。</strong>可用explain来进行分析。</p>
+<h4 id="查询执行引擎"><a href="#查询执行引擎" class="headerlink" title="查询执行引擎"></a>查询执行引擎</h4><p>调用插件式的存储引擎的原子API的功能进行执行计划的执行。 </p>
+<h4 id="返回客户端"><a href="#返回客户端" class="headerlink" title="返回客户端"></a>返回客户端</h4><ul>
+<li>有需要做缓存的，执行缓存操作。  </li>
+<li>增量的返回结果：<strong>开始生成第一条结果时，mysql就开始往请求方逐步返回数据</strong>。  <ul>
+<li>好处: mysql服务器无须保存过多的数据，浪费内存；用户体验好，马上就拿到了数据。 </li>
+</ul>
+</li>
+</ul>
+<h4 id="慢SQL"><a href="#慢SQL" class="headerlink" title="慢SQL"></a>慢SQL</h4>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/12/mysql-2mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/12/12/mysql-2mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/" class="post-title-link" itemprop="url">mysql性能优化-存储引擎</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-12-12 09:05:57" itemprop="dateCreated datePublished" datetime="2020-12-12T09:05:57+08:00">2020-12-12</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-14 09:43:59" itemprop="dateModified" datetime="2021-03-14T09:43:59+08:00">2021-03-14</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mysql/" itemprop="url" rel="index">
+                    <span itemprop="name">mysql</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="Mysql插拔式存储引擎"><a href="#Mysql插拔式存储引擎" class="headerlink" title="Mysql插拔式存储引擎"></a>Mysql插拔式存储引擎</h3><h4 id="mysql存储引擎简介"><a href="#mysql存储引擎简介" class="headerlink" title="mysql存储引擎简介"></a>mysql存储引擎简介</h4><ul>
+<li>插拔式的插件方式。  </li>
+<li><strong>存储引擎是指定在表之上的</strong>，即<strong>一个库中的每一个表都可以指定专用的存储引擎。</strong>  </li>
+<li>不管表采用什么样的存储引擎，都会在数据区产生对应的一个<strong>frm文件(表结构定义描述文件)。</strong></li>
+</ul>
+<h4 id="Innodb"><a href="#Innodb" class="headerlink" title="Innodb"></a>Innodb</h4><ul>
+<li><p>Mysql5.5及以后版本的默认存储引擎  </p>
+</li>
+<li><p>Key Advantages:  </p>
+<ul>
+<li>Its DML operations follow the ACID model [<strong>事务ACID</strong>]  </li>
+<li>Row-level locking[<strong>行级锁</strong>]  </li>
+<li>InnoDB tables arrange your data on disk to optimize queries based on primary keys[<strong>聚集索引(主键索引)方式进行数据存储</strong>]  </li>
+<li>To maintain data integrity, InnoDB supports FOREIGN KEY constraints[<strong>支持外键关系保证数据完整性</strong>]  </li>
+</ul>
+</li>
+</ul>
+<h4 id="Myisam"><a href="#Myisam" class="headerlink" title="Myisam"></a>Myisam</h4><ul>
+<li><p>Mysql5.5版本之前的默认存储引擎 ,较多的系统表也还是使用这个存储引,系统临时表也会用到Myisam存储引擎  </p>
+</li>
+<li><p>特点:  </p>
+<ul>
+<li>select count(*) from table 无需进行数据的扫描  </li>
+<li>数据(MYD)和索引(MYI)分开存储  </li>
+<li>表级锁  </li>
+<li>不支持事务  </li>
+</ul>
+</li>
+</ul>
+<h4 id="Memory存储引擎"><a href="#Memory存储引擎" class="headerlink" title="Memory存储引擎"></a>Memory存储引擎</h4><ul>
+<li><strong>数据都是存储在内存中，IO效率要比其他引擎高很多。</strong>  </li>
+<li><p><strong>服务重启数据丢失，内存数据表默认只有16M</strong>。  </p>
+</li>
+<li><p>特点:  </p>
+<ul>
+<li>支持hash索引，B tree索引，<strong>默认hash(查找复杂度0(1))</strong>  </li>
+<li>字段长度都是固定长度varchar(32)=char(32)   </li>
+<li>不支持大数据存储类型字段如 blog，text  </li>
+<li>表级锁  </li>
+</ul>
+</li>
+<li><p>应用场景:  </p>
+<ul>
+<li>等值查找热度较高数据  </li>
+<li>查询结果内存中的计算，大多数都是采用这种存储引擎  </li>
+<li>作为临时表存储需计算的数据  </li>
+</ul>
+</li>
+</ul>
+<h4 id="Archive存储引擎"><a href="#Archive存储引擎" class="headerlink" title="Archive存储引擎"></a>Archive存储引擎</h4><ul>
+<li><p>压缩协议进行数据的存储 ,数据存储为ARZ文件格式  </p>
+</li>
+<li><p>特点:  </p>
+<ul>
+<li>只支持insert和select两种操作   </li>
+<li>只允许自增ID列建立索引  </li>
+<li>行级锁  </li>
+<li>不支持事务  </li>
+<li>数据占用磁盘少  </li>
+</ul>
+</li>
+<li><p>应用场景:  </p>
+<ul>
+<li>日志系统  </li>
+<li>大量的设备数据采集 </li>
+</ul>
+</li>
+</ul>
+<h4 id="CSV存储引擎"><a href="#CSV存储引擎" class="headerlink" title="CSV存储引擎"></a>CSV存储引擎</h4><ul>
+<li>数据存储以CSV文件  </li>
+<li><p>特点:  </p>
+<ul>
+<li>不能定义索引、列定义必须为NOT NULL、不能设置自增列 —&gt;不适用大表或者数据的在线处理   </li>
+<li>CSV数据的存储用,隔开，可直接编辑CSV文件进行数据的编排 —&gt;数据安全性低  </li>
+<li>注:编辑之后，要生效使用flush table XXX 命令  </li>
+</ul>
+</li>
+<li><p>应用场景:  </p>
+<ul>
+<li>数据的快速导出导入 表格直接转换成CSV  </li>
+</ul>
+</li>
+</ul>
+<h4 id="各引擎对比"><a href="#各引擎对比" class="headerlink" title="各引擎对比"></a>各引擎对比</h4><p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCE5ceb2ce6ff860d63de3e2ec46528c1cc/4630" alt=""></p>
 
       
     </div>
