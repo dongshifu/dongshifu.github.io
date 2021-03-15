@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="alternate" href="/atom.xml" title="ShifuDong" type="application/atom+xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.5.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":"flat"},
+    back2top: {"enable":true,"sidebar":true,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":5,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="事务事务的ACID特性 原子性(Atomicity) 最小的工作单元，整个工作单元要么一起提交成功，要么全部失败回滚。   一致性(Consistency) 事务中操作的数据及状态改变是一致的，即写入资料的结果必须完全符合预设的规则，不会因为出现系统意外等原因导致状态的不一致。   隔离性(Isolation) 一个事务所操作的数据在提交之前，对其他事务的可见性设定(一般设定为不可见)。   持久">
+<meta name="keywords" content="mysql">
+<meta property="og:type" content="article">
+<meta property="og:title" content="mysql性能优化-事务及锁">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;12&#x2F;17&#x2F;mysql-4mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-%E4%BA%8B%E5%8A%A1%E5%8F%8A%E9%94%81&#x2F;index.html">
+<meta property="og:site_name" content="ShifuDong">
+<meta property="og:description" content="事务事务的ACID特性 原子性(Atomicity) 最小的工作单元，整个工作单元要么一起提交成功，要么全部失败回滚。   一致性(Consistency) 事务中操作的数据及状态改变是一致的，即写入资料的结果必须完全符合预设的规则，不会因为出现系统意外等原因导致状态的不一致。   隔离性(Isolation) 一个事务所操作的数据在提交之前，对其他事务的可见性设定(一般设定为不可见)。   持久">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;42554684dcfc6e607deaa29d065ade7e&#x2F;xmlnote&#x2F;WEBRESOURCEeb6a42cb4eb463afe0acf7fa42cfe27e&#x2F;4643">
+<meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;42554684dcfc6e607deaa29d065ade7e&#x2F;xmlnote&#x2F;WEBRESOURCEde9db8deb6437c49a175e6098bf40be6&#x2F;4645">
+<meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;42554684dcfc6e607deaa29d065ade7e&#x2F;xmlnote&#x2F;WEBRESOURCE3b17c8fc3c297ad34d309a428838d1f5&#x2F;4647">
+<meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;42554684dcfc6e607deaa29d065ade7e&#x2F;xmlnote&#x2F;WEBRESOURCEea19ea7bc929a6d417d0851ff13cfe7a&#x2F;4649">
+<meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;42554684dcfc6e607deaa29d065ade7e&#x2F;xmlnote&#x2F;WEBRESOURCE2d0ae4b24342ebc1c8315970c93392d9&#x2F;4651">
+<meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;42554684dcfc6e607deaa29d065ade7e&#x2F;xmlnote&#x2F;WEBRESOURCEd0f800d0e98ff591e723df9c5c26f930&#x2F;4653">
+<meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;42554684dcfc6e607deaa29d065ade7e&#x2F;xmlnote&#x2F;WEBRESOURCEf38f38b46d6d9aec3888edc97c9fc18e&#x2F;4655">
+<meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;42554684dcfc6e607deaa29d065ade7e&#x2F;xmlnote&#x2F;WEBRESOURCEaef2e9a4dc4e8a10ca1bb37a9d664fb0&#x2F;4657">
+<meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;42554684dcfc6e607deaa29d065ade7e&#x2F;xmlnote&#x2F;WEBRESOURCE5a6e9f01482cad7a46f40798f8e60bc2&#x2F;4659">
+<meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;42554684dcfc6e607deaa29d065ade7e&#x2F;xmlnote&#x2F;WEBRESOURCE3f158e9047ab21459ee1bbbdf8832029&#x2F;4661">
+<meta property="og:updated_time" content="2021-03-15T10:38:09.427Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;42554684dcfc6e607deaa29d065ade7e&#x2F;xmlnote&#x2F;WEBRESOURCEeb6a42cb4eb463afe0acf7fa42cfe27e&#x2F;4643">
+
+<link rel="canonical" href="http://yoursite.com/2020/12/17/mysql-4mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-%E4%BA%8B%E5%8A%A1%E5%8F%8A%E9%94%81/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>mysql性能优化-事务及锁 | ShifuDong</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ShifuDong</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">Knowledge Sharing</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/dongshifu" class="github-corner" title="ShifuDong GitHub" aria-label="ShifuDong GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/17/mysql-4mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-%E4%BA%8B%E5%8A%A1%E5%8F%8A%E9%94%81/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          mysql性能优化-事务及锁
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-12-17 10:46:03" itemprop="dateCreated datePublished" datetime="2020-12-17T10:46:03+08:00">2020-12-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-15 18:38:09" itemprop="dateModified" datetime="2021-03-15T18:38:09+08:00">2021-03-15</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mysql/" itemprop="url" rel="index">
+                    <span itemprop="name">mysql</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h3><h4 id="事务的ACID特性"><a href="#事务的ACID特性" class="headerlink" title="事务的ACID特性"></a>事务的ACID特性</h4><ul>
+<li>原子性(Atomicity) <strong>最小的工作单元</strong>，整个工作单元要么<strong>一起提交成功，要么全部失败回滚</strong>。  </li>
+<li>一致性(Consistency) <strong>事务中操作的数据及状态改变是一致的</strong>，即写入资料的结果必须完全符合预设的规则，不会因为出现系统意外等原因导致状态的不一致。  </li>
+<li>隔离性(Isolation) <strong>一个事务所操作的数据在提交之前，对其他事务的可见性设定(一般设定为不可见)。</strong>  </li>
+<li>持久性(Durability) 事务所做的修改就会<strong>永久保存</strong>，不会因为系统意外导致数据的丢失。 </li>
+</ul>
+<h4 id="事务并发带来的的问题"><a href="#事务并发带来的的问题" class="headerlink" title="事务并发带来的的问题"></a>事务并发带来的的问题</h4><ul>
+<li>脏读:<strong>在不同事务下，当前事务可以读到另外事务未提交的数据</strong>。</li>
+</ul>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCEeb6a42cb4eb463afe0acf7fa42cfe27e/4643" alt="脏读"></p>
+<ul>
+<li>不可重复读：在<strong>一个事务内多次读取同一数据集合</strong>。<strong>在这一事务还未结束前，另一事务也访问了该同一数据集合并做了修改，由于第二个事务的修改，第一次事务的两次读取的数据可能不一致。</strong></li>
+</ul>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCEde9db8deb6437c49a175e6098bf40be6/4645" alt="不可重复读"></p>
+<ul>
+<li>幻读:本质上也属于不可重复读的情况，T1读取某个范围的数据，T2在这个范围内插入新的数据，T1再次读取这个范围的数据，此时读取的结果和和第一次读取的结果不同。</li>
+</ul>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCE3b17c8fc3c297ad34d309a428838d1f5/4647" alt="幻读"></p>
+<h4 id="事务的隔离级别"><a href="#事务的隔离级别" class="headerlink" title="事务的隔离级别"></a>事务的隔离级别</h4><ul>
+<li>未提交读：<strong>事务中的修改，即使没有提交，对其它事务也是可见的</strong><ul>
+<li>存在脏读，不能解决并发问题</li>
+</ul>
+</li>
+<li>Read Committed(提交读)：一个事务开始之后，只能看到自己提交的事务所做的修改。<ul>
+<li>解决了脏读问题，没有解决不可重复读(nonrepeatable read) 问题</li>
+</ul>
+</li>
+<li>Repeatable Read (可重复读)：在同一个事务中多次读取同样的数据结果是一样的。<ul>
+<li>解决不可重复读问题，未定义解决幻读的问题</li>
+</ul>
+</li>
+<li>Serializable (串行化)：解决所有问题 最高的隔离级别，通过强制事务的<strong>串行执行</strong> </li>
+</ul>
+<p>查看mysql的设置的事务隔离级别:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> @@tx_isolation; <span class="comment">--默认为REPEATABLE-READ</span></span><br></pre></td></tr></table></figure>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCEea19ea7bc929a6d417d0851ff13cfe7a/4649" alt="mysql事务隔离级别"></p>
+<h3 id="数据库锁"><a href="#数据库锁" class="headerlink" title="数据库锁"></a>数据库锁</h3><h4 id="表锁和行锁"><a href="#表锁和行锁" class="headerlink" title="表锁和行锁"></a>表锁和行锁</h4><p>锁用于管理<strong>不同事务对共享资源的并发访问</strong>。</p>
+<p>表锁与行锁的区别: </p>
+<ul>
+<li>锁定粒度:表锁 &gt; 行锁  </li>
+<li>加锁效率:表锁 &gt; 行锁  </li>
+<li>冲突概率:表锁 &gt; 行锁  </li>
+<li>并发性能:表锁 &lt; 行锁  </li>
+</ul>
+<h4 id="InnoDB锁类型"><a href="#InnoDB锁类型" class="headerlink" title="InnoDB锁类型"></a>InnoDB锁类型</h4><p>InnoDB存储引擎支持行锁和表锁(另类的行锁)。</p>
+<ul>
+<li>共享锁(行锁):Shared Locks  <ul>
+<li>又称为<strong>读锁</strong>，简称S锁，顾名思义，共享锁就是<strong>多个事务对于同一数据可以共享一把锁，都能访问到数据，但是只能读不能修改</strong>； </li>
+</ul>
+</li>
+<li>排它锁(行锁):Exclusive Locks  <ul>
+<li>又称为<strong>写锁</strong>，简称X锁，<strong>排他锁不能与其他锁并存，如一个事务获取了一个数据行的排他锁，其他事务就不能再获取该行的锁</strong>(共享锁、排他锁)，只有该获取了排他锁的事务是可以对数据行进行读取和修改，(<strong>其他事务要读取数据可来自于快照</strong>)。  </li>
+</ul>
+</li>
+<li>意向锁共享锁(表锁):Intention Shared Locks  </li>
+<li>意向锁排它锁(表锁):Intention Exclusive Locks  </li>
+<li>自增锁:AUTO-INC Locks</li>
+</ul>
+<h5 id="表锁操作"><a href="#表锁操作" class="headerlink" title="表锁操作"></a>表锁操作</h5><p>共享锁加锁释放锁语法:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> <span class="keyword">users</span> <span class="keyword">WHERE</span> <span class="keyword">id</span>=<span class="number">1</span> <span class="keyword">LOCK</span> <span class="keyword">IN</span> <span class="keyword">SHARE</span> <span class="keyword">MODE</span>;   </span><br><span class="line"><span class="keyword">commit</span>/<span class="keyword">rollback</span></span><br></pre></td></tr></table></figure>
+<p>排它锁加锁释锁方式:  </p>
+ <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">delete</span> / <span class="keyword">update</span> / <span class="keyword">insert</span> 默认加上X锁  </span><br><span class="line"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> table_name <span class="keyword">WHERE</span> ... <span class="keyword">FOR</span> <span class="keyword">UPDATE</span>  </span><br><span class="line"><span class="keyword">commit</span>/<span class="keyword">rollback</span></span><br></pre></td></tr></table></figure>
+<p>行锁的算法：</p>
+<ul>
+<li>记录锁 Record Locks  </li>
+<li>间隙锁 Gap Locks  </li>
+<li>临键锁 Next-key Locks</li>
+</ul>
+<h5 id="行锁"><a href="#行锁" class="headerlink" title="行锁"></a>行锁</h5><ul>
+<li>InnoDB的行锁是通过<strong>给索引上的索引项加锁</strong>来实现的。   </li>
+<li><strong>只有通过索引条件进行数据检索，InnoDB才使用行级锁，</strong>否则，InnoDB 将使用表锁(锁住索引的所有记录)</li>
+<li><p><strong>使用二级索引(辅助索引)去更新数据，会把二级索引和聚集索引都上锁</strong>。  </p>
+</li>
+<li><p>意向共享锁(IS)  ：表示事务<strong>准备</strong>给数据行加入共享锁，即<strong>一个数据行加共享锁前必须先取得该表的IS锁，意向共享锁之间是可以相互兼容的。</strong>  </p>
+</li>
+<li>意向排它锁(IX)  ：表示事务准备给数据行加入排他锁，即一个数据行加排他锁前必须先取得该表的IX锁，意向排它锁之间是可以相互兼容的。</li>
+</ul>
+<p>意向锁(IS、IX)是InnoDB数据操作之前<strong>自动加</strong>的，<strong>不需要用户干预</strong>。  </p>
+<p>意义：当事务想去进行锁表时，可以先判断意向锁是否存在，存在时则可快速返回该表不能启用表锁。 </p>
+<h5 id="自增锁-AUTO-INC-Locks"><a href="#自增锁-AUTO-INC-Locks" class="headerlink" title="自增锁:AUTO-INC Locks"></a>自增锁:AUTO-INC Locks</h5><ul>
+<li>针对<strong>自增列自增长</strong>的一个特殊的<strong>表级</strong>别锁  </li>
+<li><code>show variables like &#39;innodb_autoinc_lock_mode&#39;;</code></li>
+<li><strong>默认取值1，代表连续，事务未提交ID永久丢失</strong></li>
+</ul>
+<h5 id="临键锁Next-key-locks"><a href="#临键锁Next-key-locks" class="headerlink" title="临键锁Next-key locks"></a>临键锁Next-key locks</h5><p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCE2d0ae4b24342ebc1c8315970c93392d9/4651" alt="临键锁"></p>
+<ul>
+<li>锁住记录+区间(左开右闭)  </li>
+<li><strong>当sql执行按照索引进行数据的检索时,查询条件为范围查找(between and、&lt;、&gt;等)并有数据命中则此时SQL语句加上的锁为Next-key locks，锁住索引的记录+区间(左开右闭)</strong> </li>
+</ul>
+<h5 id="间隙锁Gap-locks"><a href="#间隙锁Gap-locks" class="headerlink" title="间隙锁Gap locks"></a>间隙锁Gap locks</h5><p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCEd0f800d0e98ff591e723df9c5c26f930/4653" alt="间隙锁"></p>
+<ul>
+<li><strong>锁住数据不存在的区间</strong>(左开右开)  </li>
+<li>当sql执行按照索引进行数据的检索时，<strong>查询条件的数据不存在，这时SQL语句加上的锁即为 Gap locks，锁住索引不存在的区间(左开右开)</strong>  </li>
+</ul>
+<h5 id="记录锁Record-locks"><a href="#记录锁Record-locks" class="headerlink" title="记录锁Record locks"></a>记录锁Record locks</h5><p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCEf38f38b46d6d9aec3888edc97c9fc18e/4655" alt="记录锁"></p>
+<ul>
+<li>锁住<strong>具体的索引项</strong>  </li>
+<li>当sql执行<strong>按照唯一性(Primary key、Unique key)索引进行数据的检索</strong>时，查询条件等值匹 配且查询的数据存在，这时SQL语句加上的锁即为记录锁Record locks，<strong>锁住具体的索引项</strong>  </li>
+</ul>
+<h4 id="利用锁解决并发问题"><a href="#利用锁解决并发问题" class="headerlink" title="利用锁解决并发问题"></a>利用锁解决并发问题</h4><p>解决脏读 :</p>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCEaef2e9a4dc4e8a10ca1bb37a9d664fb0/4657" alt="解决脏读"></p>
+<p>解决不可重复读  :</p>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCE5a6e9f01482cad7a46f40798f8e60bc2/4659" alt="解决不可重复读"></p>
+<p>解决幻读:</p>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCE3f158e9047ab21459ee1bbbdf8832029/4661" alt="解决幻读"></p>
+<h4 id="死锁"><a href="#死锁" class="headerlink" title="死锁"></a>死锁</h4><ul>
+<li>多个并发事务(2个或者以上);  </li>
+<li>每个事务都持有锁(或者是已经在等待锁);  </li>
+<li>每个事务都需要再继续持有锁;  </li>
+<li><strong>事务之间产生加锁的循环等待，形成死锁</strong>。</li>
+</ul>
+<h4 id="死锁的避免"><a href="#死锁的避免" class="headerlink" title="死锁的避免"></a>死锁的避免</h4><ul>
+<li>类似的业务逻辑以<strong>固定的顺序访问表和行</strong>。  </li>
+<li>大事务拆小。大事务更倾向于死锁，如果业务允许，<strong>将大事务拆小</strong>。  </li>
+<li>在<strong>同一个事务中，尽可能做到一次锁定所需要的所有资源，减少死锁概率。</strong>  </li>
+<li><strong>降低隔离级别</strong>，如果业务允许，将隔离级别调低也是较好的选择  </li>
+<li>为表添加<strong>合理的索引</strong>。可以看到<strong>如果不走索引将会为表的每一行记录添 加上锁(或者说是表锁)</strong>  </li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/mysql/" rel="tag"># mysql</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/12/14/mysql-3mysql%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90-%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E5%8F%8A%E8%BF%90%E8%A1%8C%E6%9C%BA%E7%90%86/" rel="prev" title="mysql性能分析-体系结构及运行机理">
+      <i class="fa fa-chevron-left"></i> mysql性能分析-体系结构及运行机理
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/12/20/mysql-5mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-mvcc/" rel="next" title="mysql性能优化-mvcc">
+      mysql性能优化-mvcc <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+      <div class="tabs tabs-comment">
+        <ul class="nav-tabs">
+            <li class="tab"><a href="#comment-gitalk">gitalk</a></li>
+            <li class="tab"><a href="#comment-livere">livere</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane gitalk" id="comment-gitalk">
+              <div class="comments" id="gitalk-container"></div>
+            </div>
+            <div class="tab-pane livere" id="comment-livere">
+              
+  <div class="comments" id="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81MjkwMy8yOTM4MA=="></div>
+  </div>
+  
+            </div>
+        </div>
+      </div>
+      <script>
+        window.addEventListener('tabs:register', () => {
+          let activeClass = 'gitalk';
+            activeClass = localStorage.getItem('comments_active') || activeClass;
+          if (activeClass) {
+            let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+            if (activeTab) {
+              activeTab.click();
+            }
+          }
+        });
+        window.addEventListener('tabs:click', event => {
+          let commentClass = event.target.classList[1];
+          localStorage.setItem('comments_active', commentClass);
+        });
+      </script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#事务"><span class="nav-number">1.</span> <span class="nav-text">事务</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#事务的ACID特性"><span class="nav-number">1.1.</span> <span class="nav-text">事务的ACID特性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#事务并发带来的的问题"><span class="nav-number">1.2.</span> <span class="nav-text">事务并发带来的的问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#事务的隔离级别"><span class="nav-number">1.3.</span> <span class="nav-text">事务的隔离级别</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数据库锁"><span class="nav-number">2.</span> <span class="nav-text">数据库锁</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#表锁和行锁"><span class="nav-number">2.1.</span> <span class="nav-text">表锁和行锁</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#InnoDB锁类型"><span class="nav-number">2.2.</span> <span class="nav-text">InnoDB锁类型</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#表锁操作"><span class="nav-number">2.2.1.</span> <span class="nav-text">表锁操作</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#行锁"><span class="nav-number">2.2.2.</span> <span class="nav-text">行锁</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#自增锁-AUTO-INC-Locks"><span class="nav-number">2.2.3.</span> <span class="nav-text">自增锁:AUTO-INC Locks</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#临键锁Next-key-locks"><span class="nav-number">2.2.4.</span> <span class="nav-text">临键锁Next-key locks</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#间隙锁Gap-locks"><span class="nav-number">2.2.5.</span> <span class="nav-text">间隙锁Gap locks</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#记录锁Record-locks"><span class="nav-number">2.2.6.</span> <span class="nav-text">记录锁Record locks</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#利用锁解决并发问题"><span class="nav-number">2.3.</span> <span class="nav-text">利用锁解决并发问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#死锁"><span class="nav-number">2.4.</span> <span class="nav-text">死锁</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#死锁的避免"><span class="nav-number">2.5.</span> <span class="nav-text">死锁的避免</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ShifuDong"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">ShifuDong</p>
+  <div class="site-description" itemprop="description">记录生活， 记录学习， 分享知识</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">33</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">21</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ShifuDong</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.0.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.5.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.getAttribute('pjax') !== null) {
+      element.setAttribute('pjax', '');
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'a6ee5b68c97a3db64850',
+      clientSecret: '1dfa06f32032431e4af79b80f9ddf9dfd13dbda2',
+      repo: 'dongshifu.github.io',
+      owner: 'dongshifu',
+      admin: ['dongshifu'],
+      id: '9ff0a45e83033844370c2f4b1eadd7d5',
+        language: 'zh-CN',
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script>
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+</script>
+
+    </div>
+</body>
+</html>

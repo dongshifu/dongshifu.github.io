@@ -205,6 +205,233 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/01/Go_struct_2%E7%BC%96%E8%AF%91%E5%99%A8%E8%87%AA%E5%8A%A8%E6%A3%80%E6%B5%8B%E7%B1%BB%E5%9E%8B%E6%98%AF%E5%90%A6%E5%AE%9E%E7%8E%B0%E6%8E%A5%E5%8F%A3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/01/01/Go_struct_2%E7%BC%96%E8%AF%91%E5%99%A8%E8%87%AA%E5%8A%A8%E6%A3%80%E6%B5%8B%E7%B1%BB%E5%9E%8B%E6%98%AF%E5%90%A6%E5%AE%9E%E7%8E%B0%E6%8E%A5%E5%8F%A3/" class="post-title-link" itemprop="url">Go 编译器自动检测类型是否实现接口</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-01-01 20:29:16" itemprop="dateCreated datePublished" datetime="2020-01-01T20:29:16+08:00">2020-01-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-09 18:12:53" itemprop="dateModified" datetime="2021-03-09T18:12:53+08:00">2021-03-09</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Go-struct/" itemprop="url" rel="index">
+                    <span itemprop="name">Go struct</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="Go-编译器自动检测类型是否实现接口"><a href="#Go-编译器自动检测类型是否实现接口" class="headerlink" title="Go 编译器自动检测类型是否实现接口"></a>Go 编译器自动检测类型是否实现接口</h3><p>开源库里会有一些类似下面这种奇怪的用法：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> _ io.Writer = (*myWriter)(<span class="literal">nil</span>)</span><br></pre></td></tr></table></figure>
+<p>这时候会有点懵，不知道作者想要干什么，实际上这就是此问题的答案。<strong>编译器会由此检查 <code>*myWriter</code> 类型是否实现了 <code>io.Writer</code> 接口。</strong></p>
+<p>例子：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"io"</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> myWriter <span class="keyword">struct</span> &#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*func (w myWriter) Write(p []byte) (n int, err error) &#123;</span></span><br><span class="line"><span class="comment">	return</span></span><br><span class="line"><span class="comment">&#125;*/</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="comment">// 检查 *myWriter 类型是否实现了 io.Writer 接口</span></span><br><span class="line">    <span class="keyword">var</span> _ io.Writer = (*myWriter)(<span class="literal">nil</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 检查 myWriter 类型是否实现了 io.Writer 接口</span></span><br><span class="line">    <span class="keyword">var</span> _ io.Writer = myWriter&#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注释掉为 myWriter 定义的 Write 函数后，运行程序：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> <span class="built_in">command</span>-line-arguments</span></span><br><span class="line">src/learn/tongbu/tongbu.go:14:6: cannot use (*myWriter)(nil) (type *myWriter) as type io.Writer in assignment:</span><br><span class="line">	*myWriter does not implement io.Writer (missing Write method)</span><br><span class="line">src/learn/tongbu/tongbu.go:17:6: cannot use myWriter&#123;&#125; (type myWriter) as type io.Writer in assignment:</span><br><span class="line">	myWriter does not implement io.Writer (missing Write method)</span><br></pre></td></tr></table></figure>
+<p>报错信息：<strong>*myWriter/myWriter 未实现 io.Writer 接口，也就是未实现 Write 方法。</strong></p>
+<p>解除注释后，运行程序不报错。</p>
+<p>实际上，上述赋值语句会发生<strong>隐式地类型转换</strong>，<strong>在转换的过程中，编译器会检测等号右边的类型是否实现了等号左边接口所规定的函数。</strong></p>
+<p>总结: 可通过在代码中添加类似如下的代码，用来检测类型是否实现了接口：</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> _ io.Writer = (*myWriter)(<span class="literal">nil</span>)</span><br><span class="line"><span class="keyword">var</span> _ io.Writer = myWriter&#123;&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/01/Go_struct_1%E5%80%BC%E6%8E%A5%E6%94%B6%E8%80%85%E5%92%8C%E6%8C%87%E9%92%88%E6%8E%A5%E6%94%B6%E8%80%85%E7%9A%84%E5%8C%BA%E5%88%AB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/01/01/Go_struct_1%E5%80%BC%E6%8E%A5%E6%94%B6%E8%80%85%E5%92%8C%E6%8C%87%E9%92%88%E6%8E%A5%E6%94%B6%E8%80%85%E7%9A%84%E5%8C%BA%E5%88%AB/" class="post-title-link" itemprop="url">Go struct方法的值接收者与指针接收者区别</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-01-01 20:29:10" itemprop="dateCreated datePublished" datetime="2020-01-01T20:29:10+08:00">2020-01-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-13 19:08:42" itemprop="dateModified" datetime="2021-03-13T19:08:42+08:00">2021-03-13</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Go-struct/" itemprop="url" rel="index">
+                    <span itemprop="name">Go struct</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="方法介绍"><a href="#方法介绍" class="headerlink" title="方法介绍"></a>方法介绍</h3><p>方法能<strong>给用户自定义的类型添加新的行为</strong>。和函数的区别在于<strong>方法有一个接收者，给一个函数添加一个接收者，那么它就变成了方法。接收者可以是<code>值接收者</code>，也可以是<code>指针接收者</code>。</strong></p>
+<p>在调用方法的时候，值类型既可以调用<code>值接收者</code>的方法，也可以调用<code>指针接收者</code>的方法；指针类型既可以调用<code>指针接收者</code>的方法，也可以调用<code>值接收者</code>的方法。</p>
+<p>也就是说，<strong>不管方法的接收者是什么类型，该类型的值和指针都可以调用，不必严格符合接收者的类型。</strong></p>
+<p>例1：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Person <span class="keyword">struct</span> &#123;</span><br><span class="line">	age <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p Person)</span> <span class="title">howOld</span><span class="params">()</span> <span class="title">int</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> p.age</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *Person)</span> <span class="title">growUp</span><span class="params">()</span></span> &#123;</span><br><span class="line">	p.age += <span class="number">1</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="comment">// qcrao 是值类型</span></span><br><span class="line">	qcrao := Person&#123;age: <span class="number">18</span>&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 值类型 调用接收者也是值类型的方法</span></span><br><span class="line">	fmt.Println(qcrao.howOld())</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 值类型 调用接收者是指针类型的方法</span></span><br><span class="line">	qcrao.growUp()</span><br><span class="line">	fmt.Println(qcrao.howOld())</span><br><span class="line"></span><br><span class="line">	<span class="comment">// stefno 是指针类型</span></span><br><span class="line">	stefno := &amp;Person&#123;age: <span class="number">100</span>&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 指针类型 调用接收者是值类型的方法</span></span><br><span class="line">	fmt.Println(stefno.howOld())</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 指针类型 调用接收者也是指针类型的方法</span></span><br><span class="line">	stefno.growUp()</span><br><span class="line">	fmt.Println(stefno.howOld())</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出结果：<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">18</span><br><span class="line">19</span><br><span class="line">100</span><br><span class="line">101</span><br></pre></td></tr></table></figure></p>
+<p><strong>调用了 <code>growUp</code> 函数后，不管调用者是值类型还是指针类型，它的 <code>Age</code> 值都改变了。</strong></p>
+<h3 id="编译器背后工作"><a href="#编译器背后工作" class="headerlink" title="编译器背后工作"></a>编译器背后工作</h3><p>实际上，当类型和方法的接收者类型不同时，其实是编译器在背后做了一些工作，用一个表格来呈现：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>-</th>
+<th>值接收者</th>
+<th>指针接收者</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>值类型调用者</td>
+<td>方法会使用调用者的一个<strong>副本，类似于“传值”</strong></td>
+<td>使用<strong>值的引用来调用方法，上例中，<code>qcrao.growUp()</code> 实际上是 <code>(&amp;qcrao).growUp()</code></strong></td>
+</tr>
+<tr>
+<td>指针类型调用者</td>
+<td>指针被<strong>解引用为值</strong>，上例中，<code>stefno.howOld()</code> <strong>实际上是 <code>(*stefno).howOld()</code></strong></td>
+<td>实际上也是“传值”，方法里的操作会影响到调用者，<strong>类似于指针传参，拷贝了一份指针</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="值接收者和指针接收者"><a href="#值接收者和指针接收者" class="headerlink" title="值接收者和指针接收者"></a>值接收者和指针接收者</h3><p>不管接收者类型是值类型还是指针类型，都可以通过值类型或指针类型调用，这里面实际上通过语法糖起作用的。</p>
+<p>结论：<strong>实现了接收者是值类型的方法，相当于自动实现了接收者是指针类型的方法；而实现了接收者是指针类型的方法，不会自动生成对应接收者是值类型的方法。</strong></p>
+<p>例2:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> coder <span class="keyword">interface</span> &#123;</span><br><span class="line">	code()</span><br><span class="line">	debug()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Gopher <span class="keyword">struct</span> &#123;</span><br><span class="line">	language <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p Gopher)</span> <span class="title">code</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Printf(<span class="string">"I am coding %s language\n"</span>, p.language)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *Gopher)</span> <span class="title">debug</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Printf(<span class="string">"I am debuging %s language\n"</span>, p.language)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> c coder = &amp;Gopher&#123;<span class="string">"Go"</span>&#125;</span><br><span class="line">	c.code()</span><br><span class="line">	c.debug()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上述代码里定义了一个接口 <code>coder</code>，接口定义了两个函数：</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">code()</span><br><span class="line">debug()</span><br></pre></td></tr></table></figure>
+<p>接着定义了一个结构体 <code>Gopher</code>，它实现了两个方法，一个值接收者，一个指针接收者。</p>
+<p>最后，我们在 <code>main</code> 函数里通过接口类型的变量调用了定义的两个函数。</p>
+<p>运行，结果：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">I am coding Go language</span><br><span class="line">I am debuging Go language</span><br></pre></td></tr></table></figure>
+<p>如果把 <code>main</code> 函数的第一条语句换一下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> c coder = Gopher&#123;<span class="string">"Go"</span>&#125;</span><br><span class="line">	c.code()</span><br><span class="line">	c.debug()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>运行一下，报错：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> <span class="built_in">command</span>-line-arguments</span></span><br><span class="line">src/learn/tongbu/tongbu.go:25:6: cannot use Gopher&#123;...&#125; (type Gopher) as type coder in assignment:</span><br><span class="line">	Gopher does not implement coder (debug method has pointer receiver)</span><br></pre></td></tr></table></figure>
+<p>两处代码的差别: 第一次是将 <code>&amp;Gopher</code> 赋给了 <code>coder</code>；第二次则是将 <code>Gopher</code> 赋给了 <code>coder</code>。</p>
+<p>第二次报错是说，<code>Gopher</code> 没有实现 <code>coder</code>。很明显，<strong>因为 <code>Gopher</code> 类型并没有实现 <code>debug</code> 方法；表面上看， <code>*Gopher</code> 类型也没有实现 <code>code</code> 方法，但是因为 <code>Gopher</code> 类型实现了 <code>code</code> 方法，所以让 <code>*Gopher</code> 类型自动拥有了 <code>code</code> 方法。</strong></p>
+<p>当然，上面的说法有一个简单的解释：<strong>接收者是指针类型的方法，很可能在方法中会对接收者的属性进行更改操作，从而影响接收者；而对于接收者是值类型的方法，在方法中不会对接收者本身产生影响。</strong></p>
+<p>所以，<strong>当实现了一个接收者是值类型的方法，就可以自动生成一个接收者是对应指针类型的方法，因为两者都不会影响接收者。但是，当实现了一个接收者是指针类型的方法，如果此时自动生成一个接收者是值类型的方法，原本期望对接收者的改变（通过指针实现），现在无法实现，因为值类型会产生一个拷贝，不会真正影响调用者。</strong></p>
+<p>最后，需要记住：</p>
+<blockquote>
+<p>如果实现了接收者是值类型的方法，会隐含地也实现了接收者是指针类型的方法。</p>
+</blockquote>
+<h3 id="适用场合"><a href="#适用场合" class="headerlink" title="适用场合"></a>适用场合</h3><p><strong>如果方法的接收者是值类型，无论调用者是对象还是对象指针，修改的都是对象的副本，不影响调用者；如果方法的接收者是指针类型，则调用者修改的是指针指向的对象本身。</strong></p>
+<p>使用指针作为方法的接收者的理由：</p>
+<ul>
+<li><strong>方法能够修改接收者指向的值。</strong></li>
+<li><strong>避免在每次调用方法时复制该值，在值的类型为大型结构体时，这样做会更加高效。</strong></li>
+</ul>
+<p><strong>是使用值接收者还是指针接收者，不是由该方法是否修改了调用者（也就是接收者）来决定，而是应该基于该类型的<code>本质</code>。</strong></p>
+<p><strong>如果类型具备“原始的本质”，也就是说它的成员都是由 Go 语言里内置的原始类型，如字符串，整型值等，那就定义值接收者类型的方法。像内置的引用类型，如 slice，map，interface，channel，这些类型比较特殊，声明他们的时候，实际上是创建了一个 <code>header</code>， 对于他们也是直接定义值接收者类型的方法。这样，调用函数时，是直接 copy 了这些类型的 <code>header</code>，而 <code>header</code> 本身就是为复制设计的。</strong></p>
+<p><strong>如果类型具备非原始的本质，不能被安全地复制，这种类型总是应该被共享，那就定义指针接收者的方法。比如 go 源码里的文件结构体（struct File）就不应该被复制，应该只有一份<code>实体</code>。</strong></p>
+<h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><p>【飞雪无情 Go实战笔记】<a href="https://www.flysnow.org/2017/04/03/go-in-action-go-interface.html" target="_blank" rel="noopener">https://www.flysnow.org/2017/04/03/go-in-action-go-interface.html</a></p>
+<p>【何时使用指针接收者】<a href="http://ironxu.com/711" target="_blank" rel="noopener">http://ironxu.com/711</a></p>
+<p>【理解Go Interface】<a href="http://lanlingzi.cn/post/technical/2016/0803_go_interface/" target="_blank" rel="noopener">http://lanlingzi.cn/post/technical/2016/0803_go_interface/</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/30/Go%20%E6%8E%A5%E5%8F%A3_0Go%E7%94%A8%20interface%20%E5%AE%9E%E7%8E%B0%E5%A4%9A%E6%80%81/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -385,6 +612,115 @@
 <p>再如，两个宏都存在时编译代码A，否则编译代码B： </p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> NUM1 10</span></span><br><span class="line"><span class="comment">// #define NUM2 20</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">if</span> (defined NUM1 &amp;&amp; defined NUM2)</span></span><br><span class="line">        <span class="comment">//代码A</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"NUM1: %d, NUM2: %d\n"</span>, NUM1, NUM2);</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line">        <span class="comment">//代码B</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"Error\n"</span>);</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h1 id="ifdef-可以认为是-if-defined-的缩写"><a href="#ifdef-可以认为是-if-defined-的缩写" class="headerlink" title="ifdef 可以认为是 #if defined 的缩写"></a>ifdef 可以认为是 #if defined 的缩写</h1>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/26/linux%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/12/26/linux%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/" class="post-title-link" itemprop="url">linux环境变量设置</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-12-26 15:29:16" itemprop="dateCreated datePublished" datetime="2019-12-26T15:29:16+08:00">2019-12-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-02-27 15:56:07" itemprop="dateModified" datetime="2021-02-27T15:56:07+08:00">2021-02-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux/" itemprop="url" rel="index">
+                    <span itemprop="name">linux</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="Ubuntu环境变量的添加和删除"><a href="#Ubuntu环境变量的添加和删除" class="headerlink" title="Ubuntu环境变量的添加和删除"></a>Ubuntu环境变量的添加和删除</h3><h4 id="添加环境变量的位置"><a href="#添加环境变量的位置" class="headerlink" title="添加环境变量的位置"></a>添加环境变量的位置</h4><ul>
+<li>/etc/profile 该文件为系统的每个用户设置环境信息，当用户第一次登录时，该文件被执行，并从/etc/profile.d目录的配置文件中搜集shell的设置。</li>
+<li>/etc/environment 登录操作系统使用的第二个文件，系统在读取自己的profile之前，设置环境文件的环境变量</li>
+<li>/etc/bashrc 为每一个运行bash shell的用户执行该文件。当bash shell被打开时，该文件被读取</li>
+<li>~/.profile 每个用户都可以使用该文件输入专用于自己使用的shell信息，当用户登录时，该文件仅仅执行一次。默认情况下设置一些环境变量，执行用户的.bashrc文件</li>
+<li>~/.bashrc 该文件包含专用的bash shell的bash信息，当登录以及每次打开新的shell时，该文件被读取。</li>
+</ul>
+<h4 id="添加方法"><a href="#添加方法" class="headerlink" title="添加方法"></a>添加方法</h4><ul>
+<li>方法一：直接修改/etc/enviroment文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">打开/etc/environment文件，其内容如下：</span></span><br><span class="line">PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games" </span><br><span class="line"><span class="meta">#</span><span class="bash">在环境变量PATH中添加你要添加的路径即可。</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>方法二：修改/etc/profile文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">这个文件不是保存环境变量信息的文件，在登录时，系统只是根据它的内容对环境变量进行设置。</span></span><br><span class="line">export PATH=$PATH:[your path1]:[your path2]:[...]  </span><br><span class="line">export PATH=[your path1]:[your path2]:[...]:$PATH #其中，各个PATH之间用冒号分隔，$PATH指代添加your path前的环境变量。</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>方法三：修改/etc/bashrc或者~/.bashrc文件，这两个文件<strong>不是为了保存环境变量，只是在使用bash shell时进行设置而已，所以设置方法和二中一样。对于/etc/bashrc文件，修改的作用于所有用户，但对于~/.bashrc文件，修改的仅仅作用于当前用户。这种修改的作用也是永久性的。</strong></p>
+</li>
+<li><p>方法四：<strong>修改~/.profile文件，作用仅限于当前用户，但同样也是永久性的。这种方法和修改/etc/profile本质上是一样的，这种之不过是仅仅修改了当前用户自己的配置文件。所以作用仅限于当前用户，但同样也是永久性的。</strong></p>
+</li>
+<li><p>方法五：在Terminal中使用shell命令，只在当前Terminal中起作用，关闭了当前Terminal就无效了。对其他Terminal也无效</p>
+</li>
+</ul>
+<h4 id="显示环境变量"><a href="#显示环境变量" class="headerlink" title="显示环境变量"></a>显示环境变量</h4><ul>
+<li>显示所有环境变量</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">env #打印所有的环境变量</span><br></pre></td></tr></table></figure>
+<ul>
+<li>显示指定环境变量</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo $PATH #打印PATH环境变量</span><br></pre></td></tr></table></figure>
+<h4 id="让修改生效"><a href="#让修改生效" class="headerlink" title="让修改生效"></a>让修改生效</h4><p>使用source命令也可以让修改立即生效。使用方法为：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">source [file name]  # file name 指的是上面修改过的文件的file name</span><br></pre></td></tr></table></figure>
+<h4 id="删除对环境变量的修改"><a href="#删除对环境变量的修改" class="headerlink" title="删除对环境变量的修改"></a>删除对环境变量的修改</h4><p>将以上方法中对配置文件的修改还原回去即可。另外，由于第五种方法由于是临时性质的且局部的，只需要关闭这个Terminal就好了。</p>
+
       
     </div>
 
@@ -1073,115 +1409,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/26/linux%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/12/26/linux%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/" class="post-title-link" itemprop="url">linux环境变量设置</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-12-26 15:29:16" itemprop="dateCreated datePublished" datetime="2019-12-26T15:29:16+08:00">2019-12-26</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-02-27 15:56:07" itemprop="dateModified" datetime="2021-02-27T15:56:07+08:00">2021-02-27</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/linux/" itemprop="url" rel="index">
-                    <span itemprop="name">linux</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="Ubuntu环境变量的添加和删除"><a href="#Ubuntu环境变量的添加和删除" class="headerlink" title="Ubuntu环境变量的添加和删除"></a>Ubuntu环境变量的添加和删除</h3><h4 id="添加环境变量的位置"><a href="#添加环境变量的位置" class="headerlink" title="添加环境变量的位置"></a>添加环境变量的位置</h4><ul>
-<li>/etc/profile 该文件为系统的每个用户设置环境信息，当用户第一次登录时，该文件被执行，并从/etc/profile.d目录的配置文件中搜集shell的设置。</li>
-<li>/etc/environment 登录操作系统使用的第二个文件，系统在读取自己的profile之前，设置环境文件的环境变量</li>
-<li>/etc/bashrc 为每一个运行bash shell的用户执行该文件。当bash shell被打开时，该文件被读取</li>
-<li>~/.profile 每个用户都可以使用该文件输入专用于自己使用的shell信息，当用户登录时，该文件仅仅执行一次。默认情况下设置一些环境变量，执行用户的.bashrc文件</li>
-<li>~/.bashrc 该文件包含专用的bash shell的bash信息，当登录以及每次打开新的shell时，该文件被读取。</li>
-</ul>
-<h4 id="添加方法"><a href="#添加方法" class="headerlink" title="添加方法"></a>添加方法</h4><ul>
-<li>方法一：直接修改/etc/enviroment文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">打开/etc/environment文件，其内容如下：</span></span><br><span class="line">PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games" </span><br><span class="line"><span class="meta">#</span><span class="bash">在环境变量PATH中添加你要添加的路径即可。</span></span><br></pre></td></tr></table></figure>
-<ul>
-<li>方法二：修改/etc/profile文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">这个文件不是保存环境变量信息的文件，在登录时，系统只是根据它的内容对环境变量进行设置。</span></span><br><span class="line">export PATH=$PATH:[your path1]:[your path2]:[...]  </span><br><span class="line">export PATH=[your path1]:[your path2]:[...]:$PATH #其中，各个PATH之间用冒号分隔，$PATH指代添加your path前的环境变量。</span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>方法三：修改/etc/bashrc或者~/.bashrc文件，这两个文件<strong>不是为了保存环境变量，只是在使用bash shell时进行设置而已，所以设置方法和二中一样。对于/etc/bashrc文件，修改的作用于所有用户，但对于~/.bashrc文件，修改的仅仅作用于当前用户。这种修改的作用也是永久性的。</strong></p>
-</li>
-<li><p>方法四：<strong>修改~/.profile文件，作用仅限于当前用户，但同样也是永久性的。这种方法和修改/etc/profile本质上是一样的，这种之不过是仅仅修改了当前用户自己的配置文件。所以作用仅限于当前用户，但同样也是永久性的。</strong></p>
-</li>
-<li><p>方法五：在Terminal中使用shell命令，只在当前Terminal中起作用，关闭了当前Terminal就无效了。对其他Terminal也无效</p>
-</li>
-</ul>
-<h4 id="显示环境变量"><a href="#显示环境变量" class="headerlink" title="显示环境变量"></a>显示环境变量</h4><ul>
-<li>显示所有环境变量</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">env #打印所有的环境变量</span><br></pre></td></tr></table></figure>
-<ul>
-<li>显示指定环境变量</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo $PATH #打印PATH环境变量</span><br></pre></td></tr></table></figure>
-<h4 id="让修改生效"><a href="#让修改生效" class="headerlink" title="让修改生效"></a>让修改生效</h4><p>使用source命令也可以让修改立即生效。使用方法为：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">source [file name]  # file name 指的是上面修改过的文件的file name</span><br></pre></td></tr></table></figure>
-<h4 id="删除对环境变量的修改"><a href="#删除对环境变量的修改" class="headerlink" title="删除对环境变量的修改"></a>删除对环境变量的修改</h4><p>将以上方法中对配置文件的修改还原回去即可。另外，由于第五种方法由于是临时性质的且局部的，只需要关闭这个Terminal就好了。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/27/linux_server/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1254,105 +1481,6 @@
 </ul>
 <p>RPM安装服务和源码安装服务区别就在于安装位置的不同。</p>
 <p>service不可以启动RPM安装的软件</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/27/linux_system/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/11/27/linux_system/" class="post-title-link" itemprop="url">Linux 系统管理</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-11-27 19:29:16" itemprop="dateCreated datePublished" datetime="2019-11-27T19:29:16+08:00">2019-11-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-12-20 15:26:57" itemprop="dateModified" datetime="2019-12-20T15:26:57+08:00">2019-12-20</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/linux/" itemprop="url" rel="index">
-                    <span itemprop="name">linux</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="Linux系统管理"><a href="#Linux系统管理" class="headerlink" title="Linux系统管理"></a>Linux系统管理</h2><h3 id="进程管理"><a href="#进程管理" class="headerlink" title="进程管理"></a>进程管理</h3><h4 id="进程查看"><a href="#进程查看" class="headerlink" title="进程查看"></a>进程查看</h4><p>作用：判断服务器健康状态，查看系统中所有进程，杀死进程</p>
-<p>查看系统中所有进程：</p>
-<ul>
-<li>ps aux :使用系统中所有进程，使用BSD操作系统格式</li>
-<li>ps -le 查看系统中所有进程，使用Linux标准命令格式</li>
-</ul>
-<p>查看系统健康状态：</p>
-<ul>
-<li>top[选项]</li>
-</ul>
-<p>查看进程树：</p>
-<ul>
-<li>pstree</li>
-</ul>
-<h4 id="终止进程"><a href="#终止进程" class="headerlink" title="终止进程"></a>终止进程</h4><p>1.kill命令</p>
-<p>kill -l 查看可用的进程信号</p>
-<p>kill -1 进程id 重启进程</p>
-<p>kill -9 进程id 强制杀死进程</p>
-<p>2.killall命令</p>
-<p>killall -9 进程名</p>
-<p>3.pkill </p>
-<p>按照终端号踢出用户</p>
-<p>w 使用w命令查询本机已经登录的用户</p>
-<p>pkill -t -9 pts/1 强制杀死从pts/1虚拟终端登录的进程</p>
 
       
     </div>
@@ -1627,6 +1755,105 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/27/linux_system/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/11/27/linux_system/" class="post-title-link" itemprop="url">Linux 系统管理</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-11-27 19:29:16" itemprop="dateCreated datePublished" datetime="2019-11-27T19:29:16+08:00">2019-11-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-12-20 15:26:57" itemprop="dateModified" datetime="2019-12-20T15:26:57+08:00">2019-12-20</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux/" itemprop="url" rel="index">
+                    <span itemprop="name">linux</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="Linux系统管理"><a href="#Linux系统管理" class="headerlink" title="Linux系统管理"></a>Linux系统管理</h2><h3 id="进程管理"><a href="#进程管理" class="headerlink" title="进程管理"></a>进程管理</h3><h4 id="进程查看"><a href="#进程查看" class="headerlink" title="进程查看"></a>进程查看</h4><p>作用：判断服务器健康状态，查看系统中所有进程，杀死进程</p>
+<p>查看系统中所有进程：</p>
+<ul>
+<li>ps aux :使用系统中所有进程，使用BSD操作系统格式</li>
+<li>ps -le 查看系统中所有进程，使用Linux标准命令格式</li>
+</ul>
+<p>查看系统健康状态：</p>
+<ul>
+<li>top[选项]</li>
+</ul>
+<p>查看进程树：</p>
+<ul>
+<li>pstree</li>
+</ul>
+<h4 id="终止进程"><a href="#终止进程" class="headerlink" title="终止进程"></a>终止进程</h4><p>1.kill命令</p>
+<p>kill -l 查看可用的进程信号</p>
+<p>kill -1 进程id 重启进程</p>
+<p>kill -9 进程id 强制杀死进程</p>
+<p>2.killall命令</p>
+<p>killall -9 进程名</p>
+<p>3.pkill </p>
+<p>按照终端号踢出用户</p>
+<p>w 使用w命令查询本机已经登录的用户</p>
+<p>pkill -t -9 pts/1 强制杀死从pts/1虚拟终端登录的进程</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/26/hexo-operate/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1727,311 +1954,6 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/25/hello-world/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/11/25/hello-world/" class="post-title-link" itemprop="url">hexo 测试</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-11-25 19:31:00" itemprop="dateCreated datePublished" datetime="2019-11-25T19:31:00+08:00">2019-11-25</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-12-20 15:25:58" itemprop="dateModified" datetime="2019-12-20T15:25:58+08:00">2019-12-20</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html" target="_blank" rel="noopener">Deployment</a></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/03/06/linux_%E7%BD%91%E7%BB%9C02%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80-1/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/03/06/linux_%E7%BD%91%E7%BB%9C02%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80-1/" class="post-title-link" itemprop="url">网络基础-2</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-03-06 20:29:16" itemprop="dateCreated datePublished" datetime="2019-03-06T20:29:16+08:00">2019-03-06</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-13 19:05:53" itemprop="dateModified" datetime="2021-03-13T19:05:53+08:00">2021-03-13</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index">
-                    <span itemprop="name">网络</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="协议格式"><a href="#协议格式" class="headerlink" title="协议格式"></a>协议格式</h3><h4 id="数据包封装"><a href="#数据包封装" class="headerlink" title="数据包封装"></a>数据包封装</h4><p>传输层及其以下的机制由<strong>内核提供</strong>，<strong>应用层由用户进程提供</strong>。<strong>应用程序对通讯数据的含义进行解释，而传输层及其以下处理通讯的细节，将数据从一台计算机通过一定的路径发送到另一台计算机。</strong> <strong>应用层数据通过协议栈发到网络上时，每层协议都要加上一个数据首部（header），称为封装（Encapsulation）</strong>，如下图所示：</p>
-<p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE943321ff202288b2913e1285069de8e5/4565" alt="数据包封装"></p>
-<p>不同的协议层对数据包有不同的称谓，<strong>在传输层叫做段（segment），在网络层叫做数据报（datagram），在链路层叫做帧（frame）</strong>。数据封装成帧后发到传输介质上，到达目的主机后每层协议再剥掉相应的首部，最后将应用层数据交给应用程序处理。</p>
-<h4 id="以太网帧格式"><a href="#以太网帧格式" class="headerlink" title="以太网帧格式"></a>以太网帧格式</h4><p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE937a40d8066c97295abb3b803bcb27ce/4567" alt="以太网帧格式"></p>
-<p>其中的源地址和目的地址是指网卡的硬件地址（也叫<strong>MAC地址</strong>），长度是48位，是在网卡出厂时<strong>固化</strong>的。可在shell中使用ifconfig命令查看，“<strong>00:50:56:c0:00:01</strong>”部分就是硬件地址。类型字段有三种值，<strong>分别对应IP、ARP、RARP。帧尾是CRC校验码。</strong></p>
-<p>以太网帧中的数据长度规定最小46字节，最大1500字节，ARP和RARP数据包的长度不够46字节，要在后面补填充位。<strong>最大值1500称为以太网的最大传输单元（MTU）</strong>，不同的网络类型有不同的MTU，如果一个数据包从以太网路由到拨号链路上，数据包长度大于拨号链路的MTU，则需要对数据包进行<strong>分片</strong>（fragmentation）。ifconfig命令输出中也<strong>MTU:1500</strong>.注意，<strong>MTU指指数据帧中有效载荷的最大长度，不包括帧头长度。</strong></p>
-<h4 id="ARP数据报格式"><a href="#ARP数据报格式" class="headerlink" title="ARP数据报格式"></a>ARP数据报格式</h4><p>在网络通讯时，<strong>源主机的应用程序知道目的主机的IP地址和端口号，却不知道目的主机的硬件地址，而数据包首先是被网卡接收到再去处理上层协议的，如果接收到的数据包的硬件地址与本机不符，则直接丢弃。因此在通讯前必须获得目的主机的硬件地址</strong>。ARP协议就起到这个作用。<strong>源主机发出ARP请求，询问“IP地址是192.168.0.1的主机的硬件地址是多少”，并将这个请求广播到本地网段（以太网帧首部的硬件地址填FF:FF:FF:FF:FF:FF表示广播），目的主机接收到广播的ARP请求，发现其中的IP地址与本机相符，则发送一个ARP应答数据包给源主机，将自己的硬件地址填写在应答包中。</strong></p>
-<p>每台主机都维护一个ARP缓存表，可以用arp -a命令查看。缓存表中的表项有过期时间（一般为20分钟），如果20分钟内没有再次使用某个表项，则该表项失效，下次还要发ARP请求来获得目的主机的硬件地址。</p>
-<p>ARP数据报的格式如下所示：</p>
-<p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE8790e76a5bfd1e36879973c44556bb91/4569" alt="ARP数据报格式"></p>
-<p>源MAC地址、目的MAC地址在以太网首部和ARP请求中各出现一次，对于链路层为以太网的情况是多余的，但<strong>如果链路层是其它类型的网络则有可能是必要的</strong>。硬件类型指链路层网络类型，1为以太网，协议类型指要转换的地址类型，0x0800为IP地址，后面两个地址长度对于以太网地址和IP地址分别为6和4（字节），op字段为1表示ARP请求，op字段为2表示ARP应答。</p>
-<p>看一个具体的例子。</p>
-<p>请求帧如下（为了清晰在每行的前面加了字节计数，每行16个字节）：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">以太网首部（14字节）</span><br><span class="line"></span><br><span class="line">0000: ff ff ff ff ff ff 00 05 5d 61 58 a8 08 06</span><br><span class="line"></span><br><span class="line">ARP帧（28字节）</span><br><span class="line"></span><br><span class="line">0000: 00 01</span><br><span class="line"></span><br><span class="line">0010: 08 00 06 04 00 01 00 05 5d 61 58 a8 c0 a8 00 37</span><br><span class="line"></span><br><span class="line">0020: 00 00 00 00 00 00 c0 a8 00 02</span><br><span class="line"></span><br><span class="line">填充位（18字节）</span><br><span class="line"></span><br><span class="line">0020: 00 77 31 d2 50 10</span><br><span class="line"></span><br><span class="line">0030: fd 78 41 d3 00 00 00 00 00 00 00 00</span><br></pre></td></tr></table></figure>
-<p>以太网首部：<strong>目的主机采用广播地址</strong>，源主机的MAC地址是00:05:5d:61:58:a8，上层协议类型0x0806表示ARP。</p>
-<p>ARP帧：硬件类型0x0001表示<strong>以太网</strong>，协议类型0x0800表示<strong>IP协议</strong>，硬件地址（MAC地址）长度为6，协议地址（IP地址）长度为4，op为0x0001表示请求目的主机的MAC地址，源主机MAC地址为00:05:5d:61:58:a8，源主机IP地址为c0 a8 00 37（192.168.0.55）<strong>，目的主机MAC地址全0待填写，目的主机IP地址为c0 a8 00 02（192.168.0.2）。</strong></p>
-<p>由于以太网规定最小数据长度为46字节，ARP帧长度只有28字节，因此有18字节填充位，填充位的内容没有定义，与具体实现相关。</p>
-<p><strong>应答帧</strong>如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">以太网首部</span><br><span class="line"></span><br><span class="line">0000: **00 05 5d 61 58 a8** 00 05 5d a1 b8 40 08 06</span><br><span class="line"></span><br><span class="line">ARP帧</span><br><span class="line"></span><br><span class="line">0000: 00 01</span><br><span class="line"></span><br><span class="line">0010: 08 00 06 04 00 02 **00 05 5d a1 b8 40** c0 a8 00 02</span><br><span class="line"></span><br><span class="line">0020: 00 05 5d 61 58 a8 c0 a8 00 37</span><br><span class="line"></span><br><span class="line">填充位</span><br><span class="line"></span><br><span class="line">0020: 00 77 31 d2 50 10</span><br><span class="line"></span><br><span class="line">0030: fd 78 41 d3 00 00 00 00 00 00 00 00</span><br></pre></td></tr></table></figure>
-<p>以太网首部：<strong>目的主机的MAC地址是00:05:5d:61:58:a8，源主机的MAC地址是00:05:5d:a1:b8:40，</strong>上层协议类型0x0806表示ARP。</p>
-<p>ARP帧：硬件类型0x0001表示以太网，协议类型0x0800表示IP协议，硬件地址（MAC地址）长度为6，协议地址（IP地址）长度为4，op为0x0002表示应答，源主机MAC地址为00:05:5d:a1:b8:40，源主机IP地址为c0 a8 00 02（192.168.0.2），目的主机MAC地址为00:05:5d:61:58:a8，目的主机IP地址为c0 a8 00 37（192.168.0.55）。</p>
-<p>如果源主机和目的主机不在同一网段，ARP请求的广播帧无法穿过路由器，源主机如何与目的主机通信？</p>
-<p>在网段通信时，数据包中的地址就是源IP，目标IP，源MAC，目标MAC，根本用不到网关，而当检测到需要把数据包发到远程网络时，这时，目标MAC就必须改变了，<strong>在还没有出内网时，目标MAC必须写成网关的MAC地址发出去，当网关收到时，再把目标MAC地址改成下一跳的MAC地址发出去，而源IP和源MAC以及目标IP不曾改变，就算到达了公网上，目标MAC仍然在不断改变着，直到最后，这个数据包到达目标IP的网络，最终通信结束！</strong></p>
-<p><strong>不同网段的主机通信时，主机会封装网关（通常是路由器）的mac地址，然后主机将数据发送给路由器，后续路由进行路由转发，通过arp解析目标地址的mac地址，然后将数据包送达目的地。</strong>可参考：<a href="https://blog.csdn.net/weixin_43166958/article/details/86503506" target="_blank" rel="noopener">https://blog.csdn.net/weixin_43166958/article/details/86503506</a></p>
-<h4 id="IP段格式"><a href="#IP段格式" class="headerlink" title="IP段格式"></a>IP段格式</h4><p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE0e1f09c9e2bd41d557d2442aca16ef13/4571" alt="IP段格式"></p>
-<ul>
-<li><p>IP数据报的首部长度和数据长度都是可变长的，<strong>但总是4字节的整数倍</strong>。对于IPv4，4位版本字段是4。</p>
-</li>
-<li><p>4位首部长度的数值是以4字节为单位的，<strong>最小值为5</strong>，也就是说首部长度最小是4x5=20字节，也就是不带任何选项的IP首部，4位能表示的最大值是15，也就是说<strong>首部长度最大是60字节</strong>。</p>
-</li>
-<li>8位TOS字段有3个位用来指定IP数据报的优先级（目前已经废弃不用），还有4个位表示可选的服务类型（最小延迟、最大吞吐量、最大可靠性、最小成本），还有一个位总是0。</li>
-<li>总长度是整个数据报（包括IP首部和IP层payload）的字节数。</li>
-<li><strong>每传一个IP数据报，16位的标识加1，可用于分片和重新组装数据报。</strong></li>
-<li><strong>3位标志和13位片偏移用于分片。</strong></li>
-<li>TTL（Time to live)是这样用的：源主机为数据包设定一个<strong>生存时间</strong>，比如64，<strong>每过一个路由器就把该值减1，如果减到0就表示路由已经太长了仍然找不到目的主机的网络，就丢弃该包，因此这个生存时间的单位不是秒，而是跳（hop）。</strong></li>
-<li>协议字段指示上层协议是TCP、UDP、ICMP还是IGMP。</li>
-<li>校验和，<strong>只校验IP首部，数据的校验由更高层协议负责。</strong>IPv4的IP地址长度为32位。</li>
-</ul>
-<h4 id="UDP数据报格式"><a href="#UDP数据报格式" class="headerlink" title="UDP数据报格式"></a>UDP数据报格式</h4><p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCEc8142b69b8328ae98ab01b333ad577ca/4573" alt="udp数据报格式"></p>
-<p>下面分析一帧<strong>基于UDP的TFTP协议帧</strong>。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">以太网首部</span><br><span class="line"></span><br><span class="line">0000: 00 05 5d 67 d0 b1 00 05 5d 61 58 a8 08 00</span><br><span class="line"></span><br><span class="line">IP首部</span><br><span class="line"></span><br><span class="line">0000: 45 00</span><br><span class="line"></span><br><span class="line">0010: 00 53 93 25 00 00 80 11 25 ec c0 a8 00 37 c0 a8</span><br><span class="line"></span><br><span class="line">0020: 00 01</span><br><span class="line"></span><br><span class="line">UDP首部</span><br><span class="line"></span><br><span class="line">0020： 05 d4 00 45 00 3f ac 40</span><br><span class="line"></span><br><span class="line">TFTP协议</span><br><span class="line"></span><br><span class="line">0020: 00 01 &apos;c&apos;&apos;:&apos;&apos;\&apos;&apos;q&apos;</span><br><span class="line"></span><br><span class="line">0030: &apos;w&apos;&apos;e&apos;&apos;r&apos;&apos;q&apos;&apos;.&apos;&apos;q&apos;&apos;w&apos;&apos;e&apos;00 &apos;n&apos;&apos;e&apos;&apos;t&apos;&apos;a&apos;&apos;s&apos;&apos;c&apos;&apos;i&apos;</span><br><span class="line"></span><br><span class="line">0040: &apos;i&apos;00 &apos;b&apos;&apos;l&apos;&apos;k&apos;&apos;s&apos;&apos;i&apos;&apos;z&apos;&apos;e&apos;00 &apos;5&apos;&apos;1&apos;&apos;2&apos;00 &apos;t&apos;&apos;i&apos;</span><br><span class="line"></span><br><span class="line">0050: &apos;m&apos;&apos;e&apos;&apos;o&apos;&apos;u&apos;&apos;t&apos;00 &apos;1&apos;&apos;0&apos;00 &apos;t&apos;&apos;s&apos;&apos;i&apos;&apos;z&apos;&apos;e&apos;00 &apos;0&apos;</span><br><span class="line"></span><br><span class="line">0060: 00</span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>以太网首部：源MAC地址是00:05:5d:61:58:a8，目的MAC地址是00:05:5d:67:d0:b1，上层协议类型0x0800表示IP。</p>
-</li>
-<li><p>IP首部：</p>
-<ul>
-<li>每一个字节45包含4位版本号和4位首部长度，版本号为4，即IPv4。</li>
-<li><strong>首部长度为5，说明IP首部不带有选项字段</strong>。</li>
-<li>服务类型为0，没有使用服务。</li>
-<li>16位总长度字段（<strong>包括IP首部和IP层payload的长度</strong>）为0x0053，即83字节，加上以太网首部14字节可知整个帧长度是97字节。</li>
-<li>IP报标识是0x9325</li>
-<li>标志字段和片偏移字段设置为0x0000，就是DF=0允许分片，MF=0此数据报没有更多分片，没有分片偏移。</li>
-<li>TTL是0x80，也就是128。</li>
-<li>上层协议0x11表示UDP协议。</li>
-<li>IP首部校验和为0x25ec</li>
-<li>源主机IP是c0 a8 00 37（192.168.0.55）</li>
-<li>目的主机IP是c0 a8 00 01（192.168.0.1）。</li>
-</ul>
-</li>
-<li><p>UDP首部：</p>
-<ul>
-<li>源端口号0x05d4（1492）是客户端的端口号</li>
-<li>目的端口号0x0045（69）是TFTP服务的well-known端口号。</li>
-<li>UDP报长度为0x003f，即63字节，包括UDP首部和UDP层pay-load的长度。</li>
-<li>UDP首部和UDP层payload的校验和为0xac40。</li>
-</ul>
-</li>
-<li><p>TFTP是基于文本的协议，各字段之间用字节0分隔，开头的00 01表示请求读取一个文件，接下来的各字段是：</p>
-</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">c:\qwerq.qwe</span><br><span class="line">netascii</span><br><span class="line">blksize 512</span><br><span class="line">timeout 10</span><br><span class="line">tsize 0</span><br></pre></td></tr></table></figure>
-<p>一般的网络通信都是像TFTP协议这样，通信的双方分别是客户端和服务器，<strong>客户端主动发起请求（上面的例子就是客户端发起的请求帧），而服务器被动地等待、接收和应答请求。</strong></p>
-<p>客户端的<strong>IP地址和端口号唯一标识了该主机上的TFTP客户端进程</strong>，<strong>服务器的IP地址和端口号唯一标识了该主机上的TFTP服务进程</strong>，由于客户端是主动发起请求的一方，它必须知道服务器的IP地址和TFTP服务进程的端口号，所以，<strong>一些常见的网络协议有默认的服务器端口，例如HTTP服务默认TCP协议的80端口，FTP服务默认TCP协议的21端口，TFTP服务默认UDP协议的69端口</strong>。</p>
-<p>在使用客户端程序时，必须指定服务器的主机名或IP地址，如果不明确指定端口号则采用默认端口，请读者查阅ftp、tftp等程序的man page了解如何指定端口号。</p>
-<p>/etc/services中列出了所有well-known的服务端口和对应的传输层协议，这是由IANA（Internet Assigned Numbers Authority）规定的，其中有些服务既可以用TCP也可以用UDP，为了清晰，IANA规定这样的服务采用相同的TCP或UDP默认端口号，而另外一些TCP和UDP的相同端口号却对应不同的服务。</p>
-<p><strong>很多服务有well-known的端口号，然而客户端程序的端口号却不必是well-known的，往往是每次运行客户端程序时由系统自动分配一个空闲的端口号，用完就释放掉，称为ephemeral的端口号</strong>。</p>
-<p>前面提过，UDP协议不面向连接，也不保证传输的可靠性，例如：</p>
-<p>发送端的UDP协议层只管把应用层传来的数据封装成段交给IP协议层就算完成任务了，如果因为网络故障该段无法发到对方，<strong>UDP协议层也不会给应用层返回任何错误信息。</strong></p>
-<p>接收端的UDP协议层只管把收到的数据根据端口号交给相应的应用程序就算完成任务了，如果发送端发来多个数据包并且在网络上经过不同的路由，到达接收端时顺序已经错乱了，<strong>UDP协议层也不保证按发送时的顺序交给应用层。</strong></p>
-<p>通常接收端的UDP协议层将收到的数据放在一个固定大小的<strong>缓冲区</strong>中等待应用程序来提取和处理，<strong>如果应用程序提取和处理的速度很慢，而发送端发送的速度很快，就会丢失数据包，UDP协议层并不报告这种错误。</strong></p>
-<p>因此，使用UDP协议的应用程序必须考虑到这些可能的问题并实现适当的解决方案，例如等待应答、超时重发、为数据包编号、流量控制等。<strong>一般使用UDP协议的应用程序实现都比较简单，只是发送一些对可靠性要求不高的消息，而不发送大量的数据。</strong>例如，基于UDP的TFTP协议一般只用于传送小文件（所以才叫trivial的ftp），而基于TCP的FTP协议适用于各种文件的传输。</p>
-<h4 id="TCP数据报格式"><a href="#TCP数据报格式" class="headerlink" title="TCP数据报格式"></a>TCP数据报格式</h4><p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCEfb083f48267eafa5f86eeb2ad99a94ab/4575" alt="TCP数据报格式"></p>
-<p>与UDP协议一样也有<strong>源端口号和目的端口号</strong>，通讯的双方由<strong>IP地址和端口号标识</strong>。32位<strong>序号</strong>、32位<strong>确认序号</strong>、窗口大小稍后详细解释。<strong>4位首部长度和IP协议头类似，表示TCP协议头的长度，以4字节为单位，因此TCP协议头最长可以是4x15=60字节，如果没有选项字段，TCP协议头最短20字节。</strong>URG、ACK、PSH、RST、SYN、FIN是六个<strong>控制位</strong>。16位检验和将TCP协议头和数据都计算在内。</p>
-<h3 id="TCP协议"><a href="#TCP协议" class="headerlink" title="TCP协议"></a>TCP协议</h3><h4 id="TCP通信时序"><a href="#TCP通信时序" class="headerlink" title="TCP通信时序"></a>TCP通信时序</h4><p>下图是一次TCP通讯的时序图。TCP连接建立断开。包含熟知的<strong>三次握手和四次挥手</strong>。</p>
-<p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE5332ac18ccc8b5cfa278e4d6077da9af/4577" alt="TCP通信时序"></p>
-<p>在这个例子中，首先客户端主动发起连接、发送请求，然后服务器端响应请求，然后客户端主动关闭连接。两条竖线表示通讯的两端，从上到下表示时间的先后顺序，注意，数据从一端传到网络的另一端也需要时间，所以图中的箭头都是斜的。双方发送的段按时间顺序编号为1-10，各段中的主要信息在箭头上标出，例如段2的箭头上标着SYN, 8000(0), ACK 1001，表示该段中的SYN位置1，32位<strong>序号</strong>是8000，<strong>该段不携带有效载荷（数据字节数为0）</strong>，ACK位置1，32位<strong>确认序号是1001</strong>，<strong>带有一个mss（Maximum Segment Size，最大报文长度）选项值为1024。</strong></p>
-<h4 id="三次握手"><a href="#三次握手" class="headerlink" title="三次握手"></a>三次握手</h4><ul>
-<li><p>客户端发送一个带SYN标志的TCP报文到服务器。这是三次握手过程中的段1</p>
-<ul>
-<li>客户端发出段1，<strong>SYN位表示连接请求</strong>。</li>
-<li><strong>序号是1000，这个序号在网络通讯中用作临时的地址，每发一个数据字节，这个序号要加1，这样在接收端可以根据序号排出数据包的正确顺序，也可以发现丢包的情况</strong></li>
-<li><strong>规定SYN位和FIN位也要占一个序号，这次虽然没发数据，但是由于发了SYN位，因此下次再发送应该用序号1001(段4)</strong>。</li>
-<li>mss表示最大段尺寸，<strong>如果一个段太大，封装成帧后超过了链路层的最大帧长度，就必须在IP层分片</strong>，为了避免这种情况，<strong>客户端声明自己的最大段尺寸，建议服务器端发来的段不要超过这个长度。</strong></li>
-</ul>
-</li>
-<li><p>服务器端回应客户端，是三次握手中的第2个报文段，同时带ACK标志和SYN标志。它<strong>表示对刚才客户端SYN的回应；同时又发送SYN给客户端，询问客户端是否准备好进行数据通讯。</strong></p>
-<ul>
-<li>服务器发出段2，也带有SYN位，<strong>同时置ACK位表示确认，确认序号是1001，表示“我接收到序号1000及其以前所有的段，请你下次发送序号为1001的段”，也就是应答了客户端的连接请求，同时也给客户端发出一个连接请求，同时声明最大尺寸为1024。</strong></li>
-</ul>
-</li>
-<li><p>客户必须再次回应服务器端一个ACK报文，这是报文段3。</p>
-<ul>
-<li>客户端发出段3，对服务器的连接请求进行应答，<strong>确认序号</strong>是8001。在这个过程中，<strong>客户端和服务器分别给对方发了连接请求，也应答了对方的连接请求，其中服务器的请求和应答在一个段中发出，因此一共有三个段用于建立连接，称为“三方握手（three-way-handshake）”。</strong>在建立连接的同时，双方协商了一些信息，例如双方发送序号的初始值、最大段尺寸等。</li>
-</ul>
-</li>
-</ul>
-<p>在TCP通讯中，<strong>如果一方收到另一方发来的段，读出其中的目的端口号，发现本机并没有任何进程使用这个端口，就会应答一个包含RST位的段给另一方</strong>。例如，服务器并没有任何进程使用8080端口，我们却用telnet客户端去连接它，服务器收到客户端发来的SYN段就会应答一个RST段，<strong>客户端的telnet程序收到RST段后报告错误Connection refused：</strong></p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> telnet 192.168.0.200 8080</span></span><br><span class="line"></span><br><span class="line">Trying 192.168.0.200...</span><br><span class="line"></span><br><span class="line">telnet: Unable to connect to remote host: Connection refused</span><br></pre></td></tr></table></figure>
-<h4 id="数据传输过程"><a href="#数据传输过程" class="headerlink" title="数据传输过程"></a>数据传输过程</h4><ul>
-<li><p>客户端发出段4，包含从序号1001开始的20个字节数据。</p>
-</li>
-<li><p>服务器发出段5，<strong>确认序号为1021，对序号为1001-1020的数据表示确认收到，同时请求发送序号1021开始的数据，服务器在应答的同时也向客户端发送从序号8001开始的10个字节数据，这称为piggyback。</strong></p>
-</li>
-<li><p>客户端发出段6，对服务器发来的序号为8001-8010的数据表示确认收到，请求发送序号8011开始的数据。</p>
-</li>
-</ul>
-<p>在数据传输过程中，<strong>ACK和确认序号</strong>是非常重要的，<strong>应用程序交给TCP协议发送的数据会暂存在TCP层的发送缓冲区中，发出数据包给对方之后，只有收到对方应答的ACK段才知道该数据包确实发到了对方，可以从发送缓冲区中释放掉了，如果因为网络故障丢失了数据包或者丢失了对方发回的ACK段，经过等待超时后TCP协议自动将发送缓冲区中的数据包重发。</strong></p>
-<h4 id="四次挥手"><a href="#四次挥手" class="headerlink" title="四次挥手"></a>四次挥手</h4><p>由于TCP连接是<strong>全双工</strong>的，因此<strong>每个方向都必须单独进行关闭</strong>。这原则是<strong>当一方完成它的数据发送任务后就能发送一个FIN来终止这个方向的连接。收到一个 FIN只意味着这一方向上没有数据流动，一个TCP连接在收到一个FIN后仍能发送数据。首先进行关闭的一方将执行主动关闭，而另一方执行被动关闭</strong>。</p>
-<ul>
-<li><p>客户端发出段7，FIN位表示关闭连接的请求。</p>
-</li>
-<li><p>服务器发出段8，应答客户端的关闭连接请求。</p>
-</li>
-<li><p>服务器发出段9，其中也包含FIN位，向客户端发送关闭连接请求。</p>
-</li>
-<li><p>客户端发出段10，应答服务器的关闭连接请求。</p>
-</li>
-</ul>
-<p>建立连接的过程是三次握手，而关闭连接通常需要4个段，<strong>服务器的应答和关闭连接请求通常不合并在一个段中，因为有连接半关闭的情况，这种情况下客户端关闭连接之后就不能再发送数据（ACK是可以的，只是没有数据）给服务器了，但是服务器还可以发送数据给客户端，直到服务器也关闭连接为止。</strong></p>
-<h4 id="滑动窗口-TCP流量控制"><a href="#滑动窗口-TCP流量控制" class="headerlink" title="滑动窗口(TCP流量控制)"></a>滑动窗口(TCP流量控制)</h4><p>介绍UDP时描述了这样的问题：<strong>如果发送端发送的速度较快，接收端接收到数据后处理的速度较慢，而接收缓冲区的大小是固定的，就会丢失数据。TCP协议通过“滑动窗口（Sliding Window）”机制解决这一问题</strong>。看下图的通讯过程：</p>
-<p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCEde02a2ac39f3de7ba31ee51751bdca95/4579" alt="滑动窗口"></p>
-<ul>
-<li><p>发送端发起连接，声明最大段尺寸是1460，初始序号是0，<strong>窗口大小是4K，表示“我的接收缓冲区还有4K字节空闲，你发的数据不要超过4K”</strong>。接收端应答连接请求，声明最大段尺寸是1024，初始序号是8000，窗口大小是6K。发送端应答，三次握手结束。</p>
-</li>
-<li><p>发送端发出段4-9，每个段带1K的数据，发送端根据窗口大小知道接收端的缓冲区满了，因此停止发送数据。</p>
-</li>
-<li><p>接收端的应用程序提走2K数据，接收缓冲区又有了2K空闲，接收端发出段10，在应答已收到6K数据的同时声明窗口大小为2K。</p>
-</li>
-<li><p>接收端的应用程序又提走2K数据，接收缓冲区有4K空闲，接收端发出段11，重新声明窗口大小为4K。</p>
-</li>
-<li><p>发送端发出段12-13，每个段带2K数据，段13同时还包含FIN位。</p>
-</li>
-<li><p>接收端应答接收到的2K数据（6145-8192），<strong>再加上FIN位占一个序号8193，因此应答序号是8194，连接处于半关闭状态，接收端同时声明窗口大小为2K。</strong></p>
-</li>
-<li><p>接收端的应用程序提走2K数据，接收端重新声明窗口大小为4K。</p>
-</li>
-<li><p>接收端的应用程序提走剩下的2K数据，接收缓冲区全空，接收端重新声明窗口大小为6K。</p>
-</li>
-<li><p>接收端的应用程序在提走全部数据后，决定关闭连接，发出段17包含FIN位，发送端应答，连接完全关闭。</p>
-</li>
-</ul>
-<p>上图在接收端用小方块表示1K数据，实心的小方块表示已接收到的数据，<strong>虚线框表示接收缓冲区</strong>，因此套在虚线框中的空心小方块表示窗口大小，从图中可以看出，<strong>随着应用程序提走数据，虚线框是向右滑动的，因此称为滑动窗口。</strong></p>
-<p>从这个例子还可以看出，发送端是一K一K地发送数据，而接收端的应用程序可以两K两K地提走数据，当然也有可能一次提走3K或6K数据，或者一次只提走几个字节的数据。也就是说，<strong>应用程序所看到的数据是一个整体，或说是一个流（stream），在底层通讯中这些数据可能被拆成很多数据包来发送，但是一个数据包有多少字节对应用程序是不可见的，因此TCP协议是面向流的协议。</strong>而UDP是面向消息的协议，<strong>每个UDP段都是一条消息，应用程序必须以消息为单位提取数据，不能一次提取任意字节的数据</strong>，这一点和TCP是很不同的。</p>
-<h4 id="TCP-状态转移"><a href="#TCP-状态转移" class="headerlink" title="TCP 状态转移"></a>TCP 状态转移</h4><p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE11e02e250025cfccd7fa1221edf57327/4581" alt="TCP状态转移"></p>
-<p>实线一部分：主动发起连接，主动关闭连接。主动发起连接才会出现FIN_WAIT_2状态。TIME_WAIT的时间：不确定对方是否收到发送的ACK。</p>
-<p>虚线一部分：被动发起连接，被动关闭连接</p>
-<p>小细线一部分：两端同时操作</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
@@ -2082,7 +2004,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">31</span>
+          <span class="site-state-item-count">33</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

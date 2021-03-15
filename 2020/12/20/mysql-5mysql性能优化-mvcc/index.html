@@ -47,18 +47,23 @@
   };
 </script>
 
-  <meta name="description" content="接口设计的意义 泛型编程：使用 interface 可以实现泛型编程 隐藏具体实现：设计一个函数返回一个 interface，那么只能通过 interface 里面的方法来做一些操作，但是内部的具体实现是完全不知道的。  golang中的接口接口定义了一种规范，描述了类的行为和功能，而不做具体实现。 Interface定义了一个或一组method(s)，这些method(s)只有函数签名，没有具体">
-<meta name="keywords" content="接口">
+  <meta name="description" content="MVCC实验1: 1234567set session autocommit=off;  update users set lastUpdate=now() where id =1; --在未做commit&#x2F;rollback操作之前  --在其他的事务能不能进行对应数据的查询(特别是加上了X锁的数据)  select * from users where id &amp;gt; 1; select * f">
+<meta name="keywords" content="mysql">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Go接口与C++接口的异同">
-<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;01&#x2F;02&#x2F;Go%20%E6%8E%A5%E5%8F%A3_1Go%E4%B8%8E%20C++%20%E6%8E%A5%E5%8F%A3%E6%9C%89%E4%BD%95%E5%BC%82%E5%90%8C&#x2F;index.html">
+<meta property="og:title" content="mysql性能优化-mvcc">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;12&#x2F;20&#x2F;mysql-5mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-mvcc&#x2F;index.html">
 <meta property="og:site_name" content="ShifuDong">
-<meta property="og:description" content="接口设计的意义 泛型编程：使用 interface 可以实现泛型编程 隐藏具体实现：设计一个函数返回一个 interface，那么只能通过 interface 里面的方法来做一些操作，但是内部的具体实现是完全不知道的。  golang中的接口接口定义了一种规范，描述了类的行为和功能，而不做具体实现。 Interface定义了一个或一组method(s)，这些method(s)只有函数签名，没有具体">
+<meta property="og:description" content="MVCC实验1: 1234567set session autocommit=off;  update users set lastUpdate=now() where id =1; --在未做commit&#x2F;rollback操作之前  --在其他的事务能不能进行对应数据的查询(特别是加上了X锁的数据)  select * from users where id &amp;gt; 1; select * f">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2021-03-08T06:33:32.714Z">
+<meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;42554684dcfc6e607deaa29d065ade7e&#x2F;xmlnote&#x2F;WEBRESOURCE737e924370d74d490146d20aeb7f0049&#x2F;4663">
+<meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;42554684dcfc6e607deaa29d065ade7e&#x2F;xmlnote&#x2F;WEBRESOURCE0252ac9e1c65115f3c4259506e4dc5cd&#x2F;4665">
+<meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;42554684dcfc6e607deaa29d065ade7e&#x2F;xmlnote&#x2F;WEBRESOURCE993a4c4a27f07edf5190b748045de598&#x2F;4667">
+<meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;42554684dcfc6e607deaa29d065ade7e&#x2F;xmlnote&#x2F;WEBRESOURCE1df8f0a4ffcecea9f4f3dd10c1e855d7&#x2F;4669">
+<meta property="og:updated_time" content="2021-03-15T10:38:05.955Z">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;42554684dcfc6e607deaa29d065ade7e&#x2F;xmlnote&#x2F;WEBRESOURCE737e924370d74d490146d20aeb7f0049&#x2F;4663">
 
-<link rel="canonical" href="http://yoursite.com/2020/01/02/Go%20%E6%8E%A5%E5%8F%A3_1Go%E4%B8%8E%20C++%20%E6%8E%A5%E5%8F%A3%E6%9C%89%E4%BD%95%E5%BC%82%E5%90%8C/">
+<link rel="canonical" href="http://yoursite.com/2020/12/20/mysql-5mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-mvcc/">
 
 
 <script id="page-configurations">
@@ -72,7 +77,7 @@
   };
 </script>
 
-  <title>Go接口与C++接口的异同 | ShifuDong</title>
+  <title>mysql性能优化-mvcc | ShifuDong</title>
   
 
 
@@ -206,7 +211,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/02/Go%20%E6%8E%A5%E5%8F%A3_1Go%E4%B8%8E%20C++%20%E6%8E%A5%E5%8F%A3%E6%9C%89%E4%BD%95%E5%BC%82%E5%90%8C/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/20/mysql-5mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-mvcc/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -219,7 +224,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Go接口与C++接口的异同
+          mysql性能优化-mvcc
         </h1>
 
         <div class="post-meta">
@@ -229,14 +234,14 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2020-01-02 21:29:16" itemprop="dateCreated datePublished" datetime="2020-01-02T21:29:16+08:00">2020-01-02</time>
+              <time title="创建时间：2020-12-20 17:02:01" itemprop="dateCreated datePublished" datetime="2020-12-20T17:02:01+08:00">2020-12-20</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-08 14:33:32" itemprop="dateModified" datetime="2021-03-08T14:33:32+08:00">2021-03-08</time>
+                <time title="修改时间：2021-03-15 18:38:05" itemprop="dateModified" datetime="2021-03-15T18:38:05+08:00">2021-03-15</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -244,8 +249,8 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Go-interface/" itemprop="url" rel="index">
-                    <span itemprop="name">Go interface</span>
+                  <a href="/categories/mysql/" itemprop="url" rel="index">
+                    <span itemprop="name">mysql</span>
                   </a>
                 </span>
             </span>
@@ -261,29 +266,20 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h3 id="接口设计的意义"><a href="#接口设计的意义" class="headerlink" title="接口设计的意义"></a>接口设计的意义</h3><ul>
-<li>泛型编程：使用 interface 可以实现泛型编程</li>
-<li>隐藏具体实现：设计一个函数返回一个 interface，那么<strong>只能通过 interface 里面的方法来做一些操作，但是内部的具体实现是完全不知道的。</strong></li>
-</ul>
-<h3 id="golang中的接口"><a href="#golang中的接口" class="headerlink" title="golang中的接口"></a>golang中的接口</h3><p>接口定义了一种<strong>规范，描述了类的行为和功能，而不做具体实现</strong>。</p>
-<p>Interface定义了一个或一组method(s)，<strong>这些method(s)只有函数签名，没有具体的实现代码</strong>.</p>
-<p>若某个数据类型实现了Interface中定义的那些被称为”methods”的函数，则称这些<strong>数据类型实现（implement）了interface。</strong></p>
-<h3 id="C-中的接口实现方法"><a href="#C-中的接口实现方法" class="headerlink" title="C++中的接口实现方法"></a>C++中的接口实现方法</h3><p>C++ 的接口是使用<strong>抽象类</strong>来实现的，如果类中至少有一个函数被声明为<strong>纯虚函数</strong>，则这个类就是抽象类。<strong>纯虚函数是通过在声明中使用 “= 0” 来指定的</strong>。例如：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Shape</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">   <span class="keyword">public</span>:</span><br><span class="line">      <span class="comment">// 纯虚函数</span></span><br><span class="line">      <span class="function"><span class="keyword">virtual</span> <span class="keyword">double</span> <span class="title">getArea</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">   <span class="keyword">private</span>:</span><br><span class="line">      <span class="built_in">string</span> name;      <span class="comment">// 名称</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>设计抽象类的目的:<strong>为了给其他类提供一个可以继承的适当的基类。抽象类不能被用于实例化对象，它只能作为接口使用。</strong></p>
-<p><strong>派生类需要明确地声明它继承自基类，并且需要实现基类中所有的纯虚函数</strong>。</p>
-<h3 id="golang接口与C-接口区别"><a href="#golang接口与C-接口区别" class="headerlink" title="golang接口与C++接口区别"></a>golang接口与C++接口区别</h3><ul>
-<li><p>C++ 定义接口的方式称为“侵入式”</p>
-</li>
-<li><p>Go 采用的是 “非侵入式”，<strong>不需要显式声明，只需要实现接口定义的函数，编译器自动会识别。</strong></p>
-</li>
-<li><p>底层实现不同</p>
-<ul>
-<li>实现方式：C++ 通过<strong>虚函数表来实现基类调用派生类的函数</strong>；而 Go 通过 <code>itab</code> 中的 <code>fun</code> 字段来实现接口变量调用实体类型的函数。</li>
-<li>编译生成过程：C++ 中的<strong>虚函数表是在编译期生成</strong>的；而 Go 的 <code>itab</code> 中的 <code>fun</code> 字段是在<strong>运行期间动态生成</strong>的。原因在于，<strong>Go 中实体类型可能会无意中实现 N 多接口，很多接口并不是本来需要的，所以不能为类型实现的所有接口都生成一个 <code>itab</code></strong>， 这也是“非侵入式”带来的影响；这在 C++ 中是不存在的，因为派生需要显示声明它继承自哪个基类。</li>
-</ul>
-</li>
-</ul>
+        <h3 id="MVCC"><a href="#MVCC" class="headerlink" title="MVCC"></a>MVCC</h3><p>实验1:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span> <span class="keyword">session</span> autocommit=<span class="keyword">off</span>;  </span><br><span class="line"><span class="keyword">update</span> <span class="keyword">users</span> <span class="keyword">set</span> lastUpdate=<span class="keyword">now</span>() <span class="keyword">where</span> <span class="keyword">id</span> =<span class="number">1</span>; </span><br><span class="line"></span><br><span class="line"><span class="comment">--在未做commit/rollback操作之前  </span></span><br><span class="line"><span class="comment">--在其他的事务能不能进行对应数据的查询(特别是加上了X锁的数据)  </span></span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> <span class="keyword">users</span> <span class="keyword">where</span> <span class="keyword">id</span> &gt; <span class="number">1</span>; </span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> <span class="keyword">users</span> <span class="keyword">where</span> <span class="keyword">id</span> = <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<p>实验2:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">begin</span> </span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> <span class="keyword">users</span> <span class="keyword">where</span> <span class="keyword">id</span> =<span class="number">1</span> ;</span><br><span class="line"></span><br><span class="line"><span class="keyword">begin</span></span><br><span class="line"><span class="keyword">update</span> <span class="keyword">users</span> <span class="keyword">set</span> lastUpdate=<span class="keyword">now</span>() <span class="keyword">where</span> <span class="keyword">id</span> =<span class="number">1</span>;</span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> <span class="keyword">users</span> <span class="keyword">where</span> <span class="keyword">id</span> =<span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<p>两个实验从结果上来看是一致的，底层实现是一样的吗？跟MVCC有什么关系？ </p>
+<h4 id="MVCC-1"><a href="#MVCC-1" class="headerlink" title="MVCC"></a>MVCC</h4><p>multiversion concurrency control （多版本并发控制）：并发访问(读或写)数据库时,对正在事务内处理的数据做多版本的管理。达到避免写操作的堵塞，从而引发读操作的并发问题。</p>
+<p>MVCC插入逻辑流程 ：</p>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCE737e924370d74d490146d20aeb7f0049/4663" alt="MVCC插入逻辑流程"></p>
+<p>MVCC删除逻辑流程：</p>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCE0252ac9e1c65115f3c4259506e4dc5cd/4665" alt="MVCC删除逻辑流程"></p>
+<p>MVCC修改逻辑流程：</p>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCE993a4c4a27f07edf5190b748045de598/4667" alt="MVCC修改逻辑流程"></p>
+<p>MVCC查询逻辑流程:</p>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCE1df8f0a4ffcecea9f4f3dd10c1e855d7/4669" alt="MVCC查询逻辑流程"></p>
 
     </div>
 
@@ -293,7 +289,7 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/%E6%8E%A5%E5%8F%A3/" rel="tag"># 接口</a>
+              <a href="/tags/mysql/" rel="tag"># mysql</a>
           </div>
 
         
@@ -302,12 +298,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2020/01/01/Go_struct_2%E7%BC%96%E8%AF%91%E5%99%A8%E8%87%AA%E5%8A%A8%E6%A3%80%E6%B5%8B%E7%B1%BB%E5%9E%8B%E6%98%AF%E5%90%A6%E5%AE%9E%E7%8E%B0%E6%8E%A5%E5%8F%A3/" rel="prev" title="Go 编译器自动检测类型是否实现接口">
-      <i class="fa fa-chevron-left"></i> Go 编译器自动检测类型是否实现接口
+    <a href="/2020/12/17/mysql-4mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-%E4%BA%8B%E5%8A%A1%E5%8F%8A%E9%94%81/" rel="prev" title="mysql性能优化-事务及锁">
+      <i class="fa fa-chevron-left"></i> mysql性能优化-事务及锁
     </a></div>
       <div class="post-nav-item">
-    <a href="/2020/01/02/Go%20%E6%8E%A5%E5%8F%A3_2Go%E8%AF%AD%E8%A8%80%E4%B8%8E%E9%B8%AD%E5%AD%90%E7%B1%BB%E5%9E%8B%E7%9A%84%E5%85%B3%E7%B3%BB/" rel="next" title="Go鸭子类型">
-      Go鸭子类型 <i class="fa fa-chevron-right"></i>
+    <a href="/2021/01/02/Go-channel_1%E4%BD%BF%E7%94%A8/" rel="next" title="Channel用法">
+      Channel用法 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -380,7 +376,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#接口设计的意义"><span class="nav-number">1.</span> <span class="nav-text">接口设计的意义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#golang中的接口"><span class="nav-number">2.</span> <span class="nav-text">golang中的接口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#C-中的接口实现方法"><span class="nav-number">3.</span> <span class="nav-text">C++中的接口实现方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#golang接口与C-接口区别"><span class="nav-number">4.</span> <span class="nav-text">golang接口与C++接口区别</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#MVCC"><span class="nav-number">1.</span> <span class="nav-text">MVCC</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#MVCC-1"><span class="nav-number">1.1.</span> <span class="nav-text">MVCC</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -573,7 +569,7 @@ window.addEventListener('pjax:success', () => {
       repo: 'dongshifu.github.io',
       owner: 'dongshifu',
       admin: ['dongshifu'],
-      id: '21df53a0a006b88d0c0107929b7f31e3',
+      id: 'e61aa027f9aecbe6b16b7f7e1bea64b9',
         language: 'zh-CN',
       distractionFreeMode: 'true'
     });

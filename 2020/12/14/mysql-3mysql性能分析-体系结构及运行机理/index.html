@@ -50,7 +50,7 @@
   <meta name="description" content="Mysql体系结构  Client Connectors    接入方 支持协议很多   Management Serveices &amp;amp; Utilities 系统管理和控制工具，mysql dump、 mysql复制集群、分区管理等     Connection Pool    连接池:管理缓冲用户连接、用户名、密码、权限校验、线程处理等需要缓存的需求     SQL Interface">
 <meta name="keywords" content="mysql">
 <meta property="og:type" content="article">
-<meta property="og:title" content="mysql-3mysql性能分析-体系结构及运行机理">
+<meta property="og:title" content="mysql性能分析-体系结构及运行机理">
 <meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;12&#x2F;14&#x2F;mysql-3mysql%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90-%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E5%8F%8A%E8%BF%90%E8%A1%8C%E6%9C%BA%E7%90%86&#x2F;index.html">
 <meta property="og:site_name" content="ShifuDong">
 <meta property="og:description" content="Mysql体系结构  Client Connectors    接入方 支持协议很多   Management Serveices &amp;amp; Utilities 系统管理和控制工具，mysql dump、 mysql复制集群、分区管理等     Connection Pool    连接池:管理缓冲用户连接、用户名、密码、权限校验、线程处理等需要缓存的需求     SQL Interface">
@@ -58,7 +58,9 @@
 <meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;42554684dcfc6e607deaa29d065ade7e&#x2F;xmlnote&#x2F;WEBRESOURCEbd1b5f6d51598d464a432a11944e088c&#x2F;4632">
 <meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;42554684dcfc6e607deaa29d065ade7e&#x2F;xmlnote&#x2F;WEBRESOURCEf3f8d26d191aa00acd46ea3d0d894427&#x2F;4635">
 <meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;42554684dcfc6e607deaa29d065ade7e&#x2F;xmlnote&#x2F;WEBRESOURCEd505d59205c0d3652ff78a82210901de&#x2F;4637">
-<meta property="og:updated_time" content="2021-03-15T02:17:15.964Z">
+<meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;42554684dcfc6e607deaa29d065ade7e&#x2F;xmlnote&#x2F;WEBRESOURCE7ae81682639248ebea1f817fc24ad8b0&#x2F;4639">
+<meta property="og:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;42554684dcfc6e607deaa29d065ade7e&#x2F;xmlnote&#x2F;WEBRESOURCE3400b3b7257ff5ccc46069af659a6370&#x2F;4641">
+<meta property="og:updated_time" content="2021-03-15T02:47:45.098Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http:&#x2F;&#x2F;note.youdao.com&#x2F;yws&#x2F;public&#x2F;resource&#x2F;42554684dcfc6e607deaa29d065ade7e&#x2F;xmlnote&#x2F;WEBRESOURCEbd1b5f6d51598d464a432a11944e088c&#x2F;4632">
 
@@ -76,7 +78,7 @@
   };
 </script>
 
-  <title>mysql-3mysql性能分析-体系结构及运行机理 | ShifuDong</title>
+  <title>mysql性能分析-体系结构及运行机理 | ShifuDong</title>
   
 
 
@@ -223,7 +225,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          mysql-3mysql性能分析-体系结构及运行机理
+          mysql性能分析-体系结构及运行机理
         </h1>
 
         <div class="post-meta">
@@ -240,7 +242,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-15 10:17:15" itemprop="dateModified" datetime="2021-03-15T10:17:15+08:00">2021-03-15</time>
+                <time title="修改时间：2021-03-15 10:47:45" itemprop="dateModified" datetime="2021-03-15T10:47:45+08:00">2021-03-15</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -427,7 +429,21 @@
 </ul>
 </li>
 </ul>
-<h4 id="慢SQL"><a href="#慢SQL" class="headerlink" title="慢SQL"></a>慢SQL</h4>
+<h4 id="慢SQL"><a href="#慢SQL" class="headerlink" title="慢SQL"></a>慢SQL</h4><p>定位慢SQL:</p>
+<ul>
+<li>业务驱动  </li>
+<li>测试驱动  </li>
+<li>慢查询日志  </li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">show variables like 'slow_query_log';</span><br><span class="line">set global slow_query_log = on;</span><br><span class="line">set global slow_query_log_file = '/var/lib/mysql/test-slow.log';   </span><br><span class="line">set global log_queries_not_using_indexes = on;</span><br><span class="line">set global long_query_time = 0.1;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>慢查询日志分析</li>
+</ul>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCE7ae81682639248ebea1f817fc24ad8b0/4639" alt="慢查询日志分析"></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Time :日志记录的时间  </span><br><span class="line">User@Host:执行的用户及主机  </span><br><span class="line">Query_time:查询耗费时间  </span><br><span class="line">Lock_time 锁表时间  </span><br><span class="line">Rows_sent 发送给请求方的记录条数  </span><br><span class="line">Rows_examined 语句扫描的记录条数  </span><br><span class="line"><span class="keyword">SET</span> <span class="built_in">timestamp</span> 语句执行的时间点  </span><br><span class="line"><span class="keyword">select</span> .... 执行的具体语句</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysqldumpslow -t 10 -s at /var/lib/mysql/test-slow.log</span><br></pre></td></tr></table></figure>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCE3400b3b7257ff5ccc46069af659a6370/4641" alt="慢查询工具"></p>
+
     </div>
 
     
@@ -449,8 +465,8 @@
       <i class="fa fa-chevron-left"></i> mysql性能优化-存储引擎
     </a></div>
       <div class="post-nav-item">
-    <a href="/2021/01/02/Go-channel_1%E4%BD%BF%E7%94%A8/" rel="next" title="Channel用法">
-      Channel用法 <i class="fa fa-chevron-right"></i>
+    <a href="/2020/12/17/mysql-4mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-%E4%BA%8B%E5%8A%A1%E5%8F%8A%E9%94%81/" rel="next" title="mysql性能优化-事务及锁">
+      mysql性能优化-事务及锁 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -539,7 +555,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">31</span>
+          <span class="site-state-item-count">33</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

@@ -142,7 +142,161 @@
       </tags>
   </entry>
   <entry>
-    <title>mysql-3mysql性能分析-体系结构及运行机理</title>
+    <title>mysql性能优化-mvcc</title>
+    <url>/2020/12/20/mysql-5mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-mvcc/</url>
+    <content><![CDATA[<h3 id="MVCC"><a href="#MVCC" class="headerlink" title="MVCC"></a>MVCC</h3><p>实验1:</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">set</span> <span class="keyword">session</span> autocommit=<span class="keyword">off</span>;  </span><br><span class="line"><span class="keyword">update</span> <span class="keyword">users</span> <span class="keyword">set</span> lastUpdate=<span class="keyword">now</span>() <span class="keyword">where</span> <span class="keyword">id</span> =<span class="number">1</span>; </span><br><span class="line"></span><br><span class="line"><span class="comment">--在未做commit/rollback操作之前  </span></span><br><span class="line"><span class="comment">--在其他的事务能不能进行对应数据的查询(特别是加上了X锁的数据)  </span></span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> <span class="keyword">users</span> <span class="keyword">where</span> <span class="keyword">id</span> &gt; <span class="number">1</span>; </span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> <span class="keyword">users</span> <span class="keyword">where</span> <span class="keyword">id</span> = <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<p>实验2:</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">begin</span> </span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> <span class="keyword">users</span> <span class="keyword">where</span> <span class="keyword">id</span> =<span class="number">1</span> ;</span><br><span class="line"></span><br><span class="line"><span class="keyword">begin</span></span><br><span class="line"><span class="keyword">update</span> <span class="keyword">users</span> <span class="keyword">set</span> lastUpdate=<span class="keyword">now</span>() <span class="keyword">where</span> <span class="keyword">id</span> =<span class="number">1</span>;</span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> <span class="keyword">users</span> <span class="keyword">where</span> <span class="keyword">id</span> =<span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<p>两个实验从结果上来看是一致的，底层实现是一样的吗？跟MVCC有什么关系？ </p>
+<h4 id="MVCC-1"><a href="#MVCC-1" class="headerlink" title="MVCC"></a>MVCC</h4><p>multiversion concurrency control （多版本并发控制）：并发访问(读或写)数据库时,对正在事务内处理的数据做多版本的管理。达到避免写操作的堵塞，从而引发读操作的并发问题。</p>
+<p>MVCC插入逻辑流程 ：</p>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCE737e924370d74d490146d20aeb7f0049/4663" alt="MVCC插入逻辑流程"></p>
+<p>MVCC删除逻辑流程：</p>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCE0252ac9e1c65115f3c4259506e4dc5cd/4665" alt="MVCC删除逻辑流程"></p>
+<p>MVCC修改逻辑流程：</p>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCE993a4c4a27f07edf5190b748045de598/4667" alt="MVCC修改逻辑流程"></p>
+<p>MVCC查询逻辑流程:</p>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCE1df8f0a4ffcecea9f4f3dd10c1e855d7/4669" alt="MVCC查询逻辑流程"></p>
+]]></content>
+      <categories>
+        <category>mysql</category>
+      </categories>
+      <tags>
+        <tag>mysql</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>mysql性能优化-事务及锁</title>
+    <url>/2020/12/17/mysql-4mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-%E4%BA%8B%E5%8A%A1%E5%8F%8A%E9%94%81/</url>
+    <content><![CDATA[<h3 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h3><h4 id="事务的ACID特性"><a href="#事务的ACID特性" class="headerlink" title="事务的ACID特性"></a>事务的ACID特性</h4><ul>
+<li>原子性(Atomicity) <strong>最小的工作单元</strong>，整个工作单元要么<strong>一起提交成功，要么全部失败回滚</strong>。  </li>
+<li>一致性(Consistency) <strong>事务中操作的数据及状态改变是一致的</strong>，即写入资料的结果必须完全符合预设的规则，不会因为出现系统意外等原因导致状态的不一致。  </li>
+<li>隔离性(Isolation) <strong>一个事务所操作的数据在提交之前，对其他事务的可见性设定(一般设定为不可见)。</strong>  </li>
+<li>持久性(Durability) 事务所做的修改就会<strong>永久保存</strong>，不会因为系统意外导致数据的丢失。 </li>
+</ul>
+<h4 id="事务并发带来的的问题"><a href="#事务并发带来的的问题" class="headerlink" title="事务并发带来的的问题"></a>事务并发带来的的问题</h4><ul>
+<li>脏读:<strong>在不同事务下，当前事务可以读到另外事务未提交的数据</strong>。</li>
+</ul>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCEeb6a42cb4eb463afe0acf7fa42cfe27e/4643" alt="脏读"></p>
+<ul>
+<li>不可重复读：在<strong>一个事务内多次读取同一数据集合</strong>。<strong>在这一事务还未结束前，另一事务也访问了该同一数据集合并做了修改，由于第二个事务的修改，第一次事务的两次读取的数据可能不一致。</strong></li>
+</ul>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCEde9db8deb6437c49a175e6098bf40be6/4645" alt="不可重复读"></p>
+<ul>
+<li>幻读:本质上也属于不可重复读的情况，T1读取某个范围的数据，T2在这个范围内插入新的数据，T1再次读取这个范围的数据，此时读取的结果和和第一次读取的结果不同。</li>
+</ul>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCE3b17c8fc3c297ad34d309a428838d1f5/4647" alt="幻读"></p>
+<h4 id="事务的隔离级别"><a href="#事务的隔离级别" class="headerlink" title="事务的隔离级别"></a>事务的隔离级别</h4><ul>
+<li>未提交读：<strong>事务中的修改，即使没有提交，对其它事务也是可见的</strong><ul>
+<li>存在脏读，不能解决并发问题</li>
+</ul>
+</li>
+<li>Read Committed(提交读)：一个事务开始之后，只能看到自己提交的事务所做的修改。<ul>
+<li>解决了脏读问题，没有解决不可重复读(nonrepeatable read) 问题</li>
+</ul>
+</li>
+<li>Repeatable Read (可重复读)：在同一个事务中多次读取同样的数据结果是一样的。<ul>
+<li>解决不可重复读问题，未定义解决幻读的问题</li>
+</ul>
+</li>
+<li>Serializable (串行化)：解决所有问题 最高的隔离级别，通过强制事务的<strong>串行执行</strong> </li>
+</ul>
+<p>查看mysql的设置的事务隔离级别:</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> @@tx_isolation; <span class="comment">--默认为REPEATABLE-READ</span></span><br></pre></td></tr></table></figure>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCEea19ea7bc929a6d417d0851ff13cfe7a/4649" alt="mysql事务隔离级别"></p>
+<h3 id="数据库锁"><a href="#数据库锁" class="headerlink" title="数据库锁"></a>数据库锁</h3><h4 id="表锁和行锁"><a href="#表锁和行锁" class="headerlink" title="表锁和行锁"></a>表锁和行锁</h4><p>锁用于管理<strong>不同事务对共享资源的并发访问</strong>。</p>
+<p>表锁与行锁的区别: </p>
+<ul>
+<li>锁定粒度:表锁 &gt; 行锁  </li>
+<li>加锁效率:表锁 &gt; 行锁  </li>
+<li>冲突概率:表锁 &gt; 行锁  </li>
+<li>并发性能:表锁 &lt; 行锁  </li>
+</ul>
+<h4 id="InnoDB锁类型"><a href="#InnoDB锁类型" class="headerlink" title="InnoDB锁类型"></a>InnoDB锁类型</h4><p>InnoDB存储引擎支持行锁和表锁(另类的行锁)。</p>
+<ul>
+<li>共享锁(行锁):Shared Locks  <ul>
+<li>又称为<strong>读锁</strong>，简称S锁，顾名思义，共享锁就是<strong>多个事务对于同一数据可以共享一把锁，都能访问到数据，但是只能读不能修改</strong>； </li>
+</ul>
+</li>
+<li>排它锁(行锁):Exclusive Locks  <ul>
+<li>又称为<strong>写锁</strong>，简称X锁，<strong>排他锁不能与其他锁并存，如一个事务获取了一个数据行的排他锁，其他事务就不能再获取该行的锁</strong>(共享锁、排他锁)，只有该获取了排他锁的事务是可以对数据行进行读取和修改，(<strong>其他事务要读取数据可来自于快照</strong>)。  </li>
+</ul>
+</li>
+<li>意向锁共享锁(表锁):Intention Shared Locks  </li>
+<li>意向锁排它锁(表锁):Intention Exclusive Locks  </li>
+<li>自增锁:AUTO-INC Locks</li>
+</ul>
+<h5 id="表锁操作"><a href="#表锁操作" class="headerlink" title="表锁操作"></a>表锁操作</h5><p>共享锁加锁释放锁语法:</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> <span class="keyword">users</span> <span class="keyword">WHERE</span> <span class="keyword">id</span>=<span class="number">1</span> <span class="keyword">LOCK</span> <span class="keyword">IN</span> <span class="keyword">SHARE</span> <span class="keyword">MODE</span>;   </span><br><span class="line"><span class="keyword">commit</span>/<span class="keyword">rollback</span></span><br></pre></td></tr></table></figure>
+<p>排它锁加锁释锁方式:  </p>
+ <figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">delete</span> / <span class="keyword">update</span> / <span class="keyword">insert</span> 默认加上X锁  </span><br><span class="line"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> table_name <span class="keyword">WHERE</span> ... <span class="keyword">FOR</span> <span class="keyword">UPDATE</span>  </span><br><span class="line"><span class="keyword">commit</span>/<span class="keyword">rollback</span></span><br></pre></td></tr></table></figure>
+<p>行锁的算法：</p>
+<ul>
+<li>记录锁 Record Locks  </li>
+<li>间隙锁 Gap Locks  </li>
+<li>临键锁 Next-key Locks</li>
+</ul>
+<h5 id="行锁"><a href="#行锁" class="headerlink" title="行锁"></a>行锁</h5><ul>
+<li>InnoDB的行锁是通过<strong>给索引上的索引项加锁</strong>来实现的。   </li>
+<li><strong>只有通过索引条件进行数据检索，InnoDB才使用行级锁，</strong>否则，InnoDB 将使用表锁(锁住索引的所有记录)</li>
+<li><p><strong>使用二级索引(辅助索引)去更新数据，会把二级索引和聚集索引都上锁</strong>。  </p>
+</li>
+<li><p>意向共享锁(IS)  ：表示事务<strong>准备</strong>给数据行加入共享锁，即<strong>一个数据行加共享锁前必须先取得该表的IS锁，意向共享锁之间是可以相互兼容的。</strong>  </p>
+</li>
+<li>意向排它锁(IX)  ：表示事务准备给数据行加入排他锁，即一个数据行加排他锁前必须先取得该表的IX锁，意向排它锁之间是可以相互兼容的。</li>
+</ul>
+<p>意向锁(IS、IX)是InnoDB数据操作之前<strong>自动加</strong>的，<strong>不需要用户干预</strong>。  </p>
+<p>意义：当事务想去进行锁表时，可以先判断意向锁是否存在，存在时则可快速返回该表不能启用表锁。 </p>
+<h5 id="自增锁-AUTO-INC-Locks"><a href="#自增锁-AUTO-INC-Locks" class="headerlink" title="自增锁:AUTO-INC Locks"></a>自增锁:AUTO-INC Locks</h5><ul>
+<li>针对<strong>自增列自增长</strong>的一个特殊的<strong>表级</strong>别锁  </li>
+<li><code>show variables like &#39;innodb_autoinc_lock_mode&#39;;</code></li>
+<li><strong>默认取值1，代表连续，事务未提交ID永久丢失</strong></li>
+</ul>
+<h5 id="临键锁Next-key-locks"><a href="#临键锁Next-key-locks" class="headerlink" title="临键锁Next-key locks"></a>临键锁Next-key locks</h5><p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCE2d0ae4b24342ebc1c8315970c93392d9/4651" alt="临键锁"></p>
+<ul>
+<li>锁住记录+区间(左开右闭)  </li>
+<li><strong>当sql执行按照索引进行数据的检索时,查询条件为范围查找(between and、&lt;、&gt;等)并有数据命中则此时SQL语句加上的锁为Next-key locks，锁住索引的记录+区间(左开右闭)</strong> </li>
+</ul>
+<h5 id="间隙锁Gap-locks"><a href="#间隙锁Gap-locks" class="headerlink" title="间隙锁Gap locks"></a>间隙锁Gap locks</h5><p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCEd0f800d0e98ff591e723df9c5c26f930/4653" alt="间隙锁"></p>
+<ul>
+<li><strong>锁住数据不存在的区间</strong>(左开右开)  </li>
+<li>当sql执行按照索引进行数据的检索时，<strong>查询条件的数据不存在，这时SQL语句加上的锁即为 Gap locks，锁住索引不存在的区间(左开右开)</strong>  </li>
+</ul>
+<h5 id="记录锁Record-locks"><a href="#记录锁Record-locks" class="headerlink" title="记录锁Record locks"></a>记录锁Record locks</h5><p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCEf38f38b46d6d9aec3888edc97c9fc18e/4655" alt="记录锁"></p>
+<ul>
+<li>锁住<strong>具体的索引项</strong>  </li>
+<li>当sql执行<strong>按照唯一性(Primary key、Unique key)索引进行数据的检索</strong>时，查询条件等值匹 配且查询的数据存在，这时SQL语句加上的锁即为记录锁Record locks，<strong>锁住具体的索引项</strong>  </li>
+</ul>
+<h4 id="利用锁解决并发问题"><a href="#利用锁解决并发问题" class="headerlink" title="利用锁解决并发问题"></a>利用锁解决并发问题</h4><p>解决脏读 :</p>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCEaef2e9a4dc4e8a10ca1bb37a9d664fb0/4657" alt="解决脏读"></p>
+<p>解决不可重复读  :</p>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCE5a6e9f01482cad7a46f40798f8e60bc2/4659" alt="解决不可重复读"></p>
+<p>解决幻读:</p>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCE3f158e9047ab21459ee1bbbdf8832029/4661" alt="解决幻读"></p>
+<h4 id="死锁"><a href="#死锁" class="headerlink" title="死锁"></a>死锁</h4><ul>
+<li>多个并发事务(2个或者以上);  </li>
+<li>每个事务都持有锁(或者是已经在等待锁);  </li>
+<li>每个事务都需要再继续持有锁;  </li>
+<li><strong>事务之间产生加锁的循环等待，形成死锁</strong>。</li>
+</ul>
+<h4 id="死锁的避免"><a href="#死锁的避免" class="headerlink" title="死锁的避免"></a>死锁的避免</h4><ul>
+<li>类似的业务逻辑以<strong>固定的顺序访问表和行</strong>。  </li>
+<li>大事务拆小。大事务更倾向于死锁，如果业务允许，<strong>将大事务拆小</strong>。  </li>
+<li>在<strong>同一个事务中，尽可能做到一次锁定所需要的所有资源，减少死锁概率。</strong>  </li>
+<li><strong>降低隔离级别</strong>，如果业务允许，将隔离级别调低也是较好的选择  </li>
+<li>为表添加<strong>合理的索引</strong>。可以看到<strong>如果不走索引将会为表的每一行记录添 加上锁(或者说是表锁)</strong>  </li>
+</ul>
+]]></content>
+      <categories>
+        <category>mysql</category>
+      </categories>
+      <tags>
+        <tag>mysql</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>mysql性能分析-体系结构及运行机理</title>
     <url>/2020/12/14/mysql-3mysql%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90-%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E5%8F%8A%E8%BF%90%E8%A1%8C%E6%9C%BA%E7%90%86/</url>
     <content><![CDATA[<h3 id="Mysql体系结构"><a href="#Mysql体系结构" class="headerlink" title="Mysql体系结构"></a>Mysql体系结构</h3><p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCEbd1b5f6d51598d464a432a11944e088c/4632" alt="mysql体系结构"></p>
 <ul>
@@ -306,7 +460,21 @@
 </ul>
 </li>
 </ul>
-<h4 id="慢SQL"><a href="#慢SQL" class="headerlink" title="慢SQL"></a>慢SQL</h4>]]></content>
+<h4 id="慢SQL"><a href="#慢SQL" class="headerlink" title="慢SQL"></a>慢SQL</h4><p>定位慢SQL:</p>
+<ul>
+<li>业务驱动  </li>
+<li>测试驱动  </li>
+<li>慢查询日志  </li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">show variables like 'slow_query_log';</span><br><span class="line">set global slow_query_log = on;</span><br><span class="line">set global slow_query_log_file = '/var/lib/mysql/test-slow.log';   </span><br><span class="line">set global log_queries_not_using_indexes = on;</span><br><span class="line">set global long_query_time = 0.1;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>慢查询日志分析</li>
+</ul>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCE7ae81682639248ebea1f817fc24ad8b0/4639" alt="慢查询日志分析"></p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">Time :日志记录的时间  </span><br><span class="line">User@Host:执行的用户及主机  </span><br><span class="line">Query_time:查询耗费时间  </span><br><span class="line">Lock_time 锁表时间  </span><br><span class="line">Rows_sent 发送给请求方的记录条数  </span><br><span class="line">Rows_examined 语句扫描的记录条数  </span><br><span class="line"><span class="keyword">SET</span> <span class="built_in">timestamp</span> 语句执行的时间点  </span><br><span class="line"><span class="keyword">select</span> .... 执行的具体语句</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">mysqldumpslow -t 10 -s at /var/lib/mysql/test-slow.log</span><br></pre></td></tr></table></figure>
+<p><img src="http://note.youdao.com/yws/public/resource/42554684dcfc6e607deaa29d065ade7e/xmlnote/WEBRESOURCE3400b3b7257ff5ccc46069af659a6370/4641" alt="慢查询工具"></p>
+]]></content>
       <categories>
         <category>mysql</category>
       </categories>
@@ -2950,6 +3118,51 @@
       </tags>
   </entry>
   <entry>
+    <title>linux环境变量设置</title>
+    <url>/2019/12/26/linux%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/</url>
+    <content><![CDATA[<h3 id="Ubuntu环境变量的添加和删除"><a href="#Ubuntu环境变量的添加和删除" class="headerlink" title="Ubuntu环境变量的添加和删除"></a>Ubuntu环境变量的添加和删除</h3><h4 id="添加环境变量的位置"><a href="#添加环境变量的位置" class="headerlink" title="添加环境变量的位置"></a>添加环境变量的位置</h4><ul>
+<li>/etc/profile 该文件为系统的每个用户设置环境信息，当用户第一次登录时，该文件被执行，并从/etc/profile.d目录的配置文件中搜集shell的设置。</li>
+<li>/etc/environment 登录操作系统使用的第二个文件，系统在读取自己的profile之前，设置环境文件的环境变量</li>
+<li>/etc/bashrc 为每一个运行bash shell的用户执行该文件。当bash shell被打开时，该文件被读取</li>
+<li>~/.profile 每个用户都可以使用该文件输入专用于自己使用的shell信息，当用户登录时，该文件仅仅执行一次。默认情况下设置一些环境变量，执行用户的.bashrc文件</li>
+<li>~/.bashrc 该文件包含专用的bash shell的bash信息，当登录以及每次打开新的shell时，该文件被读取。</li>
+</ul>
+<h4 id="添加方法"><a href="#添加方法" class="headerlink" title="添加方法"></a>添加方法</h4><ul>
+<li>方法一：直接修改/etc/enviroment文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">打开/etc/environment文件，其内容如下：</span></span><br><span class="line">PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games" </span><br><span class="line"><span class="meta">#</span><span class="bash">在环境变量PATH中添加你要添加的路径即可。</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>方法二：修改/etc/profile文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">这个文件不是保存环境变量信息的文件，在登录时，系统只是根据它的内容对环境变量进行设置。</span></span><br><span class="line">export PATH=$PATH:[your path1]:[your path2]:[...]  </span><br><span class="line">export PATH=[your path1]:[your path2]:[...]:$PATH #其中，各个PATH之间用冒号分隔，$PATH指代添加your path前的环境变量。</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>方法三：修改/etc/bashrc或者~/.bashrc文件，这两个文件<strong>不是为了保存环境变量，只是在使用bash shell时进行设置而已，所以设置方法和二中一样。对于/etc/bashrc文件，修改的作用于所有用户，但对于~/.bashrc文件，修改的仅仅作用于当前用户。这种修改的作用也是永久性的。</strong></p>
+</li>
+<li><p>方法四：<strong>修改~/.profile文件，作用仅限于当前用户，但同样也是永久性的。这种方法和修改/etc/profile本质上是一样的，这种之不过是仅仅修改了当前用户自己的配置文件。所以作用仅限于当前用户，但同样也是永久性的。</strong></p>
+</li>
+<li><p>方法五：在Terminal中使用shell命令，只在当前Terminal中起作用，关闭了当前Terminal就无效了。对其他Terminal也无效</p>
+</li>
+</ul>
+<h4 id="显示环境变量"><a href="#显示环境变量" class="headerlink" title="显示环境变量"></a>显示环境变量</h4><ul>
+<li>显示所有环境变量</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">env #打印所有的环境变量</span><br></pre></td></tr></table></figure>
+<ul>
+<li>显示指定环境变量</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">echo $PATH #打印PATH环境变量</span><br></pre></td></tr></table></figure>
+<h4 id="让修改生效"><a href="#让修改生效" class="headerlink" title="让修改生效"></a>让修改生效</h4><p>使用source命令也可以让修改立即生效。使用方法为：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">source [file name]  # file name 指的是上面修改过的文件的file name</span><br></pre></td></tr></table></figure>
+<h4 id="删除对环境变量的修改"><a href="#删除对环境变量的修改" class="headerlink" title="删除对环境变量的修改"></a>删除对环境变量的修改</h4><p>将以上方法中对配置文件的修改还原回去即可。另外，由于第五种方法由于是临时性质的且局部的，只需要关闭这个Terminal就好了。</p>
+]]></content>
+      <categories>
+        <category>linux</category>
+      </categories>
+      <tags>
+        <tag>linux环境变量</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>linux相关操作笔记</title>
     <url>/2019/12/26/linux%E6%93%8D%E4%BD%9C%E7%AC%94%E8%AE%B0/</url>
     <content><![CDATA[<h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>linux只是操作系统的内核。</p>
@@ -3556,51 +3769,6 @@
       </tags>
   </entry>
   <entry>
-    <title>linux环境变量设置</title>
-    <url>/2019/12/26/linux%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/</url>
-    <content><![CDATA[<h3 id="Ubuntu环境变量的添加和删除"><a href="#Ubuntu环境变量的添加和删除" class="headerlink" title="Ubuntu环境变量的添加和删除"></a>Ubuntu环境变量的添加和删除</h3><h4 id="添加环境变量的位置"><a href="#添加环境变量的位置" class="headerlink" title="添加环境变量的位置"></a>添加环境变量的位置</h4><ul>
-<li>/etc/profile 该文件为系统的每个用户设置环境信息，当用户第一次登录时，该文件被执行，并从/etc/profile.d目录的配置文件中搜集shell的设置。</li>
-<li>/etc/environment 登录操作系统使用的第二个文件，系统在读取自己的profile之前，设置环境文件的环境变量</li>
-<li>/etc/bashrc 为每一个运行bash shell的用户执行该文件。当bash shell被打开时，该文件被读取</li>
-<li>~/.profile 每个用户都可以使用该文件输入专用于自己使用的shell信息，当用户登录时，该文件仅仅执行一次。默认情况下设置一些环境变量，执行用户的.bashrc文件</li>
-<li>~/.bashrc 该文件包含专用的bash shell的bash信息，当登录以及每次打开新的shell时，该文件被读取。</li>
-</ul>
-<h4 id="添加方法"><a href="#添加方法" class="headerlink" title="添加方法"></a>添加方法</h4><ul>
-<li>方法一：直接修改/etc/enviroment文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">打开/etc/environment文件，其内容如下：</span></span><br><span class="line">PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games" </span><br><span class="line"><span class="meta">#</span><span class="bash">在环境变量PATH中添加你要添加的路径即可。</span></span><br></pre></td></tr></table></figure>
-<ul>
-<li>方法二：修改/etc/profile文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">这个文件不是保存环境变量信息的文件，在登录时，系统只是根据它的内容对环境变量进行设置。</span></span><br><span class="line">export PATH=$PATH:[your path1]:[your path2]:[...]  </span><br><span class="line">export PATH=[your path1]:[your path2]:[...]:$PATH #其中，各个PATH之间用冒号分隔，$PATH指代添加your path前的环境变量。</span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>方法三：修改/etc/bashrc或者~/.bashrc文件，这两个文件<strong>不是为了保存环境变量，只是在使用bash shell时进行设置而已，所以设置方法和二中一样。对于/etc/bashrc文件，修改的作用于所有用户，但对于~/.bashrc文件，修改的仅仅作用于当前用户。这种修改的作用也是永久性的。</strong></p>
-</li>
-<li><p>方法四：<strong>修改~/.profile文件，作用仅限于当前用户，但同样也是永久性的。这种方法和修改/etc/profile本质上是一样的，这种之不过是仅仅修改了当前用户自己的配置文件。所以作用仅限于当前用户，但同样也是永久性的。</strong></p>
-</li>
-<li><p>方法五：在Terminal中使用shell命令，只在当前Terminal中起作用，关闭了当前Terminal就无效了。对其他Terminal也无效</p>
-</li>
-</ul>
-<h4 id="显示环境变量"><a href="#显示环境变量" class="headerlink" title="显示环境变量"></a>显示环境变量</h4><ul>
-<li>显示所有环境变量</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">env #打印所有的环境变量</span><br></pre></td></tr></table></figure>
-<ul>
-<li>显示指定环境变量</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">echo $PATH #打印PATH环境变量</span><br></pre></td></tr></table></figure>
-<h4 id="让修改生效"><a href="#让修改生效" class="headerlink" title="让修改生效"></a>让修改生效</h4><p>使用source命令也可以让修改立即生效。使用方法为：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">source [file name]  # file name 指的是上面修改过的文件的file name</span><br></pre></td></tr></table></figure>
-<h4 id="删除对环境变量的修改"><a href="#删除对环境变量的修改" class="headerlink" title="删除对环境变量的修改"></a>删除对环境变量的修改</h4><p>将以上方法中对配置文件的修改还原回去即可。另外，由于第五种方法由于是临时性质的且局部的，只需要关闭这个Terminal就好了。</p>
-]]></content>
-      <categories>
-        <category>linux</category>
-      </categories>
-      <tags>
-        <tag>linux环境变量</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Linux服务管理</title>
     <url>/2019/11/27/linux_server/</url>
     <content><![CDATA[<h2 id="Linux服务管理"><a href="#Linux服务管理" class="headerlink" title="Linux服务管理"></a>Linux服务管理</h2><h3 id="服务分类"><a href="#服务分类" class="headerlink" title="服务分类"></a>服务分类</h3><p>Linux服务</p>
@@ -3625,41 +3793,6 @@
       </categories>
       <tags>
         <tag>linux 服务</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Linux 系统管理</title>
-    <url>/2019/11/27/linux_system/</url>
-    <content><![CDATA[<h2 id="Linux系统管理"><a href="#Linux系统管理" class="headerlink" title="Linux系统管理"></a>Linux系统管理</h2><h3 id="进程管理"><a href="#进程管理" class="headerlink" title="进程管理"></a>进程管理</h3><h4 id="进程查看"><a href="#进程查看" class="headerlink" title="进程查看"></a>进程查看</h4><p>作用：判断服务器健康状态，查看系统中所有进程，杀死进程</p>
-<p>查看系统中所有进程：</p>
-<ul>
-<li>ps aux :使用系统中所有进程，使用BSD操作系统格式</li>
-<li>ps -le 查看系统中所有进程，使用Linux标准命令格式</li>
-</ul>
-<p>查看系统健康状态：</p>
-<ul>
-<li>top[选项]</li>
-</ul>
-<p>查看进程树：</p>
-<ul>
-<li>pstree</li>
-</ul>
-<h4 id="终止进程"><a href="#终止进程" class="headerlink" title="终止进程"></a>终止进程</h4><p>1.kill命令</p>
-<p>kill -l 查看可用的进程信号</p>
-<p>kill -1 进程id 重启进程</p>
-<p>kill -9 进程id 强制杀死进程</p>
-<p>2.killall命令</p>
-<p>killall -9 进程名</p>
-<p>3.pkill </p>
-<p>按照终端号踢出用户</p>
-<p>w 使用w命令查询本机已经登录的用户</p>
-<p>pkill -t -9 pts/1 强制杀死从pts/1虚拟终端登录的进程</p>
-]]></content>
-      <categories>
-        <category>linux</category>
-      </categories>
-      <tags>
-        <tag>linux 系统管理</tag>
       </tags>
   </entry>
   <entry>
@@ -3851,6 +3984,41 @@
       </categories>
       <tags>
         <tag>linux shell</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Linux 系统管理</title>
+    <url>/2019/11/27/linux_system/</url>
+    <content><![CDATA[<h2 id="Linux系统管理"><a href="#Linux系统管理" class="headerlink" title="Linux系统管理"></a>Linux系统管理</h2><h3 id="进程管理"><a href="#进程管理" class="headerlink" title="进程管理"></a>进程管理</h3><h4 id="进程查看"><a href="#进程查看" class="headerlink" title="进程查看"></a>进程查看</h4><p>作用：判断服务器健康状态，查看系统中所有进程，杀死进程</p>
+<p>查看系统中所有进程：</p>
+<ul>
+<li>ps aux :使用系统中所有进程，使用BSD操作系统格式</li>
+<li>ps -le 查看系统中所有进程，使用Linux标准命令格式</li>
+</ul>
+<p>查看系统健康状态：</p>
+<ul>
+<li>top[选项]</li>
+</ul>
+<p>查看进程树：</p>
+<ul>
+<li>pstree</li>
+</ul>
+<h4 id="终止进程"><a href="#终止进程" class="headerlink" title="终止进程"></a>终止进程</h4><p>1.kill命令</p>
+<p>kill -l 查看可用的进程信号</p>
+<p>kill -1 进程id 重启进程</p>
+<p>kill -9 进程id 强制杀死进程</p>
+<p>2.killall命令</p>
+<p>killall -9 进程名</p>
+<p>3.pkill </p>
+<p>按照终端号踢出用户</p>
+<p>w 使用w命令查询本机已经登录的用户</p>
+<p>pkill -t -9 pts/1 强制杀死从pts/1虚拟终端登录的进程</p>
+]]></content>
+      <categories>
+        <category>linux</category>
+      </categories>
+      <tags>
+        <tag>linux 系统管理</tag>
       </tags>
   </entry>
   <entry>
