@@ -236,7 +236,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-10 09:18:50" itemprop="dateModified" datetime="2021-03-10T09:18:50+08:00">2021-03-10</time>
+                <time title="修改时间：2021-03-16 08:29:23" itemprop="dateModified" datetime="2021-03-16T08:29:23+08:00">2021-03-16</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -527,7 +527,7 @@
 </table>
 </div>
 <h4 id="ssh-基础"><a href="#ssh-基础" class="headerlink" title="ssh 基础"></a><code>ssh</code> 基础</h4><p>在 Linux 中 SSH 是 <strong>非常常用</strong> 的工具，通过 <strong>SSH 客户端</strong> 可以连接到运行了 <strong>SSH 服务器</strong> 的远程机器上</p>
-<p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCEadf3eb255588d4620755600d7cc36a75/4539" alt="SSH示意图">￼</p>
+<p><img src="https://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCEadf3eb255588d4620755600d7cc36a75/4539" alt="SSH示意图">￼</p>
 <ul>
 <li><strong>SSH 客户端</strong>是一种使用 <code>Secure Shell（SSH）</code> 协议连接到远程计算机的软件程序</li>
 <li><code>SSH</code> 是目前较可靠，<strong>专为远程登录会话和其他网络服务</strong> 提供安全性的协议<ul>
@@ -611,7 +611,7 @@
 <li>scp 就是 <code>secure copy</code>，是一个在 Linux 下用来进行 <strong>远程拷贝文件</strong> 的命令</li>
 <li>它的<strong>地址格式与 ssh 基本相同</strong>，<strong>需要注意的是</strong>，在指定<strong>端口时用的是大写的 <code>-P</code> 而不是小写的</strong></li>
 </ul>
-<p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE1986053d985427bbf0e220c8dc47c816/4541" alt="SCP示意图">￼</p>
+<p><img src="https://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE1986053d985427bbf0e220c8dc47c816/4541" alt="SCP示意图">￼</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 把本地当前目录下的 01.py 文件 复制到 远程 家目录下的 Desktop/01.py</span></span><br><span class="line"><span class="comment"># 注意：`:` 后面的路径如果不是绝对路径，则以用户的家目录作为参照路径</span></span><br><span class="line">scp -P port 01.py user@remote:Desktop/01.py</span><br><span class="line"></span><br><span class="line"><span class="comment"># 把远程 家目录下的 Desktop/01.py 文件 复制到 本地当前目录下的 01.py</span></span><br><span class="line">scp -P port user@remote:Desktop/01.py 01.py</span><br><span class="line"></span><br><span class="line"><span class="comment"># 加上 -r 选项可以传送文件夹</span></span><br><span class="line"><span class="comment"># 把当前目录下的 demo 文件夹 复制到 远程 家目录下的 Desktop</span></span><br><span class="line">scp -r demo user@remote:Desktop</span><br><span class="line"></span><br><span class="line"><span class="comment"># 把远程 家目录下的 Desktop 复制到 当前目录下的 demo 文件夹</span></span><br><span class="line">scp -r user@remote:Desktop demo</span><br></pre></td></tr></table></figure>
 <div class="table-container">
 <table>
@@ -661,7 +661,7 @@
 </ul>
 </li>
 </ul>
-<h6 id="示意图"><a href="#示意图" class="headerlink" title="示意图"></a>示意图</h6><p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCEe2a278c2e5bd8260206e2e3ae5432b23/4543" alt="SSH 免密码示意图">￼</p>
+<h6 id="示意图"><a href="#示意图" class="headerlink" title="示意图"></a>示意图</h6><p><img src="https://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCEe2a278c2e5bd8260206e2e3ae5432b23/4543" alt="SSH 免密码示意图">￼</p>
 <blockquote>
 <p>非对称加密算法</p>
 <ul>
@@ -870,7 +870,7 @@
 </ul>
 </li>
 </ul>
-<p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCEfcb35218f77b6bcfe80920758b9974ea/4545" alt="权限示意图">￼</p>
+<p><img src="https://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCEfcb35218f77b6bcfe80920758b9974ea/4545" alt="权限示意图">￼</p>
 <h4 id="chmod-简单使用"><a href="#chmod-简单使用" class="headerlink" title="chmod 简单使用"></a><code>chmod</code> 简单使用</h4><ul>
 <li><code>chmod</code> 可以修改 <strong>用户／组</strong> 对 <strong>文件／目录</strong> 的权限</li>
 <li>命令格式如下：</li>
@@ -1094,7 +1094,7 @@
 <li><code>su</code> 不接用户名，可以切换到 <code>root</code>，但是不推荐使用，因为不安全</li>
 <li><code>exit</code> 示意图如下：</li>
 </ul>
-<p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCEd82838dbf01984787215cb63bfafd36e/4547" alt="su和exit示意图">￼</p>
+<p><img src="https://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCEd82838dbf01984787215cb63bfafd36e/4547" alt="su和exit示意图">￼</p>
 <h6 id="修改文件权限"><a href="#修改文件权限" class="headerlink" title="修改文件权限"></a>修改文件权限</h6><div class="table-container">
 <table>
 <thead>
@@ -1191,7 +1191,7 @@
 </li>
 <li><strong>源文件要使用绝对路径</strong>，不能使用相对路径，这样可以方便移动链接文件后，仍然能够正常使用</li>
 </ul>
-<h4 id="文件软硬链接的示意图"><a href="#文件软硬链接的示意图" class="headerlink" title="文件软硬链接的示意图"></a>文件软硬链接的示意图</h4><p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE7aa2d85f00d080fb528d277537be5bbb/4551" alt="文件软硬链接示意图"></p>
+<h4 id="文件软硬链接的示意图"><a href="#文件软硬链接的示意图" class="headerlink" title="文件软硬链接的示意图"></a>文件软硬链接的示意图</h4><p><img src="https://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE7aa2d85f00d080fb528d277537be5bbb/4551" alt="文件软硬链接示意图"></p>
 <blockquote>
 <p>在 Linux 中，<strong>文件名</strong> 和 <strong>文件的数据</strong> 是分开存储的</p>
 </blockquote>
@@ -1354,7 +1354,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-10 20:36:57" itemprop="dateModified" datetime="2021-03-10T20:36:57+08:00">2021-03-10</time>
+                <time title="修改时间：2021-03-16 08:29:39" itemprop="dateModified" datetime="2021-03-16T08:29:39+08:00">2021-03-16</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1401,7 +1401,7 @@
 </ul>
 </li>
 </ul>
-<p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE176901b2234a4a2fcab1e598a568ca75/4537" alt="linux文件系统"></p>
+<p><img src="https://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE176901b2234a4a2fcab1e598a568ca75/4537" alt="linux文件系统"></p>
 <ul>
 <li><p>用户目录</p>
 <ul>
@@ -2566,7 +2566,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-09 13:35:24" itemprop="dateModified" datetime="2021-03-09T13:35:24+08:00">2021-03-09</time>
+                <time title="修改时间：2021-03-16 08:30:29" itemprop="dateModified" datetime="2021-03-16T08:30:29+08:00">2021-03-16</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -2826,7 +2826,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-08 18:38:43" itemprop="dateModified" datetime="2021-03-08T18:38:43+08:00">2021-03-08</time>
+                <time title="修改时间：2021-03-16 08:30:51" itemprop="dateModified" datetime="2021-03-16T08:30:51+08:00">2021-03-16</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -2866,11 +2866,11 @@
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> interfacetype <span class="keyword">struct</span> &#123;</span><br><span class="line">	typ     _type</span><br><span class="line">	pkgpath name</span><br><span class="line">	mhdr    []imethod</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>可以看到，它<strong>包装了 <code>_type</code> 类型，<code>_type</code> 实际上是描述 Go 语言中各种数据类型的结构体</strong>。这里还包含一个 <strong><code>mhdr</code> 字段，表示接口所定义的函数列表， <code>pkgpath</code> 记录定义了接口的包名。</strong></p>
 <p>这里通过一张图来看下 <code>iface</code> 结构体的全貌：</p>
-<p><img src="http://note.youdao.com/yws/public/resource/8941a5b166d00686542939a34ab5b824/xmlnote/WEBRESOURCE4c3c10a3a36d081c3787db1242d05528/4518" style="zoom:50%;" /></p>
+<p><img src="https://note.youdao.com/yws/public/resource/8941a5b166d00686542939a34ab5b824/xmlnote/WEBRESOURCE4c3c10a3a36d081c3787db1242d05528/4518" style="zoom:50%;" /></p>
 <p><code>eface</code> 的源码：</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> eface <span class="keyword">struct</span> &#123;</span><br><span class="line">    _type *_type</span><br><span class="line">    data  unsafe.Pointer</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>相比 <code>iface</code>，<code>eface</code> 比较简单。只维护了一个 <code>_type</code> 字段，<strong>表示空接口所承载的具体的实体类型</strong>。<code>data</code> 描述了具体的值。</p>
-<p><img src="http://note.youdao.com/yws/public/resource/8941a5b166d00686542939a34ab5b824/xmlnote/WEBRESOURCEb64a739bc6eb4c7cfe6a05b71e1d6e38/4523" alt="eface 结构体" style="zoom:50%;" /></p>
+<p><img src="https://note.youdao.com/yws/public/resource/8941a5b166d00686542939a34ab5b824/xmlnote/WEBRESOURCEb64a739bc6eb4c7cfe6a05b71e1d6e38/4523" alt="eface 结构体" style="zoom:50%;" /></p>
 <p>例子：</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	x := <span class="number">200</span></span><br><span class="line">	<span class="keyword">var</span> any <span class="keyword">interface</span>&#123;&#125; = x</span><br><span class="line">	fmt.Println(any)</span><br><span class="line"></span><br><span class="line">	g := Gopher&#123;<span class="string">"Go"</span>&#125;</span><br><span class="line">	<span class="keyword">var</span> c coder = g</span><br><span class="line">	fmt.Println(c)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> coder <span class="keyword">interface</span> &#123;</span><br><span class="line">	code()</span><br><span class="line">	debug()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Gopher <span class="keyword">struct</span> &#123;</span><br><span class="line">	language <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p Gopher)</span> <span class="title">code</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Printf(<span class="string">"I am coding %s language\n"</span>, p.language)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p Gopher)</span> <span class="title">debug</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Printf(<span class="string">"I am debuging %s language\n"</span>, p.language)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>执行命令，打印出汇编语言：</p>
@@ -3042,7 +3042,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-08 14:33:32" itemprop="dateModified" datetime="2021-03-08T14:33:32+08:00">2021-03-08</time>
+                <time title="修改时间：2021-03-16 08:31:03" itemprop="dateModified" datetime="2021-03-16T08:31:03+08:00">2021-03-16</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">

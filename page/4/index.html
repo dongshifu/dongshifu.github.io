@@ -309,7 +309,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-13 19:05:53" itemprop="dateModified" datetime="2021-03-13T19:05:53+08:00">2021-03-13</time>
+                <time title="修改时间：2021-03-16 08:27:39" itemprop="dateModified" datetime="2021-03-16T08:27:39+08:00">2021-03-16</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -335,15 +335,15 @@
 
       
           <h3 id="协议格式"><a href="#协议格式" class="headerlink" title="协议格式"></a>协议格式</h3><h4 id="数据包封装"><a href="#数据包封装" class="headerlink" title="数据包封装"></a>数据包封装</h4><p>传输层及其以下的机制由<strong>内核提供</strong>，<strong>应用层由用户进程提供</strong>。<strong>应用程序对通讯数据的含义进行解释，而传输层及其以下处理通讯的细节，将数据从一台计算机通过一定的路径发送到另一台计算机。</strong> <strong>应用层数据通过协议栈发到网络上时，每层协议都要加上一个数据首部（header），称为封装（Encapsulation）</strong>，如下图所示：</p>
-<p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE943321ff202288b2913e1285069de8e5/4565" alt="数据包封装"></p>
+<p><img src="https://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE943321ff202288b2913e1285069de8e5/4565" alt="数据包封装"></p>
 <p>不同的协议层对数据包有不同的称谓，<strong>在传输层叫做段（segment），在网络层叫做数据报（datagram），在链路层叫做帧（frame）</strong>。数据封装成帧后发到传输介质上，到达目的主机后每层协议再剥掉相应的首部，最后将应用层数据交给应用程序处理。</p>
-<h4 id="以太网帧格式"><a href="#以太网帧格式" class="headerlink" title="以太网帧格式"></a>以太网帧格式</h4><p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE937a40d8066c97295abb3b803bcb27ce/4567" alt="以太网帧格式"></p>
+<h4 id="以太网帧格式"><a href="#以太网帧格式" class="headerlink" title="以太网帧格式"></a>以太网帧格式</h4><p><img src="https://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE937a40d8066c97295abb3b803bcb27ce/4567" alt="以太网帧格式"></p>
 <p>其中的源地址和目的地址是指网卡的硬件地址（也叫<strong>MAC地址</strong>），长度是48位，是在网卡出厂时<strong>固化</strong>的。可在shell中使用ifconfig命令查看，“<strong>00:50:56:c0:00:01</strong>”部分就是硬件地址。类型字段有三种值，<strong>分别对应IP、ARP、RARP。帧尾是CRC校验码。</strong></p>
 <p>以太网帧中的数据长度规定最小46字节，最大1500字节，ARP和RARP数据包的长度不够46字节，要在后面补填充位。<strong>最大值1500称为以太网的最大传输单元（MTU）</strong>，不同的网络类型有不同的MTU，如果一个数据包从以太网路由到拨号链路上，数据包长度大于拨号链路的MTU，则需要对数据包进行<strong>分片</strong>（fragmentation）。ifconfig命令输出中也<strong>MTU:1500</strong>.注意，<strong>MTU指指数据帧中有效载荷的最大长度，不包括帧头长度。</strong></p>
 <h4 id="ARP数据报格式"><a href="#ARP数据报格式" class="headerlink" title="ARP数据报格式"></a>ARP数据报格式</h4><p>在网络通讯时，<strong>源主机的应用程序知道目的主机的IP地址和端口号，却不知道目的主机的硬件地址，而数据包首先是被网卡接收到再去处理上层协议的，如果接收到的数据包的硬件地址与本机不符，则直接丢弃。因此在通讯前必须获得目的主机的硬件地址</strong>。ARP协议就起到这个作用。<strong>源主机发出ARP请求，询问“IP地址是192.168.0.1的主机的硬件地址是多少”，并将这个请求广播到本地网段（以太网帧首部的硬件地址填FF:FF:FF:FF:FF:FF表示广播），目的主机接收到广播的ARP请求，发现其中的IP地址与本机相符，则发送一个ARP应答数据包给源主机，将自己的硬件地址填写在应答包中。</strong></p>
 <p>每台主机都维护一个ARP缓存表，可以用arp -a命令查看。缓存表中的表项有过期时间（一般为20分钟），如果20分钟内没有再次使用某个表项，则该表项失效，下次还要发ARP请求来获得目的主机的硬件地址。</p>
 <p>ARP数据报的格式如下所示：</p>
-<p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE8790e76a5bfd1e36879973c44556bb91/4569" alt="ARP数据报格式"></p>
+<p><img src="https://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE8790e76a5bfd1e36879973c44556bb91/4569" alt="ARP数据报格式"></p>
 <p>源MAC地址、目的MAC地址在以太网首部和ARP请求中各出现一次，对于链路层为以太网的情况是多余的，但<strong>如果链路层是其它类型的网络则有可能是必要的</strong>。硬件类型指链路层网络类型，1为以太网，协议类型指要转换的地址类型，0x0800为IP地址，后面两个地址长度对于以太网地址和IP地址分别为6和4（字节），op字段为1表示ARP请求，op字段为2表示ARP应答。</p>
 <p>看一个具体的例子。</p>
 <p>请求帧如下（为了清晰在每行的前面加了字节计数，每行16个字节）：</p>
@@ -358,7 +358,7 @@
 <p>如果源主机和目的主机不在同一网段，ARP请求的广播帧无法穿过路由器，源主机如何与目的主机通信？</p>
 <p>在网段通信时，数据包中的地址就是源IP，目标IP，源MAC，目标MAC，根本用不到网关，而当检测到需要把数据包发到远程网络时，这时，目标MAC就必须改变了，<strong>在还没有出内网时，目标MAC必须写成网关的MAC地址发出去，当网关收到时，再把目标MAC地址改成下一跳的MAC地址发出去，而源IP和源MAC以及目标IP不曾改变，就算到达了公网上，目标MAC仍然在不断改变着，直到最后，这个数据包到达目标IP的网络，最终通信结束！</strong></p>
 <p><strong>不同网段的主机通信时，主机会封装网关（通常是路由器）的mac地址，然后主机将数据发送给路由器，后续路由进行路由转发，通过arp解析目标地址的mac地址，然后将数据包送达目的地。</strong>可参考：<a href="https://blog.csdn.net/weixin_43166958/article/details/86503506" target="_blank" rel="noopener">https://blog.csdn.net/weixin_43166958/article/details/86503506</a></p>
-<h4 id="IP段格式"><a href="#IP段格式" class="headerlink" title="IP段格式"></a>IP段格式</h4><p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE0e1f09c9e2bd41d557d2442aca16ef13/4571" alt="IP段格式"></p>
+<h4 id="IP段格式"><a href="#IP段格式" class="headerlink" title="IP段格式"></a>IP段格式</h4><p><img src="https://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE0e1f09c9e2bd41d557d2442aca16ef13/4571" alt="IP段格式"></p>
 <ul>
 <li><p>IP数据报的首部长度和数据长度都是可变长的，<strong>但总是4字节的整数倍</strong>。对于IPv4，4位版本字段是4。</p>
 </li>
@@ -372,7 +372,7 @@
 <li>协议字段指示上层协议是TCP、UDP、ICMP还是IGMP。</li>
 <li>校验和，<strong>只校验IP首部，数据的校验由更高层协议负责。</strong>IPv4的IP地址长度为32位。</li>
 </ul>
-<h4 id="UDP数据报格式"><a href="#UDP数据报格式" class="headerlink" title="UDP数据报格式"></a>UDP数据报格式</h4><p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCEc8142b69b8328ae98ab01b333ad577ca/4573" alt="udp数据报格式"></p>
+<h4 id="UDP数据报格式"><a href="#UDP数据报格式" class="headerlink" title="UDP数据报格式"></a>UDP数据报格式</h4><p><img src="https://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCEc8142b69b8328ae98ab01b333ad577ca/4573" alt="udp数据报格式"></p>
 <p>下面分析一帧<strong>基于UDP的TFTP协议帧</strong>。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">以太网首部</span><br><span class="line"></span><br><span class="line">0000: 00 05 5d 67 d0 b1 00 05 5d 61 58 a8 08 00</span><br><span class="line"></span><br><span class="line">IP首部</span><br><span class="line"></span><br><span class="line">0000: 45 00</span><br><span class="line"></span><br><span class="line">0010: 00 53 93 25 00 00 80 11 25 ec c0 a8 00 37 c0 a8</span><br><span class="line"></span><br><span class="line">0020: 00 01</span><br><span class="line"></span><br><span class="line">UDP首部</span><br><span class="line"></span><br><span class="line">0020： 05 d4 00 45 00 3f ac 40</span><br><span class="line"></span><br><span class="line">TFTP协议</span><br><span class="line"></span><br><span class="line">0020: 00 01 &apos;c&apos;&apos;:&apos;&apos;\&apos;&apos;q&apos;</span><br><span class="line"></span><br><span class="line">0030: &apos;w&apos;&apos;e&apos;&apos;r&apos;&apos;q&apos;&apos;.&apos;&apos;q&apos;&apos;w&apos;&apos;e&apos;00 &apos;n&apos;&apos;e&apos;&apos;t&apos;&apos;a&apos;&apos;s&apos;&apos;c&apos;&apos;i&apos;</span><br><span class="line"></span><br><span class="line">0040: &apos;i&apos;00 &apos;b&apos;&apos;l&apos;&apos;k&apos;&apos;s&apos;&apos;i&apos;&apos;z&apos;&apos;e&apos;00 &apos;5&apos;&apos;1&apos;&apos;2&apos;00 &apos;t&apos;&apos;i&apos;</span><br><span class="line"></span><br><span class="line">0050: &apos;m&apos;&apos;e&apos;&apos;o&apos;&apos;u&apos;&apos;t&apos;00 &apos;1&apos;&apos;0&apos;00 &apos;t&apos;&apos;s&apos;&apos;i&apos;&apos;z&apos;&apos;e&apos;00 &apos;0&apos;</span><br><span class="line"></span><br><span class="line">0060: 00</span><br></pre></td></tr></table></figure>
 <ul>
@@ -415,10 +415,10 @@
 <p>接收端的UDP协议层只管把收到的数据根据端口号交给相应的应用程序就算完成任务了，如果发送端发来多个数据包并且在网络上经过不同的路由，到达接收端时顺序已经错乱了，<strong>UDP协议层也不保证按发送时的顺序交给应用层。</strong></p>
 <p>通常接收端的UDP协议层将收到的数据放在一个固定大小的<strong>缓冲区</strong>中等待应用程序来提取和处理，<strong>如果应用程序提取和处理的速度很慢，而发送端发送的速度很快，就会丢失数据包，UDP协议层并不报告这种错误。</strong></p>
 <p>因此，使用UDP协议的应用程序必须考虑到这些可能的问题并实现适当的解决方案，例如等待应答、超时重发、为数据包编号、流量控制等。<strong>一般使用UDP协议的应用程序实现都比较简单，只是发送一些对可靠性要求不高的消息，而不发送大量的数据。</strong>例如，基于UDP的TFTP协议一般只用于传送小文件（所以才叫trivial的ftp），而基于TCP的FTP协议适用于各种文件的传输。</p>
-<h4 id="TCP数据报格式"><a href="#TCP数据报格式" class="headerlink" title="TCP数据报格式"></a>TCP数据报格式</h4><p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCEfb083f48267eafa5f86eeb2ad99a94ab/4575" alt="TCP数据报格式"></p>
+<h4 id="TCP数据报格式"><a href="#TCP数据报格式" class="headerlink" title="TCP数据报格式"></a>TCP数据报格式</h4><p><img src="https://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCEfb083f48267eafa5f86eeb2ad99a94ab/4575" alt="TCP数据报格式"></p>
 <p>与UDP协议一样也有<strong>源端口号和目的端口号</strong>，通讯的双方由<strong>IP地址和端口号标识</strong>。32位<strong>序号</strong>、32位<strong>确认序号</strong>、窗口大小稍后详细解释。<strong>4位首部长度和IP协议头类似，表示TCP协议头的长度，以4字节为单位，因此TCP协议头最长可以是4x15=60字节，如果没有选项字段，TCP协议头最短20字节。</strong>URG、ACK、PSH、RST、SYN、FIN是六个<strong>控制位</strong>。16位检验和将TCP协议头和数据都计算在内。</p>
 <h3 id="TCP协议"><a href="#TCP协议" class="headerlink" title="TCP协议"></a>TCP协议</h3><h4 id="TCP通信时序"><a href="#TCP通信时序" class="headerlink" title="TCP通信时序"></a>TCP通信时序</h4><p>下图是一次TCP通讯的时序图。TCP连接建立断开。包含熟知的<strong>三次握手和四次挥手</strong>。</p>
-<p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE5332ac18ccc8b5cfa278e4d6077da9af/4577" alt="TCP通信时序"></p>
+<p><img src="https://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE5332ac18ccc8b5cfa278e4d6077da9af/4577" alt="TCP通信时序"></p>
 <p>在这个例子中，首先客户端主动发起连接、发送请求，然后服务器端响应请求，然后客户端主动关闭连接。两条竖线表示通讯的两端，从上到下表示时间的先后顺序，注意，数据从一端传到网络的另一端也需要时间，所以图中的箭头都是斜的。双方发送的段按时间顺序编号为1-10，各段中的主要信息在箭头上标出，例如段2的箭头上标着SYN, 8000(0), ACK 1001，表示该段中的SYN位置1，32位<strong>序号</strong>是8000，<strong>该段不携带有效载荷（数据字节数为0）</strong>，ACK位置1，32位<strong>确认序号是1001</strong>，<strong>带有一个mss（Maximum Segment Size，最大报文长度）选项值为1024。</strong></p>
 <h4 id="三次握手"><a href="#三次握手" class="headerlink" title="三次握手"></a>三次握手</h4><ul>
 <li><p>客户端发送一个带SYN标志的TCP报文到服务器。这是三次握手过程中的段1</p>
@@ -464,7 +464,7 @@
 </ul>
 <p>建立连接的过程是三次握手，而关闭连接通常需要4个段，<strong>服务器的应答和关闭连接请求通常不合并在一个段中，因为有连接半关闭的情况，这种情况下客户端关闭连接之后就不能再发送数据（ACK是可以的，只是没有数据）给服务器了，但是服务器还可以发送数据给客户端，直到服务器也关闭连接为止。</strong></p>
 <h4 id="滑动窗口-TCP流量控制"><a href="#滑动窗口-TCP流量控制" class="headerlink" title="滑动窗口(TCP流量控制)"></a>滑动窗口(TCP流量控制)</h4><p>介绍UDP时描述了这样的问题：<strong>如果发送端发送的速度较快，接收端接收到数据后处理的速度较慢，而接收缓冲区的大小是固定的，就会丢失数据。TCP协议通过“滑动窗口（Sliding Window）”机制解决这一问题</strong>。看下图的通讯过程：</p>
-<p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCEde02a2ac39f3de7ba31ee51751bdca95/4579" alt="滑动窗口"></p>
+<p><img src="https://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCEde02a2ac39f3de7ba31ee51751bdca95/4579" alt="滑动窗口"></p>
 <ul>
 <li><p>发送端发起连接，声明最大段尺寸是1460，初始序号是0，<strong>窗口大小是4K，表示“我的接收缓冲区还有4K字节空闲，你发的数据不要超过4K”</strong>。接收端应答连接请求，声明最大段尺寸是1024，初始序号是8000，窗口大小是6K。发送端应答，三次握手结束。</p>
 </li>
@@ -487,7 +487,7 @@
 </ul>
 <p>上图在接收端用小方块表示1K数据，实心的小方块表示已接收到的数据，<strong>虚线框表示接收缓冲区</strong>，因此套在虚线框中的空心小方块表示窗口大小，从图中可以看出，<strong>随着应用程序提走数据，虚线框是向右滑动的，因此称为滑动窗口。</strong></p>
 <p>从这个例子还可以看出，发送端是一K一K地发送数据，而接收端的应用程序可以两K两K地提走数据，当然也有可能一次提走3K或6K数据，或者一次只提走几个字节的数据。也就是说，<strong>应用程序所看到的数据是一个整体，或说是一个流（stream），在底层通讯中这些数据可能被拆成很多数据包来发送，但是一个数据包有多少字节对应用程序是不可见的，因此TCP协议是面向流的协议。</strong>而UDP是面向消息的协议，<strong>每个UDP段都是一条消息，应用程序必须以消息为单位提取数据，不能一次提取任意字节的数据</strong>，这一点和TCP是很不同的。</p>
-<h4 id="TCP-状态转移"><a href="#TCP-状态转移" class="headerlink" title="TCP 状态转移"></a>TCP 状态转移</h4><p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE11e02e250025cfccd7fa1221edf57327/4581" alt="TCP状态转移"></p>
+<h4 id="TCP-状态转移"><a href="#TCP-状态转移" class="headerlink" title="TCP 状态转移"></a>TCP 状态转移</h4><p><img src="https://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE11e02e250025cfccd7fa1221edf57327/4581" alt="TCP状态转移"></p>
 <p>实线一部分：主动发起连接，主动关闭连接。主动发起连接才会出现FIN_WAIT_2状态。TIME_WAIT的时间：不确定对方是否收到发送的ACK。</p>
 <p>虚线一部分：被动发起连接，被动关闭连接</p>
 <p>小细线一部分：两端同时操作</p>
@@ -541,7 +541,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-12 15:12:38" itemprop="dateModified" datetime="2021-03-12T15:12:38+08:00">2021-03-12</time>
+                <time title="修改时间：2021-03-16 08:28:05" itemprop="dateModified" datetime="2021-03-16T08:28:05+08:00">2021-03-16</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -621,14 +621,14 @@
 <li>没有客户端放到对方主机上，<strong>缓存数据不尽如人意</strong>，从而传输数据量受到限制。应用的观感大打折扣。</li>
 <li>必须与浏览器一样，采用标准http协议进行通信，<strong>协议选择不灵活</strong>。</li>
 </ul>
-<h3 id="分层模型"><a href="#分层模型" class="headerlink" title="分层模型"></a>分层模型</h3><p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE3d9424e51d6b2ac2e8fe2728441e3161/4555" alt="分层模型图"></p>
+<h3 id="分层模型"><a href="#分层模型" class="headerlink" title="分层模型"></a>分层模型</h3><p><img src="https://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE3d9424e51d6b2ac2e8fe2728441e3161/4555" alt="分层模型图"></p>
 <p>四层模型(TCP/IP模型)：</p>
-<p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE1cf2e4cebb2017a705ff317f17e9d386/4557" alt="四层模型"></p>
+<p><img src="https://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE1cf2e4cebb2017a705ff317f17e9d386/4557" alt="四层模型"></p>
 <p>一般在应用开发过程中，讨论最多的是TCP/IP模型。</p>
 <h4 id="通信过程"><a href="#通信过程" class="headerlink" title="通信过程"></a>通信过程</h4><p>两台计算机通过TCP/IP协议通讯的过程如下所示：</p>
-<p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE808825184e078024bd1e6579f8badc78/4559" alt="两台计算机通过TCP/IP协议通讯的过程"></p>
+<p><img src="https://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE808825184e078024bd1e6579f8badc78/4559" alt="两台计算机通过TCP/IP协议通讯的过程"></p>
 <p>上图对应两台计算机在<strong>同一网段中</strong>的情况，如果<strong>两台计算机在不同的网段</strong>中，那么数据<strong>从一台计算机到另一台计算机传输过程中要经过一个或多个路由器</strong>，如下图所示：</p>
-<p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE82ddd64ede0163775ec686aa8c4f2ef4/4561" alt="不同网段通信过程"></p>
+<p><img src="https://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE82ddd64ede0163775ec686aa8c4f2ef4/4561" alt="不同网段通信过程"></p>
 <h6 id="链路层工作"><a href="#链路层工作" class="headerlink" title="链路层工作"></a>链路层工作</h6><p>链路层有<strong>以太网、令牌环网</strong>等标准，<strong>链路层负责网卡设备的驱动、帧同步</strong>（即从网线上检测到什么信号算作新帧的开始）、<strong>冲突检测</strong>（如果检测到冲突就自动重发）、<strong>数据差错校验</strong>等工作。交换机是工作在链路层的网络设备，可以在不同的链路层网络之间转发数据帧（比如十兆以太网和百兆以太网之间、以太网和令牌环网之间），由于不同链路层的帧格式不同<strong>，交换机要将进来的数据包拆掉链路层首部重新封装之后再转发。</strong></p>
 <h6 id="网络层工作"><a href="#网络层工作" class="headerlink" title="网络层工作"></a>网络层工作</h6><p>网络层的IP协议是构成Internet的基础。<strong>Internet上的主机通过IP地址来标识</strong>，Internet上有大量<strong>路由器负责根据IP地址选择合适的路径转发数据包，数据包从Internet上的源主机到目的主机往往要经过十多个路由器</strong>。<strong>路由器是工作在第三层的网络设备，同时兼有交换机的功能，可以在不同的链路层接口之间转发数据包，因此路由器需要将进来的数据包拆掉网络层和链路层两层首部并重新封装。</strong> <strong>IP协议不保证传输的可靠性，数据包在传输过程中可能丢失，可靠性可以在上层协议或应用程序中提供支持。</strong></p>
 <p>网络层负责点到点（ptop，point-to-point）的传输（这里的“点”指主机或路由器）</p>
@@ -636,7 +636,7 @@
 <p>TCP是一种面向连接的、可靠的协议，有点像打电话，双方拿起电话互通身份之后就建立了连接，然后说话就行了，这边说的话那边保证听得到，并且是按说话的顺序听到的，说完话挂机断开连接。<strong>也就是说TCP传输的双方需要首先建立连接，之后由TCP协议保证数据收发的可靠性，丢失的数据包自动重发，上层应用程序收到的总是可靠的数据流，通讯之后关闭连接。</strong></p>
 <p>UDP是无连接的传输协议，不保证可靠性，有点像寄信，信写好放到邮筒里，既不能保证信件在邮递过程中不会丢失，也不能保证信件寄送顺序。<strong>使用UDP协议的应用程序需要自己完成丢包重发、消息排序等工作。</strong></p>
 <p>目的主机收到数据包后，如何经过各层协议栈最后到达应用程序呢？其过程如下图所示：</p>
-<p><img src="http://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE92061dfc6ebbb29f1358200962d530e0/4563" alt="数据包传输过程"></p>
+<p><img src="https://note.youdao.com/yws/public/resource/8e6e18c29e30a8985cd881b2ee57f5c9/xmlnote/WEBRESOURCE92061dfc6ebbb29f1358200962d530e0/4563" alt="数据包传输过程"></p>
 <p>以太网驱动程序首先根据以太网首部中的“上层协议”字段确定该数据帧的有效载荷（<strong>payload，指除去协议首部之外实际传输的数据</strong>）是IP、ARP还是RARP协议的数据报，然后交给相应的协议处理。<strong>假如是IP数据报，IP协议再根据IP首部中的“上层协议”字段确定该数据报的有效载荷是TCP、UDP、ICMP还是IGMP，然后交给相应的协议处理。假如是TCP段或UDP段，TCP或UDP协议再根据TCP首部或UDP首部的“端口号”字段确定应该将应用层数据交给哪个用户进程。IP地址是标识网络中不同主机的地址，而端口号就是同一台主机上标识不同进程的地址，IP地址和端口号合起来标识网络中唯一的进程。</strong></p>
 <p>虽然IP、ARP和RARP数据报都需要以太网驱动程序来封装成帧，但是从功能上划分，ARP和RARP属于链路层，IP属于网络层。虽然ICMP、IGMP、TCP、UDP的数据都需要IP协议来封装成数据报，但是从功能上划分，ICMP、IGMP与IP同属于网络层，TCP和UDP属于传输层。</p>
 
