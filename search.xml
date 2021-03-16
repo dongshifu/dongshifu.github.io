@@ -7,11 +7,11 @@
 <p>经过网上查找，发现了一款好用的第三方评论工具：<a href="https://www.livere.com" target="_blank" rel="noopener">livere(来必力)</a>。这款工具只需要注册并得到一个<code>livere_uid</code>值就可以在自己的网页上添加评论功能，登录后台管理还可以对评论进行管理。白嫖可真相！！！</p>
 <p>现在说下主要步骤：</p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">打开 https://livere.com/ 网站进行用户注册（注册的时候是韩文，可以有道或者百度翻译对应一下内容，其实也就是邮箱，名称和密码这几项），注册完成后选择【安装】，然后点击“现在安装”。</span><br><span class="line"> </span><br><span class="line">在“现在安装”页面填写相关的信息，然后获取授权ID码(主要需要填写自己的网站链接)</span><br><span class="line"></span><br><span class="line">获取到授权ID码之后会打开主题目录下的配置文件，修改“livere_uid”的值为授权ID码</span><br></pre></td></tr></table></figure>
-<p><img src="https://note.youdao.com/yws/public/resource/b75486e024e4abe4339e8068b52ef37f/xmlnote/WEBRESOURCE2a260d1f0b15a04f9ef32732c9ae5c85/4528" alt="livere_uid获取"></p>
+<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2F2EE36436AC954F86BBA1AC8287306C8E&amp;mime=image%2Fpng&amp;name=livere.png&amp;reqId=7538ad2f-6924-4c47-ba91-f64861c51c8e&amp;ts=1615870399126&amp;type=NOS&amp;sign=6466c6e8c40d790c695d59a652d5faa0" alt="livere_uid获取"></p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">在自己的博客主体目录下找到_config.yml文件(我的是~/blog/dongshifu/themes/next/_config.yml)然后找到livere_uid选项，将livere管理页面中的代码管理打开并找到data-uid，复制到livere_uid后面保存即可</span><br></pre></td></tr></table></figure>
-<p><img src="https://note.youdao.com/yws/public/resource/b75486e024e4abe4339e8068b52ef37f/xmlnote/WEBRESOURCEcda4c2d033aec89de3efdbe7afaf8ac0/4530" alt="_config.yaml配置"></p>
+<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2FA105ED5FA06244ADA4EB4F77773DFDA2&amp;mime=image%2Fpng&amp;name=liver1.png&amp;reqId=5fe6a687-7af6-47d7-83d8-e61d8b4ea898&amp;ts=1615870415925&amp;type=NOS&amp;sign=a257d70e8f00538284f411233ffb7dce" alt="_config.yaml配置"></p>
 <p>重新部署自己的网站到github就可以看到添加的评论功能了。(授权的时候可以用QQ,微信等方式，真的是很方便了)</p>
-<p><img src="https://note.youdao.com/yws/public/resource/b75486e024e4abe4339e8068b52ef37f/xmlnote/WEBRESOURCE65532c3d27bdb577b7c70ba945ae81db/4533" alt="博客评论功能添加"></p>
+<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2F832CE54842574026A1D531ADDF366C45&amp;mime=image%2Fpng&amp;name=Bo.png&amp;reqId=13fd1790-102f-4a29-9795-56fbb557b797&amp;ts=1615870431687&amp;type=NOS&amp;sign=e69f2c89220d832199b6cd5f60edf61b" alt="博客评论功能添加"></p>
 ]]></content>
       <categories>
         <category>工具</category>
@@ -151,13 +151,13 @@
 <p>两个实验从结果上来看是一致的，底层实现是一样的吗？跟MVCC有什么关系？ </p>
 <h4 id="MVCC-1"><a href="#MVCC-1" class="headerlink" title="MVCC"></a>MVCC</h4><p>multiversion concurrency control （多版本并发控制）：并发访问(读或写)数据库时,对正在事务内处理的数据做多版本的管理。达到避免写操作的堵塞，从而引发读操作的并发问题。</p>
 <p>MVCC插入逻辑流程 ：</p>
-<p><img src="http://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2F07EBF1FCAFF64858BC7BB90055255AB2&amp;mime=image%2Fjpeg&amp;name=MVCC%E6%8F%92%E5%85%A5.jpeg&amp;reqId=14c33e49-9552-4ad4-b392-6cfd6034567b&amp;ts=1615857493836&amp;type=NOS&amp;sign=807c6416a470f1db4dd4623d2484e266" alt="MVCC插入逻辑流程"></p>
+<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2F07EBF1FCAFF64858BC7BB90055255AB2&amp;mime=image%2Fjpeg&amp;name=MVCC%E6%8F%92%E5%85%A5.jpeg&amp;reqId=b1fc3ee1-fd81-41a7-89ac-7b4f2d4d4293&amp;ts=1615870296286&amp;type=NOS&amp;sign=4f9a2226d2d1024afe4eab7b817be823" alt="MVCC插入逻辑流程"></p>
 <p>MVCC删除逻辑流程：</p>
-<p><img src="http://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2FCE5328D4B2804CD3B99E9BD15EACEEBC&amp;mime=image%2Fjpeg&amp;name=MVCC%E5%88%A0%E9%99%A4.jpeg&amp;reqId=60280fdf-c57a-4018-b07c-dad71e7544e9&amp;ts=1615857471401&amp;type=NOS&amp;sign=9a904381568627d21746c9fc162934a0" alt="MVCC删除逻辑流程"></p>
+<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2FCE5328D4B2804CD3B99E9BD15EACEEBC&amp;mime=image%2Fjpeg&amp;name=MVCC%E5%88%A0%E9%99%A4.jpeg&amp;reqId=ea59037b-2a80-4d46-898c-449a6cb80920&amp;ts=1615870316124&amp;type=NOS&amp;sign=a97ff2928d8023d53c7001e6169601aa" alt="MVCC删除逻辑流程"></p>
 <p>MVCC修改逻辑流程：</p>
-<p><img src="http://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2FA23485C268B64E3E89FA27FE072D8762&amp;mime=image%2Fjpeg&amp;name=MVCC%E4%BF%AE%E6%94%B9.jpeg&amp;reqId=1011f9ec-5ff0-41b1-bcfa-4fb1a81af12f&amp;ts=1615857448464&amp;type=NOS&amp;sign=6e5d983dc85a21bf4730c843cf363baf" alt="MVCC修改逻辑流程"></p>
+<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2FA23485C268B64E3E89FA27FE072D8762&amp;mime=image%2Fjpeg&amp;name=MVCC%E4%BF%AE%E6%94%B9.jpeg&amp;reqId=a4ed1514-37c5-422f-841d-a247eb6d8ec8&amp;ts=1615870341924&amp;type=NOS&amp;sign=03a22ed3f0a1bab3c8472a53b15c29f3" alt="MVCC修改逻辑流程"></p>
 <p>MVCC查询逻辑流程:</p>
-<p><img src="http://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2F4E8D9A936B534C639979A74C6FB73A2F&amp;mime=image%2Fjpeg&amp;name=MVCC%E6%9F%A5%E8%AF%A2.jpeg&amp;reqId=577a0d02-904e-439a-bce1-5474d8a48728&amp;ts=1615857321890&amp;type=NOS&amp;sign=33456f21c3bc204ea95fe9fc4486b36c" alt="MVCC查询逻辑流程"></p>
+<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2F4E8D9A936B534C639979A74C6FB73A2F&amp;mime=image%2Fjpeg&amp;name=MVCC%E6%9F%A5%E8%AF%A2.jpeg&amp;reqId=52a577b1-f5cf-457e-8939-3dd1c390d36d&amp;ts=1615870359290&amp;type=NOS&amp;sign=3e086aa221109e150f5ef4b12c795f2b" alt="MVCC查询逻辑流程"></p>
 ]]></content>
       <categories>
         <category>mysql</category>
@@ -3118,6 +3118,51 @@
       </tags>
   </entry>
   <entry>
+    <title>linux环境变量设置</title>
+    <url>/2019/12/26/linux%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/</url>
+    <content><![CDATA[<h3 id="Ubuntu环境变量的添加和删除"><a href="#Ubuntu环境变量的添加和删除" class="headerlink" title="Ubuntu环境变量的添加和删除"></a>Ubuntu环境变量的添加和删除</h3><h4 id="添加环境变量的位置"><a href="#添加环境变量的位置" class="headerlink" title="添加环境变量的位置"></a>添加环境变量的位置</h4><ul>
+<li>/etc/profile 该文件为系统的每个用户设置环境信息，当用户第一次登录时，该文件被执行，并从/etc/profile.d目录的配置文件中搜集shell的设置。</li>
+<li>/etc/environment 登录操作系统使用的第二个文件，系统在读取自己的profile之前，设置环境文件的环境变量</li>
+<li>/etc/bashrc 为每一个运行bash shell的用户执行该文件。当bash shell被打开时，该文件被读取</li>
+<li>~/.profile 每个用户都可以使用该文件输入专用于自己使用的shell信息，当用户登录时，该文件仅仅执行一次。默认情况下设置一些环境变量，执行用户的.bashrc文件</li>
+<li>~/.bashrc 该文件包含专用的bash shell的bash信息，当登录以及每次打开新的shell时，该文件被读取。</li>
+</ul>
+<h4 id="添加方法"><a href="#添加方法" class="headerlink" title="添加方法"></a>添加方法</h4><ul>
+<li>方法一：直接修改/etc/enviroment文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">打开/etc/environment文件，其内容如下：</span></span><br><span class="line">PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games" </span><br><span class="line"><span class="meta">#</span><span class="bash">在环境变量PATH中添加你要添加的路径即可。</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>方法二：修改/etc/profile文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">这个文件不是保存环境变量信息的文件，在登录时，系统只是根据它的内容对环境变量进行设置。</span></span><br><span class="line">export PATH=$PATH:[your path1]:[your path2]:[...]  </span><br><span class="line">export PATH=[your path1]:[your path2]:[...]:$PATH #其中，各个PATH之间用冒号分隔，$PATH指代添加your path前的环境变量。</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>方法三：修改/etc/bashrc或者~/.bashrc文件，这两个文件<strong>不是为了保存环境变量，只是在使用bash shell时进行设置而已，所以设置方法和二中一样。对于/etc/bashrc文件，修改的作用于所有用户，但对于~/.bashrc文件，修改的仅仅作用于当前用户。这种修改的作用也是永久性的。</strong></p>
+</li>
+<li><p>方法四：<strong>修改~/.profile文件，作用仅限于当前用户，但同样也是永久性的。这种方法和修改/etc/profile本质上是一样的，这种之不过是仅仅修改了当前用户自己的配置文件。所以作用仅限于当前用户，但同样也是永久性的。</strong></p>
+</li>
+<li><p>方法五：在Terminal中使用shell命令，只在当前Terminal中起作用，关闭了当前Terminal就无效了。对其他Terminal也无效</p>
+</li>
+</ul>
+<h4 id="显示环境变量"><a href="#显示环境变量" class="headerlink" title="显示环境变量"></a>显示环境变量</h4><ul>
+<li>显示所有环境变量</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">env #打印所有的环境变量</span><br></pre></td></tr></table></figure>
+<ul>
+<li>显示指定环境变量</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">echo $PATH #打印PATH环境变量</span><br></pre></td></tr></table></figure>
+<h4 id="让修改生效"><a href="#让修改生效" class="headerlink" title="让修改生效"></a>让修改生效</h4><p>使用source命令也可以让修改立即生效。使用方法为：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">source [file name]  # file name 指的是上面修改过的文件的file name</span><br></pre></td></tr></table></figure>
+<h4 id="删除对环境变量的修改"><a href="#删除对环境变量的修改" class="headerlink" title="删除对环境变量的修改"></a>删除对环境变量的修改</h4><p>将以上方法中对配置文件的修改还原回去即可。另外，由于第五种方法由于是临时性质的且局部的，只需要关闭这个Terminal就好了。</p>
+]]></content>
+      <categories>
+        <category>linux</category>
+      </categories>
+      <tags>
+        <tag>linux环境变量</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>linux相关操作笔记</title>
     <url>/2019/12/26/linux%E6%93%8D%E4%BD%9C%E7%AC%94%E8%AE%B0/</url>
     <content><![CDATA[<h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>linux只是操作系统的内核。</p>
@@ -3724,51 +3769,6 @@
       </tags>
   </entry>
   <entry>
-    <title>linux环境变量设置</title>
-    <url>/2019/12/26/linux%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/</url>
-    <content><![CDATA[<h3 id="Ubuntu环境变量的添加和删除"><a href="#Ubuntu环境变量的添加和删除" class="headerlink" title="Ubuntu环境变量的添加和删除"></a>Ubuntu环境变量的添加和删除</h3><h4 id="添加环境变量的位置"><a href="#添加环境变量的位置" class="headerlink" title="添加环境变量的位置"></a>添加环境变量的位置</h4><ul>
-<li>/etc/profile 该文件为系统的每个用户设置环境信息，当用户第一次登录时，该文件被执行，并从/etc/profile.d目录的配置文件中搜集shell的设置。</li>
-<li>/etc/environment 登录操作系统使用的第二个文件，系统在读取自己的profile之前，设置环境文件的环境变量</li>
-<li>/etc/bashrc 为每一个运行bash shell的用户执行该文件。当bash shell被打开时，该文件被读取</li>
-<li>~/.profile 每个用户都可以使用该文件输入专用于自己使用的shell信息，当用户登录时，该文件仅仅执行一次。默认情况下设置一些环境变量，执行用户的.bashrc文件</li>
-<li>~/.bashrc 该文件包含专用的bash shell的bash信息，当登录以及每次打开新的shell时，该文件被读取。</li>
-</ul>
-<h4 id="添加方法"><a href="#添加方法" class="headerlink" title="添加方法"></a>添加方法</h4><ul>
-<li>方法一：直接修改/etc/enviroment文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">打开/etc/environment文件，其内容如下：</span></span><br><span class="line">PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games" </span><br><span class="line"><span class="meta">#</span><span class="bash">在环境变量PATH中添加你要添加的路径即可。</span></span><br></pre></td></tr></table></figure>
-<ul>
-<li>方法二：修改/etc/profile文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">这个文件不是保存环境变量信息的文件，在登录时，系统只是根据它的内容对环境变量进行设置。</span></span><br><span class="line">export PATH=$PATH:[your path1]:[your path2]:[...]  </span><br><span class="line">export PATH=[your path1]:[your path2]:[...]:$PATH #其中，各个PATH之间用冒号分隔，$PATH指代添加your path前的环境变量。</span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>方法三：修改/etc/bashrc或者~/.bashrc文件，这两个文件<strong>不是为了保存环境变量，只是在使用bash shell时进行设置而已，所以设置方法和二中一样。对于/etc/bashrc文件，修改的作用于所有用户，但对于~/.bashrc文件，修改的仅仅作用于当前用户。这种修改的作用也是永久性的。</strong></p>
-</li>
-<li><p>方法四：<strong>修改~/.profile文件，作用仅限于当前用户，但同样也是永久性的。这种方法和修改/etc/profile本质上是一样的，这种之不过是仅仅修改了当前用户自己的配置文件。所以作用仅限于当前用户，但同样也是永久性的。</strong></p>
-</li>
-<li><p>方法五：在Terminal中使用shell命令，只在当前Terminal中起作用，关闭了当前Terminal就无效了。对其他Terminal也无效</p>
-</li>
-</ul>
-<h4 id="显示环境变量"><a href="#显示环境变量" class="headerlink" title="显示环境变量"></a>显示环境变量</h4><ul>
-<li>显示所有环境变量</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">env #打印所有的环境变量</span><br></pre></td></tr></table></figure>
-<ul>
-<li>显示指定环境变量</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">echo $PATH #打印PATH环境变量</span><br></pre></td></tr></table></figure>
-<h4 id="让修改生效"><a href="#让修改生效" class="headerlink" title="让修改生效"></a>让修改生效</h4><p>使用source命令也可以让修改立即生效。使用方法为：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">source [file name]  # file name 指的是上面修改过的文件的file name</span><br></pre></td></tr></table></figure>
-<h4 id="删除对环境变量的修改"><a href="#删除对环境变量的修改" class="headerlink" title="删除对环境变量的修改"></a>删除对环境变量的修改</h4><p>将以上方法中对配置文件的修改还原回去即可。另外，由于第五种方法由于是临时性质的且局部的，只需要关闭这个Terminal就好了。</p>
-]]></content>
-      <categories>
-        <category>linux</category>
-      </categories>
-      <tags>
-        <tag>linux环境变量</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Linux服务管理</title>
     <url>/2019/11/27/linux_server/</url>
     <content><![CDATA[<h2 id="Linux服务管理"><a href="#Linux服务管理" class="headerlink" title="Linux服务管理"></a>Linux服务管理</h2><h3 id="服务分类"><a href="#服务分类" class="headerlink" title="服务分类"></a>服务分类</h3><p>Linux服务</p>
@@ -3793,6 +3793,41 @@
       </categories>
       <tags>
         <tag>linux 服务</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Linux 系统管理</title>
+    <url>/2019/11/27/linux_system/</url>
+    <content><![CDATA[<h2 id="Linux系统管理"><a href="#Linux系统管理" class="headerlink" title="Linux系统管理"></a>Linux系统管理</h2><h3 id="进程管理"><a href="#进程管理" class="headerlink" title="进程管理"></a>进程管理</h3><h4 id="进程查看"><a href="#进程查看" class="headerlink" title="进程查看"></a>进程查看</h4><p>作用：判断服务器健康状态，查看系统中所有进程，杀死进程</p>
+<p>查看系统中所有进程：</p>
+<ul>
+<li>ps aux :使用系统中所有进程，使用BSD操作系统格式</li>
+<li>ps -le 查看系统中所有进程，使用Linux标准命令格式</li>
+</ul>
+<p>查看系统健康状态：</p>
+<ul>
+<li>top[选项]</li>
+</ul>
+<p>查看进程树：</p>
+<ul>
+<li>pstree</li>
+</ul>
+<h4 id="终止进程"><a href="#终止进程" class="headerlink" title="终止进程"></a>终止进程</h4><p>1.kill命令</p>
+<p>kill -l 查看可用的进程信号</p>
+<p>kill -1 进程id 重启进程</p>
+<p>kill -9 进程id 强制杀死进程</p>
+<p>2.killall命令</p>
+<p>killall -9 进程名</p>
+<p>3.pkill </p>
+<p>按照终端号踢出用户</p>
+<p>w 使用w命令查询本机已经登录的用户</p>
+<p>pkill -t -9 pts/1 强制杀死从pts/1虚拟终端登录的进程</p>
+]]></content>
+      <categories>
+        <category>linux</category>
+      </categories>
+      <tags>
+        <tag>linux 系统管理</tag>
       </tags>
   </entry>
   <entry>
@@ -3984,41 +4019,6 @@
       </categories>
       <tags>
         <tag>linux shell</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Linux 系统管理</title>
-    <url>/2019/11/27/linux_system/</url>
-    <content><![CDATA[<h2 id="Linux系统管理"><a href="#Linux系统管理" class="headerlink" title="Linux系统管理"></a>Linux系统管理</h2><h3 id="进程管理"><a href="#进程管理" class="headerlink" title="进程管理"></a>进程管理</h3><h4 id="进程查看"><a href="#进程查看" class="headerlink" title="进程查看"></a>进程查看</h4><p>作用：判断服务器健康状态，查看系统中所有进程，杀死进程</p>
-<p>查看系统中所有进程：</p>
-<ul>
-<li>ps aux :使用系统中所有进程，使用BSD操作系统格式</li>
-<li>ps -le 查看系统中所有进程，使用Linux标准命令格式</li>
-</ul>
-<p>查看系统健康状态：</p>
-<ul>
-<li>top[选项]</li>
-</ul>
-<p>查看进程树：</p>
-<ul>
-<li>pstree</li>
-</ul>
-<h4 id="终止进程"><a href="#终止进程" class="headerlink" title="终止进程"></a>终止进程</h4><p>1.kill命令</p>
-<p>kill -l 查看可用的进程信号</p>
-<p>kill -1 进程id 重启进程</p>
-<p>kill -9 进程id 强制杀死进程</p>
-<p>2.killall命令</p>
-<p>killall -9 进程名</p>
-<p>3.pkill </p>
-<p>按照终端号踢出用户</p>
-<p>w 使用w命令查询本机已经登录的用户</p>
-<p>pkill -t -9 pts/1 强制杀死从pts/1虚拟终端登录的进程</p>
-]]></content>
-      <categories>
-        <category>linux</category>
-      </categories>
-      <tags>
-        <tag>linux 系统管理</tag>
       </tags>
   </entry>
   <entry>
