@@ -151,13 +151,13 @@
 <p>两个实验从结果上来看是一致的，底层实现是一样的吗？跟MVCC有什么关系？ </p>
 <h4 id="MVCC-1"><a href="#MVCC-1" class="headerlink" title="MVCC"></a>MVCC</h4><p>multiversion concurrency control （多版本并发控制）：并发访问(读或写)数据库时,对正在事务内处理的数据做多版本的管理。达到避免写操作的堵塞，从而引发读操作的并发问题。</p>
 <p>MVCC插入逻辑流程 ：</p>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2F07EBF1FCAFF64858BC7BB90055255AB2&amp;mime=image%2Fjpeg&amp;name=MVCC%E6%8F%92%E5%85%A5.jpeg&amp;reqId=b1fc3ee1-fd81-41a7-89ac-7b4f2d4d4293&amp;ts=1615870296286&amp;type=NOS&amp;sign=4f9a2226d2d1024afe4eab7b817be823" alt="MVCC插入逻辑流程"></p>
+<p><img src="https://api2.mubu.com/v3/document_image/de8de1d3-76d7-4062-bbcd-82146470f0be-11197877.jpg" alt="MVCC插入逻辑流程"></p>
 <p>MVCC删除逻辑流程：</p>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2FCE5328D4B2804CD3B99E9BD15EACEEBC&amp;mime=image%2Fjpeg&amp;name=MVCC%E5%88%A0%E9%99%A4.jpeg&amp;reqId=ea59037b-2a80-4d46-898c-449a6cb80920&amp;ts=1615870316124&amp;type=NOS&amp;sign=a97ff2928d8023d53c7001e6169601aa" alt="MVCC删除逻辑流程"></p>
+<p><img src="https://api2.mubu.com/v3/document_image/8e3f45d4-6284-44e3-a785-09c59fdeb861-11197877.jpg" alt="MVCC删除逻辑流程"></p>
 <p>MVCC修改逻辑流程：</p>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2FA23485C268B64E3E89FA27FE072D8762&amp;mime=image%2Fjpeg&amp;name=MVCC%E4%BF%AE%E6%94%B9.jpeg&amp;reqId=a4ed1514-37c5-422f-841d-a247eb6d8ec8&amp;ts=1615870341924&amp;type=NOS&amp;sign=03a22ed3f0a1bab3c8472a53b15c29f3" alt="MVCC修改逻辑流程"></p>
+<p><img src="https://api2.mubu.com/v3/document_image/d80ca7d4-6d88-495a-a294-2cf1e6d1d949-11197877.jpg" alt="MVCC修改逻辑流程"></p>
 <p>MVCC查询逻辑流程:</p>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2F4E8D9A936B534C639979A74C6FB73A2F&amp;mime=image%2Fjpeg&amp;name=MVCC%E6%9F%A5%E8%AF%A2.jpeg&amp;reqId=52a577b1-f5cf-457e-8939-3dd1c390d36d&amp;ts=1615870359290&amp;type=NOS&amp;sign=3e086aa221109e150f5ef4b12c795f2b" alt="MVCC查询逻辑流程"></p>
+<p><img src="https://api2.mubu.com/v3/document_image/6bfce1c3-7ec8-4023-ad62-e14a1689f4e2-11197877.jpg" alt="MVCC查询逻辑流程"></p>
 ]]></content>
       <categories>
         <category>mysql</category>
@@ -178,15 +178,15 @@
 <h4 id="事务并发带来的的问题"><a href="#事务并发带来的的问题" class="headerlink" title="事务并发带来的的问题"></a>事务并发带来的的问题</h4><ul>
 <li>脏读:<strong>在不同事务下，当前事务可以读到另外事务未提交的数据</strong>。</li>
 </ul>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2FC45E3C79B8F24E7A8CEEE40F7D63EAEA&amp;mime=image%2Fjpeg&amp;name=%E8%84%8F%E8%AF%BB.jpeg&amp;reqId=79a8d7ad-eede-495d-848a-c300c8e5311c&amp;ts=1615864073672&amp;type=NOS&amp;sign=98c1c252c3c7c22481f561af38b7d6f3" alt="脏读"></p>
+<p><img src="https://api2.mubu.com/v3/document_image/1d32ed1d-7caa-4b42-9156-29eba926152b-11197877.jpg" alt="脏读"></p>
 <ul>
 <li>不可重复读：在<strong>一个事务内多次读取同一数据集合</strong>。<strong>在这一事务还未结束前，另一事务也访问了该同一数据集合并做了修改，由于第二个事务的修改，第一次事务的两次读取的数据可能不一致。</strong></li>
 </ul>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2F3240D921F51346FBA7195D6C3D987635&amp;mime=image%2Fjpeg&amp;name=%E4%B8%8D%E5%8F%AF%E9%87%8D%E5%A4%8D%E8%AF%BB.jpeg&amp;reqId=1f3ad05f-f8b8-4c45-98d8-8cd23667af78&amp;ts=1615864073665&amp;type=NOS&amp;sign=8e3248a58db45a8b3b8b062f1852715f" alt="不可重复读"></p>
+<p><img src="https://api2.mubu.com/v3/document_image/e0c73513-4f11-4041-adfd-d9f751c73566-11197877.jpg" alt="不可重复读"></p>
 <ul>
 <li>幻读:本质上也属于不可重复读的情况，T1读取某个范围的数据，T2在这个范围内插入新的数据，T1再次读取这个范围的数据，此时读取的结果和和第一次读取的结果不同。</li>
 </ul>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2F3EFA69B451FA416FB7FFD9ED3A0A2D81&amp;mime=image%2Fjpeg&amp;name=%E5%B9%BB%E8%AF%BB.jpeg&amp;reqId=9cac2e23-14bf-440d-a300-ed8c5972c8c1&amp;ts=1615864073614&amp;type=NOS&amp;sign=d31ecd3b19d57f09c2a7c9b4e0e779c1" alt="幻读"></p>
+<p><img src="https://api2.mubu.com/v3/document_image/7a4e33c7-588d-4c8e-a48c-ddbe6a23c54f-11197877.jpg" alt="幻读"></p>
 <h4 id="事务的隔离级别"><a href="#事务的隔离级别" class="headerlink" title="事务的隔离级别"></a>事务的隔离级别</h4><ul>
 <li>未提交读：<strong>事务中的修改，即使没有提交，对其它事务也是可见的</strong><ul>
 <li>存在脏读，不能解决并发问题</li>
@@ -204,7 +204,7 @@
 </ul>
 <p>查看mysql的设置的事务隔离级别:</p>
 <figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> @@tx_isolation; <span class="comment">--默认为REPEATABLE-READ</span></span><br></pre></td></tr></table></figure>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2FE7154FBE4ED54A2C80726B495CC52D4E&amp;mime=image%2Fjpeg&amp;name=InnoDB%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB.jpeg&amp;reqId=bd8c4e8d-2d39-4452-97e8-cd9c8cda7e7c&amp;ts=1615864073750&amp;type=NOS&amp;sign=1b6429c586547597f16ffc4ffc689f6c" alt="mysql事务隔离级别"></p>
+<p><img src="https://api2.mubu.com/v3/document_image/69afe5ec-ba61-48fe-903e-063c2bf57fcc-11197877.jpg" alt="mysql事务隔离级别"></p>
 <h3 id="数据库锁"><a href="#数据库锁" class="headerlink" title="数据库锁"></a>数据库锁</h3><h4 id="表锁和行锁"><a href="#表锁和行锁" class="headerlink" title="表锁和行锁"></a>表锁和行锁</h4><p>锁用于管理<strong>不同事务对共享资源的并发访问</strong>。</p>
 <p>表锁与行锁的区别: </p>
 <ul>
@@ -253,27 +253,27 @@
 <li><code>show variables like &#39;innodb_autoinc_lock_mode&#39;;</code></li>
 <li><strong>默认取值1，代表连续，事务未提交ID永久丢失</strong></li>
 </ul>
-<h5 id="临键锁Next-key-locks"><a href="#临键锁Next-key-locks" class="headerlink" title="临键锁Next-key locks"></a>临键锁Next-key locks</h5><p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2F91AB3E8DCCDA49B7A6C8D660762084A1&amp;mime=image%2Fjpeg&amp;name=%E4%B8%B4%E9%94%AE%E9%94%81.jpeg&amp;reqId=3144d305-a701-4a3e-8560-b37315d1eec1&amp;ts=1615864073664&amp;type=NOS&amp;sign=982770b59c72672d9f3d7ebb0e34c059" alt="临键锁"></p>
+<h5 id="临键锁Next-key-locks"><a href="#临键锁Next-key-locks" class="headerlink" title="临键锁Next-key locks"></a>临键锁Next-key locks</h5><p><img src="https://api2.mubu.com/v3/document_image/efa963f1-d97a-41c2-9151-53d963a0b882-11197877.jpg" alt="临键锁"></p>
 <ul>
 <li>锁住记录+区间(左开右闭)  </li>
 <li><strong>当sql执行按照索引进行数据的检索时,查询条件为范围查找(between and、&lt;、&gt;等)并有数据命中则此时SQL语句加上的锁为Next-key locks，锁住索引的记录+区间(左开右闭)</strong> </li>
 </ul>
-<h5 id="间隙锁Gap-locks"><a href="#间隙锁Gap-locks" class="headerlink" title="间隙锁Gap locks"></a>间隙锁Gap locks</h5><p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2F9CD587DEA48940D9A64675FAF7DA1D54&amp;mime=image%2Fjpeg&amp;name=%E9%97%B4%E9%9A%99%E9%94%81.jpeg&amp;reqId=eb6f3881-15b4-4b11-890f-449f7456bf92&amp;ts=1615864073711&amp;type=NOS&amp;sign=cc898fc9b746d546eb17ff709484473e" alt="间隙锁"></p>
+<h5 id="间隙锁Gap-locks"><a href="#间隙锁Gap-locks" class="headerlink" title="间隙锁Gap locks"></a>间隙锁Gap locks</h5><p><img src="https://api2.mubu.com/v3/document_image/7a70a939-fb7c-4389-8bb2-ec5fb753a9d1-11197877.jpg" alt="间隙锁"></p>
 <ul>
 <li><strong>锁住数据不存在的区间</strong>(左开右开)  </li>
 <li>当sql执行按照索引进行数据的检索时，<strong>查询条件的数据不存在，这时SQL语句加上的锁即为 Gap locks，锁住索引不存在的区间(左开右开)</strong>  </li>
 </ul>
-<h5 id="记录锁Record-locks"><a href="#记录锁Record-locks" class="headerlink" title="记录锁Record locks"></a>记录锁Record locks</h5><p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2FAE1177DD1EFD414CA918D296D052EAE3&amp;mime=image%2Fjpeg&amp;name=%E8%AE%B0%E5%BD%95%E9%94%81.jpeg&amp;reqId=45bedf8d-c2c4-4736-8419-5152085b9f6a&amp;ts=1615864073611&amp;type=NOS&amp;sign=67a16ec7b5ad031c38f43b9489922555" alt="记录锁"></p>
+<h5 id="记录锁Record-locks"><a href="#记录锁Record-locks" class="headerlink" title="记录锁Record locks"></a>记录锁Record locks</h5><p><img src="https://api2.mubu.com/v3/document_image/bed5f5dc-376c-44a6-9022-d45a8da2b91c-11197877.jpg" alt="记录锁"></p>
 <ul>
 <li>锁住<strong>具体的索引项</strong>  </li>
 <li>当sql执行<strong>按照唯一性(Primary key、Unique key)索引进行数据的检索</strong>时，查询条件等值匹 配且查询的数据存在，这时SQL语句加上的锁即为记录锁Record locks，<strong>锁住具体的索引项</strong>  </li>
 </ul>
 <h4 id="利用锁解决并发问题"><a href="#利用锁解决并发问题" class="headerlink" title="利用锁解决并发问题"></a>利用锁解决并发问题</h4><p>解决脏读 :</p>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2F935AC90824D84598A9CB32650B271CF5&amp;mime=image%2Fjpeg&amp;name=%E8%A7%A3%E5%86%B3%E8%84%8F%E8%AF%BB.jpeg&amp;reqId=ace50532-0d07-4ddf-b9bd-d8d10b57960f&amp;ts=1615864073659&amp;type=NOS&amp;sign=a2e822f8b0032d405a176dc623dd4996" alt="解决脏读"></p>
+<p><img src="https://api2.mubu.com/v3/document_image/e2cf51fb-3076-418d-a9dd-5316ed372267-11197877.jpg" alt="解决脏读"></p>
 <p>解决不可重复读  :</p>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2F5CBE5698DB5A4F16964DBA68D300F375&amp;mime=image%2Fjpeg&amp;name=%E8%A7%A3%E5%86%B3%E4%B8%8D%E5%8F%AF%E9%87%8D%E5%A4%8D%E8%AF%BB.jpeg&amp;reqId=010e782a-f45e-40da-ab58-cd1ce2f09278&amp;ts=1615864073623&amp;type=NOS&amp;sign=47514ef74cfdec98e5d6728b2272276d" alt="解决不可重复读"></p>
+<p><img src="https://api2.mubu.com/v3/document_image/632f11ea-acd7-4adc-b2d3-819bb46c924c-11197877.jpg" alt="解决不可重复读"></p>
 <p>解决幻读:</p>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2F382E149A9C5F4A6CA14420C0ABD7F1DE&amp;mime=image%2Fjpeg&amp;name=%E8%A7%A3%E5%86%B3%E5%B9%BB%E8%AF%BB.jpeg&amp;reqId=36e0d7fc-8fbb-4664-8089-e262c33a57a9&amp;ts=1615864073710&amp;type=NOS&amp;sign=ae59a51c1c67f31688b1bf0271c8228e" alt="解决幻读"></p>
+<p><img src="https://api2.mubu.com/v3/document_image/cf157ef6-11cd-4f0c-befe-00c8ac992a70-11197877.jpg" alt="解决幻读"></p>
 <h4 id="死锁"><a href="#死锁" class="headerlink" title="死锁"></a>死锁</h4><ul>
 <li>多个并发事务(2个或者以上);  </li>
 <li>每个事务都持有锁(或者是已经在等待锁);  </li>
@@ -298,7 +298,7 @@
   <entry>
     <title>mysql性能分析-体系结构及运行机理</title>
     <url>/2020/12/14/mysql-3mysql%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90-%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E5%8F%8A%E8%BF%90%E8%A1%8C%E6%9C%BA%E7%90%86/</url>
-    <content><![CDATA[<h3 id="Mysql体系结构"><a href="#Mysql体系结构" class="headerlink" title="Mysql体系结构"></a>Mysql体系结构</h3><p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2FA422DA106A1E4F62914B2F3D581AC38C&amp;mime=image%2Fjpeg&amp;name=%E6%9E%B6%E6%9E%84.jpeg&amp;reqId=ea68813c-6d0a-4e97-850d-6787658c0de7&amp;ts=1615864073699&amp;type=NOS&amp;sign=4e9a2030f84c230be54805a7a8410ed2" alt="mysql体系结构"></p>
+    <content><![CDATA[<h3 id="Mysql体系结构"><a href="#Mysql体系结构" class="headerlink" title="Mysql体系结构"></a>Mysql体系结构</h3><p><img src="https://api2.mubu.com/v3/document_image/a1619f89-f86a-4530-ab7c-6db518222e98-11197877.jpg" alt="mysql体系结构"></p>
 <ul>
 <li><p>Client Connectors  </p>
 <ul>
@@ -342,7 +342,7 @@
 </ul>
 </li>
 </ul>
-<h3 id="Mysql查询优化"><a href="#Mysql查询优化" class="headerlink" title="Mysql查询优化"></a>Mysql查询优化</h3><p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2F01E05AFF40B64BF198EBB809461E322B&amp;mime=image%2Fjpeg&amp;name=%E6%9F%A5%E8%AF%A2%E6%B5%81%E7%A8%8B.jpeg&amp;reqId=0e51d06b-1a0d-4870-96f8-213fdf0066ac&amp;ts=1615864073608&amp;type=NOS&amp;sign=6069290cc5266d2f1ee0109c6c96ebfb" alt="查询过程"></p>
+<h3 id="Mysql查询优化"><a href="#Mysql查询优化" class="headerlink" title="Mysql查询优化"></a>Mysql查询优化</h3><p><img src="https://api2.mubu.com/v3/document_image/38b5c5c9-ec61-4671-80ff-2eb68bbd83f1-11197877.jpg" alt="查询过程"></p>
 <h4 id="client-server通信"><a href="#client-server通信" class="headerlink" title="client/server通信"></a>client/server通信</h4><p>Mysql客户端与服务端的通信方式是<strong>“半双工”;</strong>  </p>
 <ul>
 <li>全双工:双向通信，发送同时也可以接收(tcp握手过程)  </li>
@@ -356,7 +356,7 @@
 </ul>
 <h4 id="查询状态"><a href="#查询状态" class="headerlink" title="查询状态"></a>查询状态</h4><p>对于一个mysql连接，或者说一个线程，时刻都有一个状态来标识这个连接正在做什么。</p>
 <p>查看命令 <code>show full processlist / show processlist</code>  </p>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2F166714F0CFE34E0BA54DB38223A01A5F&amp;mime=image%2Fjpeg&amp;name=%E6%9F%A5%E8%AF%A2%E5%8F%82%E6%95%B0.jpeg&amp;reqId=92e923f2-e68d-457c-9db0-da9264440805&amp;ts=1615864073667&amp;type=NOS&amp;sign=0a68bcfb6bda388d46639a6249ac506a" alt="查询参数"></p>
+<p><img src="https://api2.mubu.com/v3/document_image/4e83270b-5e57-4839-8470-5e4141670dfc-11197877.jpg" alt="查询参数"></p>
 <ul>
 <li>Sleep:线程正在等待客户端发送数据  </li>
 <li>Query:连接线程正在执行查询</li>
@@ -470,10 +470,10 @@
 <ul>
 <li>慢查询日志分析</li>
 </ul>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2FA31E13D0BDDE49289487EF85D15645CE&amp;mime=image%2Fjpeg&amp;name=%E6%85%A2%E6%9F%A5%E8%AF%A2%E6%97%A5%E5%BF%97.jpeg&amp;reqId=b0394432-02b7-4531-a8e5-ed4812b062c0&amp;ts=1615864073666&amp;type=NOS&amp;sign=a74213ffd9f194061552f8acd89c4913" alt="慢查询日志分析"></p>
+<p><img src="https://api2.mubu.com/v3/document_image/b4851df7-e19f-44fa-8b14-87d44517f53e-11197877.jpg" alt="慢查询日志分析"></p>
 <figure class="highlight sql"><table><tr><td class="code"><pre><span class="line">Time :日志记录的时间  </span><br><span class="line">User@Host:执行的用户及主机  </span><br><span class="line">Query_time:查询耗费时间  </span><br><span class="line">Lock_time 锁表时间  </span><br><span class="line">Rows_sent 发送给请求方的记录条数  </span><br><span class="line">Rows_examined 语句扫描的记录条数  </span><br><span class="line"><span class="keyword">SET</span> <span class="built_in">timestamp</span> 语句执行的时间点  </span><br><span class="line"><span class="keyword">select</span> .... 执行的具体语句</span><br></pre></td></tr></table></figure>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">mysqldumpslow -t 10 -s at /var/lib/mysql/test-slow.log</span><br></pre></td></tr></table></figure>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2FF6E8FE52B6E14572BFF1DF5DB05898A3&amp;mime=image%2Fjpeg&amp;name=%E6%85%A2%E6%9F%A5%E8%AF%A2%E5%B7%A5%E5%85%B7.jpeg&amp;reqId=c4d5e8fa-35bc-42b5-abde-88a94c297432&amp;ts=1615864073608&amp;type=NOS&amp;sign=59f695a2f11bea2b22ea55fc0e5cf412" alt="慢查询工具"></p>
+<p><img src="https://api2.mubu.com/v3/document_image/e937e8cb-5a7b-4587-89ba-fba600203b88-11197877.jpg" alt="慢查询工具"></p>
 ]]></content>
       <categories>
         <category>mysql</category>
@@ -568,7 +568,7 @@
 </ul>
 </li>
 </ul>
-<h4 id="各引擎对比"><a href="#各引擎对比" class="headerlink" title="各引擎对比"></a>各引擎对比</h4><p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2F28466D3DDAA14840B87FDE257F8F947D&amp;mime=image%2Fjpeg&amp;name=%E5%BC%95%E6%93%8E%E5%AF%B9%E6%AF%94.jpeg&amp;reqId=e60c24a0-7ea5-4d58-a2ee-001ef64b22c7&amp;ts=1615864073623&amp;type=NOS&amp;sign=c6b8292527427df967995d9e60ed271d" alt=""></p>
+<h4 id="各引擎对比"><a href="#各引擎对比" class="headerlink" title="各引擎对比"></a>各引擎对比</h4><p><img src="https://api2.mubu.com/v3/document_image/6091bb4c-98c4-4513-8069-954152ee02e8-11197877.jpg" alt="各引擎对比"></p>
 ]]></content>
       <categories>
         <category>mysql</category>
@@ -582,16 +582,16 @@
     <url>/2020/12/10/mysql-1mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E5%88%86%E6%9E%90-%E7%B4%A2%E5%BC%95/</url>
     <content><![CDATA[<h3 id="索引"><a href="#索引" class="headerlink" title="索引"></a>索引</h3><p><strong>正确的</strong>创建<strong>合适的</strong>索引是提升数据库查询性能的基础。  </p>
 <h4 id="索引定义"><a href="#索引定义" class="headerlink" title="索引定义"></a>索引定义</h4><p>索引是为了<strong>加速对表中数据行的检索</strong>而创建的一种<strong>分散存储的数据结构</strong>(<strong>硬盘</strong>级)。</p>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2F8488FC2739B64EA185AB1B8350D4628C&amp;mime=image%2Fjpeg&amp;name=%E7%B4%A2%E5%BC%95.jpeg&amp;reqId=261fc0b3-0ca5-45ce-9a1d-ead986720b15&amp;ts=1615864073517&amp;type=NOS&amp;sign=466399527050ee3fb855620451385594" alt="索引"> </p>
+<p><img src="https://api2.mubu.com/v3/document_image/7363550a-3c61-48ae-8f12-2b19a0acbc57-11197877.jpg" alt="索引"> </p>
 <h4 id="使用索引意义"><a href="#使用索引意义" class="headerlink" title="使用索引意义"></a>使用索引意义</h4><ul>
 <li>索引能极大的<strong>减少存储引擎需要扫描的数据</strong>量。  </li>
 <li>索引可以把<strong>随机IO变成顺序IO</strong>。  </li>
 <li>索引可以帮助我们在<strong>进行分组、排序等操作时，避免使用临时表</strong>。  </li>
 </ul>
 <h4 id="使用B-树的意义"><a href="#使用B-树的意义" class="headerlink" title="使用B+树的意义"></a>使用B+树的意义</h4><p>二叉查找树 Binary Search Tree  </p>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2FB06A8749D1944FD58040BBE01A4F0E15&amp;mime=image%2Fjpeg&amp;name=%E4%BA%8C%E5%8F%89%E6%A0%91.jpeg&amp;reqId=22662a2b-5062-4ace-86d5-764a04736309&amp;ts=1615864073520&amp;type=NOS&amp;sign=f2c30472ffce4b9d870d9b325b8437a2" alt="二叉树"></p>
+<p><img src="https://api2.mubu.com/v3/document_image/235038cb-5681-4ac4-ada2-df8ae2529089-11197877.jpg" alt="二叉树"></p>
 <p>平衡二叉查找树 Balanced Binary Search Tree  </p>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2F7A44D22A94094F3097948F78994E4FF3&amp;mime=image%2Fjpeg&amp;name=%E7%9B%B8%E5%AF%B9%E5%B9%B3%E8%A1%A1%E4%BA%8C%E5%8F%89%E6%A0%91.jpeg&amp;reqId=83830ef5-5b85-4bfb-8a70-ce85973be4a8&amp;ts=1615864073517&amp;type=NOS&amp;sign=d2bad9d1351e1b65813cadca12de2f9a" alt="平衡二叉查找树"></p>
+<p><img src="https://api2.mubu.com/v3/document_image/cec150e9-957e-46d3-ac69-76bf683d7573-11197877.jpg" alt="平衡二叉查找树"></p>
 <p>二叉树和平衡二叉树的缺点：  </p>
 <ul>
 <li>树结构<strong>太深</strong>  </li>
@@ -603,10 +603,10 @@
 <li>没有很好的利用操作<strong>磁盘IO的数据交换特性</strong>，也没有利用好<strong>磁盘IO的预读能力(空间局部性原理，预读8k、12k等)</strong>，从而带来频繁的IO操作。  </li>
 </ul>
 <p>多路平衡查找树 B-Tree  :</p>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2FD7D471DC2BBA47F98AFD315E8B1A429C&amp;mime=image%2Fjpeg&amp;name=%E7%BB%9D%E5%AF%B9%E5%B9%B3%E8%A1%A1%E4%BA%8C%E5%8F%89%E6%A0%91.jpeg&amp;reqId=be17f138-e950-4ded-9d11-6b0527960e64&amp;ts=1615864073517&amp;type=NOS&amp;sign=ce4fed7ff694a141f0a761df8eda51d4" alt="绝对平衡树"></p>
+<p><img src="https://api2.mubu.com/v3/document_image/5ea41241-12e1-4f23-8550-dee925ffdcc7-11197877.jpg" alt="绝对平衡树"></p>
 <p>平衡查找树的分支数量与关键字大小有关，可以大致认为：<strong>磁盘块的容量/关键字大小 = 平衡树分支数量。</strong>  </p>
 <p>加强版的多路平衡查找树 Mysql的B+Tree  :</p>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2F010D81A520574902823C26EB8E07676D&amp;mime=image%2Fjpeg&amp;name=B+tree.jpeg&amp;reqId=aa04939c-0323-4c8a-9450-952b54afc674&amp;ts=1615864073516&amp;type=NOS&amp;sign=24aa1eaa0af03de852e018f57e85d890" alt="B+树"></p>
+<p><img src="https://api2.mubu.com/v3/document_image/9988480f-165b-4407-afda-33033bab14ff-11197877.jpg" alt="B+树"></p>
 <p>B+Tree与B-Tree的区别  </p>
 <ul>
 <li>B+节点关键字搜索采用<strong>闭合区间</strong>  </li>
@@ -623,27 +623,27 @@
 <li>B+树的查询效率更加稳定  </li>
 </ul>
 <h4 id="MySql中B-Tree索引的体现形式"><a href="#MySql中B-Tree索引的体现形式" class="headerlink" title="MySql中B+Tree索引的体现形式"></a>MySql中B+Tree索引的体现形式</h4><p>Myisam:数据和索引分开存储，<strong>数据保存在MYD文件，索引文件为MYI。</strong>  </p>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2F4DD76F9F92244C4BAC5215C7FDA43D93&amp;mime=image%2Fjpeg&amp;name=Myisam%E7%B4%A2%E5%BC%95.jpeg&amp;reqId=92939dd1-aff8-43b1-b175-9dc7ea6d5953&amp;ts=1615864073749&amp;type=NOS&amp;sign=c819549f47cca2c329037b7fccebc252" alt="myisam索引"></p>
+<p><img src="https://api2.mubu.com/v3/document_image/faa0f796-3dc4-4e06-892d-d76725f55e48-11197877.jpg" alt="myisam索引"></p>
 <p>Myisam双索引：</p>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2F8302E6CD201C4B4889538FE3FFF6C4B9&amp;mime=image%2Fjpeg&amp;name=Myisam%E5%8F%8C%E7%B4%A2%E5%BC%95.jpeg&amp;reqId=9ce07987-0d1a-4900-b687-af006db643c4&amp;ts=1615864073561&amp;type=NOS&amp;sign=cba49e2d9e251522eb963342d6bf3c54" alt="Myisam双索引"></p>
+<p><img src="https://api2.mubu.com/v3/document_image/7899eede-8cc3-43b1-9ecc-466708913605-11197877.jpg" alt="Myisam双索引"></p>
 <p>Innodb 索引结构：</p>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2F8A640B43C1A84749AD5C5B3008DDDC64&amp;mime=image%2Fjpeg&amp;name=InnoDB%E7%B4%A2%E5%BC%95.jpeg&amp;reqId=43a09a99-7c45-45af-8ac4-202c3f25d69c&amp;ts=1615864073577&amp;type=NOS&amp;sign=c7c0c44f98720f1bbb392540ecf34c84" alt="Innodb聚集索引"></p>
+<p><img src="https://api2.mubu.com/v3/document_image/e94761d0-7249-4401-8958-13f6657ec61b-11197877.jpg" alt="Innodb聚集索引"></p>
 <p>未指定索引的情况下InnoDB会自动生成隐式索引:</p>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2FD9A5D7DCB6C94668AE03F2222CD72945&amp;mime=image%2Fjpeg&amp;name=InnoDB%E5%8F%8C%E7%B4%A2%E5%BC%95.jpeg&amp;reqId=751b5501-c324-4070-9430-34f889173717&amp;ts=1615864073574&amp;type=NOS&amp;sign=f0838a7f63268faf51183cec50e0851c" alt="innoDB双索引"></p>
+<p><img src="https://api2.mubu.com/v3/document_image/ae632bb5-2312-4aa3-9e8e-522939f7e909-11197877.jpg" alt="innoDB双索引"></p>
 <p>使用辅助索引查询某项具体信息时，需要反向到主键索引中查找相关信息（<strong>回表操作</strong>）。</p>
 <p>这样设计的好处就是在数据迁移的时候辅助索引可以不做作相应的指向改变。<br>对于InnoDB的辅助索引，它的<strong>叶子节点存储的是索引值和指向主键索引的位置</strong>。  </p>
 <p>Myisam 与InnoDB对比：</p>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2F18444AA01D374CC5AAA1BE51B87739DA&amp;mime=image%2Fjpeg&amp;name=%E7%B4%A2%E5%BC%95%E5%AF%B9%E6%AF%94.jpeg&amp;reqId=b55378e2-950c-492b-9f74-1b48e3989eec&amp;ts=1615864073561&amp;type=NOS&amp;sign=071e9ba2dae7b872b7314843b575e446" alt="索引对比"></p>
+<p><img src="https://api2.mubu.com/v3/document_image/81003d7c-27fd-4ca2-b277-7a7176dda226-11197877.jpg" alt="索引对比">)</p>
 <h4 id="索引知识点汇总"><a href="#索引知识点汇总" class="headerlink" title="索引知识点汇总"></a>索引知识点汇总</h4><ul>
 <li>列的离散性 ：</li>
 </ul>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2F259676192853404AA26C958DE3A13A2B&amp;mime=image%2Fjpeg&amp;name=%E7%B4%A2%E5%BC%95%E7%A6%BB%E6%95%A3%E6%80%A7.jpeg&amp;reqId=171046aa-c4b3-413b-a9f7-9f7c30e5f987&amp;ts=1615864073569&amp;type=NOS&amp;sign=cb752622f751714d6575967f7cf66451" alt="列的离散性"></p>
+<p><img src="https://api2.mubu.com/v3/document_image/1ecf984c-7986-43eb-8435-a2148c5b1988-11197877.jpg" alt="列的离散性"></p>
 <p><strong>离散性低的索引会造成选择性差，无法寻找合适的分支，数库会使用全局扫描。</strong>类似男女这种字段如果简历索引则要遍历位图索引。  </p>
 <ul>
 <li>最左匹配原则</li>
 </ul>
 <p>对索引中<strong>关键字进行计算(对比)，一定是从左往右依次进行(每一位)，且不可跳过。</strong></p>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2FB368ED751B4443FA9043291256375FCD&amp;mime=image%2Fjpeg&amp;name=%E6%9C%80%E5%B7%A6%E5%8C%B9%E9%85%8D.jpeg&amp;reqId=293ae06d-b3b7-4426-849c-23d6327a0a52&amp;ts=1615864073562&amp;type=NOS&amp;sign=443fb548b344a27dc9f952e77ea4244a" alt="最左匹配原则"></p>
+<p><img src="https://api2.mubu.com/v3/document_image/f040342e-bf46-4385-9ac8-be9aee20578e-11197877.jpg" alt="最左匹配原则"></p>
 <ul>
 <li>联合索引  <ul>
 <li>单列索引：节点中关键字[name]  </li>
@@ -3796,41 +3796,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Linux 系统管理</title>
-    <url>/2019/11/27/linux_system/</url>
-    <content><![CDATA[<h2 id="Linux系统管理"><a href="#Linux系统管理" class="headerlink" title="Linux系统管理"></a>Linux系统管理</h2><h3 id="进程管理"><a href="#进程管理" class="headerlink" title="进程管理"></a>进程管理</h3><h4 id="进程查看"><a href="#进程查看" class="headerlink" title="进程查看"></a>进程查看</h4><p>作用：判断服务器健康状态，查看系统中所有进程，杀死进程</p>
-<p>查看系统中所有进程：</p>
-<ul>
-<li>ps aux :使用系统中所有进程，使用BSD操作系统格式</li>
-<li>ps -le 查看系统中所有进程，使用Linux标准命令格式</li>
-</ul>
-<p>查看系统健康状态：</p>
-<ul>
-<li>top[选项]</li>
-</ul>
-<p>查看进程树：</p>
-<ul>
-<li>pstree</li>
-</ul>
-<h4 id="终止进程"><a href="#终止进程" class="headerlink" title="终止进程"></a>终止进程</h4><p>1.kill命令</p>
-<p>kill -l 查看可用的进程信号</p>
-<p>kill -1 进程id 重启进程</p>
-<p>kill -9 进程id 强制杀死进程</p>
-<p>2.killall命令</p>
-<p>killall -9 进程名</p>
-<p>3.pkill </p>
-<p>按照终端号踢出用户</p>
-<p>w 使用w命令查询本机已经登录的用户</p>
-<p>pkill -t -9 pts/1 强制杀死从pts/1虚拟终端登录的进程</p>
-]]></content>
-      <categories>
-        <category>linux</category>
-      </categories>
-      <tags>
-        <tag>linux 系统管理</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Linux shell学习</title>
     <url>/2019/11/27/linux_shell/</url>
     <content><![CDATA[<h3 id="shell简介"><a href="#shell简介" class="headerlink" title="shell简介"></a>shell简介</h3><h4 id="基本定义"><a href="#基本定义" class="headerlink" title="基本定义"></a>基本定义</h4><ul>
@@ -4019,6 +3984,41 @@
       </categories>
       <tags>
         <tag>linux shell</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Linux 系统管理</title>
+    <url>/2019/11/27/linux_system/</url>
+    <content><![CDATA[<h2 id="Linux系统管理"><a href="#Linux系统管理" class="headerlink" title="Linux系统管理"></a>Linux系统管理</h2><h3 id="进程管理"><a href="#进程管理" class="headerlink" title="进程管理"></a>进程管理</h3><h4 id="进程查看"><a href="#进程查看" class="headerlink" title="进程查看"></a>进程查看</h4><p>作用：判断服务器健康状态，查看系统中所有进程，杀死进程</p>
+<p>查看系统中所有进程：</p>
+<ul>
+<li>ps aux :使用系统中所有进程，使用BSD操作系统格式</li>
+<li>ps -le 查看系统中所有进程，使用Linux标准命令格式</li>
+</ul>
+<p>查看系统健康状态：</p>
+<ul>
+<li>top[选项]</li>
+</ul>
+<p>查看进程树：</p>
+<ul>
+<li>pstree</li>
+</ul>
+<h4 id="终止进程"><a href="#终止进程" class="headerlink" title="终止进程"></a>终止进程</h4><p>1.kill命令</p>
+<p>kill -l 查看可用的进程信号</p>
+<p>kill -1 进程id 重启进程</p>
+<p>kill -9 进程id 强制杀死进程</p>
+<p>2.killall命令</p>
+<p>killall -9 进程名</p>
+<p>3.pkill </p>
+<p>按照终端号踢出用户</p>
+<p>w 使用w命令查询本机已经登录的用户</p>
+<p>pkill -t -9 pts/1 强制杀死从pts/1虚拟终端登录的进程</p>
+]]></content>
+      <categories>
+        <category>linux</category>
+      </categories>
+      <tags>
+        <tag>linux 系统管理</tag>
       </tags>
   </entry>
   <entry>
