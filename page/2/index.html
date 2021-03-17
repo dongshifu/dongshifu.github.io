@@ -236,7 +236,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-16 13:19:28" itemprop="dateModified" datetime="2021-03-16T13:19:28+08:00">2021-03-16</time>
+                <time title="修改时间：2021-03-17 22:09:50" itemprop="dateModified" datetime="2021-03-17T22:09:50+08:00">2021-03-17</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -527,7 +527,7 @@
 </table>
 </div>
 <h4 id="ssh-基础"><a href="#ssh-基础" class="headerlink" title="ssh 基础"></a><code>ssh</code> 基础</h4><p>在 Linux 中 SSH 是 <strong>非常常用</strong> 的工具，通过 <strong>SSH 客户端</strong> 可以连接到运行了 <strong>SSH 服务器</strong> 的远程机器上</p>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2F4BB0B63BD43F4B57A21BD52D29E8132F&amp;mime=image%2Fpng&amp;name=001_SSH%E7%A4%BA%E6%84%8F%E5%9B%BE.png&amp;reqId=e851067f-9aa2-41b1-989c-9539b1025372&amp;ts=1615871744603&amp;type=NOS&amp;sign=ffed4ac011695ab74a8fa33788d89d44" alt="SSH示意图">￼</p>
+<p><img src="https://api2.mubu.com/v3/document_image/42fbfc2f-408c-4442-80da-087ddbd5b687-11197877.jpg" alt="SSH示意图">￼</p>
 <ul>
 <li><strong>SSH 客户端</strong>是一种使用 <code>Secure Shell（SSH）</code> 协议连接到远程计算机的软件程序</li>
 <li><code>SSH</code> 是目前较可靠，<strong>专为远程登录会话和其他网络服务</strong> 提供安全性的协议<ul>
@@ -611,7 +611,7 @@
 <li>scp 就是 <code>secure copy</code>，是一个在 Linux 下用来进行 <strong>远程拷贝文件</strong> 的命令</li>
 <li>它的<strong>地址格式与 ssh 基本相同</strong>，<strong>需要注意的是</strong>，在指定<strong>端口时用的是大写的 <code>-P</code> 而不是小写的</strong></li>
 </ul>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2FF51972F64BC548F494F748552FE63467&amp;mime=image%2Fpng&amp;name=002_SCP%E7%A4%BA%E6%84%8F%E5%9B%BE.png&amp;reqId=b800f330-19c4-471f-9b21-66edd8f5ed89&amp;ts=1615871764799&amp;type=NOS&amp;sign=43d439a3502f2c8cb70cb6efdbc5ead6" alt="SCP示意图">￼</p>
+<p><img src="https://api2.mubu.com/v3/document_image/be4dc3b6-1fd2-44b3-8d3a-90afee22e1c8-11197877.jpg" alt="SCP示意图">￼</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 把本地当前目录下的 01.py 文件 复制到 远程 家目录下的 Desktop/01.py</span></span><br><span class="line"><span class="comment"># 注意：`:` 后面的路径如果不是绝对路径，则以用户的家目录作为参照路径</span></span><br><span class="line">scp -P port 01.py user@remote:Desktop/01.py</span><br><span class="line"></span><br><span class="line"><span class="comment"># 把远程 家目录下的 Desktop/01.py 文件 复制到 本地当前目录下的 01.py</span></span><br><span class="line">scp -P port user@remote:Desktop/01.py 01.py</span><br><span class="line"></span><br><span class="line"><span class="comment"># 加上 -r 选项可以传送文件夹</span></span><br><span class="line"><span class="comment"># 把当前目录下的 demo 文件夹 复制到 远程 家目录下的 Desktop</span></span><br><span class="line">scp -r demo user@remote:Desktop</span><br><span class="line"></span><br><span class="line"><span class="comment"># 把远程 家目录下的 Desktop 复制到 当前目录下的 demo 文件夹</span></span><br><span class="line">scp -r user@remote:Desktop demo</span><br></pre></td></tr></table></figure>
 <div class="table-container">
 <table>
@@ -661,7 +661,7 @@
 </ul>
 </li>
 </ul>
-<h6 id="示意图"><a href="#示意图" class="headerlink" title="示意图"></a>示意图</h6><p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2F0B4F9845F11D4AE39B4F511C9BB0A500&amp;mime=image%2Fpng&amp;name=003_SSH+%E5%85%8D%E5%AF%86%E7%A0%81%E7%A4%BA%E6%84%8F%E5%9B%BE.png&amp;reqId=c4ef314e-8b7b-481b-9859-182174adda76&amp;ts=1615871781731&amp;type=NOS&amp;sign=05ec30bb08a49c7332f965716615b6fe" alt="SSH 免密码示意图">￼</p>
+<h6 id="示意图"><a href="#示意图" class="headerlink" title="示意图"></a>示意图</h6><p><img src="https://api2.mubu.com/v3/document_image/d2e4130c-8c39-4c4c-99bf-9efde29eb97b-11197877.jpg" alt="SSH 免密码示意图">￼</p>
 <blockquote>
 <p>非对称加密算法</p>
 <ul>
@@ -870,7 +870,7 @@
 </ul>
 </li>
 </ul>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2F02999B65529C49BFA54989048CC65F1E&amp;mime=image%2Fpng&amp;name=002_%E6%9D%83%E9%99%90%E7%A4%BA%E6%84%8F%E5%9B%BE.png&amp;reqId=f1b8607c-f10d-498a-a841-4ae5be019251&amp;ts=1615871798946&amp;type=NOS&amp;sign=b12083a55d0faae29bc3c1031dc21cb9" alt="权限示意图">￼</p>
+<p><img src="https://api2.mubu.com/v3/document_image/bb7185f1-43e5-48fc-a2be-52411cc3e61d-11197877.jpg" alt="权限示意图">￼</p>
 <h4 id="chmod-简单使用"><a href="#chmod-简单使用" class="headerlink" title="chmod 简单使用"></a><code>chmod</code> 简单使用</h4><ul>
 <li><code>chmod</code> 可以修改 <strong>用户／组</strong> 对 <strong>文件／目录</strong> 的权限</li>
 <li>命令格式如下：</li>
@@ -1094,7 +1094,7 @@
 <li><code>su</code> 不接用户名，可以切换到 <code>root</code>，但是不推荐使用，因为不安全</li>
 <li><code>exit</code> 示意图如下：</li>
 </ul>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2F95CB1879E7974D6EAC4958758676BC1F&amp;mime=image%2Fpng&amp;name=003_su%E5%92%8Cexit%E7%A4%BA%E6%84%8F%E5%9B%BE.png&amp;reqId=34b7d1ab-2fa1-4cd1-a205-081b6a774260&amp;ts=1615871828845&amp;type=NOS&amp;sign=6b09e3320909635e9791a1034af640a3" alt="su和exit示意图">￼</p>
+<p><img src="https://api2.mubu.com/v3/document_image/6a787f05-e037-4fbb-95a0-7cbb8aab2f48-11197877.jpg" alt="su和exit示意图">￼</p>
 <h6 id="修改文件权限"><a href="#修改文件权限" class="headerlink" title="修改文件权限"></a>修改文件权限</h6><div class="table-container">
 <table>
 <thead>
@@ -1131,7 +1131,7 @@
 <li><code>chmod</code> 在设置权限时，可以简单地使用三个数字分别对应 <strong>拥有者</strong> ／ <strong>组</strong> 和 <strong>其他</strong> 用户的权限</li>
 </ul>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 直接修改文件|目录的 读|写|执行 权限，但是不能精确到 拥有者|组|其他</span></span><br><span class="line">chmod +/-rwx 文件名|目录名</span><br></pre></td></tr></table></figure>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2FA2726BBF777C41BDB1B06FE731CE0E55&amp;mime=image%2Fpng&amp;name=004_%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90%E7%A4%BA%E6%84%8F%E5%9B%BE.png&amp;reqId=a47ced54-137a-4acd-a3b7-655f43eb8355&amp;ts=1615871936812&amp;type=NOS&amp;sign=99e6a9ce486136551c9702865cc612e5" alt="文件权限示意图"></p>
+<p><img src="https://api2.mubu.com/v3/document_image/d5fd3e0b-d68b-4218-a3e6-186de7512dcb-11197877.jpg" alt="文件权限示意图"></p>
 <ul>
 <li>常见数字组合有（<code>u</code>表示用户／<code>g</code>表示组／<code>o</code>表示其他）： <ul>
 <li><code>777</code> ===&gt; <code>u=rwx,g=rwx,o=rwx</code> </li>
@@ -1191,7 +1191,7 @@
 </li>
 <li><strong>源文件要使用绝对路径</strong>，不能使用相对路径，这样可以方便移动链接文件后，仍然能够正常使用</li>
 </ul>
-<h4 id="文件软硬链接的示意图"><a href="#文件软硬链接的示意图" class="headerlink" title="文件软硬链接的示意图"></a>文件软硬链接的示意图</h4><p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2F08A9A51A8CBB43BE8ACB4E51F4C1B78B&amp;mime=image%2Fpng&amp;name=001_%E6%96%87%E4%BB%B6%E8%BD%AF%E7%A1%AC%E9%93%BE%E6%8E%A5%E7%A4%BA%E6%84%8F%E5%9B%BE.png&amp;reqId=1a948ff5-b696-453b-a93a-0caf2d437ab2&amp;ts=1615871960285&amp;type=NOS&amp;sign=05be8b87c0c68e925c12d4ff451fdb41" alt="文件软硬链接示意图"></p>
+<h4 id="文件软硬链接的示意图"><a href="#文件软硬链接的示意图" class="headerlink" title="文件软硬链接的示意图"></a>文件软硬链接的示意图</h4><p><img src="https://api2.mubu.com/v3/document_image/1f4e640f-dc3e-4678-bb88-9fa7c1321aeb-11197877.jpg" alt="文件软硬链接示意图"></p>
 <blockquote>
 <p>在 Linux 中，<strong>文件名</strong> 和 <strong>文件的数据</strong> 是分开存储的</p>
 </blockquote>
@@ -1354,7 +1354,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-16 13:20:00" itemprop="dateModified" datetime="2021-03-16T13:20:00+08:00">2021-03-16</time>
+                <time title="修改时间：2021-03-17 22:07:42" itemprop="dateModified" datetime="2021-03-17T22:07:42+08:00">2021-03-17</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1401,7 +1401,7 @@
 </ul>
 </li>
 </ul>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2F4190DDAD4E8D48A08C2417028A7F16D5&amp;mime=image%2Fpng&amp;name=003-Linux%E7%9A%84%E6%A0%91%E5%BD%A2%E7%A4%BA%E6%84%8F%E5%9B%BE.png&amp;reqId=f7d77fdf-5d52-4af1-ba08-a3ebac088e93&amp;ts=1615871988584&amp;type=NOS&amp;sign=543bd445c8d8a1fd49399748346e6541" alt="linux文件系统"></p>
+<p><img src="https://api2.mubu.com/v3/document_image/fe5a0a8b-ade0-401a-b879-f7264d3f0a80-11197877.jpg" alt="linux文件系统"></p>
 <ul>
 <li><p>用户目录</p>
 <ul>
@@ -2826,7 +2826,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-16 13:21:19" itemprop="dateModified" datetime="2021-03-16T13:21:19+08:00">2021-03-16</time>
+                <time title="修改时间：2021-03-17 21:49:28" itemprop="dateModified" datetime="2021-03-17T21:49:28+08:00">2021-03-17</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -2866,11 +2866,11 @@
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> interfacetype <span class="keyword">struct</span> &#123;</span><br><span class="line">	typ     _type</span><br><span class="line">	pkgpath name</span><br><span class="line">	mhdr    []imethod</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>可以看到，它<strong>包装了 <code>_type</code> 类型，<code>_type</code> 实际上是描述 Go 语言中各种数据类型的结构体</strong>。这里还包含一个 <strong><code>mhdr</code> 字段，表示接口所定义的函数列表， <code>pkgpath</code> 记录定义了接口的包名。</strong></p>
 <p>这里通过一张图来看下 <code>iface</code> 结构体的全貌：</p>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2FBEA1787DD2994FF8AFCE7F8B74A6CF4C&mime=image%2Fpng&name=iface.png&reqId=323365fd-b4ec-4502-b83d-b07caef6b059&ts=1615872055521&type=NOS&sign=1cb91b8f4d38aa6fd46d30b2199e4b39" style="zoom:50%;" /></p>
+<p><img src="https://api2.mubu.com/v3/document_image/69ac725b-819d-492f-8fc1-09539aecd84d-11197877.jpg" style="zoom:50%;" /></p>
 <p><code>eface</code> 的源码：</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> eface <span class="keyword">struct</span> &#123;</span><br><span class="line">    _type *_type</span><br><span class="line">    data  unsafe.Pointer</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>相比 <code>iface</code>，<code>eface</code> 比较简单。只维护了一个 <code>_type</code> 字段，<strong>表示空接口所承载的具体的实体类型</strong>。<code>data</code> 描述了具体的值。</p>
-<p><img src="https://ynote-resource-dl.lx.netease.com/ydl/resource?key=m15927395235%40163.com%2FDBD2F7EFBDCB4AB3A4FAAC69425D8540&mime=image%2Fpng&name=eface.png&reqId=35fed7f9-31b3-4793-8518-1b43e80c9dd9&ts=1615872071429&type=NOS&sign=526825a0e4b23d1380fe2fec06efc0e5" alt="eface 结构体" style="zoom:50%;" /></p>
+<p><img src="https://api2.mubu.com/v3/document_image/c5f9654b-4bc8-4be2-9dd5-96a8cf27543b-11197877.jpg" alt="eface 结构体" style="zoom:50%;" /></p>
 <p>例子：</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	x := <span class="number">200</span></span><br><span class="line">	<span class="keyword">var</span> any <span class="keyword">interface</span>&#123;&#125; = x</span><br><span class="line">	fmt.Println(any)</span><br><span class="line"></span><br><span class="line">	g := Gopher&#123;<span class="string">"Go"</span>&#125;</span><br><span class="line">	<span class="keyword">var</span> c coder = g</span><br><span class="line">	fmt.Println(c)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> coder <span class="keyword">interface</span> &#123;</span><br><span class="line">	code()</span><br><span class="line">	debug()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Gopher <span class="keyword">struct</span> &#123;</span><br><span class="line">	language <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p Gopher)</span> <span class="title">code</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Printf(<span class="string">"I am coding %s language\n"</span>, p.language)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p Gopher)</span> <span class="title">debug</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Printf(<span class="string">"I am debuging %s language\n"</span>, p.language)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>执行命令，打印出汇编语言：</p>
