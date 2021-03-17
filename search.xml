@@ -1,6 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>使用带https访问的的慕布托管博客图片</title>
+    <url>/2021/03/17/%E4%BD%BF%E7%94%A8https%E8%AE%BF%E9%97%AE%E7%9A%84%E7%9A%84%E6%85%95%E5%B8%83%E6%89%98%E7%AE%A1%E5%8D%9A%E5%AE%A2%E5%9B%BE%E7%89%87/</url>
+    <content><![CDATA[<h3 id="使用带https访问的的慕布托管博客图片"><a href="#使用带https访问的的慕布托管博客图片" class="headerlink" title="使用带https访问的的慕布托管博客图片"></a>使用带<code>https</code>访问的的慕布托管博客图片</h3><p>之前的博客使用有道云笔记来保存图片，对于保存的每张图片都可以生成一个唯一的URL，但实际访问的时候提供的只是<code>http</code>的访问。浏览器的进步(Chrome为代表)使得<code>http</code>协议变得不安全，之前写的博客中的<code>http</code>访问的图片在浏览器中居然不能正常显示了，找了好久都没有找到合适的图片保存库。</p>
+<p>今天意外发现<a href="https://mubu.com/app" target="_blank" rel="noopener">慕布</a>这款在线编辑软件可以给保存的图片一个带<code>https</code>的<code>URL</code>,从而避免浏览器强制的<code>https</code>访问。遂将所有博客的图片全都进行了更新。</p>
+<p>有需要的同学可根据需要注册使用<a href="https://mubu.com/app" target="_blank" rel="noopener">慕布</a>。图片保存到文件后进行共享，将共享的链接打开后右键可以获取图片的<code>https</code>地址，然后就可以在自己的博客中使用啦。(慕布还支持脑图以及markdown，其实还是挺好用的)。</p>
+<p>关于<code>http</code>与<code>https</code>，后面写个博客来讲清楚吧(最近要写导师的本子，还有科研任务和找工作的事情)。</p>
+]]></content>
+      <categories>
+        <category>linux</category>
+      </categories>
+      <tags>
+        <tag>工具</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>使用来必力为博客添加评论</title>
     <url>/2021/03/09/%E5%8D%9A%E5%AE%A2%E6%B7%BB%E5%8A%A0%E8%AF%84%E8%AE%BA/</url>
     <content><![CDATA[<h3 id="使用来必力为博客添加评论"><a href="#使用来必力为博客添加评论" class="headerlink" title="使用来必力为博客添加评论"></a>使用来必力为博客添加评论</h3><p>之前搭建博客评论功能的时候使用的是gitalk, 但使用gitalk必须创建issue来进行评论，使用起来并不是很方便。</p>
