@@ -3,10 +3,10 @@
   <entry>
     <title>使用带https访问的的慕布托管博客图片</title>
     <url>/2021/03/17/%E4%BD%BF%E7%94%A8https%E8%AE%BF%E9%97%AE%E7%9A%84%E7%9A%84%E6%85%95%E5%B8%83%E6%89%98%E7%AE%A1%E5%8D%9A%E5%AE%A2%E5%9B%BE%E7%89%87/</url>
-    <content><![CDATA[<h3 id="使用带https访问的的慕布托管博客图片"><a href="#使用带https访问的的慕布托管博客图片" class="headerlink" title="使用带https访问的的慕布托管博客图片"></a>使用带<code>https</code>访问的的慕布托管博客图片</h3><p>之前的博客使用有道云笔记来保存图片，对于保存的每张图片都可以生成一个唯一的URL，但实际访问的时候提供的只是<code>http</code>的访问。浏览器的进步(Chrome为代表)使得<code>http</code>协议变得不安全，之前写的博客中的<code>http</code>访问的图片在浏览器中居然不能正常显示了，找了好久都没有找到合适的图片保存库。</p>
-<p>今天意外发现<a href="https://mubu.com/app" target="_blank" rel="noopener">慕布</a>这款在线编辑软件可以给保存的图片一个带<code>https</code>的<code>URL</code>,从而避免浏览器强制的<code>https</code>访问。遂将所有博客的图片全都进行了更新。</p>
+    <content><![CDATA[<h3 id="使用带https访问的慕布托管博客图片"><a href="#使用带https访问的慕布托管博客图片" class="headerlink" title="使用带https访问的慕布托管博客图片"></a>使用带<code>https</code>访问的慕布托管博客图片</h3><p>之前博客 一直使用有道云笔记来保存图片，对于保存的每张图片都可以生成一个唯一的URL，但实际访问的时候提供的只是<code>http</code>的访问。浏览器的进步(Chrome为代表)使得<code>http</code>协议变得不安全，之前写的博客中的<code>http</code>访问的图片在浏览器中居然不能正常显示了(虽然火狐可以，但同步还是Chrome好用)，找了好久都没有找到合适的图片保存库。</p>
+<p>今天意外发现<a href="https://mubu.com/app" target="_blank" rel="noopener">慕布</a>这款在线编辑软件可以给保存的图片一个带<code>https</code>的<code>URL</code>,从而满足了浏览器强制的<code>https</code>访问。遂将所有博客的图片更新了一下。</p>
 <p>有需要的同学可根据需要注册使用<a href="https://mubu.com/app" target="_blank" rel="noopener">慕布</a>。图片保存到文件后进行共享，将共享的链接打开后右键可以获取图片的<code>https</code>地址，然后就可以在自己的博客中使用啦。(慕布还支持脑图以及markdown，其实还是挺好用的)。</p>
-<p>关于<code>http</code>与<code>https</code>，后面写个博客来讲清楚吧(最近要写导师的本子，还有科研任务和找工作的事情)。</p>
+<p>关于<code>http</code>与<code>https</code>，后面写个博客来讲清楚吧(最近要写导师的本子，还有科研任务和找工作的事情，忙的有点混乱了)。</p>
 ]]></content>
       <categories>
         <category>linux</category>
@@ -3133,6 +3133,51 @@
       </tags>
   </entry>
   <entry>
+    <title>linux环境变量设置</title>
+    <url>/2019/12/26/linux%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/</url>
+    <content><![CDATA[<h3 id="Ubuntu环境变量的添加和删除"><a href="#Ubuntu环境变量的添加和删除" class="headerlink" title="Ubuntu环境变量的添加和删除"></a>Ubuntu环境变量的添加和删除</h3><h4 id="添加环境变量的位置"><a href="#添加环境变量的位置" class="headerlink" title="添加环境变量的位置"></a>添加环境变量的位置</h4><ul>
+<li>/etc/profile 该文件为系统的每个用户设置环境信息，当用户第一次登录时，该文件被执行，并从/etc/profile.d目录的配置文件中搜集shell的设置。</li>
+<li>/etc/environment 登录操作系统使用的第二个文件，系统在读取自己的profile之前，设置环境文件的环境变量</li>
+<li>/etc/bashrc 为每一个运行bash shell的用户执行该文件。当bash shell被打开时，该文件被读取</li>
+<li>~/.profile 每个用户都可以使用该文件输入专用于自己使用的shell信息，当用户登录时，该文件仅仅执行一次。默认情况下设置一些环境变量，执行用户的.bashrc文件</li>
+<li>~/.bashrc 该文件包含专用的bash shell的bash信息，当登录以及每次打开新的shell时，该文件被读取。</li>
+</ul>
+<h4 id="添加方法"><a href="#添加方法" class="headerlink" title="添加方法"></a>添加方法</h4><ul>
+<li>方法一：直接修改/etc/enviroment文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">打开/etc/environment文件，其内容如下：</span></span><br><span class="line">PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games" </span><br><span class="line"><span class="meta">#</span><span class="bash">在环境变量PATH中添加你要添加的路径即可。</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>方法二：修改/etc/profile文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">这个文件不是保存环境变量信息的文件，在登录时，系统只是根据它的内容对环境变量进行设置。</span></span><br><span class="line">export PATH=$PATH:[your path1]:[your path2]:[...]  </span><br><span class="line">export PATH=[your path1]:[your path2]:[...]:$PATH #其中，各个PATH之间用冒号分隔，$PATH指代添加your path前的环境变量。</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>方法三：修改/etc/bashrc或者~/.bashrc文件，这两个文件<strong>不是为了保存环境变量，只是在使用bash shell时进行设置而已，所以设置方法和二中一样。对于/etc/bashrc文件，修改的作用于所有用户，但对于~/.bashrc文件，修改的仅仅作用于当前用户。这种修改的作用也是永久性的。</strong></p>
+</li>
+<li><p>方法四：<strong>修改~/.profile文件，作用仅限于当前用户，但同样也是永久性的。这种方法和修改/etc/profile本质上是一样的，这种之不过是仅仅修改了当前用户自己的配置文件。所以作用仅限于当前用户，但同样也是永久性的。</strong></p>
+</li>
+<li><p>方法五：在Terminal中使用shell命令，只在当前Terminal中起作用，关闭了当前Terminal就无效了。对其他Terminal也无效</p>
+</li>
+</ul>
+<h4 id="显示环境变量"><a href="#显示环境变量" class="headerlink" title="显示环境变量"></a>显示环境变量</h4><ul>
+<li>显示所有环境变量</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">env #打印所有的环境变量</span><br></pre></td></tr></table></figure>
+<ul>
+<li>显示指定环境变量</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">echo $PATH #打印PATH环境变量</span><br></pre></td></tr></table></figure>
+<h4 id="让修改生效"><a href="#让修改生效" class="headerlink" title="让修改生效"></a>让修改生效</h4><p>使用source命令也可以让修改立即生效。使用方法为：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">source [file name]  # file name 指的是上面修改过的文件的file name</span><br></pre></td></tr></table></figure>
+<h4 id="删除对环境变量的修改"><a href="#删除对环境变量的修改" class="headerlink" title="删除对环境变量的修改"></a>删除对环境变量的修改</h4><p>将以上方法中对配置文件的修改还原回去即可。另外，由于第五种方法由于是临时性质的且局部的，只需要关闭这个Terminal就好了。</p>
+]]></content>
+      <categories>
+        <category>linux</category>
+      </categories>
+      <tags>
+        <tag>linux环境变量</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>linux相关操作笔记</title>
     <url>/2019/12/26/linux%E6%93%8D%E4%BD%9C%E7%AC%94%E8%AE%B0/</url>
     <content><![CDATA[<h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>linux只是操作系统的内核。</p>
@@ -3736,51 +3781,6 @@
       </categories>
       <tags>
         <tag>linux操作</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>linux环境变量设置</title>
-    <url>/2019/12/26/linux%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/</url>
-    <content><![CDATA[<h3 id="Ubuntu环境变量的添加和删除"><a href="#Ubuntu环境变量的添加和删除" class="headerlink" title="Ubuntu环境变量的添加和删除"></a>Ubuntu环境变量的添加和删除</h3><h4 id="添加环境变量的位置"><a href="#添加环境变量的位置" class="headerlink" title="添加环境变量的位置"></a>添加环境变量的位置</h4><ul>
-<li>/etc/profile 该文件为系统的每个用户设置环境信息，当用户第一次登录时，该文件被执行，并从/etc/profile.d目录的配置文件中搜集shell的设置。</li>
-<li>/etc/environment 登录操作系统使用的第二个文件，系统在读取自己的profile之前，设置环境文件的环境变量</li>
-<li>/etc/bashrc 为每一个运行bash shell的用户执行该文件。当bash shell被打开时，该文件被读取</li>
-<li>~/.profile 每个用户都可以使用该文件输入专用于自己使用的shell信息，当用户登录时，该文件仅仅执行一次。默认情况下设置一些环境变量，执行用户的.bashrc文件</li>
-<li>~/.bashrc 该文件包含专用的bash shell的bash信息，当登录以及每次打开新的shell时，该文件被读取。</li>
-</ul>
-<h4 id="添加方法"><a href="#添加方法" class="headerlink" title="添加方法"></a>添加方法</h4><ul>
-<li>方法一：直接修改/etc/enviroment文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">打开/etc/environment文件，其内容如下：</span></span><br><span class="line">PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games" </span><br><span class="line"><span class="meta">#</span><span class="bash">在环境变量PATH中添加你要添加的路径即可。</span></span><br></pre></td></tr></table></figure>
-<ul>
-<li>方法二：修改/etc/profile文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">这个文件不是保存环境变量信息的文件，在登录时，系统只是根据它的内容对环境变量进行设置。</span></span><br><span class="line">export PATH=$PATH:[your path1]:[your path2]:[...]  </span><br><span class="line">export PATH=[your path1]:[your path2]:[...]:$PATH #其中，各个PATH之间用冒号分隔，$PATH指代添加your path前的环境变量。</span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>方法三：修改/etc/bashrc或者~/.bashrc文件，这两个文件<strong>不是为了保存环境变量，只是在使用bash shell时进行设置而已，所以设置方法和二中一样。对于/etc/bashrc文件，修改的作用于所有用户，但对于~/.bashrc文件，修改的仅仅作用于当前用户。这种修改的作用也是永久性的。</strong></p>
-</li>
-<li><p>方法四：<strong>修改~/.profile文件，作用仅限于当前用户，但同样也是永久性的。这种方法和修改/etc/profile本质上是一样的，这种之不过是仅仅修改了当前用户自己的配置文件。所以作用仅限于当前用户，但同样也是永久性的。</strong></p>
-</li>
-<li><p>方法五：在Terminal中使用shell命令，只在当前Terminal中起作用，关闭了当前Terminal就无效了。对其他Terminal也无效</p>
-</li>
-</ul>
-<h4 id="显示环境变量"><a href="#显示环境变量" class="headerlink" title="显示环境变量"></a>显示环境变量</h4><ul>
-<li>显示所有环境变量</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">env #打印所有的环境变量</span><br></pre></td></tr></table></figure>
-<ul>
-<li>显示指定环境变量</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">echo $PATH #打印PATH环境变量</span><br></pre></td></tr></table></figure>
-<h4 id="让修改生效"><a href="#让修改生效" class="headerlink" title="让修改生效"></a>让修改生效</h4><p>使用source命令也可以让修改立即生效。使用方法为：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">source [file name]  # file name 指的是上面修改过的文件的file name</span><br></pre></td></tr></table></figure>
-<h4 id="删除对环境变量的修改"><a href="#删除对环境变量的修改" class="headerlink" title="删除对环境变量的修改"></a>删除对环境变量的修改</h4><p>将以上方法中对配置文件的修改还原回去即可。另外，由于第五种方法由于是临时性质的且局部的，只需要关闭这个Terminal就好了。</p>
-]]></content>
-      <categories>
-        <category>linux</category>
-      </categories>
-      <tags>
-        <tag>linux环境变量</tag>
       </tags>
   </entry>
   <entry>
