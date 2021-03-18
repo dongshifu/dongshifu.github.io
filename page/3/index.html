@@ -728,115 +728,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/26/linux%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/12/26/linux%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/" class="post-title-link" itemprop="url">linux环境变量设置</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-12-26 15:29:16" itemprop="dateCreated datePublished" datetime="2019-12-26T15:29:16+08:00">2019-12-26</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-02-27 15:56:07" itemprop="dateModified" datetime="2021-02-27T15:56:07+08:00">2021-02-27</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/linux/" itemprop="url" rel="index">
-                    <span itemprop="name">linux</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="Ubuntu环境变量的添加和删除"><a href="#Ubuntu环境变量的添加和删除" class="headerlink" title="Ubuntu环境变量的添加和删除"></a>Ubuntu环境变量的添加和删除</h3><h4 id="添加环境变量的位置"><a href="#添加环境变量的位置" class="headerlink" title="添加环境变量的位置"></a>添加环境变量的位置</h4><ul>
-<li>/etc/profile 该文件为系统的每个用户设置环境信息，当用户第一次登录时，该文件被执行，并从/etc/profile.d目录的配置文件中搜集shell的设置。</li>
-<li>/etc/environment 登录操作系统使用的第二个文件，系统在读取自己的profile之前，设置环境文件的环境变量</li>
-<li>/etc/bashrc 为每一个运行bash shell的用户执行该文件。当bash shell被打开时，该文件被读取</li>
-<li>~/.profile 每个用户都可以使用该文件输入专用于自己使用的shell信息，当用户登录时，该文件仅仅执行一次。默认情况下设置一些环境变量，执行用户的.bashrc文件</li>
-<li>~/.bashrc 该文件包含专用的bash shell的bash信息，当登录以及每次打开新的shell时，该文件被读取。</li>
-</ul>
-<h4 id="添加方法"><a href="#添加方法" class="headerlink" title="添加方法"></a>添加方法</h4><ul>
-<li>方法一：直接修改/etc/enviroment文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">打开/etc/environment文件，其内容如下：</span></span><br><span class="line">PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games" </span><br><span class="line"><span class="meta">#</span><span class="bash">在环境变量PATH中添加你要添加的路径即可。</span></span><br></pre></td></tr></table></figure>
-<ul>
-<li>方法二：修改/etc/profile文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">这个文件不是保存环境变量信息的文件，在登录时，系统只是根据它的内容对环境变量进行设置。</span></span><br><span class="line">export PATH=$PATH:[your path1]:[your path2]:[...]  </span><br><span class="line">export PATH=[your path1]:[your path2]:[...]:$PATH #其中，各个PATH之间用冒号分隔，$PATH指代添加your path前的环境变量。</span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>方法三：修改/etc/bashrc或者~/.bashrc文件，这两个文件<strong>不是为了保存环境变量，只是在使用bash shell时进行设置而已，所以设置方法和二中一样。对于/etc/bashrc文件，修改的作用于所有用户，但对于~/.bashrc文件，修改的仅仅作用于当前用户。这种修改的作用也是永久性的。</strong></p>
-</li>
-<li><p>方法四：<strong>修改~/.profile文件，作用仅限于当前用户，但同样也是永久性的。这种方法和修改/etc/profile本质上是一样的，这种之不过是仅仅修改了当前用户自己的配置文件。所以作用仅限于当前用户，但同样也是永久性的。</strong></p>
-</li>
-<li><p>方法五：在Terminal中使用shell命令，只在当前Terminal中起作用，关闭了当前Terminal就无效了。对其他Terminal也无效</p>
-</li>
-</ul>
-<h4 id="显示环境变量"><a href="#显示环境变量" class="headerlink" title="显示环境变量"></a>显示环境变量</h4><ul>
-<li>显示所有环境变量</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">env #打印所有的环境变量</span><br></pre></td></tr></table></figure>
-<ul>
-<li>显示指定环境变量</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo $PATH #打印PATH环境变量</span><br></pre></td></tr></table></figure>
-<h4 id="让修改生效"><a href="#让修改生效" class="headerlink" title="让修改生效"></a>让修改生效</h4><p>使用source命令也可以让修改立即生效。使用方法为：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">source [file name]  # file name 指的是上面修改过的文件的file name</span><br></pre></td></tr></table></figure>
-<h4 id="删除对环境变量的修改"><a href="#删除对环境变量的修改" class="headerlink" title="删除对环境变量的修改"></a>删除对环境变量的修改</h4><p>将以上方法中对配置文件的修改还原回去即可。另外，由于第五种方法由于是临时性质的且局部的，只需要关闭这个Terminal就好了。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/26/linux%E6%93%8D%E4%BD%9C%E7%AC%94%E8%AE%B0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1507,6 +1398,249 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/26/linux%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/12/26/linux%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/" class="post-title-link" itemprop="url">linux环境变量设置</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-12-26 15:29:16" itemprop="dateCreated datePublished" datetime="2019-12-26T15:29:16+08:00">2019-12-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-02-27 15:56:07" itemprop="dateModified" datetime="2021-02-27T15:56:07+08:00">2021-02-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux/" itemprop="url" rel="index">
+                    <span itemprop="name">linux</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="Ubuntu环境变量的添加和删除"><a href="#Ubuntu环境变量的添加和删除" class="headerlink" title="Ubuntu环境变量的添加和删除"></a>Ubuntu环境变量的添加和删除</h3><h4 id="添加环境变量的位置"><a href="#添加环境变量的位置" class="headerlink" title="添加环境变量的位置"></a>添加环境变量的位置</h4><ul>
+<li>/etc/profile 该文件为系统的每个用户设置环境信息，当用户第一次登录时，该文件被执行，并从/etc/profile.d目录的配置文件中搜集shell的设置。</li>
+<li>/etc/environment 登录操作系统使用的第二个文件，系统在读取自己的profile之前，设置环境文件的环境变量</li>
+<li>/etc/bashrc 为每一个运行bash shell的用户执行该文件。当bash shell被打开时，该文件被读取</li>
+<li>~/.profile 每个用户都可以使用该文件输入专用于自己使用的shell信息，当用户登录时，该文件仅仅执行一次。默认情况下设置一些环境变量，执行用户的.bashrc文件</li>
+<li>~/.bashrc 该文件包含专用的bash shell的bash信息，当登录以及每次打开新的shell时，该文件被读取。</li>
+</ul>
+<h4 id="添加方法"><a href="#添加方法" class="headerlink" title="添加方法"></a>添加方法</h4><ul>
+<li>方法一：直接修改/etc/enviroment文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">打开/etc/environment文件，其内容如下：</span></span><br><span class="line">PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games" </span><br><span class="line"><span class="meta">#</span><span class="bash">在环境变量PATH中添加你要添加的路径即可。</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>方法二：修改/etc/profile文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">这个文件不是保存环境变量信息的文件，在登录时，系统只是根据它的内容对环境变量进行设置。</span></span><br><span class="line">export PATH=$PATH:[your path1]:[your path2]:[...]  </span><br><span class="line">export PATH=[your path1]:[your path2]:[...]:$PATH #其中，各个PATH之间用冒号分隔，$PATH指代添加your path前的环境变量。</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>方法三：修改/etc/bashrc或者~/.bashrc文件，这两个文件<strong>不是为了保存环境变量，只是在使用bash shell时进行设置而已，所以设置方法和二中一样。对于/etc/bashrc文件，修改的作用于所有用户，但对于~/.bashrc文件，修改的仅仅作用于当前用户。这种修改的作用也是永久性的。</strong></p>
+</li>
+<li><p>方法四：<strong>修改~/.profile文件，作用仅限于当前用户，但同样也是永久性的。这种方法和修改/etc/profile本质上是一样的，这种之不过是仅仅修改了当前用户自己的配置文件。所以作用仅限于当前用户，但同样也是永久性的。</strong></p>
+</li>
+<li><p>方法五：在Terminal中使用shell命令，只在当前Terminal中起作用，关闭了当前Terminal就无效了。对其他Terminal也无效</p>
+</li>
+</ul>
+<h4 id="显示环境变量"><a href="#显示环境变量" class="headerlink" title="显示环境变量"></a>显示环境变量</h4><ul>
+<li>显示所有环境变量</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">env #打印所有的环境变量</span><br></pre></td></tr></table></figure>
+<ul>
+<li>显示指定环境变量</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo $PATH #打印PATH环境变量</span><br></pre></td></tr></table></figure>
+<h4 id="让修改生效"><a href="#让修改生效" class="headerlink" title="让修改生效"></a>让修改生效</h4><p>使用source命令也可以让修改立即生效。使用方法为：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">source [file name]  # file name 指的是上面修改过的文件的file name</span><br></pre></td></tr></table></figure>
+<h4 id="删除对环境变量的修改"><a href="#删除对环境变量的修改" class="headerlink" title="删除对环境变量的修改"></a>删除对环境变量的修改</h4><p>将以上方法中对配置文件的修改还原回去即可。另外，由于第五种方法由于是临时性质的且局部的，只需要关闭这个Terminal就好了。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/20/%E8%AE%B02017%E4%B8%AD%E5%9B%BD%E6%9C%BA%E5%99%A8%E4%BA%BA%E5%A4%A7%E8%B5%9B%E5%85%88%E8%BF%9B%E8%A7%86%E8%A7%89%E9%A1%B9%E7%9B%AE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/12/20/%E8%AE%B02017%E4%B8%AD%E5%9B%BD%E6%9C%BA%E5%99%A8%E4%BA%BA%E5%A4%A7%E8%B5%9B%E5%85%88%E8%BF%9B%E8%A7%86%E8%A7%89%E9%A1%B9%E7%9B%AE/" class="post-title-link" itemprop="url">记2017中国机器人大赛先进视觉项目</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-12-20 19:59:21" itemprop="dateCreated datePublished" datetime="2019-12-20T19:59:21+08:00">2019-12-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-18 20:42:06" itemprop="dateModified" datetime="2021-03-18T20:42:06+08:00">2021-03-18</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Opencv/" itemprop="url" rel="index">
+                    <span itemprop="name">Opencv</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="主要目标"><a href="#主要目标" class="headerlink" title="主要目标"></a>主要目标</h3><p>这个项目的主要目标是识别和测量摄像头拍摄到的照片中的物体。具体要求为：在隔摄像头（罗技170，500万像素）1米外放置一块白板，白板上贴上一张白纸，白纸上用黑色笔标注出一个70x50的矩形框，然后放置一些色块和实物的打印图片粘贴到黑色矩形框内（色块颜色包括：黑色、黄色、绿色、蓝色，形状包括：圆形、椭圆、矩形、正方形，实物包括：绿箭盒、曲曲饼盒、方便面盒、可乐盒）。具体的情况差不多和下图相似（像素不高，和实际略有区别）：</p>
+<p><img src="https://api2.mubu.com/v3/document_image/af1351d7-1cd9-42ef-b0dc-18dac4351776-11197877.jpg" alt="image"></p>
+<p>项目中需要设计图形化界面，以黑色矩形框为标定，标定结束后准确识别出物体的种类并测量出物体的长宽、中心点、面积、偏转角。比赛中声明每个物体有编号，如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">//圆形、正方形、长方形、椭圆形4种（ID依次为1, 2, 3, 4）</span><br><span class="line">//可乐罐、口香糖、方便桶面、饼干盒4种（ID依次为81, 82, 83, 84）</span><br><span class="line">//黑、红、黄、绿、蓝5种（ID依次为1, 2, 3, 4, 5）</span><br><span class="line">ID[2]:第一个为颜色，第二个为形状</span><br></pre></td></tr></table></figure>
+<h3 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h3><h4 id="技术方案"><a href="#技术方案" class="headerlink" title="技术方案"></a>技术方案</h4><p><code>Opencv+QT</code>：Opencv做摄像头图像采集，QT（QT部分中规中举，后面就不怎么提啦）提供输入输出。</p>
+<h4 id="检测的基本流程"><a href="#检测的基本流程" class="headerlink" title="检测的基本流程"></a>检测的基本流程</h4><ul>
+<li><p>1.对拍摄的图像进行高斯过滤,二值化,轮廓查找,然后找轮廓的contours进行判断</p>
+<ul>
+<li>图像的二值化就是将图像上的像素点的灰度值设置为0或255，这样将使整个图像呈现出明显的黑白效果。与边缘检测相比，轮廓检测有时能更好的反映图像的内容，而<strong>要对图像进行轮廓检测，则必须要先对图像进行二值化</strong>，在数字图像处理中，二值图像占有非常重要的地位<strong>，图像的二值化使图像中数据量大为减少，从而能凸显出目标的轮廓。</strong>    </li>
+<li>threshold 方法是通过遍历灰度图中点，将图像信息二值化，处理过后的图片只有两种色值。</li>
+</ul>
+</li>
+<li><p>2.将面积小于400的轮廓滤掉(有点利用比赛规则的意思了),进行矩形的判断:</p>
+<ul>
+<li>使用多边形逼近的点的个数来判断是否是矩形(如果是则到步骤4)</li>
+<li>如果满足<strong>凸多边形而且有四个逼近点</strong>说明是矩形,这里限制了轮廓面积大于800</li>
+<li>计算最小外接矩形,滤掉照片的轮廓矩形框(最外面的标定框)</li>
+<li>判断杂色<ul>
+<li>如果有杂色,按照长宽比可将可乐罐和其他过滤,否则是绿箭</li>
+<li>如果没有杂色,通过长宽比(长和宽差值在4个像素内)计算是正方形还是矩形,然后特别计算正方形角度(-45度到+45度)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>3.如果前面没有检测到,则检测圆</p>
+<ul>
+<li>先求出轮廓的最小外接圆和最小外接椭圆</li>
+<li>计算外接的圆的半径(通常大近3个像素)和用面积计算出的半径,差值小于4,外界椭圆的面积差值小于30,说明大致使用圆的形状</li>
+<li>检测杂色<ul>
+<li>如果是杂色,说明是奥利奥,通过最小外接矩形计算</li>
+<li>如果不是杂色,计算圆的信息</li>
+</ul>
+</li>
+<li>如果计算出来不符,就进行椭圆的判定,计算的出来的半径大于4最小外接椭圆的面积和轮廓面积差值小于30</li>
+<li>判断杂色<ul>
+<li>如果是杂色,可能是可乐罐(较少),通过可乐罐的比值限定小于或大于某个阈值进行计算</li>
+<li>如果不是杂色,计算椭圆的信息</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>4.如果还没检测到,只可能是可乐罐或者方便面</p>
+<ul>
+<li>判断杂色,非杂色不用管,通过可乐罐的小于0.6或者大于1.6计算</li>
+<li>否则是方便面直接计算.</li>
+</ul>
+</li>
+</ul>
+<h3 id="杂色判断"><a href="#杂色判断" class="headerlink" title="杂色判断"></a>杂色判断</h3><p>在上面这个流程中，判断是色块和实物的方法其实一个简单办法就是判断这个图形中是否有<strong>杂色</strong>。判断杂色我们使用的是<strong>纯RGB进行颜色判断</strong>，RGB检测中本来检测颜色的方法使用的是给定一个阈值范围，因为RGB值{R,G,B}(0≤R,G,B≤255)比较明显。但是由于摄像头的色差，最后出来的结果比较不理想。于是我们进行了一些小的改进。</p>
+<h4 id="方法思路"><a href="#方法思路" class="headerlink" title="方法思路"></a>方法思路</h4><p>传入一个轮廓的中心点。然后从改点往四个方向进行DFS，判断下一个点和这个点之间各个通道的RGB值的差值，如果差值大于20，那么就说明是杂色。如果不是杂色，那么根据中心点的RGB三个通道的差值来进行判断。<br>找轮廓和中心点的方法就不写了。现在已经有中心点了。具体如图：</p>
+<p><img src="https://api2.mubu.com/v3/document_image/cd4f25ca-15f0-4831-a637-1b3a455e6a70-11197877.jpg" alt="中心点"></p>
+<p>将dfs到的点在二值图上打亮，得到的结果可以看到扫描的区域比较理想。</p>
+<p><img src="https://api2.mubu.com/v3/document_image/d664237d-0e82-4d4c-8724-956be78d630f-11197877.jpg" alt="打亮二值图"></p>
+<p>经过调试参数之后准确地得到了最后结果:</p>
+<p><img src="https://api2.mubu.com/v3/document_image/1ef6b9c6-4728-4383-a2c1-6dd518952a0c-11197877.jpg" alt="结果图"></p>
+<h4 id="具体实现"><a href="#具体实现" class="headerlink" title="具体实现"></a>具体实现</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//---------检测是否纯色-----------</span></span><br><span class="line"><span class="keyword">int</span> dir[<span class="number">4</span>][<span class="number">2</span>]=&#123;</span><br><span class="line">    <span class="number">0</span>,<span class="number">1</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">-1</span>,<span class="number">-1</span>,<span class="number">0</span></span><br><span class="line">&#125;;<span class="comment">//往四个方向进行搜索</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">check</span><span class="params">(<span class="keyword">int</span> x,<span class="keyword">int</span> y)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(x&gt;<span class="number">0</span>&amp;&amp;x&lt;=cvGetSize(thrImg).<span class="built_in">width</span>&amp;&amp;y&gt;<span class="number">0</span>&amp;&amp;y&lt;=cvGetSize(thrImg).<span class="built_in">height</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">dfs</span><span class="params">(<span class="keyword">int</span> x,<span class="keyword">int</span> y,<span class="keyword">int</span> watch[<span class="number">3</span>],<span class="keyword">int</span> depth)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">//对该点的颜色进行读取，存到watchi[3]中</span></span><br><span class="line">    <span class="keyword">int</span> watchi[<span class="number">3</span>];</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">3</span>;i++)</span><br><span class="line">        watchi[i] = originMat.at&lt;Vec3b&gt;(y, x)[i];</span><br><span class="line"></span><br><span class="line"><span class="comment">//是否在二值图上显示dfs到的点</span></span><br><span class="line"><span class="comment">//    cout&lt;&lt;x&lt;&lt;":"&lt;&lt;y&lt;&lt;endl&lt;&lt;"0:"&lt;&lt;watch[0]&lt;&lt;"  1:"&lt;&lt;watch[1]&lt;&lt;"  2:"&lt;&lt;watch[2]&lt;&lt;endl;</span></span><br><span class="line"><span class="comment">//    cvSetReal2D(thrImg, y, x, 255.0);</span></span><br><span class="line"><span class="comment">//    cvShowImage("colorJudge", thrImg);</span></span><br><span class="line"><span class="comment">//    cvWaitKey();</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//进行判断,对watch值进行比较</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">3</span>;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(<span class="built_in">abs</span>(watch[i]-watchi[i])&gt;<span class="number">20</span>)</span><br><span class="line">            mix=<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">4</span>;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">int</span> dx=x+dir[i][<span class="number">0</span>];</span><br><span class="line">        <span class="keyword">int</span> dy=y+dir[i][<span class="number">1</span>];</span><br><span class="line">        <span class="keyword">if</span>(check(dx,dy)&amp;&amp;depth&lt;<span class="number">9</span>&amp;&amp;!vis[dy][dx])&#123;</span><br><span class="line">            vis[dy][dx]=<span class="number">1</span>;</span><br><span class="line">            dfs(dx,dy,watchi,depth+<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">isColorPure</span><span class="params">(<span class="keyword">int</span> x,<span class="keyword">int</span> y)</span></span></span><br><span class="line"><span class="function"></span>&#123;<span class="comment">//传值按照x，y</span></span><br><span class="line">    <span class="keyword">int</span> ans=isColorPure(x,y,<span class="number">0</span>);</span><br><span class="line">    <span class="keyword">return</span> ans;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">isColorPure</span><span class="params">(<span class="keyword">int</span> x,<span class="keyword">int</span> y,<span class="keyword">int</span> depth)</span></span></span><br><span class="line"><span class="function"></span>&#123;<span class="comment">//传值按照x，y</span></span><br><span class="line">    <span class="built_in">memset</span>(vis,<span class="number">0</span>,<span class="keyword">sizeof</span>(vis));</span><br><span class="line">    <span class="comment">//对该点的颜色进行读取，存到watchi[3]中</span></span><br><span class="line">    mix=<span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> watchi[<span class="number">3</span>];</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">3</span>;i++)</span><br><span class="line">        watchi[i] = originMat.at&lt;Vec3b&gt;(y, x)[i];</span><br><span class="line"></span><br><span class="line">    vis[y][x]=<span class="number">1</span>;</span><br><span class="line">    dfs(x,y,watchi,depth);</span><br><span class="line"><span class="comment">//    cvWaitKey();</span></span><br><span class="line">    <span class="keyword">if</span>(mix==<span class="number">1</span>)&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> getColor(y,x);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>得到某个点的颜色。首先根据差值来判断(用这个就能有返回值了，后面的基本没作用)，如果判断不出来则根据范围判断。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">getColor</span><span class="params">(<span class="keyword">int</span> x,<span class="keyword">int</span> y)</span></span></span><br><span class="line"><span class="function"></span>&#123;    <span class="comment">//传值按照y，x</span></span><br><span class="line">    <span class="comment">//    imshow("mat",originMat);</span></span><br><span class="line">        <span class="comment">// 源图像载入及判断</span></span><br><span class="line">        <span class="keyword">if</span>( !originMat.data )</span><br><span class="line">           <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">        Mat tempImage = originMat.clone();</span><br><span class="line">        <span class="keyword">int</span> watch[<span class="number">3</span>],flag[<span class="number">3</span>];</span><br><span class="line">        flag[<span class="number">0</span>]=flag[<span class="number">1</span>]=flag[<span class="number">2</span>]=<span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">3</span>;i++)</span><br><span class="line">            watch[i] = originMat.at&lt;Vec3b&gt;(x, y)[i];</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">3</span>;i++)&#123;</span><br><span class="line">            <span class="keyword">if</span>(watch[i]&gt;colorRecgnize)   <span class="comment">//</span></span><br><span class="line">                flag[i]=<span class="number">1</span>;</span><br><span class="line">        &#125;<span class="comment">//BGR蓝绿红</span></span><br><span class="line"></span><br><span class="line">        cvSetReal2D(thrImg, x, y, <span class="number">255.0</span>);</span><br><span class="line">        cvShowImage(<span class="string">"colorJudge"</span>, thrImg);</span><br><span class="line">    <span class="comment">//    cvSet2D(originImg,x,y, cvScalar(0, 255, 0, 0)); //绘制来查看检测点的位置</span></span><br><span class="line">    <span class="comment">//    cvShowImage("yanse", originImg);</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> colorRange=<span class="number">40</span>;</span><br><span class="line">        <span class="comment">//通过BGR之间的差值来进行判断</span></span><br><span class="line">        <span class="keyword">if</span>(<span class="built_in">abs</span>(watch[<span class="number">0</span>]-watch[<span class="number">1</span>]&lt;colorRange)&amp;&amp;<span class="built_in">abs</span>(watch[<span class="number">0</span>]-watch[<span class="number">2</span>])&lt;colorRange&amp;&amp;<span class="built_in">abs</span>(watch[<span class="number">1</span>]-watch[<span class="number">2</span>])&lt;colorRange)&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span>;<span class="comment">//黑</span></span><br><span class="line">        &#125;<span class="keyword">else</span> <span class="keyword">if</span>(watch[<span class="number">2</span>]-watch[<span class="number">0</span>]&gt;colorRange&amp;&amp;watch[<span class="number">2</span>]-watch[<span class="number">1</span>]&gt;colorRange)&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">2</span>;<span class="comment">//红</span></span><br><span class="line">        &#125;<span class="keyword">else</span> <span class="keyword">if</span>(watch[<span class="number">2</span>]-watch[<span class="number">0</span>]&gt;colorRange&amp;&amp;watch[<span class="number">1</span>]-watch[<span class="number">0</span>]&gt;colorRange&amp;&amp;<span class="built_in">abs</span>(watch[<span class="number">1</span>]-watch[<span class="number">2</span>])&lt;colorRange)&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">3</span>;<span class="comment">//黄</span></span><br><span class="line">        &#125;<span class="keyword">else</span> <span class="keyword">if</span>(watch[<span class="number">1</span>]-watch[<span class="number">0</span>]&gt;colorRange&amp;&amp;watch[<span class="number">1</span>]-watch[<span class="number">2</span>]&gt;colorRange)&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">4</span>;<span class="comment">//绿</span></span><br><span class="line">        &#125;<span class="keyword">else</span> <span class="keyword">if</span>(watch[<span class="number">0</span>]-watch[<span class="number">1</span>]&gt;colorRange&amp;&amp;watch[<span class="number">0</span>]-watch[<span class="number">2</span>]&gt;colorRange)&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">5</span>;<span class="comment">//蓝</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//-------------以上通过差值进行判断-----------</span></span><br><span class="line"><span class="comment">//            cvSetReal2D(thrImg, x, y, 255.0);</span></span><br><span class="line"><span class="comment">//            cvShowImage("colorJudge", thrImg);</span></span><br><span class="line">        <span class="comment">//    cvSet2D(originImg,x,y, cvScalar(0, 255, 0, 0)); //绘制来查看检测点的位置</span></span><br><span class="line">        <span class="comment">//    cvShowImage("yanse", originImg);</span></span><br><span class="line">        <span class="keyword">if</span>(flag[<span class="number">0</span>]==<span class="number">0</span>&amp;&amp;flag[<span class="number">1</span>]==<span class="number">1</span>&amp;&amp;flag[<span class="number">2</span>]==<span class="number">1</span>)&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">3</span>;<span class="comment">//黄</span></span><br><span class="line">        &#125;<span class="keyword">else</span> <span class="keyword">if</span>(flag[<span class="number">0</span>]==<span class="number">1</span>&amp;&amp;flag[<span class="number">1</span>]==<span class="number">0</span>&amp;&amp;flag[<span class="number">2</span>]==<span class="number">0</span>)&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">5</span>;<span class="comment">//蓝</span></span><br><span class="line">        &#125;<span class="keyword">else</span> <span class="keyword">if</span>(flag[<span class="number">0</span>]==<span class="number">0</span>&amp;&amp;flag[<span class="number">1</span>]==<span class="number">1</span>&amp;&amp;flag[<span class="number">2</span>]==<span class="number">0</span>)&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">4</span>;<span class="comment">//绿</span></span><br><span class="line">        &#125;<span class="keyword">else</span> <span class="keyword">if</span>(flag[<span class="number">0</span>]==<span class="number">0</span>&amp;&amp;flag[<span class="number">1</span>]==<span class="number">0</span>&amp;&amp;flag[<span class="number">2</span>]==<span class="number">1</span>)&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">2</span>;<span class="comment">//红</span></span><br><span class="line">        &#125;<span class="keyword">else</span> <span class="keyword">if</span>(flag[<span class="number">0</span>]==<span class="number">0</span>&amp;&amp;flag[<span class="number">1</span>]==<span class="number">0</span>&amp;&amp;flag[<span class="number">2</span>]==<span class="number">0</span>)&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span>;<span class="comment">//黑</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">5</span>;  <span class="comment">//都检测不出来返回蓝色</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h3><p>其实整个项目比较简单，但意外的参加这种比赛也算是长了自己的见识，在此也特别感谢为我们提供了帮助的老师。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/27/linux_server/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1849,105 +1983,6 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/27/linux_system/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/11/27/linux_system/" class="post-title-link" itemprop="url">Linux 系统管理</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-11-27 19:29:16" itemprop="dateCreated datePublished" datetime="2019-11-27T19:29:16+08:00">2019-11-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-12-20 15:26:57" itemprop="dateModified" datetime="2019-12-20T15:26:57+08:00">2019-12-20</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/linux/" itemprop="url" rel="index">
-                    <span itemprop="name">linux</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="Linux系统管理"><a href="#Linux系统管理" class="headerlink" title="Linux系统管理"></a>Linux系统管理</h2><h3 id="进程管理"><a href="#进程管理" class="headerlink" title="进程管理"></a>进程管理</h3><h4 id="进程查看"><a href="#进程查看" class="headerlink" title="进程查看"></a>进程查看</h4><p>作用：判断服务器健康状态，查看系统中所有进程，杀死进程</p>
-<p>查看系统中所有进程：</p>
-<ul>
-<li>ps aux :使用系统中所有进程，使用BSD操作系统格式</li>
-<li>ps -le 查看系统中所有进程，使用Linux标准命令格式</li>
-</ul>
-<p>查看系统健康状态：</p>
-<ul>
-<li>top[选项]</li>
-</ul>
-<p>查看进程树：</p>
-<ul>
-<li>pstree</li>
-</ul>
-<h4 id="终止进程"><a href="#终止进程" class="headerlink" title="终止进程"></a>终止进程</h4><p>1.kill命令</p>
-<p>kill -l 查看可用的进程信号</p>
-<p>kill -1 进程id 重启进程</p>
-<p>kill -9 进程id 强制杀死进程</p>
-<p>2.killall命令</p>
-<p>killall -9 进程名</p>
-<p>3.pkill </p>
-<p>按照终端号踢出用户</p>
-<p>w 使用w命令查询本机已经登录的用户</p>
-<p>pkill -t -9 pts/1 强制杀死从pts/1虚拟终端登录的进程</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
@@ -1998,20 +2033,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">34</span>
+          <span class="site-state-item-count">35</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-count">9</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">21</span>
+        <span class="site-state-item-count">22</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
