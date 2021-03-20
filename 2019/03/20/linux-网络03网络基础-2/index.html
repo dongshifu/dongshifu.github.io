@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="alternate" href="/atom.xml" title="ShifuDong" type="application/atom+xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.5.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":"flat"},
+    back2top: {"enable":true,"sidebar":true,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":5,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="网络名词术语解析路由(route) 路由（名词）  数据包从源地址到目的地址所经过的路径，由一系列路由节点组成。   路由（动词）  某个路由节点为数据包选择投递方向的选路过程。    路由器工作原理路由器（Router）是连接因特网中各局域网、广域网的设备，它会根据信道的情况自动选择和设定路由，以最佳路径，按前后顺序发送信号的设备。 传统地，路由器工作于OSI七层协议中的第三层，其主要任务是接收">
+<meta name="keywords" content="网络">
+<meta property="og:type" content="article">
+<meta property="og:title" content="网络基础-3">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;03&#x2F;20&#x2F;linux-%E7%BD%91%E7%BB%9C03%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80-2&#x2F;index.html">
+<meta property="og:site_name" content="ShifuDong">
+<meta property="og:description" content="网络名词术语解析路由(route) 路由（名词）  数据包从源地址到目的地址所经过的路径，由一系列路由节点组成。   路由（动词）  某个路由节点为数据包选择投递方向的选路过程。    路由器工作原理路由器（Router）是连接因特网中各局域网、广域网的设备，它会根据信道的情况自动选择和设定路由，以最佳路径，按前后顺序发送信号的设备。 传统地，路由器工作于OSI七层协议中的第三层，其主要任务是接收">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-03-20T10:45:43.306Z">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2019/03/20/linux-%E7%BD%91%E7%BB%9C03%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80-2/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>网络基础-3 | ShifuDong</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ShifuDong</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">Knowledge Sharing</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/dongshifu" class="github-corner" title="ShifuDong GitHub" aria-label="ShifuDong GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/03/20/linux-%E7%BD%91%E7%BB%9C03%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          网络基础-3
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-03-20 18:36:05" itemprop="dateCreated datePublished" datetime="2019-03-20T18:36:05+08:00">2019-03-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-20 18:45:43" itemprop="dateModified" datetime="2021-03-20T18:45:43+08:00">2021-03-20</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index">
+                    <span itemprop="name">网络</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="网络名词术语解析"><a href="#网络名词术语解析" class="headerlink" title="网络名词术语解析"></a>网络名词术语解析</h3><h4 id="路由-route"><a href="#路由-route" class="headerlink" title="路由(route)"></a>路由(route)</h4><ul>
+<li><p>路由（名词）</p>
+<ul>
+<li>数据包从源地址到目的地址所经过的<strong>路径</strong>，由一系列路由节点组成。</li>
+</ul>
+</li>
+<li><p>路由（动词）</p>
+<ul>
+<li>某个路由节点为数据包选择投递方向的<strong>选路过程</strong>。</li>
+</ul>
+</li>
+</ul>
+<h4 id="路由器工作原理"><a href="#路由器工作原理" class="headerlink" title="路由器工作原理"></a>路由器工作原理</h4><p>路由器（Router）是连接因特网中各局域网、广域网的设备，它会<strong>根据信道的情况自动选择和设定路由</strong>，以<strong>最佳路径</strong>，按<strong>前后顺序</strong>发送信号的设备。</p>
+<p>传统地，路由器工作于OSI七层协议中的第三层，其<strong>主要任务是接收来自一个网络接口的数据包，根据其中所含的目的地址，决定转发到下一个目的地址</strong>。因此，路由器<strong>首先得在转发路由表中查找它的目的地址，若找到了目的地址，就在数据包的帧格前添加下一个MAC地址，同时IP数据包头的TTL（Time To Live）域也开始减数， 并重新计算校验和。当数据包被送到输出端口时，它需要按顺序等待，以便被传送到输出链路上。</strong></p>
+<p>路由器在工作时能够按照某种路由通信<strong>协议</strong>查找设备中的路由表。如果到某一特定节点有一条以上的路径，则基本预先确定的路由准则是选择最优（或最经济）的传输路径。由于各种网络段和其相互连接情况可能会因环境变化而变化，因此<strong>路由情况的信息一般也按所使用的路由信息协议的规定而定时更新</strong>。</p>
+<p>网络中，每个路由器的基本功能都是按照一定的<strong>规则</strong>来动态地更新它所保持的路由表，以便保持路由信息的有效性。为了便于在网络间传送报文<strong>，路由器总是先按照预定的规则把较大的数据分解成适当大小的数据包，再将这些数据包分别通过相同或不同路径发送出去</strong>。当这些数据包按先后秩序到达目的地后，再把分解的数据包按照一定顺序包装成原有的报文形式。路由器的<strong>分层寻址功能</strong>是路由器的重要功能之一，该功能可以帮助具有很多节点站的网络来存储寻址信息，同时还能在网络间截获发送到远地网段的报文，起转发作用；选择最合理的路由，引导通信也是路由器基本功能；多协议路由器还可以连接使用不同通信协议的网络段，成为不同通信协议网络段之间的通信平台。</p>
+<p>路由和交换之间的主要区别就是交换发生在OSI参考模型第二层（数据链路层），而路由发生在第三层，即网络层。这一区别决定了路由和交换在移动信息的过程 中需使用不同的控制信息，所以两者实现各自功能的方式是不同的。</p>
+<h3 id="路由表-Routing-Table"><a href="#路由表-Routing-Table" class="headerlink" title="\路由表(Routing Table)**"></a><strong><em>\</em>路由表(Routing Table)**</strong></h3><p>在计算机网络中，路由表或称路由择域信息库（RIB）是一个存储在路由器或者联网计算机中的电子表格（文件）或类数据库。路由表存储着指向特定网络地址的路径。</p>
+<h3 id="路由条目"><a href="#路由条目" class="headerlink" title="\路由条目**"></a><strong><em>\</em>路由条目**</strong></h3><p>路由表中的一行，每个条目主要由目的网络地址、子网掩码、下一跳地址、发送接口四部分组成，如果要发送的数据包的目的网络地址匹配路由表中的某一行，就按规定的接口发送到下一跳地址。</p>
+<h3 id="缺省路由条目"><a href="#缺省路由条目" class="headerlink" title="\缺省路由条目**"></a><strong><em>\</em>缺省路由条目**</strong></h3><p>路由表中的最后一行，主要由下一跳地址和发送接口两部分组成，当目的地址与路由表中其它行都不匹配时，就按缺省路由条目规定的接口发送到下一跳地址。</p>
+<h3 id="路由节点"><a href="#路由节点" class="headerlink" title="\路由节点**"></a><strong><em>\</em>路由节点**</strong></h3><p>一个具有路由能力的主机或路由器，它维护一张路由表，通过查询路由表来决定向哪个接口发送数据包。</p>
+<h3 id="以太网交换机工作原理"><a href="#以太网交换机工作原理" class="headerlink" title="\以太网交换机工作原理**"></a><strong><em>\</em>以太网交换机工作原理**</strong></h3><p>以太网交换机是基于以太网传输数据的交换机，以太网采用共享总线型传输媒体方式的局域网。以太网交换机的结构是每个端口都直接与主机相连，并且一般都工作在全双工方式。交换机能同时连通许多对端口，使每一对相互通信的主机都能像独占通信媒体那样，进行无冲突地传输数据。</p>
+<p>以太网交换机工作于OSI网络参考模型的第二层（即数据链路层），是一种基于MAC（Media Access Control，介质访问控制）地址识别、完成以太网数据帧转发的网络设备。</p>
+<h3 id="hub工作原理"><a href="#hub工作原理" class="headerlink" title="\hub工作原理**"></a><strong><em>\</em>hub工作原理**</strong></h3><p>集线器实际上就是中继器的一种，其区别仅在于集线器能够提供更多的端口服务，所以集线器又叫多口中继器。</p>
+<p>集线器功能是随机选出某一端口的设备，并让它独占全部带宽，与集线器的上联设备（交换机、路由器或服务器等）进行通信。从Hub的工作方式可以看出，它在网络中只起到信号放大和重发作用，其目的是扩大网络的传输范围，而不具备信号的定向传送能力，是—个标准的共享式设备。其次是Hub只与它的上联设备(如上层Hub、交换机或服务器)进行通信，同层的各端口之间不会直接进行通信，而是通过上联设备再将信息广播到所有端口上。 由此可见，即使是在同一Hub的不同两个端口之间进行通信，都必须要经过两步操作：</p>
+<p>第一步是将信息上传到上联设备；</p>
+<p>第二步是上联设备再将该信息广播到所有端口上。</p>
+<h3 id="半双工-全双工"><a href="#半双工-全双工" class="headerlink" title="\半双工/全双工**"></a><strong><em>\</em>半双工/全双工**</strong></h3><p>Full-duplex（全双工）全双工是在通道中同时双向数据传输的能力。</p>
+<p>Half-duplex（半双工）在通道中同时只能沿着一个方向传输数据。</p>
+<h3 id="DNS服务器"><a href="#DNS服务器" class="headerlink" title="\DNS服务器**"></a><strong><em>\</em>DNS服务器**</strong></h3><p>DNS 是域名系统 (Domain Name System) 的缩写，是因特网的一项核心服务，它作为可以将域名和IP地址相互映射的一个分布式数据库，能够使人更方便的访问互联网，而不用去记住能够被机器直接读取的IP地址串。</p>
+<p>它是由解析器以及域名服务器组成的。域名服务器是指保存有该网络中所有主机的域名和对应IP地址，并具有将域名转换为IP地址功能的服务器。</p>
+<h3 id="局域网-LAN"><a href="#局域网-LAN" class="headerlink" title="\局域网(LAN)**"></a><strong><em>\</em>局域网(LAN)**</strong></h3><p>local area network，一种覆盖一座或几座大楼、一个校园或者一个厂区等地理区域的小范围的计算机网。</p>
+<p>\1. 覆盖的地理范围较小，只在一个相对独立的局部范围内联，如一座或集中的建筑群内。</p>
+<p>\2. 使用专门铺设的传输介质进行联网，数据传输速率高（10Mb/s～10Gb/s）</p>
+<p>\3. 通信延迟时间短，可靠性较高</p>
+<p>\4. 局域网可以支持多种传输介质</p>
+<h3 id="广域网-WAN"><a href="#广域网-WAN" class="headerlink" title="\广域网(WAN)**"></a><strong><em>\</em>广域网(WAN)**</strong></h3><p>wide area network，一种用来实现不同地区的局域网或城域网的互连，可提供不同地区、城市和国家之间的计算机通信的远程计算机网。</p>
+<p>覆盖的范围比局域网（LAN）和城域网（MAN）都广。广域网的通信子网主要使用分组交换技术。</p>
+<p>广域网的通信子网可以利用公用分组交换网、卫星通信网和无线分组交换网，它将分布在不同地区的局域网或计算机系统互连起来，达到资源共享的目的。如互联网是世界范围内最大的广域网。</p>
+<p>\1. 适应大容量与突发性通信的要求；</p>
+<p>\2. 适应综合业务服务的要求；</p>
+<p>\3. 开放的设备接口与规范化的协议；</p>
+<p>\4. 完善的通信服务与网络管理。</p>
+<h3 id="端口"><a href="#端口" class="headerlink" title="\端口**"></a><strong><em>\</em>端口**</strong></h3><p>逻辑意义上的端口，一般是指TCP/IP协议中的端口，端口号的范围从0到65535，比如用于浏览网页服务的80端口，用于FTP服务的21端口等等。</p>
+<p>\1. 端口号小于256的定义为常用端口，服务器一般都是通过常用端口号来识别的。</p>
+<p>\2. 客户端只需保证该端口号在本机上是惟一的就可以了。客户端口号因存在时间很短暂又称临时端口号；</p>
+<p>\3. 大多数TCP/IP实现给临时端口号分配1024—5000之间的端口号。大于5000的端口号是为其他服务器预留的。</p>
+<p>我们应该在自定义端口时，避免使用well-known的端口。如：80、21等等。</p>
+<h3 id="MTU"><a href="#MTU" class="headerlink" title="\MTU**"></a><strong><em>\</em>MTU**</strong></h3><p>MTU:通信术语 最大传输单元（Maximum Transmission Unit，MTU）</p>
+<p>是指一种通信协议的某一层上面所能通过的最大数据包大小（以字节为单位）。最大传输单元这个参数通常与通信接口有关（网络接口卡、串口等）。</p>
+<p>以下是一些协议的MTU：</p>
+<p>FDDI协议：4352字节</p>
+<p><strong><em>\</em>以太网（Ethernet）协议：1500字节**</strong></p>
+<p>PPPoE（ADSL）协议：1492字节</p>
+<p>X.25协议（Dial Up/Modem）：576字节</p>
+<p>Point-to-Point：4470字节</p>
+<h2 id="常见网络知识面试题"><a href="#常见网络知识面试题" class="headerlink" title="\常见网络知识面试题**"></a><strong><em>\</em>常见网络知识面试题**</strong></h2><p>\1. TCP如何建立链接</p>
+<p>\2. TCP如何通信</p>
+<p>\3. TCP如何关闭链接</p>
+<p>\4. 什么是滑动窗口</p>
+<p>\5. 什么是半关闭</p>
+<p>\6. 局域网内两台机器如何利用TCP/IP通信</p>
+<p>\7. internet上两台主机如何进行通信</p>
+<p>\8. 如何在internet上识别唯一一个进程</p>
+<p>答：通过“IP地址+端口号”来区分不同的服务</p>
+<p>\9. 为什么说TCP是可靠的链接，UDP不可靠</p>
+<p>\10. 路由器和交换机的区别</p>
+<p>\11. 点到点，端到端</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%BD%91%E7%BB%9C/" rel="tag"># 网络</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/03/06/linux_%E7%BD%91%E7%BB%9C02%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80-1/" rel="prev" title="网络基础-2">
+      <i class="fa fa-chevron-left"></i> 网络基础-2
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/11/25/hello-world/" rel="next" title="hexo 测试">
+      hexo 测试 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+      <div class="tabs tabs-comment">
+        <ul class="nav-tabs">
+            <li class="tab"><a href="#comment-gitalk">gitalk</a></li>
+            <li class="tab"><a href="#comment-livere">livere</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane gitalk" id="comment-gitalk">
+              <div class="comments" id="gitalk-container"></div>
+            </div>
+            <div class="tab-pane livere" id="comment-livere">
+              
+  <div class="comments" id="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81MjkwMy8yOTM4MA=="></div>
+  </div>
+  
+            </div>
+        </div>
+      </div>
+      <script>
+        window.addEventListener('tabs:register', () => {
+          let activeClass = 'gitalk';
+            activeClass = localStorage.getItem('comments_active') || activeClass;
+          if (activeClass) {
+            let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+            if (activeTab) {
+              activeTab.click();
+            }
+          }
+        });
+        window.addEventListener('tabs:click', event => {
+          let commentClass = event.target.classList[1];
+          localStorage.setItem('comments_active', commentClass);
+        });
+      </script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#网络名词术语解析"><span class="nav-number">1.</span> <span class="nav-text">网络名词术语解析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#路由-route"><span class="nav-number">1.1.</span> <span class="nav-text">路由(route)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#路由器工作原理"><span class="nav-number">1.2.</span> <span class="nav-text">路由器工作原理</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#路由表-Routing-Table"><span class="nav-number">2.</span> <span class="nav-text">\路由表(Routing Table)**</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#路由条目"><span class="nav-number">3.</span> <span class="nav-text">\路由条目**</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#缺省路由条目"><span class="nav-number">4.</span> <span class="nav-text">\缺省路由条目**</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#路由节点"><span class="nav-number">5.</span> <span class="nav-text">\路由节点**</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#以太网交换机工作原理"><span class="nav-number">6.</span> <span class="nav-text">\以太网交换机工作原理**</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#hub工作原理"><span class="nav-number">7.</span> <span class="nav-text">\hub工作原理**</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#半双工-全双工"><span class="nav-number">8.</span> <span class="nav-text">\半双工/全双工**</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DNS服务器"><span class="nav-number">9.</span> <span class="nav-text">\DNS服务器**</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#局域网-LAN"><span class="nav-number">10.</span> <span class="nav-text">\局域网(LAN)**</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#广域网-WAN"><span class="nav-number">11.</span> <span class="nav-text">\广域网(WAN)**</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#端口"><span class="nav-number">12.</span> <span class="nav-text">\端口**</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MTU"><span class="nav-number">13.</span> <span class="nav-text">\MTU**</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#常见网络知识面试题"><span class="nav-number"></span> <span class="nav-text">\常见网络知识面试题**</span></a></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ShifuDong"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">ShifuDong</p>
+  <div class="site-description" itemprop="description">记录生活， 记录学习， 分享知识</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">36</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ShifuDong</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.0.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.5.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.getAttribute('pjax') !== null) {
+      element.setAttribute('pjax', '');
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'a6ee5b68c97a3db64850',
+      clientSecret: '1dfa06f32032431e4af79b80f9ddf9dfd13dbda2',
+      repo: 'dongshifu.github.io',
+      owner: 'dongshifu',
+      admin: ['dongshifu'],
+      id: '0f542444614aa842f88c6eb80586f106',
+        language: 'zh-CN',
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script>
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+</script>
+
+    </div>
+</body>
+</html>
