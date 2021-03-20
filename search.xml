@@ -3133,6 +3133,51 @@
       </tags>
   </entry>
   <entry>
+    <title>linux环境变量设置</title>
+    <url>/2019/12/26/linux%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/</url>
+    <content><![CDATA[<h3 id="Ubuntu环境变量的添加和删除"><a href="#Ubuntu环境变量的添加和删除" class="headerlink" title="Ubuntu环境变量的添加和删除"></a>Ubuntu环境变量的添加和删除</h3><h4 id="添加环境变量的位置"><a href="#添加环境变量的位置" class="headerlink" title="添加环境变量的位置"></a>添加环境变量的位置</h4><ul>
+<li>/etc/profile 该文件为系统的每个用户设置环境信息，当用户第一次登录时，该文件被执行，并从/etc/profile.d目录的配置文件中搜集shell的设置。</li>
+<li>/etc/environment 登录操作系统使用的第二个文件，系统在读取自己的profile之前，设置环境文件的环境变量</li>
+<li>/etc/bashrc 为每一个运行bash shell的用户执行该文件。当bash shell被打开时，该文件被读取</li>
+<li>~/.profile 每个用户都可以使用该文件输入专用于自己使用的shell信息，当用户登录时，该文件仅仅执行一次。默认情况下设置一些环境变量，执行用户的.bashrc文件</li>
+<li>~/.bashrc 该文件包含专用的bash shell的bash信息，当登录以及每次打开新的shell时，该文件被读取。</li>
+</ul>
+<h4 id="添加方法"><a href="#添加方法" class="headerlink" title="添加方法"></a>添加方法</h4><ul>
+<li>方法一：直接修改/etc/enviroment文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">打开/etc/environment文件，其内容如下：</span></span><br><span class="line">PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games" </span><br><span class="line"><span class="meta">#</span><span class="bash">在环境变量PATH中添加你要添加的路径即可。</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>方法二：修改/etc/profile文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">这个文件不是保存环境变量信息的文件，在登录时，系统只是根据它的内容对环境变量进行设置。</span></span><br><span class="line">export PATH=$PATH:[your path1]:[your path2]:[...]  </span><br><span class="line">export PATH=[your path1]:[your path2]:[...]:$PATH #其中，各个PATH之间用冒号分隔，$PATH指代添加your path前的环境变量。</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>方法三：修改/etc/bashrc或者~/.bashrc文件，这两个文件<strong>不是为了保存环境变量，只是在使用bash shell时进行设置而已，所以设置方法和二中一样。对于/etc/bashrc文件，修改的作用于所有用户，但对于~/.bashrc文件，修改的仅仅作用于当前用户。这种修改的作用也是永久性的。</strong></p>
+</li>
+<li><p>方法四：<strong>修改~/.profile文件，作用仅限于当前用户，但同样也是永久性的。这种方法和修改/etc/profile本质上是一样的，这种之不过是仅仅修改了当前用户自己的配置文件。所以作用仅限于当前用户，但同样也是永久性的。</strong></p>
+</li>
+<li><p>方法五：在Terminal中使用shell命令，只在当前Terminal中起作用，关闭了当前Terminal就无效了。对其他Terminal也无效</p>
+</li>
+</ul>
+<h4 id="显示环境变量"><a href="#显示环境变量" class="headerlink" title="显示环境变量"></a>显示环境变量</h4><ul>
+<li>显示所有环境变量</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">env #打印所有的环境变量</span><br></pre></td></tr></table></figure>
+<ul>
+<li>显示指定环境变量</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">echo $PATH #打印PATH环境变量</span><br></pre></td></tr></table></figure>
+<h4 id="让修改生效"><a href="#让修改生效" class="headerlink" title="让修改生效"></a>让修改生效</h4><p>使用source命令也可以让修改立即生效。使用方法为：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">source [file name]  # file name 指的是上面修改过的文件的file name</span><br></pre></td></tr></table></figure>
+<h4 id="删除对环境变量的修改"><a href="#删除对环境变量的修改" class="headerlink" title="删除对环境变量的修改"></a>删除对环境变量的修改</h4><p>将以上方法中对配置文件的修改还原回去即可。另外，由于第五种方法由于是临时性质的且局部的，只需要关闭这个Terminal就好了。</p>
+]]></content>
+      <categories>
+        <category>linux</category>
+      </categories>
+      <tags>
+        <tag>linux环境变量</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>linux相关操作笔记</title>
     <url>/2019/12/26/linux%E6%93%8D%E4%BD%9C%E7%AC%94%E8%AE%B0/</url>
     <content><![CDATA[<h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>linux只是操作系统的内核。</p>
@@ -3739,51 +3784,6 @@
       </tags>
   </entry>
   <entry>
-    <title>linux环境变量设置</title>
-    <url>/2019/12/26/linux%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/</url>
-    <content><![CDATA[<h3 id="Ubuntu环境变量的添加和删除"><a href="#Ubuntu环境变量的添加和删除" class="headerlink" title="Ubuntu环境变量的添加和删除"></a>Ubuntu环境变量的添加和删除</h3><h4 id="添加环境变量的位置"><a href="#添加环境变量的位置" class="headerlink" title="添加环境变量的位置"></a>添加环境变量的位置</h4><ul>
-<li>/etc/profile 该文件为系统的每个用户设置环境信息，当用户第一次登录时，该文件被执行，并从/etc/profile.d目录的配置文件中搜集shell的设置。</li>
-<li>/etc/environment 登录操作系统使用的第二个文件，系统在读取自己的profile之前，设置环境文件的环境变量</li>
-<li>/etc/bashrc 为每一个运行bash shell的用户执行该文件。当bash shell被打开时，该文件被读取</li>
-<li>~/.profile 每个用户都可以使用该文件输入专用于自己使用的shell信息，当用户登录时，该文件仅仅执行一次。默认情况下设置一些环境变量，执行用户的.bashrc文件</li>
-<li>~/.bashrc 该文件包含专用的bash shell的bash信息，当登录以及每次打开新的shell时，该文件被读取。</li>
-</ul>
-<h4 id="添加方法"><a href="#添加方法" class="headerlink" title="添加方法"></a>添加方法</h4><ul>
-<li>方法一：直接修改/etc/enviroment文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">打开/etc/environment文件，其内容如下：</span></span><br><span class="line">PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games" </span><br><span class="line"><span class="meta">#</span><span class="bash">在环境变量PATH中添加你要添加的路径即可。</span></span><br></pre></td></tr></table></figure>
-<ul>
-<li>方法二：修改/etc/profile文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">这个文件不是保存环境变量信息的文件，在登录时，系统只是根据它的内容对环境变量进行设置。</span></span><br><span class="line">export PATH=$PATH:[your path1]:[your path2]:[...]  </span><br><span class="line">export PATH=[your path1]:[your path2]:[...]:$PATH #其中，各个PATH之间用冒号分隔，$PATH指代添加your path前的环境变量。</span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>方法三：修改/etc/bashrc或者~/.bashrc文件，这两个文件<strong>不是为了保存环境变量，只是在使用bash shell时进行设置而已，所以设置方法和二中一样。对于/etc/bashrc文件，修改的作用于所有用户，但对于~/.bashrc文件，修改的仅仅作用于当前用户。这种修改的作用也是永久性的。</strong></p>
-</li>
-<li><p>方法四：<strong>修改~/.profile文件，作用仅限于当前用户，但同样也是永久性的。这种方法和修改/etc/profile本质上是一样的，这种之不过是仅仅修改了当前用户自己的配置文件。所以作用仅限于当前用户，但同样也是永久性的。</strong></p>
-</li>
-<li><p>方法五：在Terminal中使用shell命令，只在当前Terminal中起作用，关闭了当前Terminal就无效了。对其他Terminal也无效</p>
-</li>
-</ul>
-<h4 id="显示环境变量"><a href="#显示环境变量" class="headerlink" title="显示环境变量"></a>显示环境变量</h4><ul>
-<li>显示所有环境变量</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">env #打印所有的环境变量</span><br></pre></td></tr></table></figure>
-<ul>
-<li>显示指定环境变量</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">echo $PATH #打印PATH环境变量</span><br></pre></td></tr></table></figure>
-<h4 id="让修改生效"><a href="#让修改生效" class="headerlink" title="让修改生效"></a>让修改生效</h4><p>使用source命令也可以让修改立即生效。使用方法为：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">source [file name]  # file name 指的是上面修改过的文件的file name</span><br></pre></td></tr></table></figure>
-<h4 id="删除对环境变量的修改"><a href="#删除对环境变量的修改" class="headerlink" title="删除对环境变量的修改"></a>删除对环境变量的修改</h4><p>将以上方法中对配置文件的修改还原回去即可。另外，由于第五种方法由于是临时性质的且局部的，只需要关闭这个Terminal就好了。</p>
-]]></content>
-      <categories>
-        <category>linux</category>
-      </categories>
-      <tags>
-        <tag>linux环境变量</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>记2017中国机器人大赛先进视觉项目</title>
     <url>/2019/12/20/%E8%AE%B02017%E4%B8%AD%E5%9B%BD%E6%9C%BA%E5%99%A8%E4%BA%BA%E5%A4%A7%E8%B5%9B%E5%85%88%E8%BF%9B%E8%A7%86%E8%A7%89%E9%A1%B9%E7%9B%AE/</url>
     <content><![CDATA[<h3 id="主要目标"><a href="#主要目标" class="headerlink" title="主要目标"></a>主要目标</h3><p>这个项目的主要目标是识别和测量摄像头拍摄到的照片中的物体。具体要求为：在隔摄像头（罗技170，500万像素）1米外放置一块白板，白板上贴上一张白纸，白纸上用黑色笔标注出一个70x50的矩形框，然后放置一些色块和实物的打印图片粘贴到黑色矩形框内（色块颜色包括：黑色、黄色、绿色、蓝色，形状包括：圆形、椭圆、矩形、正方形，实物包括：绿箭盒、曲曲饼盒、方便面盒、可乐盒）。具体的情况差不多和下图相似（像素不高，和实际略有区别）：</p>
@@ -3851,6 +3851,68 @@
       </categories>
       <tags>
         <tag>Opencv</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Linux服务管理</title>
+    <url>/2019/11/27/linux_server/</url>
+    <content><![CDATA[<h2 id="Linux服务管理"><a href="#Linux服务管理" class="headerlink" title="Linux服务管理"></a>Linux服务管理</h2><h3 id="服务分类"><a href="#服务分类" class="headerlink" title="服务分类"></a>服务分类</h3><p>Linux服务</p>
+<ul>
+<li><p>RPM包默认安装的服务</p>
+<p>— 独立的服务</p>
+<p>— 基于xinetd服务</p>
+</li>
+<li><p>源码包安装的服务</p>
+</li>
+</ul>
+<p>启动与自启动</p>
+<ul>
+<li>服务启动：在当前系统中让服务运行，并提供功能</li>
+<li>服务自启动：服务在系统开机或重启之后，随着系统的启动而自动启动服务</li>
+</ul>
+<p>RPM安装服务和源码安装服务区别就在于安装位置的不同。</p>
+<p>service不可以启动RPM安装的软件</p>
+]]></content>
+      <categories>
+        <category>linux</category>
+      </categories>
+      <tags>
+        <tag>linux 服务</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Linux 系统管理</title>
+    <url>/2019/11/27/linux_system/</url>
+    <content><![CDATA[<h2 id="Linux系统管理"><a href="#Linux系统管理" class="headerlink" title="Linux系统管理"></a>Linux系统管理</h2><h3 id="进程管理"><a href="#进程管理" class="headerlink" title="进程管理"></a>进程管理</h3><h4 id="进程查看"><a href="#进程查看" class="headerlink" title="进程查看"></a>进程查看</h4><p>作用：判断服务器健康状态，查看系统中所有进程，杀死进程</p>
+<p>查看系统中所有进程：</p>
+<ul>
+<li>ps aux :使用系统中所有进程，使用BSD操作系统格式</li>
+<li>ps -le 查看系统中所有进程，使用Linux标准命令格式</li>
+</ul>
+<p>查看系统健康状态：</p>
+<ul>
+<li>top[选项]</li>
+</ul>
+<p>查看进程树：</p>
+<ul>
+<li>pstree</li>
+</ul>
+<h4 id="终止进程"><a href="#终止进程" class="headerlink" title="终止进程"></a>终止进程</h4><p>1.kill命令</p>
+<p>kill -l 查看可用的进程信号</p>
+<p>kill -1 进程id 重启进程</p>
+<p>kill -9 进程id 强制杀死进程</p>
+<p>2.killall命令</p>
+<p>killall -9 进程名</p>
+<p>3.pkill </p>
+<p>按照终端号踢出用户</p>
+<p>w 使用w命令查询本机已经登录的用户</p>
+<p>pkill -t -9 pts/1 强制杀死从pts/1虚拟终端登录的进程</p>
+]]></content>
+      <categories>
+        <category>linux</category>
+      </categories>
+      <tags>
+        <tag>linux 系统管理</tag>
       </tags>
   </entry>
   <entry>
@@ -4045,68 +4107,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Linux 系统管理</title>
-    <url>/2019/11/27/linux_system/</url>
-    <content><![CDATA[<h2 id="Linux系统管理"><a href="#Linux系统管理" class="headerlink" title="Linux系统管理"></a>Linux系统管理</h2><h3 id="进程管理"><a href="#进程管理" class="headerlink" title="进程管理"></a>进程管理</h3><h4 id="进程查看"><a href="#进程查看" class="headerlink" title="进程查看"></a>进程查看</h4><p>作用：判断服务器健康状态，查看系统中所有进程，杀死进程</p>
-<p>查看系统中所有进程：</p>
-<ul>
-<li>ps aux :使用系统中所有进程，使用BSD操作系统格式</li>
-<li>ps -le 查看系统中所有进程，使用Linux标准命令格式</li>
-</ul>
-<p>查看系统健康状态：</p>
-<ul>
-<li>top[选项]</li>
-</ul>
-<p>查看进程树：</p>
-<ul>
-<li>pstree</li>
-</ul>
-<h4 id="终止进程"><a href="#终止进程" class="headerlink" title="终止进程"></a>终止进程</h4><p>1.kill命令</p>
-<p>kill -l 查看可用的进程信号</p>
-<p>kill -1 进程id 重启进程</p>
-<p>kill -9 进程id 强制杀死进程</p>
-<p>2.killall命令</p>
-<p>killall -9 进程名</p>
-<p>3.pkill </p>
-<p>按照终端号踢出用户</p>
-<p>w 使用w命令查询本机已经登录的用户</p>
-<p>pkill -t -9 pts/1 强制杀死从pts/1虚拟终端登录的进程</p>
-]]></content>
-      <categories>
-        <category>linux</category>
-      </categories>
-      <tags>
-        <tag>linux 系统管理</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Linux服务管理</title>
-    <url>/2019/11/27/linux_server/</url>
-    <content><![CDATA[<h2 id="Linux服务管理"><a href="#Linux服务管理" class="headerlink" title="Linux服务管理"></a>Linux服务管理</h2><h3 id="服务分类"><a href="#服务分类" class="headerlink" title="服务分类"></a>服务分类</h3><p>Linux服务</p>
-<ul>
-<li><p>RPM包默认安装的服务</p>
-<p>— 独立的服务</p>
-<p>— 基于xinetd服务</p>
-</li>
-<li><p>源码包安装的服务</p>
-</li>
-</ul>
-<p>启动与自启动</p>
-<ul>
-<li>服务启动：在当前系统中让服务运行，并提供功能</li>
-<li>服务自启动：服务在系统开机或重启之后，随着系统的启动而自动启动服务</li>
-</ul>
-<p>RPM安装服务和源码安装服务区别就在于安装位置的不同。</p>
-<p>service不可以启动RPM安装的软件</p>
-]]></content>
-      <categories>
-        <category>linux</category>
-      </categories>
-      <tags>
-        <tag>linux 服务</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>hexo基本操作</title>
     <url>/2019/11/26/hexo-operate/</url>
     <content><![CDATA[<h2 id="hexo-文章管理"><a href="#hexo-文章管理" class="headerlink" title="hexo 文章管理"></a>hexo 文章管理</h2><h3 id="1-增加文章"><a href="#1-增加文章" class="headerlink" title="1.增加文章"></a>1.增加文章</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">hexo new xx</span><br></pre></td></tr></table></figure>
@@ -4178,59 +4178,64 @@
 <h4 id="路由器工作原理"><a href="#路由器工作原理" class="headerlink" title="路由器工作原理"></a>路由器工作原理</h4><p>路由器（Router）是连接因特网中各局域网、广域网的设备，它会<strong>根据信道的情况自动选择和设定路由</strong>，以<strong>最佳路径</strong>，按<strong>前后顺序</strong>发送信号的设备。</p>
 <p>传统地，路由器工作于OSI七层协议中的第三层，其<strong>主要任务是接收来自一个网络接口的数据包，根据其中所含的目的地址，决定转发到下一个目的地址</strong>。因此，路由器<strong>首先得在转发路由表中查找它的目的地址，若找到了目的地址，就在数据包的帧格前添加下一个MAC地址，同时IP数据包头的TTL（Time To Live）域也开始减数， 并重新计算校验和。当数据包被送到输出端口时，它需要按顺序等待，以便被传送到输出链路上。</strong></p>
 <p>路由器在工作时能够按照某种路由通信<strong>协议</strong>查找设备中的路由表。如果到某一特定节点有一条以上的路径，则基本预先确定的路由准则是选择最优（或最经济）的传输路径。由于各种网络段和其相互连接情况可能会因环境变化而变化，因此<strong>路由情况的信息一般也按所使用的路由信息协议的规定而定时更新</strong>。</p>
-<p>网络中，每个路由器的基本功能都是按照一定的<strong>规则</strong>来动态地更新它所保持的路由表，以便保持路由信息的有效性。为了便于在网络间传送报文<strong>，路由器总是先按照预定的规则把较大的数据分解成适当大小的数据包，再将这些数据包分别通过相同或不同路径发送出去</strong>。当这些数据包按先后秩序到达目的地后，再把分解的数据包按照一定顺序包装成原有的报文形式。路由器的<strong>分层寻址功能</strong>是路由器的重要功能之一，该功能可以帮助具有很多节点站的网络来存储寻址信息，同时还能在网络间截获发送到远地网段的报文，起转发作用；选择最合理的路由，引导通信也是路由器基本功能；多协议路由器还可以连接使用不同通信协议的网络段，成为不同通信协议网络段之间的通信平台。</p>
-<p>路由和交换之间的主要区别就是交换发生在OSI参考模型第二层（数据链路层），而路由发生在第三层，即网络层。这一区别决定了路由和交换在移动信息的过程 中需使用不同的控制信息，所以两者实现各自功能的方式是不同的。</p>
-<h3 id="路由表-Routing-Table"><a href="#路由表-Routing-Table" class="headerlink" title="\路由表(Routing Table)**"></a><strong><em>\</em>路由表(Routing Table)**</strong></h3><p>在计算机网络中，路由表或称路由择域信息库（RIB）是一个存储在路由器或者联网计算机中的电子表格（文件）或类数据库。路由表存储着指向特定网络地址的路径。</p>
-<h3 id="路由条目"><a href="#路由条目" class="headerlink" title="\路由条目**"></a><strong><em>\</em>路由条目**</strong></h3><p>路由表中的一行，每个条目主要由目的网络地址、子网掩码、下一跳地址、发送接口四部分组成，如果要发送的数据包的目的网络地址匹配路由表中的某一行，就按规定的接口发送到下一跳地址。</p>
-<h3 id="缺省路由条目"><a href="#缺省路由条目" class="headerlink" title="\缺省路由条目**"></a><strong><em>\</em>缺省路由条目**</strong></h3><p>路由表中的最后一行，主要由下一跳地址和发送接口两部分组成，当目的地址与路由表中其它行都不匹配时，就按缺省路由条目规定的接口发送到下一跳地址。</p>
-<h3 id="路由节点"><a href="#路由节点" class="headerlink" title="\路由节点**"></a><strong><em>\</em>路由节点**</strong></h3><p>一个具有路由能力的主机或路由器，它维护一张路由表，通过查询路由表来决定向哪个接口发送数据包。</p>
-<h3 id="以太网交换机工作原理"><a href="#以太网交换机工作原理" class="headerlink" title="\以太网交换机工作原理**"></a><strong><em>\</em>以太网交换机工作原理**</strong></h3><p>以太网交换机是基于以太网传输数据的交换机，以太网采用共享总线型传输媒体方式的局域网。以太网交换机的结构是每个端口都直接与主机相连，并且一般都工作在全双工方式。交换机能同时连通许多对端口，使每一对相互通信的主机都能像独占通信媒体那样，进行无冲突地传输数据。</p>
+<p>网络中，每个路由器的基本功能都是按照一定的<strong>规则</strong>来动态地更新它所保持的路由表，以便保持路由信息的有效性。为了便于在网络间传送报文<strong>，路由器总是先按照预定的规则把较大的数据分解成适当大小的数据包，再将这些数据包分别通过相同或不同路径发送出去</strong>。当这些数据包按先后秩序到达目的地后，再把分解的数据包按照一定顺序包装成原有的报文形式。路由器的<strong>分层寻址功能</strong>是路由器的重要功能之一，该功能可以帮助具有很多节点站的网络来存储寻址信息，同时还能在网络间截获发送到远地网段的报文，起<strong>转发</strong>作用；选择最合理的路由，引导通信也是路由器基本功能；多协议路由器还可以连接使用不同通信协议的网络段，成为不同通信协议网络段之间的通信平台。</p>
+<p>路由和交换之间的主要区别就是<strong>交换发生在OSI参考模型第二层（数据链路层），而路由发生在第三层，即网络层。这一区别决定了路由和交换在移动信息的过程 中需使用不同的控制信息</strong>，所以两者实现各自功能的方式是不同的。</p>
+<h4 id="路由表-Routing-Table"><a href="#路由表-Routing-Table" class="headerlink" title="路由表(Routing Table)"></a>路由表(Routing Table)</h4><p>在计算机网络中，路由表或称路由择域信息库（RIB）是一个存储在路由器或者联网计算机中的<strong>电子表格（文件）或类数据库。路由表存储着指向特定网络地址的路径。</strong></p>
+<h4 id="路由条目"><a href="#路由条目" class="headerlink" title="路由条目"></a>路由条目</h4><p>路由表中的<strong>一行，每个条目主要由目的网络地址、子网掩码、下一跳地址、发送接口四部分组成</strong>，如果要发送的数据包的目的网络地址<strong>匹配</strong>路由表中的某一行，<strong>就按规定的接口发送到下一跳地址。</strong></p>
+<h4 id="缺省路由条目"><a href="#缺省路由条目" class="headerlink" title="缺省路由条目"></a>缺省路由条目</h4><p>路由表中的<strong>最后一行，主要由下一跳地址和发送接口两部分组成，当目的地址与路由表中其它行都不匹配时，就按缺省路由条目规定的接口发送到下一跳地址</strong>。</p>
+<h4 id="路由节点"><a href="#路由节点" class="headerlink" title="路由节点"></a>路由节点</h4><p>一个具有路由能力的主机或路由器，它维护一张路由表，通过查询路由表来决定向哪个接口发送数据包。</p>
+<h4 id="以太网交换机工作原理"><a href="#以太网交换机工作原理" class="headerlink" title="以太网交换机工作原理"></a>以太网交换机工作原理</h4><p>以太网交换机是基于以太网传输数据的交换机，<strong>以太网采用共享总线型传输媒体方式的局域网</strong>。以太网交换机的结构是<strong>每个端口都直接与主机相连，并且一般都工作在全双工方式。交换机能同时连通许多对端口，使每一对相互通信的主机都能像独占通信媒体那样，进行无冲突地传输数据</strong>。</p>
 <p>以太网交换机工作于OSI网络参考模型的第二层（即数据链路层），是一种基于MAC（Media Access Control，介质访问控制）地址识别、完成以太网数据帧转发的网络设备。</p>
-<h3 id="hub工作原理"><a href="#hub工作原理" class="headerlink" title="\hub工作原理**"></a><strong><em>\</em>hub工作原理**</strong></h3><p>集线器实际上就是中继器的一种，其区别仅在于集线器能够提供更多的端口服务，所以集线器又叫多口中继器。</p>
-<p>集线器功能是随机选出某一端口的设备，并让它独占全部带宽，与集线器的上联设备（交换机、路由器或服务器等）进行通信。从Hub的工作方式可以看出，它在网络中只起到信号放大和重发作用，其目的是扩大网络的传输范围，而不具备信号的定向传送能力，是—个标准的共享式设备。其次是Hub只与它的上联设备(如上层Hub、交换机或服务器)进行通信，同层的各端口之间不会直接进行通信，而是通过上联设备再将信息广播到所有端口上。 由此可见，即使是在同一Hub的不同两个端口之间进行通信，都必须要经过两步操作：</p>
-<p>第一步是将信息上传到上联设备；</p>
-<p>第二步是上联设备再将该信息广播到所有端口上。</p>
-<h3 id="半双工-全双工"><a href="#半双工-全双工" class="headerlink" title="\半双工/全双工**"></a><strong><em>\</em>半双工/全双工**</strong></h3><p>Full-duplex（全双工）全双工是在通道中同时双向数据传输的能力。</p>
-<p>Half-duplex（半双工）在通道中同时只能沿着一个方向传输数据。</p>
-<h3 id="DNS服务器"><a href="#DNS服务器" class="headerlink" title="\DNS服务器**"></a><strong><em>\</em>DNS服务器**</strong></h3><p>DNS 是域名系统 (Domain Name System) 的缩写，是因特网的一项核心服务，它作为可以将域名和IP地址相互映射的一个分布式数据库，能够使人更方便的访问互联网，而不用去记住能够被机器直接读取的IP地址串。</p>
-<p>它是由解析器以及域名服务器组成的。域名服务器是指保存有该网络中所有主机的域名和对应IP地址，并具有将域名转换为IP地址功能的服务器。</p>
-<h3 id="局域网-LAN"><a href="#局域网-LAN" class="headerlink" title="\局域网(LAN)**"></a><strong><em>\</em>局域网(LAN)**</strong></h3><p>local area network，一种覆盖一座或几座大楼、一个校园或者一个厂区等地理区域的小范围的计算机网。</p>
-<p>\1. 覆盖的地理范围较小，只在一个相对独立的局部范围内联，如一座或集中的建筑群内。</p>
-<p>\2. 使用专门铺设的传输介质进行联网，数据传输速率高（10Mb/s～10Gb/s）</p>
-<p>\3. 通信延迟时间短，可靠性较高</p>
-<p>\4. 局域网可以支持多种传输介质</p>
-<h3 id="广域网-WAN"><a href="#广域网-WAN" class="headerlink" title="\广域网(WAN)**"></a><strong><em>\</em>广域网(WAN)**</strong></h3><p>wide area network，一种用来实现不同地区的局域网或城域网的互连，可提供不同地区、城市和国家之间的计算机通信的远程计算机网。</p>
-<p>覆盖的范围比局域网（LAN）和城域网（MAN）都广。广域网的通信子网主要使用分组交换技术。</p>
+<h4 id="hub工作原理"><a href="#hub工作原理" class="headerlink" title="hub工作原理"></a>hub工作原理</h4><p>集线器实际上就是中继器的一种，其区别仅在于集线器能够提供更多的端口服务，所以集线器又叫多口中继器。</p>
+<p>集线器功能是随机选出某一端口的设备，并让它独占全部带宽，与集线器的上联设备（交换机、路由器或服务器等）进行通信。从Hub的工作方式可以看出，它<strong>在网络中只起到信号放大和重发作用，其目的是扩大网络的传输范围，而不具备信号的定向传送能力，是—个标准的共享式设备。</strong>其次是<strong>Hub只与它的上联设备(如上层Hub、交换机或服务器)进行通信，同层的各端口之间不会直接进行通信，而是通过上联设备再将信息广播到所有端口上。</strong> 由此可见，即使是在同一Hub的不同两个端口之间进行通信，都必须要经过两步操作：</p>
+<ul>
+<li><p>第一步是将信息上传到上联设备；</p>
+</li>
+<li><p>第二步是上联设备再将该信息广播到所有端口上。</p>
+</li>
+</ul>
+<h4 id="半双工-全双工"><a href="#半双工-全双工" class="headerlink" title="半双工/全双工"></a>半双工/全双工</h4><p>Full-duplex（全双工）全双工是在通道中同时<strong>双向数据传输</strong>的能力。</p>
+<p>Half-duplex（半双工）在通道中同时<strong>只能沿着一个方向传输数据</strong>。</p>
+<h4 id="DNS服务器"><a href="#DNS服务器" class="headerlink" title="DNS服务器"></a>DNS服务器</h4><p>DNS 是域名系统 (Domain Name System) 的缩写，是因特网的一项核心服务，它作为可以<strong>将域名和IP地址相互映射的一个分布式数据库，能够使人更方便的访问互联网，而不用去记住能够被机器直接读取的IP地址串。</strong></p>
+<p>它是由<strong>解析器以及域名服务器组成</strong>的。<strong>域名服务器是指保存有该网络中所有主机的域名和对应IP地址，并具有将域名转换为IP地址功能的服务器。</strong></p>
+<h4 id="局域网-LAN"><a href="#局域网-LAN" class="headerlink" title="局域网(LAN)"></a>局域网(LAN)</h4><p>local area network，一种覆盖一座或几座大楼、一个校园或者一个厂区等地理区域的<strong>小范围的计算机网。</strong></p>
+<ul>
+<li><p>覆盖的地理范围较小，只在一个相对独立的局部范围内联，如一座或集中的建筑群内。</p>
+</li>
+<li><p>使用专门铺设的传输介质进行联网，数据传输速率高（10Mb/s～10Gb/s）</p>
+</li>
+<li><p>通信延迟时间短，可靠性较高</p>
+</li>
+<li><p>局域网可以支持多种传输介质</p>
+</li>
+</ul>
+<h4 id="广域网-WAN"><a href="#广域网-WAN" class="headerlink" title="广域网(WAN)"></a>广域网(WAN)</h4><p>wide area network，一种用来实现<strong>不同地区的局域网或城域网的互连</strong>，可提供不同地区、城市和国家之间的计算机通信的远程计算机网。</p>
+<p>覆盖的范围比局域网（LAN）和城域网（MAN）都广。<strong>广域网的通信子网主要使用分组交换技术。</strong></p>
 <p>广域网的通信子网可以利用公用分组交换网、卫星通信网和无线分组交换网，它将分布在不同地区的局域网或计算机系统互连起来，达到资源共享的目的。如互联网是世界范围内最大的广域网。</p>
-<p>\1. 适应大容量与突发性通信的要求；</p>
-<p>\2. 适应综合业务服务的要求；</p>
-<p>\3. 开放的设备接口与规范化的协议；</p>
-<p>\4. 完善的通信服务与网络管理。</p>
-<h3 id="端口"><a href="#端口" class="headerlink" title="\端口**"></a><strong><em>\</em>端口**</strong></h3><p>逻辑意义上的端口，一般是指TCP/IP协议中的端口，端口号的范围从0到65535，比如用于浏览网页服务的80端口，用于FTP服务的21端口等等。</p>
-<p>\1. 端口号小于256的定义为常用端口，服务器一般都是通过常用端口号来识别的。</p>
-<p>\2. 客户端只需保证该端口号在本机上是惟一的就可以了。客户端口号因存在时间很短暂又称临时端口号；</p>
-<p>\3. 大多数TCP/IP实现给临时端口号分配1024—5000之间的端口号。大于5000的端口号是为其他服务器预留的。</p>
-<p>我们应该在自定义端口时，避免使用well-known的端口。如：80、21等等。</p>
-<h3 id="MTU"><a href="#MTU" class="headerlink" title="\MTU**"></a><strong><em>\</em>MTU**</strong></h3><p>MTU:通信术语 最大传输单元（Maximum Transmission Unit，MTU）</p>
-<p>是指一种通信协议的某一层上面所能通过的最大数据包大小（以字节为单位）。最大传输单元这个参数通常与通信接口有关（网络接口卡、串口等）。</p>
-<p>以下是一些协议的MTU：</p>
-<p>FDDI协议：4352字节</p>
-<p><strong><em>\</em>以太网（Ethernet）协议：1500字节**</strong></p>
-<p>PPPoE（ADSL）协议：1492字节</p>
-<p>X.25协议（Dial Up/Modem）：576字节</p>
-<p>Point-to-Point：4470字节</p>
-<h2 id="常见网络知识面试题"><a href="#常见网络知识面试题" class="headerlink" title="\常见网络知识面试题**"></a><strong><em>\</em>常见网络知识面试题**</strong></h2><p>\1. TCP如何建立链接</p>
-<p>\2. TCP如何通信</p>
-<p>\3. TCP如何关闭链接</p>
-<p>\4. 什么是滑动窗口</p>
-<p>\5. 什么是半关闭</p>
-<p>\6. 局域网内两台机器如何利用TCP/IP通信</p>
-<p>\7. internet上两台主机如何进行通信</p>
-<p>\8. 如何在internet上识别唯一一个进程</p>
-<p>答：通过“IP地址+端口号”来区分不同的服务</p>
-<p>\9. 为什么说TCP是可靠的链接，UDP不可靠</p>
-<p>\10. 路由器和交换机的区别</p>
-<p>\11. 点到点，端到端</p>
+<ul>
+<li><p>适应大容量与突发性通信的要求；</p>
+</li>
+<li><p>适应综合业务服务的要求；</p>
+</li>
+<li><p>开放的设备接口与规范化的协议；</p>
+</li>
+<li><p>完善的通信服务与网络管理。</p>
+</li>
+</ul>
+<h4 id="端口"><a href="#端口" class="headerlink" title="端口"></a>端口</h4><p>逻辑意义上的端口，<strong>一般是指TCP/IP协议中的端口，端口号的范围从0到65535</strong>，比如用于浏览网页服务的80端口，用于FTP服务的21端口等等。</p>
+<ul>
+<li><p>端口号小于256的定义为<strong>常用端口</strong>，服务器一般都是通过常用端口号来识别的。</p>
+</li>
+<li><p><strong>客户端只需保证该端口号在本机上是惟一的就可以了。客户端口号因存在时间很短暂又称临时端口号；</strong></p>
+</li>
+<li><p><strong>大多数TCP/IP实现给临时端口号分配1024—5000之间的端口号。大于5000的端口号是为其他服务器预留的。</strong></p>
+</li>
+<li><p>在自定义端口时，避免使用well-known的端口。如：80、21等等。</p>
+</li>
+</ul>
+<h4 id="MTU"><a href="#MTU" class="headerlink" title="MTU"></a>MTU</h4><p>MTU:通信术语 最大传输单元（Maximum Transmission Unit，MTU）</p>
+<p>是指<strong>一种通信协议的某一层上面所能通过的最大数据包大小（以字节为单位）</strong>。最大传输单元这个参数通常与通信接口有关（网络接口卡、串口等）。</p>
+<p>eg: 以太网（Ethernet）协议的MTU为1500字节</p>
 ]]></content>
       <categories>
         <category>网络</category>
