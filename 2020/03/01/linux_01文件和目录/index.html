@@ -47,16 +47,17 @@
   };
 </script>
 
-  <meta name="description" content="单用户操作系统和多用户操作系统 单用户操作系统：指一台计算机在同一时间 只能由一个用户 使用，一个用户独自享用系统的全部硬件和软件资源 Windows XP 之前的版本都是单用户操作系统   多用户操作系统：指一台计算机在同一时间可以由 多个用户 使用，多个用户共同享用系统的全部硬件和软件资源 Unix 和 Linux 的设计初衷就是多用户操作系统    linux下的文件系统文件结构 在 Win">
+  <meta name="description" content="单用户操作系统和多用户操作系统 单用户操作系统：指一台计算机在同一时间 只能由一个用户 使用，一个用户独自享用系统的全部硬件和软件资源 Windows XP 之前的版本都是单用户操作系统   多用户操作系统：指一台计算机在同一时间可以由 多个用户 使用，多个用户共同享用系统的全部硬件和软件资源 Unix 和 Linux 的设计初衷就是多用户操作系统    linux下的文件系统Linux文件类型">
 <meta name="keywords" content="linux">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux 文件和目录及相关操作">
 <meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;03&#x2F;01&#x2F;linux_01%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95&#x2F;index.html">
 <meta property="og:site_name" content="ShifuDong">
-<meta property="og:description" content="单用户操作系统和多用户操作系统 单用户操作系统：指一台计算机在同一时间 只能由一个用户 使用，一个用户独自享用系统的全部硬件和软件资源 Windows XP 之前的版本都是单用户操作系统   多用户操作系统：指一台计算机在同一时间可以由 多个用户 使用，多个用户共同享用系统的全部硬件和软件资源 Unix 和 Linux 的设计初衷就是多用户操作系统    linux下的文件系统文件结构 在 Win">
+<meta property="og:description" content="单用户操作系统和多用户操作系统 单用户操作系统：指一台计算机在同一时间 只能由一个用户 使用，一个用户独自享用系统的全部硬件和软件资源 Windows XP 之前的版本都是单用户操作系统   多用户操作系统：指一台计算机在同一时间可以由 多个用户 使用，多个用户共同享用系统的全部硬件和软件资源 Unix 和 Linux 的设计初衷就是多用户操作系统    linux下的文件系统Linux文件类型">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;fe5a0a8b-ade0-401a-b879-f7264d3f0a80-11197877.jpg">
-<meta property="og:updated_time" content="2021-03-17T14:07:42.326Z">
+<meta property="og:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;1f4e640f-dc3e-4678-bb88-9fa7c1321aeb-11197877.jpg">
+<meta property="og:updated_time" content="2021-03-20T12:52:54.704Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;fe5a0a8b-ade0-401a-b879-f7264d3f0a80-11197877.jpg">
 
@@ -238,7 +239,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-17 22:07:42" itemprop="dateModified" datetime="2021-03-17T22:07:42+08:00">2021-03-17</time>
+                <time title="修改时间：2021-03-20 20:52:54" itemprop="dateModified" datetime="2021-03-20T20:52:54+08:00">2021-03-20</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -273,7 +274,17 @@
 </ul>
 </li>
 </ul>
-<h3 id="linux下的文件系统"><a href="#linux下的文件系统" class="headerlink" title="linux下的文件系统"></a>linux下的文件系统</h3><h4 id="文件结构"><a href="#文件结构" class="headerlink" title="文件结构"></a>文件结构</h4><ul>
+<h3 id="linux下的文件系统"><a href="#linux下的文件系统" class="headerlink" title="linux下的文件系统"></a>linux下的文件系统</h3><h4 id="Linux文件类型"><a href="#Linux文件类型" class="headerlink" title="Linux文件类型"></a>Linux文件类型</h4><ul>
+<li>普通-</li>
+<li>目录d</li>
+<li>字符设备c</li>
+<li>块设备b</li>
+<li>软连接l</li>
+<li>管道p</li>
+<li>套接字s</li>
+<li>Unknown</li>
+</ul>
+<h4 id="文件结构"><a href="#文件结构" class="headerlink" title="文件结构"></a>文件结构</h4><ul>
 <li><p>在 <code>Windows</code> 下，打开 “计算机”，看到的是一个个的驱动器盘符：eg: C盘，D盘…。</p>
 <ul>
 <li>每个驱动器都有自己的根目录结构，形成多个树并列的情形。</li>
@@ -393,16 +404,16 @@
 </ul>
 </li>
 </ul>
-<h6 id="查看目录ls-命令说明"><a href="#查看目录ls-命令说明" class="headerlink" title="查看目录ls 命令说明"></a>查看目录<code>ls</code> 命令说明</h6><ul>
+<h5 id="查看目录ls-命令说明"><a href="#查看目录ls-命令说明" class="headerlink" title="查看目录ls 命令说明"></a>查看目录<code>ls</code> 命令说明</h5><ul>
 <li><code>ls</code> 是英文单词 <strong>list</strong> 的简写，其功能为列出目录的内容，是用户最常用的命令之一，类似于 <strong>DOS</strong> 下的 <code>dir</code> 命令</li>
 </ul>
-<h6 id="Linux-下文件和目录的特点"><a href="#Linux-下文件和目录的特点" class="headerlink" title="Linux 下文件和目录的特点"></a>Linux 下文件和目录的特点</h6><ul>
+<h5 id="Linux-下文件和目录的特点"><a href="#Linux-下文件和目录的特点" class="headerlink" title="Linux 下文件和目录的特点"></a>Linux 下文件和目录的特点</h5><ul>
 <li>Linux <strong>文件</strong> 或者 <strong>目录</strong> 名称最长可以有 <code>256</code> 个字符</li>
 <li>以 <code>.</code> 开头的文件为隐藏文件，需要用 -a 参数才能显示</li>
 <li><strong>.</strong> 代表当前目录</li>
 <li><strong>..</strong> 代表上一级目录</li>
 </ul>
-<h6 id="ls-常用选项"><a href="#ls-常用选项" class="headerlink" title="ls 常用选项"></a>ls 常用选项</h6><div class="table-container">
+<h5 id="ls-常用选项"><a href="#ls-常用选项" class="headerlink" title="ls 常用选项"></a>ls 常用选项</h5><div class="table-container">
 <table>
 <thead>
 <tr>
@@ -426,7 +437,7 @@
 </tbody>
 </table>
 </div>
-<h6 id="计算机中文件大小的表示方式"><a href="#计算机中文件大小的表示方式" class="headerlink" title="计算机中文件大小的表示方式"></a>计算机中文件大小的表示方式</h6><div class="table-container">
+<h5 id="计算机中文件大小的表示方式"><a href="#计算机中文件大小的表示方式" class="headerlink" title="计算机中文件大小的表示方式"></a>计算机中文件大小的表示方式</h5><div class="table-container">
 <table>
 <thead>
 <tr>
@@ -484,7 +495,7 @@
 </tbody>
 </table>
 </div>
-<h6 id="ls-通配符的使用"><a href="#ls-通配符的使用" class="headerlink" title="ls 通配符的使用"></a>ls 通配符的使用</h6><div class="table-container">
+<h5 id="ls-通配符的使用"><a href="#ls-通配符的使用" class="headerlink" title="ls 通配符的使用"></a>ls 通配符的使用</h5><div class="table-container">
 <table>
 <thead>
 <tr>
@@ -516,6 +527,90 @@
 </tbody>
 </table>
 </div>
+<h5 id="文件操作基本命令"><a href="#文件操作基本命令" class="headerlink" title="文件操作基本命令"></a>文件操作基本命令</h5><p><code>more</code>-分屏显示文件内容, 空格翻页;</p>
+<p><code>less</code>同理;</p>
+<p><code>head -n file</code>-查看file的前n行;</p>
+<p><code>tail -n file</code>-查看file的后n行;</p>
+<h5 id="目录及操作基本命令"><a href="#目录及操作基本命令" class="headerlink" title="目录及操作基本命令"></a>目录及操作基本命令</h5><p><strong>一个目录所占的磁盘大小为4K;</strong></p>
+<p><code>cd -</code>-在两个目录之间来回切换;</p>
+<p><code>rmdir</code>-删除空目录;</p>
+<p><code>cp -a/-r srcdir dstdir</code>-拷贝目录;</p>
+<h5 id="查找文件"><a href="#查找文件" class="headerlink" title="查找文件"></a>查找文件</h5><ul>
+<li><code>find</code> 命令功能非常强大，通常用来在 <strong>特定的目录下</strong> <strong>搜索</strong> 符合条件的文件</li>
+</ul>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>命令</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>01</td>
+<td>find [路径] -name “*.py”</td>
+<td>查找指定路径下扩展名是 <code>.py</code> 的文件，包括子目录</td>
+</tr>
+</tbody>
+</table>
+</div>
+<ul>
+<li><strong>如果省略路径，表示在当前文件夹下查找</strong></li>
+<li>之前学习的通配符，在使用 <code>find</code> 命令时同时可用</li>
+</ul>
+<h5 id="硬链接和软链接"><a href="#硬链接和软链接" class="headerlink" title="硬链接和软链接"></a>硬链接和软链接</h5><ul>
+<li><p>软连接是<strong>一个文件</strong>，其中存的就是<strong>文件的路径</strong>, 路径有几个字符就占几个字节, 所以建议用绝对路径创建软连接;</p>
+<ul>
+<li>注意文件的权限, <strong>软连接的权限代表其本身的权限, 与指向的目的文件无关</strong>;</li>
+</ul>
+</li>
+<li><p>创建硬链接会增加硬链接计数;</p>
+<ul>
+<li>这些硬链接只想同一个文件, 修改一个其余的会同步变化;</li>
+<li>所有的硬链接有相同的<strong>Inode</strong>(文件统一id);</li>
+<li>删除只是把硬链接计数-1;</li>
+</ul>
+</li>
+</ul>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>命令</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>01</td>
+<td>ln -s 被链接的源文件 链接文件</td>
+<td>建立文件的软链接，用通俗的方式讲<strong>类似于</strong> Windows 下的<strong>快捷方式</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<ul>
+<li>没有 <code>-s</code> 选项建立的是一个 <strong>硬链接文件</strong><ul>
+<li>两个文件占用相同大小的硬盘空间，<strong>工作中几乎不会建立文件的硬链接</strong></li>
+</ul>
+</li>
+<li><strong>源文件要使用绝对路径</strong>，不能使用相对路径，这样可以方便移动链接文件后，仍然能够正常使用</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ln -s hello.c hello.c.s #创建软连接;</span><br><span class="line">ln hello.c hello.c.h #创建硬链接;</span><br></pre></td></tr></table></figure>
+<h5 id="文件软硬链接的示意图"><a href="#文件软硬链接的示意图" class="headerlink" title="文件软硬链接的示意图"></a>文件软硬链接的示意图</h5><p><img src="https://api2.mubu.com/v3/document_image/1f4e640f-dc3e-4678-bb88-9fa7c1321aeb-11197877.jpg" alt="文件软硬链接示意图"></p>
+<blockquote>
+<p>在 Linux 中，<strong>文件名</strong> 和 <strong>文件的数据</strong> 是分开存储的</p>
+</blockquote>
+<ul>
+<li>提示： <ul>
+<li>在 Linux 中，只有文件的 <code>硬链接数 == 0</code> 才会被删除</li>
+<li>使用 <code>ls -l</code> 可以查看一个文件的硬链接的数量</li>
+</ul>
+</li>
+</ul>
 <h4 id="磁盘分区类型"><a href="#磁盘分区类型" class="headerlink" title="磁盘分区类型"></a>磁盘分区类型</h4><ul>
 <li>主分区：最多只能有四个</li>
 <li>扩展分区：最多一个，算作主分区的一种，主分区加扩展分区最多有四个。扩展分区不能存储数据和格式化，必须再划分为逻辑分区才可以使用。</li>
@@ -527,19 +622,19 @@
 <li>ext3:ext2的升级，增加日志功能。</li>
 <li>ext4:ext3升级版本，主流使用，功能强大</li>
 </ul>
-<h4 id="文件系统常用命令"><a href="#文件系统常用命令" class="headerlink" title="文件系统常用命令"></a>文件系统常用命令</h4><h4 id="df-du-fsck-dump2fs"><a href="#df-du-fsck-dump2fs" class="headerlink" title="df, du, fsck, dump2fs"></a>df, du, fsck, dump2fs</h4><h6 id="文件系统查看命令df"><a href="#文件系统查看命令df" class="headerlink" title="文件系统查看命令df"></a>文件系统查看命令df</h6><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">df \[选项][挂载点]</span><br><span class="line"></span><br><span class="line">-a 所有文件系统信息</span><br><span class="line"></span><br><span class="line">-h 使用习惯单位显示容量，如kB,MB,GB</span><br><span class="line"></span><br><span class="line">ls 只统计目录下的大小，而不会统计子目录下的数据大小。</span><br></pre></td></tr></table></figure>
-<h6 id="统计目录或文件大小du"><a href="#统计目录或文件大小du" class="headerlink" title="统计目录或文件大小du"></a>统计目录或文件大小du</h6><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-a , -h , -s</span><br></pre></td></tr></table></figure>
+<h4 id="文件系统常用命令"><a href="#文件系统常用命令" class="headerlink" title="文件系统常用命令"></a>文件系统常用命令</h4><h4 id="df-du-fsck-dump2fs"><a href="#df-du-fsck-dump2fs" class="headerlink" title="df, du, fsck, dump2fs"></a>df, du, fsck, dump2fs</h4><h5 id="文件系统查看命令df"><a href="#文件系统查看命令df" class="headerlink" title="文件系统查看命令df"></a>文件系统查看命令df</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">df \[选项][挂载点]</span><br><span class="line"></span><br><span class="line">-a 所有文件系统信息</span><br><span class="line"></span><br><span class="line">-h 使用习惯单位显示容量，如kB,MB,GB</span><br><span class="line"></span><br><span class="line">ls 只统计目录下的大小，而不会统计子目录下的数据大小。</span><br></pre></td></tr></table></figure>
+<h5 id="统计目录或文件大小du"><a href="#统计目录或文件大小du" class="headerlink" title="统计目录或文件大小du"></a>统计目录或文件大小du</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-a , -h , -s</span><br></pre></td></tr></table></figure>
 <p>df命令从文件系统考虑，不光要考虑文件占用的空间，还要统计被命令或程序占用的空间（eg. 文件已经被删除，但程序并没有释放空间）</p>
 <p><strong>du命令面向文件，只会计算文件或目录占用的空间。</strong></p>
-<h6 id="文件系统修复命令fsck"><a href="#文件系统修复命令fsck" class="headerlink" title="文件系统修复命令fsck"></a>文件系统修复命令fsck</h6><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fsck[选项]分区设备文件名</span><br></pre></td></tr></table></figure>
-<h6 id="显示磁盘状态命令dumpe2fs"><a href="#显示磁盘状态命令dumpe2fs" class="headerlink" title="显示磁盘状态命令dumpe2fs"></a>显示磁盘状态命令dumpe2fs</h6><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dumpe2fs 分区设备文件名</span><br></pre></td></tr></table></figure>
-<h4 id="文件系统常用命令-挂载命令"><a href="#文件系统常用命令-挂载命令" class="headerlink" title="文件系统常用命令-挂载命令"></a>文件系统常用命令-挂载命令</h4><h6 id="查询与自动挂载"><a href="#查询与自动挂载" class="headerlink" title="查询与自动挂载"></a>查询与自动挂载</h6><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mount [-l]：查询系统中已经挂载的设备，-l会显示卷标名称</span><br><span class="line"></span><br><span class="line">mount -a 依据配置文件/etc/fastb的内容，自动挂载</span><br></pre></td></tr></table></figure>
-<h6 id="挂载命令格式"><a href="#挂载命令格式" class="headerlink" title="挂载命令格式"></a>挂载命令格式</h6><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">mount [-t 文件系统] [-L 卷标名] [-o 特殊选项] 设备文件名 挂载点</span><br><span class="line"></span><br><span class="line">选项：</span><br><span class="line"></span><br><span class="line">-t 文件系统：加入文件系统类型来指定挂载的类型，可以ext3，ext4,iso9660等文件系统</span><br><span class="line"></span><br><span class="line">-L 卷标名：挂载指定卷标的分区，而不是安装设备文件名挂载</span><br><span class="line"></span><br><span class="line">-o 特殊指令（remount ...）</span><br><span class="line"></span><br><span class="line">mount -o remount ,noexec /home</span><br></pre></td></tr></table></figure>
-<h6 id="挂载光盘与U盘"><a href="#挂载光盘与U盘" class="headerlink" title="挂载光盘与U盘"></a>挂载光盘与U盘</h6><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">挂载光盘</span></span><br><span class="line"></span><br><span class="line">mkdir /mnt/cdrom/ #建立挂载点</span><br><span class="line"></span><br><span class="line">mount -t iso9660 /dev/cdrom /mnt/cdrom #挂载光盘</span><br><span class="line"></span><br><span class="line">mount /dev/sr0 /mnt/cdrom</span><br></pre></td></tr></table></figure>
-<h6 id="卸载命令"><a href="#卸载命令" class="headerlink" title="卸载命令"></a>卸载命令</h6><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">umount 设备文件名或挂载点</span><br><span class="line"></span><br><span class="line">umount /mnt/cdrom</span><br></pre></td></tr></table></figure>
-<h6 id="挂载U盘"><a href="#挂载U盘" class="headerlink" title="挂载U盘"></a>挂载U盘</h6><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">fdisk -l 查看U盘设备文件名</span><br><span class="line"></span><br><span class="line">mount -t vfat /dev/sdb1 /mnt/usb/</span><br><span class="line"></span><br><span class="line">linux默认不支持NTFS文件系统</span><br></pre></td></tr></table></figure>
-<h4 id="fdisk分区"><a href="#fdisk分区" class="headerlink" title="fdisk分区"></a>fdisk分区</h4><h6 id="fdisk命令分区过程"><a href="#fdisk命令分区过程" class="headerlink" title="fdisk命令分区过程"></a>fdisk命令分区过程</h6><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">1.添加硬盘，虚拟机必须在关机的情况下添加</span><br><span class="line"></span><br><span class="line">2.查看新硬盘 fdisk -l</span><br><span class="line"></span><br><span class="line">3.使用fdisk命令分区</span><br><span class="line"></span><br><span class="line">fdisk /dev/sdb</span><br><span class="line"></span><br><span class="line">4.重新读取分区表信息</span><br><span class="line"></span><br><span class="line">partprobe</span><br><span class="line"></span><br><span class="line">5.格式化分区</span><br><span class="line"></span><br><span class="line">扩展分区不可以格式化</span><br><span class="line"></span><br><span class="line">mkfs -t ext4 /dev/sdb1</span><br><span class="line"></span><br><span class="line">6.建立挂载分区</span><br></pre></td></tr></table></figure>
-<h6 id="分区自动挂载与fstab文件修复"><a href="#分区自动挂载与fstab文件修复" class="headerlink" title="分区自动挂载与fstab文件修复"></a>分区自动挂载与fstab文件修复</h6><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">将挂载写入/etc/fstab文件，一定要写对</span><br><span class="line"></span><br><span class="line">mount -a 依据配置文件 /etc/fstab的内容，自动挂载</span><br><span class="line"></span><br><span class="line">/etc/fstab文件修复</span><br><span class="line"></span><br><span class="line">mount -o remount,rm /</span><br></pre></td></tr></table></figure>
+<h5 id="文件系统修复命令fsck"><a href="#文件系统修复命令fsck" class="headerlink" title="文件系统修复命令fsck"></a>文件系统修复命令fsck</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fsck[选项]分区设备文件名</span><br></pre></td></tr></table></figure>
+<h5 id="显示磁盘状态命令dumpe2fs"><a href="#显示磁盘状态命令dumpe2fs" class="headerlink" title="显示磁盘状态命令dumpe2fs"></a>显示磁盘状态命令dumpe2fs</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dumpe2fs 分区设备文件名</span><br></pre></td></tr></table></figure>
+<h4 id="文件系统常用命令-挂载命令"><a href="#文件系统常用命令-挂载命令" class="headerlink" title="文件系统常用命令-挂载命令"></a>文件系统常用命令-挂载命令</h4><h5 id="查询与自动挂载"><a href="#查询与自动挂载" class="headerlink" title="查询与自动挂载"></a>查询与自动挂载</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mount [-l]：查询系统中已经挂载的设备，-l会显示卷标名称</span><br><span class="line"></span><br><span class="line">mount -a 依据配置文件/etc/fastb的内容，自动挂载</span><br></pre></td></tr></table></figure>
+<h5 id="挂载命令格式"><a href="#挂载命令格式" class="headerlink" title="挂载命令格式"></a>挂载命令格式</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">mount [-t 文件系统] [-L 卷标名] [-o 特殊选项] 设备文件名 挂载点</span><br><span class="line"></span><br><span class="line">选项：</span><br><span class="line"></span><br><span class="line">-t 文件系统：加入文件系统类型来指定挂载的类型，可以ext3，ext4,iso9660等文件系统</span><br><span class="line"></span><br><span class="line">-L 卷标名：挂载指定卷标的分区，而不是安装设备文件名挂载</span><br><span class="line"></span><br><span class="line">-o 特殊指令（remount ...）</span><br><span class="line"></span><br><span class="line">mount -o remount ,noexec /home</span><br></pre></td></tr></table></figure>
+<h5 id="挂载光盘与U盘"><a href="#挂载光盘与U盘" class="headerlink" title="挂载光盘与U盘"></a>挂载光盘与U盘</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">挂载光盘</span></span><br><span class="line"></span><br><span class="line">mkdir /mnt/cdrom/ #建立挂载点</span><br><span class="line"></span><br><span class="line">mount -t iso9660 /dev/cdrom /mnt/cdrom #挂载光盘</span><br><span class="line"></span><br><span class="line">mount /dev/sr0 /mnt/cdrom</span><br></pre></td></tr></table></figure>
+<h5 id="卸载命令"><a href="#卸载命令" class="headerlink" title="卸载命令"></a>卸载命令</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">umount 设备文件名或挂载点</span><br><span class="line"></span><br><span class="line">umount /mnt/cdrom</span><br></pre></td></tr></table></figure>
+<h5 id="挂载U盘"><a href="#挂载U盘" class="headerlink" title="挂载U盘"></a>挂载U盘</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">fdisk -l 查看U盘设备文件名</span><br><span class="line"></span><br><span class="line">mount -t vfat /dev/sdb1 /mnt/usb/</span><br><span class="line"></span><br><span class="line">linux默认不支持NTFS文件系统</span><br></pre></td></tr></table></figure>
+<h4 id="fdisk分区"><a href="#fdisk分区" class="headerlink" title="fdisk分区"></a>fdisk分区</h4><h5 id="fdisk命令分区过程"><a href="#fdisk命令分区过程" class="headerlink" title="fdisk命令分区过程"></a>fdisk命令分区过程</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">1.添加硬盘，虚拟机必须在关机的情况下添加</span><br><span class="line"></span><br><span class="line">2.查看新硬盘 fdisk -l</span><br><span class="line"></span><br><span class="line">3.使用fdisk命令分区</span><br><span class="line"></span><br><span class="line">fdisk /dev/sdb</span><br><span class="line"></span><br><span class="line">4.重新读取分区表信息</span><br><span class="line"></span><br><span class="line">partprobe</span><br><span class="line"></span><br><span class="line">5.格式化分区</span><br><span class="line"></span><br><span class="line">扩展分区不可以格式化</span><br><span class="line"></span><br><span class="line">mkfs -t ext4 /dev/sdb1</span><br><span class="line"></span><br><span class="line">6.建立挂载分区</span><br></pre></td></tr></table></figure>
+<h5 id="分区自动挂载与fstab文件修复"><a href="#分区自动挂载与fstab文件修复" class="headerlink" title="分区自动挂载与fstab文件修复"></a>分区自动挂载与fstab文件修复</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">将挂载写入/etc/fstab文件，一定要写对</span><br><span class="line"></span><br><span class="line">mount -a 依据配置文件 /etc/fstab的内容，自动挂载</span><br><span class="line"></span><br><span class="line">/etc/fstab文件修复</span><br><span class="line"></span><br><span class="line">mount -o remount,rm /</span><br></pre></td></tr></table></figure>
 <h4 id="分配swap分区"><a href="#分配swap分区" class="headerlink" title="分配swap分区"></a>分配swap分区</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">1.free命令</span><br><span class="line">查看内存与swap分区使用情况</span><br><span class="line">cached(缓存):加速数据的读取过程</span><br><span class="line">buffer(缓冲)：写入数据过程中，将分散的写入操作保存到内存中，当达到一定的程度再集中写入硬盘，加速数据的写入过程。</span><br><span class="line"></span><br><span class="line">2.新建swap分区</span><br><span class="line">fdisk /dev/sdb</span><br><span class="line">还需将分区ID改为82</span><br><span class="line"></span><br><span class="line">3.格式化</span><br><span class="line">mkswap /dev/sdb6</span><br><span class="line"></span><br><span class="line">4.加入swap分区</span><br><span class="line">swapon /dev/sdb6 加入swap分区</span><br><span class="line">swapoff /dev/sdb6 取消swap分区</span><br><span class="line"></span><br><span class="line">5.swap分区开机自动挂载</span><br><span class="line">vi /etc/fstab</span><br></pre></td></tr></table></figure>
     </div>
 
@@ -562,8 +657,8 @@
       <i class="fa fa-chevron-left"></i> C基础
     </a></div>
       <div class="post-nav-item">
-    <a href="/2020/03/02/linux-02linux%E5%91%BD%E4%BB%A4%E4%BD%BF%E7%94%A8/" rel="next" title="Linux常用命令使用-1">
-      Linux常用命令使用-1 <i class="fa fa-chevron-right"></i>
+    <a href="/2020/03/02/linux-02linux%E5%91%BD%E4%BB%A4%E4%BD%BF%E7%94%A8%20-1/" rel="next" title="Linux常用命令使用-2">
+      Linux常用命令使用-2 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -636,7 +731,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#单用户操作系统和多用户操作系统"><span class="nav-number">1.</span> <span class="nav-text">单用户操作系统和多用户操作系统</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#linux下的文件系统"><span class="nav-number">2.</span> <span class="nav-text">linux下的文件系统</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#文件结构"><span class="nav-number">2.1.</span> <span class="nav-text">文件结构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#文件和目录常用命令"><span class="nav-number">2.2.</span> <span class="nav-text">文件和目录常用命令</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#查看目录ls-命令说明"><span class="nav-number">2.2.0.1.</span> <span class="nav-text">查看目录ls 命令说明</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#Linux-下文件和目录的特点"><span class="nav-number">2.2.0.2.</span> <span class="nav-text">Linux 下文件和目录的特点</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#ls-常用选项"><span class="nav-number">2.2.0.3.</span> <span class="nav-text">ls 常用选项</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#计算机中文件大小的表示方式"><span class="nav-number">2.2.0.4.</span> <span class="nav-text">计算机中文件大小的表示方式</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#ls-通配符的使用"><span class="nav-number">2.2.0.5.</span> <span class="nav-text">ls 通配符的使用</span></a></li></ol></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#磁盘分区类型"><span class="nav-number">2.3.</span> <span class="nav-text">磁盘分区类型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#支持的文件系统"><span class="nav-number">2.4.</span> <span class="nav-text">支持的文件系统</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#文件系统常用命令"><span class="nav-number">2.5.</span> <span class="nav-text">文件系统常用命令</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#df-du-fsck-dump2fs"><span class="nav-number">2.6.</span> <span class="nav-text">df, du, fsck, dump2fs</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#文件系统查看命令df"><span class="nav-number">2.6.0.1.</span> <span class="nav-text">文件系统查看命令df</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#统计目录或文件大小du"><span class="nav-number">2.6.0.2.</span> <span class="nav-text">统计目录或文件大小du</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#文件系统修复命令fsck"><span class="nav-number">2.6.0.3.</span> <span class="nav-text">文件系统修复命令fsck</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#显示磁盘状态命令dumpe2fs"><span class="nav-number">2.6.0.4.</span> <span class="nav-text">显示磁盘状态命令dumpe2fs</span></a></li></ol></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#文件系统常用命令-挂载命令"><span class="nav-number">2.7.</span> <span class="nav-text">文件系统常用命令-挂载命令</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#查询与自动挂载"><span class="nav-number">2.7.0.1.</span> <span class="nav-text">查询与自动挂载</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#挂载命令格式"><span class="nav-number">2.7.0.2.</span> <span class="nav-text">挂载命令格式</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#挂载光盘与U盘"><span class="nav-number">2.7.0.3.</span> <span class="nav-text">挂载光盘与U盘</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#卸载命令"><span class="nav-number">2.7.0.4.</span> <span class="nav-text">卸载命令</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#挂载U盘"><span class="nav-number">2.7.0.5.</span> <span class="nav-text">挂载U盘</span></a></li></ol></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#fdisk分区"><span class="nav-number">2.8.</span> <span class="nav-text">fdisk分区</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#fdisk命令分区过程"><span class="nav-number">2.8.0.1.</span> <span class="nav-text">fdisk命令分区过程</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#分区自动挂载与fstab文件修复"><span class="nav-number">2.8.0.2.</span> <span class="nav-text">分区自动挂载与fstab文件修复</span></a></li></ol></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#分配swap分区"><span class="nav-number">2.9.</span> <span class="nav-text">分配swap分区</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#单用户操作系统和多用户操作系统"><span class="nav-number">1.</span> <span class="nav-text">单用户操作系统和多用户操作系统</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#linux下的文件系统"><span class="nav-number">2.</span> <span class="nav-text">linux下的文件系统</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Linux文件类型"><span class="nav-number">2.1.</span> <span class="nav-text">Linux文件类型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#文件结构"><span class="nav-number">2.2.</span> <span class="nav-text">文件结构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#文件和目录常用命令"><span class="nav-number">2.3.</span> <span class="nav-text">文件和目录常用命令</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#查看目录ls-命令说明"><span class="nav-number">2.3.1.</span> <span class="nav-text">查看目录ls 命令说明</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Linux-下文件和目录的特点"><span class="nav-number">2.3.2.</span> <span class="nav-text">Linux 下文件和目录的特点</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#ls-常用选项"><span class="nav-number">2.3.3.</span> <span class="nav-text">ls 常用选项</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#计算机中文件大小的表示方式"><span class="nav-number">2.3.4.</span> <span class="nav-text">计算机中文件大小的表示方式</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#ls-通配符的使用"><span class="nav-number">2.3.5.</span> <span class="nav-text">ls 通配符的使用</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#文件操作基本命令"><span class="nav-number">2.3.6.</span> <span class="nav-text">文件操作基本命令</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#目录及操作基本命令"><span class="nav-number">2.3.7.</span> <span class="nav-text">目录及操作基本命令</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#查找文件"><span class="nav-number">2.3.8.</span> <span class="nav-text">查找文件</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#硬链接和软链接"><span class="nav-number">2.3.9.</span> <span class="nav-text">硬链接和软链接</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#文件软硬链接的示意图"><span class="nav-number">2.3.10.</span> <span class="nav-text">文件软硬链接的示意图</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#磁盘分区类型"><span class="nav-number">2.4.</span> <span class="nav-text">磁盘分区类型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#支持的文件系统"><span class="nav-number">2.5.</span> <span class="nav-text">支持的文件系统</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#文件系统常用命令"><span class="nav-number">2.6.</span> <span class="nav-text">文件系统常用命令</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#df-du-fsck-dump2fs"><span class="nav-number">2.7.</span> <span class="nav-text">df, du, fsck, dump2fs</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#文件系统查看命令df"><span class="nav-number">2.7.1.</span> <span class="nav-text">文件系统查看命令df</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#统计目录或文件大小du"><span class="nav-number">2.7.2.</span> <span class="nav-text">统计目录或文件大小du</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#文件系统修复命令fsck"><span class="nav-number">2.7.3.</span> <span class="nav-text">文件系统修复命令fsck</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#显示磁盘状态命令dumpe2fs"><span class="nav-number">2.7.4.</span> <span class="nav-text">显示磁盘状态命令dumpe2fs</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#文件系统常用命令-挂载命令"><span class="nav-number">2.8.</span> <span class="nav-text">文件系统常用命令-挂载命令</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#查询与自动挂载"><span class="nav-number">2.8.1.</span> <span class="nav-text">查询与自动挂载</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#挂载命令格式"><span class="nav-number">2.8.2.</span> <span class="nav-text">挂载命令格式</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#挂载光盘与U盘"><span class="nav-number">2.8.3.</span> <span class="nav-text">挂载光盘与U盘</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#卸载命令"><span class="nav-number">2.8.4.</span> <span class="nav-text">卸载命令</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#挂载U盘"><span class="nav-number">2.8.5.</span> <span class="nav-text">挂载U盘</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#fdisk分区"><span class="nav-number">2.9.</span> <span class="nav-text">fdisk分区</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#fdisk命令分区过程"><span class="nav-number">2.9.1.</span> <span class="nav-text">fdisk命令分区过程</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#分区自动挂载与fstab文件修复"><span class="nav-number">2.9.2.</span> <span class="nav-text">分区自动挂载与fstab文件修复</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#分配swap分区"><span class="nav-number">2.10.</span> <span class="nav-text">分配swap分区</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 

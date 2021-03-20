@@ -58,8 +58,7 @@
 <meta property="og:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;bb7185f1-43e5-48fc-a2be-52411cc3e61d-11197877.jpg">
 <meta property="og:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;6a787f05-e037-4fbb-95a0-7cbb8aab2f48-11197877.jpg">
 <meta property="og:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;d5fd3e0b-d68b-4218-a3e6-186de7512dcb-11197877.jpg">
-<meta property="og:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;1f4e640f-dc3e-4678-bb88-9fa7c1321aeb-11197877.jpg">
-<meta property="og:updated_time" content="2021-03-20T11:56:12.408Z">
+<meta property="og:updated_time" content="2021-03-20T12:47:13.788Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;bb7185f1-43e5-48fc-a2be-52411cc3e61d-11197877.jpg">
 
@@ -241,7 +240,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-20 19:56:12" itemprop="dateModified" datetime="2021-03-20T19:56:12+08:00">2021-03-20</time>
+                <time title="修改时间：2021-03-20 20:47:13" itemprop="dateModified" datetime="2021-03-20T20:47:13+08:00">2021-03-20</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -733,68 +732,42 @@
 </ul>
 </li>
 </ul>
-<h3 id="其他命令"><a href="#其他命令" class="headerlink" title="其他命令"></a>其他命令</h3><h4 id="查找文件"><a href="#查找文件" class="headerlink" title="查找文件"></a>查找文件</h4><ul>
-<li><code>find</code> 命令功能非常强大，通常用来在 <strong>特定的目录下</strong> <strong>搜索</strong> 符合条件的文件</li>
-</ul>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>序号</th>
-<th>命令</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>01</td>
-<td>find [路径] -name “*.py”</td>
-<td>查找指定路径下扩展名是 <code>.py</code> 的文件，包括子目录</td>
-</tr>
-</tbody>
-</table>
-</div>
+<h3 id="其他命令"><a href="#其他命令" class="headerlink" title="其他命令"></a>其他命令</h3><h4 id="查找命令"><a href="#查找命令" class="headerlink" title="查找命令"></a>查找命令</h4><h5 id="find"><a href="#find" class="headerlink" title="find"></a>find</h5><ul>
+<li><p>目录紧跟在find之后</p>
 <ul>
-<li><strong>如果省略路径，表示在当前文件夹下查找</strong></li>
-<li>之前学习的通配符，在使用 <code>find</code> 命令时同时可用</li>
-</ul>
-<h4 id="软链接"><a href="#软链接" class="headerlink" title="软链接"></a>软链接</h4><div class="table-container">
-<table>
-<thead>
-<tr>
-<th>序号</th>
-<th>命令</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>01</td>
-<td>ln -s 被链接的源文件 链接文件</td>
-<td>建立文件的软链接，用通俗的方式讲<strong>类似于</strong> Windows 下的<strong>快捷方式</strong></td>
-</tr>
-</tbody>
-</table>
-</div>
+<li><code>find ./ -type &#39;l&#39;</code>找当前目录下的软连接, 子目录会递龟进入;</li>
+<li><code>find ./ -name &#39;*.jpg&#39;</code>-找当前目录下的jpg文件, 子目录会递龟进入;</li>
+<li><p><code>find ./ -maxdepth 3 -name &#39;*.jpg&#39;</code>-指定目录层级深度为3层;</p>
+</li>
+<li><p><code>find ./ -size +20M -size -50M</code>-指定大小范围;</p>
+</li>
+<li><p>按时间查找:</p>
 <ul>
-<li>注意：</li>
-<li>没有 <code>-s</code> 选项建立的是一个 <strong>硬链接文件</strong><ul>
-<li>两个文件占用相同大小的硬盘空间，<strong>工作中几乎不会建立文件的硬链接</strong></li>
+<li>-atime(access访问时间)</li>
+<li>-ctime(change更改时间)</li>
+<li>-mtime(modify改动时间)</li>
+<li><code>find ./ -ctime 3</code>查找三天内被改动的文件;</li>
 </ul>
 </li>
-<li><strong>源文件要使用绝对路径</strong>，不能使用相对路径，这样可以方便移动链接文件后，仍然能够正常使用</li>
-</ul>
-<h4 id="文件软硬链接的示意图"><a href="#文件软硬链接的示意图" class="headerlink" title="文件软硬链接的示意图"></a>文件软硬链接的示意图</h4><p><img src="https://api2.mubu.com/v3/document_image/1f4e640f-dc3e-4678-bb88-9fa7c1321aeb-11197877.jpg" alt="文件软硬链接示意图"></p>
-<blockquote>
-<p>在 Linux 中，<strong>文件名</strong> 和 <strong>文件的数据</strong> 是分开存储的</p>
-</blockquote>
-<ul>
-<li>提示： <ul>
-<li>在 Linux 中，只有文件的 <code>硬链接数 == 0</code> 才会被删除</li>
-<li>使用 <code>ls -l</code> 可以查看一个文件的硬链接的数量</li>
+<li><p><code>ls -h</code>-以人类可读的方式显示结果;</p>
+</li>
+<li>man手册中反斜杠<strong>/</strong>可以用于查找关键字;</li>
 </ul>
 </li>
 </ul>
+<h5 id="grep"><a href="#grep" class="headerlink" title="grep"></a>grep</h5><p>grep:按文件内容搜索”return”关键字:</p>
+<p><code>grep -r &quot;return&quot; ./ -n</code></p>
+<p>ps:监控后台进程的工作情况;</p>
+<p><code>ps aux</code></p>
+<p>加个管道过滤内容</p>
+<p><code>ps aux | grep &quot;kernel&quot;</code>(搜索本身会占一个进程)</p>
+<p>如果将管道的手法用在find上(用xargs):</p>
+<p><code>find /usr/ -maxdepth 3 -type -f | xargs ls -l</code></p>
+<p><strong><code>-exec</code>与<code>xargs</code>的区别:前者会将结果不论多少一股脑的交给-exec, 而xargs会做分片处理(效率更高);</strong></p>
+<p>创建名字中有空格的文件:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ touch abc\ def</span><br><span class="line">$ touch <span class="string">"abc def"</span></span><br></pre></td></tr></table></figure>
+<p>由于xargs会将文件名中的空格误认为是分隔符, 解决方式: 控制分隔符:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find /usr/ -maxdepth 3 -<span class="built_in">type</span> f -print0 | xargs -0 ls -l</span><br></pre></td></tr></table></figure>
 <h4 id="打包压缩"><a href="#打包压缩" class="headerlink" title="打包压缩"></a>打包压缩</h4><ul>
 <li><strong>打包压缩</strong> 是日常工作中备份文件的一种方式</li>
 <li>在不同操作系统中，常用的打包压缩方式是不同的 <ul>
@@ -843,7 +816,11 @@
 <blockquote>
 <p>注意：<code>f</code> 选项必须放在最后，其他选项顺序可以随意</p>
 </blockquote>
-<h4 id="压缩／解压缩"><a href="#压缩／解压缩" class="headerlink" title="压缩／解压缩"></a>压缩／解压缩</h4><h5 id="gzip"><a href="#gzip" class="headerlink" title="gzip"></a>gzip</h5><p><code>tar</code> 与 <code>gzip</code> 命令结合可以使用实现文件 <strong>打包和压缩</strong></p>
+<h4 id="压缩／解压缩"><a href="#压缩／解压缩" class="headerlink" title="压缩／解压缩"></a>压缩／解压缩</h4><h5 id="zip"><a href="#zip" class="headerlink" title="zip"></a>zip</h5><p>zip压缩:</p>
+<p><code>zip -r ziptest.zip hello.c hello.cpp</code></p>
+<p>zip解压缩:</p>
+<p><code>unzip ziptest.zip</code></p>
+<h5 id="gzip"><a href="#gzip" class="headerlink" title="gzip"></a>gzip</h5><p><code>tar</code> 与 <code>gzip</code> 命令结合可以使用实现文件 <strong>打包和压缩</strong></p>
 <ul>
 <li>打包和压缩<ul>
 <li><code>tar</code> 只负责打包文件，但不压缩</li>
@@ -889,7 +866,7 @@
 <li>apt 是 <code>Advanced Packaging Tool</code>，是 Linux 下的一款安装包管理工具</li>
 <li>可以在终端中方便的 <strong>安装</strong>／<strong>卸载</strong>／<strong>更新软件包</strong></li>
 </ul>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1. 安装软件</span></span><br><span class="line">$ sudo apt install 软件包</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 卸载软件</span></span><br><span class="line">$ sudo apt remove 软件名</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 更新已安装的包</span></span><br><span class="line">$ sudo apt upgrade</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1. 安装软件</span></span><br><span class="line">$ sudo apt install 软件包</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 卸载软件</span></span><br><span class="line">$ sudo apt remove 软件名</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 更新已安装的包</span></span><br><span class="line">$ sudo apt upgrade </span><br><span class="line"><span class="comment"># 4. 更新源服务器列表:</span></span><br><span class="line">sudo vim /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
 <h5 id="配置软件源"><a href="#配置软件源" class="headerlink" title="配置软件源"></a>配置软件源</h5><ul>
 <li>如果希望在 <code>ubuntu</code> 中安装软件，<strong>更加快速</strong>，可以通过设置<strong>镜像源</strong>，选择一个访问网速更快的服务器，来提供软件下载／安装服务</li>
 <li>提示：更换服务器之后，需要一个相对比较长时间的更新过程，需要耐心等待。更新完成后，再安装软件都会从新设置的服务器下载软件了</li>
@@ -897,6 +874,8 @@
 <blockquote>
 <p>所谓镜像源，就是<strong>所有服务器的内容是相同的（镜像）</strong>，但是根据所在位置不同，国内服务器通常速度会更快一些！</p>
 </blockquote>
+<h5 id="通过deb包安装"><a href="#通过deb包安装" class="headerlink" title="通过deb包安装"></a>通过deb包安装</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">安装deb软件包命令： sudo dpkg -i xxx.deb</span><br><span class="line">删除软件包命令： sudo dpkg -r xxx.deb</span><br><span class="line">连同配置文件一起删除：sudo dpkg -r --purge xxx.deb</span><br><span class="line">查看软件包信息命令：sudo dpkg -info xxx.deb</span><br><span class="line">查看文件拷贝详细命令：sudo dpkg -L xxx.deb</span><br><span class="line">查看系统中已安装软件包信息：sudo dpkg -l</span><br><span class="line">重新配置软件包命令：sudo dpkg -reconfigure xxx</span><br></pre></td></tr></table></figure>
+<h5 id="源码安装"><a href="#源码安装" class="headerlink" title="源码安装"></a>源码安装</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">1.解压缩源代码包</span><br><span class="line">2.cd dir</span><br><span class="line">3. ./configure <span class="comment"># 检测文件是否缺失，创建Makefile, 检查编译环境</span></span><br><span class="line">4. make <span class="comment"># 编译源码，生成库和可执行程序</span></span><br><span class="line">5. sudo make install <span class="comment">#将库和可执行程序，安装到系统路径下</span></span><br><span class="line">6. sudo make distclean <span class="comment"># 删除和卸载软件</span></span><br></pre></td></tr></table></figure>
 
     </div>
 
@@ -915,12 +894,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2020/03/02/linux-02linux%E5%91%BD%E4%BB%A4%E4%BD%BF%E7%94%A8/" rel="prev" title="Linux常用命令使用-1">
-      <i class="fa fa-chevron-left"></i> Linux常用命令使用-1
+    <a href="/2020/03/01/linux_01%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/" rel="prev" title="Linux 文件和目录及相关操作">
+      <i class="fa fa-chevron-left"></i> Linux 文件和目录及相关操作
     </a></div>
       <div class="post-nav-item">
-    <a href="/2020/12/10/mysql-1mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E5%88%86%E6%9E%90-%E7%B4%A2%E5%BC%95/" rel="next" title="mysql性能优化分析-索引">
-      mysql性能优化分析-索引 <i class="fa fa-chevron-right"></i>
+    <a href="/2020/03/02/linux-02linux%E5%91%BD%E4%BB%A4%E4%BD%BF%E7%94%A8/" rel="next" title="Linux常用命令使用-1">
+      Linux常用命令使用-1 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -993,7 +972,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#系统相关命令"><span class="nav-number">1.</span> <span class="nav-text">系统相关命令</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#时间和日期"><span class="nav-number">1.1.</span> <span class="nav-text">时间和日期</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#磁盘信息"><span class="nav-number">1.2.</span> <span class="nav-text">磁盘信息</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#进程信息"><span class="nav-number">1.3.</span> <span class="nav-text">进程信息</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#用户权限相关命令"><span class="nav-number">2.</span> <span class="nav-text">用户权限相关命令</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#基本概念"><span class="nav-number">2.1.</span> <span class="nav-text">基本概念</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#组"><span class="nav-number">2.2.</span> <span class="nav-text">组</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ls-l-扩展"><span class="nav-number">2.3.</span> <span class="nav-text">ls -l 扩展</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#chmod-简单使用"><span class="nav-number">2.4.</span> <span class="nav-text">chmod 简单使用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#超级用户"><span class="nav-number">2.5.</span> <span class="nav-text">超级用户</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#sudo"><span class="nav-number">2.6.</span> <span class="nav-text">sudo</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#组管理-终端命令"><span class="nav-number">2.7.</span> <span class="nav-text">组管理 终端命令</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#用户管理-终端命令"><span class="nav-number">2.8.</span> <span class="nav-text">用户管理 终端命令</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#创建用户／设置密码／删除用户"><span class="nav-number">2.8.1.</span> <span class="nav-text">创建用户／设置密码／删除用户</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#查看用户信息"><span class="nav-number">2.8.2.</span> <span class="nav-text">查看用户信息</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#passwd-文件"><span class="nav-number">2.8.3.</span> <span class="nav-text">passwd 文件</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#usermod"><span class="nav-number">2.8.4.</span> <span class="nav-text">usermod</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#which"><span class="nav-number">2.8.5.</span> <span class="nav-text">which</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#bin-和-sbin"><span class="nav-number">2.8.6.</span> <span class="nav-text">bin 和 sbin</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#切换用户"><span class="nav-number">2.8.7.</span> <span class="nav-text">切换用户</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#修改文件权限"><span class="nav-number">2.8.8.</span> <span class="nav-text">修改文件权限</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#其他命令"><span class="nav-number">3.</span> <span class="nav-text">其他命令</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#查找文件"><span class="nav-number">3.1.</span> <span class="nav-text">查找文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#软链接"><span class="nav-number">3.2.</span> <span class="nav-text">软链接</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#文件软硬链接的示意图"><span class="nav-number">3.3.</span> <span class="nav-text">文件软硬链接的示意图</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#打包压缩"><span class="nav-number">3.4.</span> <span class="nav-text">打包压缩</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#打包-／-解包"><span class="nav-number">3.5.</span> <span class="nav-text">打包 ／ 解包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#压缩／解压缩"><span class="nav-number">3.6.</span> <span class="nav-text">压缩／解压缩</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#gzip"><span class="nav-number">3.6.1.</span> <span class="nav-text">gzip</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#bzip2"><span class="nav-number">3.6.2.</span> <span class="nav-text">bzip2</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#软件安装"><span class="nav-number">3.7.</span> <span class="nav-text">软件安装</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#通过-apt-安装／卸载软件"><span class="nav-number">3.7.1.</span> <span class="nav-text">通过 apt 安装／卸载软件</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#配置软件源"><span class="nav-number">3.7.2.</span> <span class="nav-text">配置软件源</span></a></li></ol></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#系统相关命令"><span class="nav-number">1.</span> <span class="nav-text">系统相关命令</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#时间和日期"><span class="nav-number">1.1.</span> <span class="nav-text">时间和日期</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#磁盘信息"><span class="nav-number">1.2.</span> <span class="nav-text">磁盘信息</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#进程信息"><span class="nav-number">1.3.</span> <span class="nav-text">进程信息</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#用户权限相关命令"><span class="nav-number">2.</span> <span class="nav-text">用户权限相关命令</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#基本概念"><span class="nav-number">2.1.</span> <span class="nav-text">基本概念</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#组"><span class="nav-number">2.2.</span> <span class="nav-text">组</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ls-l-扩展"><span class="nav-number">2.3.</span> <span class="nav-text">ls -l 扩展</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#chmod-简单使用"><span class="nav-number">2.4.</span> <span class="nav-text">chmod 简单使用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#超级用户"><span class="nav-number">2.5.</span> <span class="nav-text">超级用户</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#sudo"><span class="nav-number">2.6.</span> <span class="nav-text">sudo</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#组管理-终端命令"><span class="nav-number">2.7.</span> <span class="nav-text">组管理 终端命令</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#用户管理-终端命令"><span class="nav-number">2.8.</span> <span class="nav-text">用户管理 终端命令</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#创建用户／设置密码／删除用户"><span class="nav-number">2.8.1.</span> <span class="nav-text">创建用户／设置密码／删除用户</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#查看用户信息"><span class="nav-number">2.8.2.</span> <span class="nav-text">查看用户信息</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#passwd-文件"><span class="nav-number">2.8.3.</span> <span class="nav-text">passwd 文件</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#usermod"><span class="nav-number">2.8.4.</span> <span class="nav-text">usermod</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#which"><span class="nav-number">2.8.5.</span> <span class="nav-text">which</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#bin-和-sbin"><span class="nav-number">2.8.6.</span> <span class="nav-text">bin 和 sbin</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#切换用户"><span class="nav-number">2.8.7.</span> <span class="nav-text">切换用户</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#修改文件权限"><span class="nav-number">2.8.8.</span> <span class="nav-text">修改文件权限</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#其他命令"><span class="nav-number">3.</span> <span class="nav-text">其他命令</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#查找命令"><span class="nav-number">3.1.</span> <span class="nav-text">查找命令</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#find"><span class="nav-number">3.1.1.</span> <span class="nav-text">find</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#grep"><span class="nav-number">3.1.2.</span> <span class="nav-text">grep</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#打包压缩"><span class="nav-number">3.2.</span> <span class="nav-text">打包压缩</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#打包-／-解包"><span class="nav-number">3.3.</span> <span class="nav-text">打包 ／ 解包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#压缩／解压缩"><span class="nav-number">3.4.</span> <span class="nav-text">压缩／解压缩</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#zip"><span class="nav-number">3.4.1.</span> <span class="nav-text">zip</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#gzip"><span class="nav-number">3.4.2.</span> <span class="nav-text">gzip</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#bzip2"><span class="nav-number">3.4.3.</span> <span class="nav-text">bzip2</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#软件安装"><span class="nav-number">3.5.</span> <span class="nav-text">软件安装</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#通过-apt-安装／卸载软件"><span class="nav-number">3.5.1.</span> <span class="nav-text">通过 apt 安装／卸载软件</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#配置软件源"><span class="nav-number">3.5.2.</span> <span class="nav-text">配置软件源</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#通过deb包安装"><span class="nav-number">3.5.3.</span> <span class="nav-text">通过deb包安装</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#源码安装"><span class="nav-number">3.5.4.</span> <span class="nav-text">源码安装</span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
