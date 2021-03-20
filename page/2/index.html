@@ -390,7 +390,7 @@
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
           
-            <a href="/2020/03/02/linux-02linux%E5%91%BD%E4%BB%A4%E4%BD%BF%E7%94%A8/" class="post-title-link" itemprop="url">Linux常用命令使用</a>
+            <a href="/2020/03/02/linux-02linux%E5%91%BD%E4%BB%A4%E4%BD%BF%E7%94%A8/" class="post-title-link" itemprop="url">Linux常用命令使用-1</a>
         </h1>
 
         <div class="post-meta">
@@ -407,7 +407,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-17 22:14:51" itemprop="dateModified" datetime="2021-03-17T22:14:51+08:00">2021-03-17</time>
+                <time title="修改时间：2021-03-20 19:42:28" itemprop="dateModified" datetime="2021-03-20T19:42:28+08:00">2021-03-20</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -440,12 +440,12 @@
 <li><code>parameter</code>：传给命令的参数，可以是 <strong>零个</strong>、<strong>一个</strong> 或者 <strong>多个</strong></li>
 <li><code>[]</code> 代表可选 </li>
 </ul>
-<h4 id="查阅命令帮助信息"><a href="#查阅命令帮助信息" class="headerlink" title="查阅命令帮助信息"></a>查阅命令帮助信息</h4><h6 id="help"><a href="#help" class="headerlink" title="help"></a>help</h6><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">command</span> --<span class="built_in">help</span></span><br></pre></td></tr></table></figure>
+<h4 id="查阅命令帮助信息"><a href="#查阅命令帮助信息" class="headerlink" title="查阅命令帮助信息"></a>查阅命令帮助信息</h4><h5 id="help"><a href="#help" class="headerlink" title="help"></a>help</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">command</span> --<span class="built_in">help</span></span><br></pre></td></tr></table></figure>
 <p>说明：</p>
 <ul>
 <li>显示 <code>command</code> 命令的帮助信息</li>
 </ul>
-<h6 id="man"><a href="#man" class="headerlink" title="man"></a>man</h6><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">man <span class="built_in">command</span></span><br></pre></td></tr></table></figure>
+<h5 id="man"><a href="#man" class="headerlink" title="man"></a>man</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">man <span class="built_in">command</span></span><br></pre></td></tr></table></figure>
 <p>说明：</p>
 <ul>
 <li>查阅 <code>command</code> 命令的使用手册</li>
@@ -634,20 +634,20 @@
 </tbody>
 </table>
 </div>
-<h4 id="网卡-和-IP-地址"><a href="#网卡-和-IP-地址" class="headerlink" title="网卡 和 IP 地址"></a>网卡 和 IP 地址</h4><h6 id="网卡"><a href="#网卡" class="headerlink" title="网卡"></a>网卡</h6><ul>
+<h4 id="网卡-和-IP-地址"><a href="#网卡-和-IP-地址" class="headerlink" title="网卡 和 IP 地址"></a>网卡 和 IP 地址</h4><h5 id="网卡"><a href="#网卡" class="headerlink" title="网卡"></a>网卡</h5><ul>
 <li>网卡是一个专门负责网络通讯的硬件设备</li>
 <li><strong>IP 地址</strong>是设置在网卡上的地址信息</li>
 </ul>
 <blockquote>
 <p>我们可以把 <strong>电脑</strong> 比作 <strong>电话</strong>，<strong>网卡</strong> 相当于 <strong>SIM 卡</strong>，<strong>IP 地址</strong> 相当于 <strong>电话号码</strong></p>
 </blockquote>
-<h6 id="IP-地址"><a href="#IP-地址" class="headerlink" title="IP 地址"></a>IP 地址</h6><ul>
+<h5 id="IP-地址"><a href="#IP-地址" class="headerlink" title="IP 地址"></a>IP 地址</h5><ul>
 <li><strong>每台联网的电脑上</strong>都有 <strong>IP 地址</strong>，<strong>是保证电脑之间正常通讯的重要设置</strong></li>
 </ul>
 <blockquote>
 <p>注意：每台电脑的 IP 地址不能相同，否则会出现 IP 地址冲突，并且没有办法正常通讯</p>
 </blockquote>
-<h6 id="ifconfig"><a href="#ifconfig" class="headerlink" title="ifconfig"></a><code>ifconfig</code></h6><ul>
+<h5 id="ifconfig"><a href="#ifconfig" class="headerlink" title="ifconfig"></a><code>ifconfig</code></h5><ul>
 <li><code>ifconfig</code> 可以查看／配置计算机当前的网卡配置信息</li>
 </ul>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看网卡配置信息</span></span><br><span class="line">$ ifconfig</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看网卡对应的 IP 地址</span></span><br><span class="line">$ ifconfig | grep inet</span><br></pre></td></tr></table></figure>
@@ -657,7 +657,7 @@
 <ul>
 <li><code>127.0.0.1</code> 被称为 <strong>本地回环/环回地址</strong>，一般用来测试本机网卡是否正常</li>
 </ul>
-<h6 id="ping"><a href="#ping" class="headerlink" title="ping"></a><code>ping</code></h6><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 检测到目标主机是否连接正常</span></span><br><span class="line">$ ping IP地址</span><br><span class="line"></span><br><span class="line"><span class="comment"># 检测本地网卡工作正常</span></span><br><span class="line">$ ping 127.0.0.1</span><br></pre></td></tr></table></figure>
+<h5 id="ping"><a href="#ping" class="headerlink" title="ping"></a><code>ping</code></h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 检测到目标主机是否连接正常</span></span><br><span class="line">$ ping IP地址</span><br><span class="line"></span><br><span class="line"><span class="comment"># 检测本地网卡工作正常</span></span><br><span class="line">$ ping 127.0.0.1</span><br></pre></td></tr></table></figure>
 <ul>
 <li><code>ping</code> 一般用于检测当前计算机到目标计算机之间的网络 <strong>是否通畅</strong>，<strong>数值越大，速度越慢</strong></li>
 </ul>
@@ -822,7 +822,7 @@
 <blockquote>
 <p>提示：有关 SSH 配置信息都保存在用户家目录下的 <code>.ssh</code> 目录下</p>
 </blockquote>
-<h6 id="免密码登录"><a href="#免密码登录" class="headerlink" title="免密码登录"></a>免密码登录</h6><h6 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h6><ul>
+<h5 id="免密码登录"><a href="#免密码登录" class="headerlink" title="免密码登录"></a>免密码登录</h5><h5 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h5><ul>
 <li>配置公钥 <ul>
 <li>执行 <code>ssh-keygen</code> 即可生成 SSH 钥匙，一路回车即可</li>
 </ul>
@@ -832,7 +832,7 @@
 </ul>
 </li>
 </ul>
-<h6 id="示意图"><a href="#示意图" class="headerlink" title="示意图"></a>示意图</h6><p><img src="https://api2.mubu.com/v3/document_image/d2e4130c-8c39-4c4c-99bf-9efde29eb97b-11197877.jpg" alt="SSH 免密码示意图">￼</p>
+<h5 id="示意图"><a href="#示意图" class="headerlink" title="示意图"></a>示意图</h5><p><img src="https://api2.mubu.com/v3/document_image/d2e4130c-8c39-4c4c-99bf-9efde29eb97b-11197877.jpg" alt="SSH 免密码示意图">￼</p>
 <blockquote>
 <p>非对称加密算法</p>
 <ul>
@@ -840,11 +840,86 @@
 <li>使用 <strong>私钥</strong> 加密的数据，需要使用 <strong>公钥</strong> 解密</li>
 </ul>
 </blockquote>
-<h6 id="配置别名"><a href="#配置别名" class="headerlink" title="配置别名"></a>配置别名</h6><p>每次都输入 <code>ssh -p port user@remote</code>，时间久了会觉得很麻烦，特别是当 <code>user</code>, <code>remote</code> 和 <code>port</code> 都得输入，而且还不好记忆</p>
+<h5 id="配置别名"><a href="#配置别名" class="headerlink" title="配置别名"></a>配置别名</h5><p>每次都输入 <code>ssh -p port user@remote</code>，时间久了会觉得很麻烦，特别是当 <code>user</code>, <code>remote</code> 和 <code>port</code> 都得输入，而且还不好记忆</p>
 <p>而 <strong>配置别名</strong> 可以让进一步偷懒，譬如用：<code>ssh mac</code> 来替代上面这么一长串，那么就在 <code>~/.ssh/config</code> 里面追加以下内容：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Host mac</span><br><span class="line">    HostName ip地址</span><br><span class="line">    User itheima</span><br><span class="line">    Port 22</span><br></pre></td></tr></table></figure>
 <p><strong>保存之后，即可用 <code>ssh mac</code> 实现远程登录了，<code>scp</code> 同样可以使用</strong></p>
-<h3 id="系统相关命令"><a href="#系统相关命令" class="headerlink" title="系统相关命令"></a>系统相关命令</h3><h4 id="时间和日期"><a href="#时间和日期" class="headerlink" title="时间和日期"></a>时间和日期</h4><div class="table-container">
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/02/linux-02linux%E5%91%BD%E4%BB%A4%E4%BD%BF%E7%94%A8%20-1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/03/02/linux-02linux%E5%91%BD%E4%BB%A4%E4%BD%BF%E7%94%A8%20-1/" class="post-title-link" itemprop="url">Linux常用命令使用-2</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-02 21:29:16" itemprop="dateCreated datePublished" datetime="2020-03-02T21:29:16+08:00">2020-03-02</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-20 19:40:43" itemprop="dateModified" datetime="2021-03-20T19:40:43+08:00">2021-03-20</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux/" itemprop="url" rel="index">
+                    <span itemprop="name">linux</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="系统相关命令"><a href="#系统相关命令" class="headerlink" title="系统相关命令"></a>系统相关命令</h3><h4 id="时间和日期"><a href="#时间和日期" class="headerlink" title="时间和日期"></a>时间和日期</h4><div class="table-container">
 <table>
 <thead>
 <tr>
@@ -3071,113 +3146,6 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/02/Go%20%E6%8E%A5%E5%8F%A3_2Go%E8%AF%AD%E8%A8%80%E4%B8%8E%E9%B8%AD%E5%AD%90%E7%B1%BB%E5%9E%8B%E7%9A%84%E5%85%B3%E7%B3%BB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/01/02/Go%20%E6%8E%A5%E5%8F%A3_2Go%E8%AF%AD%E8%A8%80%E4%B8%8E%E9%B8%AD%E5%AD%90%E7%B1%BB%E5%9E%8B%E7%9A%84%E5%85%B3%E7%B3%BB/" class="post-title-link" itemprop="url">Go鸭子类型</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-01-02 21:30:16" itemprop="dateCreated datePublished" datetime="2020-01-02T21:30:16+08:00">2020-01-02</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-10 08:21:27" itemprop="dateModified" datetime="2021-03-10T08:21:27+08:00">2021-03-10</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Go-interface/" itemprop="url" rel="index">
-                    <span itemprop="name">Go interface</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="鸭子类型"><a href="#鸭子类型" class="headerlink" title="鸭子类型"></a>鸭子类型</h3><p>维基百科: 如果某个东西长得像鸭子，像鸭子一样游泳，像鸭子一样嘎嘎叫，那它就可以被看成是一只鸭子。</p>
-<ul>
-<li><p><code>Duck Typing</code>，鸭子类型，是<strong>动态编程语言的一种对象推断策略，它更关注对象能如何被使用，而不是对象的类型本身</strong>。</p>
-</li>
-<li><p>Go 语言作为一门静态语言，它通过<strong>通过接口的方式完美支持鸭子类型</strong>。</p>
-</li>
-</ul>
-<h3 id="动态语言实现"><a href="#动态语言实现" class="headerlink" title="动态语言实现"></a>动态语言实现</h3><p>动态语言的特点：</p>
-<blockquote>
-<p>变量绑定的类型是不确定的，在运行期间才能确定<br>函数和方法可以接收任何类型的参数，且调用时不检查参数类型<br>不需要实现接口</p>
-</blockquote>
-<p>在动态语言 python 中，定义一个这样的函数：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">hello_world</span><span class="params">(coder)</span>:</span></span><br><span class="line">    coder.say_hello()</span><br></pre></td></tr></table></figure>
-<p>当调用此函数的时候，可以传入任意类型，只要它实现了 <code>say_hello()</code> 函数就可以。如果没有实现，<strong>运行过程</strong>中会出现错误。</p>
-<h3 id="静态语言实现"><a href="#静态语言实现" class="headerlink" title="静态语言实现"></a>静态语言实现</h3><p>而在静态语言如 Java, C++ 中，必须要<strong>显示地声明实现了某个接后，才能用在任何需要这个接口的地方。</strong> <strong>如果你在程序中调用 <code>hello_world</code> 函数，却传入了一个根本就没有实现 <code>say_hello()</code> 的类型，那在编译阶段就不会通过。</strong>这也是静态语言比动态语言更安全的原因。</p>
-<p>动态语言和静态语言的差别在此就有所体现。<strong>静态语言在编译期间就能发现类型不匹配的错误，不像动态语言，必须要运行到那一行代码才会报错。</strong></p>
-<p>静态语言要求程序员在编码阶段就要按照规定来编写程序，为每个变量规定数据类型，这在某种程度上，加大了工作量，也加长了代码量。动态语言则没有这些要求，可以让人更专注在业务上，代码也更短，写起来更快，这一点，eg. python 。</p>
-<h3 id="Go鸭子类型实现"><a href="#Go鸭子类型实现" class="headerlink" title="Go鸭子类型实现"></a>Go鸭子类型实现</h3><p>Go 语言作为一门现代静态语言，是有后发优势的。它<strong>引入了动态语言的便利，同时又会进行静态语言的类型检查</strong>，写起来是非常高效的。</p>
-<p>Go 采用了折中的做法：<strong>不要求类型显示地声明实现了某个接口，只要实现了相关的方法即可，编译器就能检测到。</strong></p>
-<p>例子：</p>
-<p>定义一个接口，和使用此接口作为参数的函数：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> IGreeting <span class="keyword">interface</span> &#123;</span><br><span class="line">	sayHello()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">sayHello</span><span class="params">(i IGreeting)</span></span> &#123;</span><br><span class="line">	i.sayHello()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>定义两个结构体：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Go <span class="keyword">struct</span> &#123;&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(g Go)</span> <span class="title">sayHello</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Println(<span class="string">"Hi, I am GO!"</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> PHP <span class="keyword">struct</span> &#123;&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p PHP)</span> <span class="title">sayHello</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Println(<span class="string">"Hi, I am PHP!"</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>最后，在 main 函数里调用 sayHello() 函数：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	golang := Go&#123;&#125;</span><br><span class="line">	php := PHP&#123;&#125;</span><br><span class="line"></span><br><span class="line">	sayHello(golang)</span><br><span class="line">	sayHello(php)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>程序输出：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Hi, I am GO!</span><br><span class="line">Hi, I am PHP!</span><br></pre></td></tr></table></figure>
-<p><strong>在 main 函数中，调用 sayHello() 函数时，传入了 <code>golang, php</code> 对象，它们并没有显式地声明实现了 IGreeting 类型，只是实现了接口所规定的 sayHello() 函数。实际上，编译器在调用 sayHello() 函数时，会隐式地将 <code>golang, php</code> 对象转换成 IGreeting 类型，这也是静态语言的类型检查功能。</strong></p>
-<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>鸭子类型是一种动态语言的风格，在这种风格中，<strong>一个对象有效的语义，不是由继承自特定的类或实现特定的接口，而是由它”当前方法和属性的集合”决定。Go 作为一种静态语言，通过接口实现了 <code>鸭子类型</code>，实际上是 Go 的编译器在其中作了隐匿的转换工作。</strong></p>
-<h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><p>【Golang 与鸭子类型，讲得比较好】<a href="https://blog.csdn.net/cszhouwei/article/details/33741731" target="_blank" rel="noopener">https://blog.csdn.net/cszhouwei/article/details/33741731</a></p>
-<p>【各种面向对象的名词】<a href="https://cyent.github.io/golang/other/oo/" target="_blank" rel="noopener">https://cyent.github.io/golang/other/oo/</a></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
@@ -3228,7 +3196,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">36</span>
+          <span class="site-state-item-count">37</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
