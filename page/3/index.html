@@ -303,7 +303,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/01/Go_struct_2%E7%BC%96%E8%AF%91%E5%99%A8%E8%87%AA%E5%8A%A8%E6%A3%80%E6%B5%8B%E7%B1%BB%E5%9E%8B%E6%98%AF%E5%90%A6%E5%AE%9E%E7%8E%B0%E6%8E%A5%E5%8F%A3/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/01/Go_%E6%8E%A5%E5%8F%A3_8%E7%BC%96%E8%AF%91%E5%99%A8%E8%87%AA%E5%8A%A8%E6%A3%80%E6%B5%8B%E7%B1%BB%E5%9E%8B%E6%98%AF%E5%90%A6%E5%AE%9E%E7%8E%B0%E6%8E%A5%E5%8F%A3/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -317,7 +317,7 @@
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
           
-            <a href="/2020/01/01/Go_struct_2%E7%BC%96%E8%AF%91%E5%99%A8%E8%87%AA%E5%8A%A8%E6%A3%80%E6%B5%8B%E7%B1%BB%E5%9E%8B%E6%98%AF%E5%90%A6%E5%AE%9E%E7%8E%B0%E6%8E%A5%E5%8F%A3/" class="post-title-link" itemprop="url">Go 编译器自动检测类型是否实现接口</a>
+            <a href="/2020/01/01/Go_%E6%8E%A5%E5%8F%A3_8%E7%BC%96%E8%AF%91%E5%99%A8%E8%87%AA%E5%8A%A8%E6%A3%80%E6%B5%8B%E7%B1%BB%E5%9E%8B%E6%98%AF%E5%90%A6%E5%AE%9E%E7%8E%B0%E6%8E%A5%E5%8F%A3/" class="post-title-link" itemprop="url">Go 编译器自动检测类型是否实现接口</a>
         </h1>
 
         <div class="post-meta">
@@ -334,7 +334,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-16 08:31:40" itemprop="dateModified" datetime="2021-03-16T08:31:40+08:00">2021-03-16</time>
+                <time title="修改时间：2021-03-20 18:52:50" itemprop="dateModified" datetime="2021-03-20T18:52:50+08:00">2021-03-20</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -342,8 +342,8 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Go-struct/" itemprop="url" rel="index">
-                    <span itemprop="name">Go struct</span>
+                  <a href="/categories/Go-interface/" itemprop="url" rel="index">
+                    <span itemprop="name">Go interface</span>
                   </a>
                 </span>
             </span>
@@ -710,115 +710,6 @@
 <p>再如，两个宏都存在时编译代码A，否则编译代码B： </p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> NUM1 10</span></span><br><span class="line"><span class="comment">// #define NUM2 20</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">if</span> (defined NUM1 &amp;&amp; defined NUM2)</span></span><br><span class="line">        <span class="comment">//代码A</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"NUM1: %d, NUM2: %d\n"</span>, NUM1, NUM2);</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line">        <span class="comment">//代码B</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"Error\n"</span>);</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h1 id="ifdef-可以认为是-if-defined-的缩写"><a href="#ifdef-可以认为是-if-defined-的缩写" class="headerlink" title="ifdef 可以认为是 #if defined 的缩写"></a>ifdef 可以认为是 #if defined 的缩写</h1>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/26/linux%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/12/26/linux%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/" class="post-title-link" itemprop="url">linux环境变量设置</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-12-26 15:29:16" itemprop="dateCreated datePublished" datetime="2019-12-26T15:29:16+08:00">2019-12-26</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-02-27 15:56:07" itemprop="dateModified" datetime="2021-02-27T15:56:07+08:00">2021-02-27</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/linux/" itemprop="url" rel="index">
-                    <span itemprop="name">linux</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="Ubuntu环境变量的添加和删除"><a href="#Ubuntu环境变量的添加和删除" class="headerlink" title="Ubuntu环境变量的添加和删除"></a>Ubuntu环境变量的添加和删除</h3><h4 id="添加环境变量的位置"><a href="#添加环境变量的位置" class="headerlink" title="添加环境变量的位置"></a>添加环境变量的位置</h4><ul>
-<li>/etc/profile 该文件为系统的每个用户设置环境信息，当用户第一次登录时，该文件被执行，并从/etc/profile.d目录的配置文件中搜集shell的设置。</li>
-<li>/etc/environment 登录操作系统使用的第二个文件，系统在读取自己的profile之前，设置环境文件的环境变量</li>
-<li>/etc/bashrc 为每一个运行bash shell的用户执行该文件。当bash shell被打开时，该文件被读取</li>
-<li>~/.profile 每个用户都可以使用该文件输入专用于自己使用的shell信息，当用户登录时，该文件仅仅执行一次。默认情况下设置一些环境变量，执行用户的.bashrc文件</li>
-<li>~/.bashrc 该文件包含专用的bash shell的bash信息，当登录以及每次打开新的shell时，该文件被读取。</li>
-</ul>
-<h4 id="添加方法"><a href="#添加方法" class="headerlink" title="添加方法"></a>添加方法</h4><ul>
-<li>方法一：直接修改/etc/enviroment文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">打开/etc/environment文件，其内容如下：</span></span><br><span class="line">PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games" </span><br><span class="line"><span class="meta">#</span><span class="bash">在环境变量PATH中添加你要添加的路径即可。</span></span><br></pre></td></tr></table></figure>
-<ul>
-<li>方法二：修改/etc/profile文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">这个文件不是保存环境变量信息的文件，在登录时，系统只是根据它的内容对环境变量进行设置。</span></span><br><span class="line">export PATH=$PATH:[your path1]:[your path2]:[...]  </span><br><span class="line">export PATH=[your path1]:[your path2]:[...]:$PATH #其中，各个PATH之间用冒号分隔，$PATH指代添加your path前的环境变量。</span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>方法三：修改/etc/bashrc或者~/.bashrc文件，这两个文件<strong>不是为了保存环境变量，只是在使用bash shell时进行设置而已，所以设置方法和二中一样。对于/etc/bashrc文件，修改的作用于所有用户，但对于~/.bashrc文件，修改的仅仅作用于当前用户。这种修改的作用也是永久性的。</strong></p>
-</li>
-<li><p>方法四：<strong>修改~/.profile文件，作用仅限于当前用户，但同样也是永久性的。这种方法和修改/etc/profile本质上是一样的，这种之不过是仅仅修改了当前用户自己的配置文件。所以作用仅限于当前用户，但同样也是永久性的。</strong></p>
-</li>
-<li><p>方法五：在Terminal中使用shell命令，只在当前Terminal中起作用，关闭了当前Terminal就无效了。对其他Terminal也无效</p>
-</li>
-</ul>
-<h4 id="显示环境变量"><a href="#显示环境变量" class="headerlink" title="显示环境变量"></a>显示环境变量</h4><ul>
-<li>显示所有环境变量</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">env #打印所有的环境变量</span><br></pre></td></tr></table></figure>
-<ul>
-<li>显示指定环境变量</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo $PATH #打印PATH环境变量</span><br></pre></td></tr></table></figure>
-<h4 id="让修改生效"><a href="#让修改生效" class="headerlink" title="让修改生效"></a>让修改生效</h4><p>使用source命令也可以让修改立即生效。使用方法为：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">source [file name]  # file name 指的是上面修改过的文件的file name</span><br></pre></td></tr></table></figure>
-<h4 id="删除对环境变量的修改"><a href="#删除对环境变量的修改" class="headerlink" title="删除对环境变量的修改"></a>删除对环境变量的修改</h4><p>将以上方法中对配置文件的修改还原回去即可。另外，由于第五种方法由于是临时性质的且局部的，只需要关闭这个Terminal就好了。</p>
-
       
     </div>
 
@@ -1507,6 +1398,115 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/26/linux%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/12/26/linux%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/" class="post-title-link" itemprop="url">linux环境变量设置</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-12-26 15:29:16" itemprop="dateCreated datePublished" datetime="2019-12-26T15:29:16+08:00">2019-12-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-02-27 15:56:07" itemprop="dateModified" datetime="2021-02-27T15:56:07+08:00">2021-02-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux/" itemprop="url" rel="index">
+                    <span itemprop="name">linux</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="Ubuntu环境变量的添加和删除"><a href="#Ubuntu环境变量的添加和删除" class="headerlink" title="Ubuntu环境变量的添加和删除"></a>Ubuntu环境变量的添加和删除</h3><h4 id="添加环境变量的位置"><a href="#添加环境变量的位置" class="headerlink" title="添加环境变量的位置"></a>添加环境变量的位置</h4><ul>
+<li>/etc/profile 该文件为系统的每个用户设置环境信息，当用户第一次登录时，该文件被执行，并从/etc/profile.d目录的配置文件中搜集shell的设置。</li>
+<li>/etc/environment 登录操作系统使用的第二个文件，系统在读取自己的profile之前，设置环境文件的环境变量</li>
+<li>/etc/bashrc 为每一个运行bash shell的用户执行该文件。当bash shell被打开时，该文件被读取</li>
+<li>~/.profile 每个用户都可以使用该文件输入专用于自己使用的shell信息，当用户登录时，该文件仅仅执行一次。默认情况下设置一些环境变量，执行用户的.bashrc文件</li>
+<li>~/.bashrc 该文件包含专用的bash shell的bash信息，当登录以及每次打开新的shell时，该文件被读取。</li>
+</ul>
+<h4 id="添加方法"><a href="#添加方法" class="headerlink" title="添加方法"></a>添加方法</h4><ul>
+<li>方法一：直接修改/etc/enviroment文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">打开/etc/environment文件，其内容如下：</span></span><br><span class="line">PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games" </span><br><span class="line"><span class="meta">#</span><span class="bash">在环境变量PATH中添加你要添加的路径即可。</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>方法二：修改/etc/profile文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">这个文件不是保存环境变量信息的文件，在登录时，系统只是根据它的内容对环境变量进行设置。</span></span><br><span class="line">export PATH=$PATH:[your path1]:[your path2]:[...]  </span><br><span class="line">export PATH=[your path1]:[your path2]:[...]:$PATH #其中，各个PATH之间用冒号分隔，$PATH指代添加your path前的环境变量。</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>方法三：修改/etc/bashrc或者~/.bashrc文件，这两个文件<strong>不是为了保存环境变量，只是在使用bash shell时进行设置而已，所以设置方法和二中一样。对于/etc/bashrc文件，修改的作用于所有用户，但对于~/.bashrc文件，修改的仅仅作用于当前用户。这种修改的作用也是永久性的。</strong></p>
+</li>
+<li><p>方法四：<strong>修改~/.profile文件，作用仅限于当前用户，但同样也是永久性的。这种方法和修改/etc/profile本质上是一样的，这种之不过是仅仅修改了当前用户自己的配置文件。所以作用仅限于当前用户，但同样也是永久性的。</strong></p>
+</li>
+<li><p>方法五：在Terminal中使用shell命令，只在当前Terminal中起作用，关闭了当前Terminal就无效了。对其他Terminal也无效</p>
+</li>
+</ul>
+<h4 id="显示环境变量"><a href="#显示环境变量" class="headerlink" title="显示环境变量"></a>显示环境变量</h4><ul>
+<li>显示所有环境变量</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">env #打印所有的环境变量</span><br></pre></td></tr></table></figure>
+<ul>
+<li>显示指定环境变量</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo $PATH #打印PATH环境变量</span><br></pre></td></tr></table></figure>
+<h4 id="让修改生效"><a href="#让修改生效" class="headerlink" title="让修改生效"></a>让修改生效</h4><p>使用source命令也可以让修改立即生效。使用方法为：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">source [file name]  # file name 指的是上面修改过的文件的file name</span><br></pre></td></tr></table></figure>
+<h4 id="删除对环境变量的修改"><a href="#删除对环境变量的修改" class="headerlink" title="删除对环境变量的修改"></a>删除对环境变量的修改</h4><p>将以上方法中对配置文件的修改还原回去即可。另外，由于第五种方法由于是临时性质的且局部的，只需要关闭这个Terminal就好了。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/20/%E8%AE%B02017%E4%B8%AD%E5%9B%BD%E6%9C%BA%E5%99%A8%E4%BA%BA%E5%A4%A7%E8%B5%9B%E5%85%88%E8%BF%9B%E8%A7%86%E8%A7%89%E9%A1%B9%E7%9B%AE/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1641,7 +1641,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/27/linux_server/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/27/linux_shell/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -1655,7 +1655,7 @@
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
           
-            <a href="/2019/11/27/linux_server/" class="post-title-link" itemprop="url">Linux服务管理</a>
+            <a href="/2019/11/27/linux_shell/" class="post-title-link" itemprop="url">Linux shell学习</a>
         </h1>
 
         <div class="post-meta">
@@ -1672,7 +1672,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-17 22:32:26" itemprop="dateModified" datetime="2021-03-17T22:32:26+08:00">2021-03-17</time>
+                <time title="修改时间：2021-03-12 19:28:20" itemprop="dateModified" datetime="2021-03-12T19:28:20+08:00">2021-03-12</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1697,22 +1697,186 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="Linux服务管理"><a href="#Linux服务管理" class="headerlink" title="Linux服务管理"></a>Linux服务管理</h2><h3 id="服务分类"><a href="#服务分类" class="headerlink" title="服务分类"></a>服务分类</h3><p>Linux服务</p>
-<ul>
-<li><p>RPM包默认安装的服务</p>
-<p>— 独立的服务</p>
-<p>— 基于xinetd服务</p>
+          <h3 id="shell简介"><a href="#shell简介" class="headerlink" title="shell简介"></a>shell简介</h3><h4 id="基本定义"><a href="#基本定义" class="headerlink" title="基本定义"></a>基本定义</h4><ul>
+<li>一个用 C 语言编写的程序，它是用户使用 Linux 的桥梁。</li>
+<li><p>Shell 既是一种<strong>命令语言</strong>，又是一种<strong>程序设计语言</strong>。</p>
 </li>
-<li><p>源码包安装的服务</p>
+<li><p>Shell 是指一种应用程序，这个应用程序提供了一个界面，<strong>用户通过这个界面访问操作系统内核的服务</strong>。</p>
 </li>
 </ul>
-<p>启动与自启动</p>
-<ul>
-<li>服务启动：在当前系统中让服务运行，并提供功能</li>
-<li>服务自启动：服务在系统开机或重启之后，随着系统的启动而自动启动服务</li>
+<p>真正能够控制计算机硬件（CPU、内存、显示器等）的只有操作系统内核（Kernel），图形界面和<strong>命令行只是架设在用户和内核之间的一座桥梁</strong>。由于安全、复杂、繁琐等原因，用户不能直接接触内核（也没有必要），需要另外再开发一个程序，让用户直接使用这个程序；<strong>该程序的作用就是接收用户的操作（点击图标、输入命令），并进行简单的处理，然后再传递给内核</strong>。如此一来，用户和内核之间就多了一层“代理”，这层“代理”既简化了用户的操作，也保护了内核。用户界面和命令行就是这个另外开发的程序，就是这层“代理”。在Linux下，这个命令行程序叫做 <strong>Shell</strong>。</p>
+<h4 id="shell的作用"><a href="#shell的作用" class="headerlink" title="shell的作用"></a>shell的作用</h4><ul>
+<li>调用其他程序，给其他程序传递数据或参数，并获取程序的处理结果；</li>
+<li>在多个程序之间传递数据，把一个程序的输出作为另一个程序的输入；</li>
+<li>Shell 本身也可以被其他程序调用。</li>
 </ul>
-<p>RPM安装服务和源码安装服务区别就在于安装位置的不同。</p>
-<p>service不可以启动RPM安装的软件</p>
+<p>Shell 本身支持的命令并不多，但是它可以<strong>调用其他的程序</strong>，每个程序就是一个命令，这使得 Shell 命令的数量可以无限扩展，其结果就是  Shell 的功能非常强大，完全能够胜任 Linux  的日常管理工作，如文本或字符串检索、文件的查找或创建、大规模软件的自动部署、更改系统设置、监控服务器性能、发送报警邮件、抓取网页内容、压缩文件等。</p>
+<p>Shell 主要用来开发一些实用的、自动化的小工具，而不是用来开发具有复杂业务逻辑的中大型软件，例如检测计算机的硬件参数、一键搭建Web开发环境、日志分析等。</p>
+<h4 id="shell脚本"><a href="#shell脚本" class="headerlink" title="shell脚本"></a>shell脚本</h4><p>任何代码最终都要被“翻译”成二进制的形式才能在计算机中执行。</p>
+<ul>
+<li><p>编译型语言：</p>
+<ul>
+<li>如 C/C++、Pascal、Go语言、汇编等，必须在程序运行之前将所有代码都翻译成二进制形式，也就是生成可执行文件，用户拿到的是最终生成的可执行文件，看不到源码。</li>
+<li>这个过程叫做编译（Compile），这样的编程语言叫做编译型语言，完成编译过程的软件叫做<strong>编译器</strong>（Compiler）。</li>
+<li>编译型语言的优点是执行速度快、对硬件要求低、保密性好，适合开发操作系统、大型应用程序、数据库等。</li>
+</ul>
+</li>
+<li><p>解释型语言或者脚本语言（Script）</p>
+<ul>
+<li>如 Shell、JavaScript、Python、PHP等，需要<strong>一边执行一边翻译，不会生成任何可执行文件，用户必须拿到源码才能运行程序。程序运行后会即时翻译，翻译完一部分执行一部分，不用等到所有代码都翻译完。</strong></li>
+<li>这个过程叫做解释，这样的编程语言叫做解释型语言或者脚本语言（Script），完成解释过程的软件叫做<strong>解释器</strong>。</li>
+<li>脚本语言的优点是使用灵活、部署容易、跨平台性好，非常适合Web开发以及小工具的制作。</li>
+<li>Shell 就是一种脚本语言，我们编写完源码后不用编译，直接运行源码即可。</li>
+</ul>
+</li>
+</ul>
+<p>Shell 脚本很适合处理纯文本类型的数据，而 Linux 中几乎所有的配置文件、日志文件（如 NFS、Rsync、Httpd、Nginx、MySQL 等），以及绝大多数的启动文件都是纯文本类型的文件。</p>
+<p>Shell 脚本是实现 Linux 系统自动管理以及自动化运维所必备的工具，Linux 的底层以及基础应用软件的核心大都涉及 Shell 脚本的内容。</p>
+<p>Shell 脚本的优势在于处理偏操作系统底层的业务，例如，Linux 内部的很多应用（有的是应用的一部分）都是使用 Shell 脚本开发的，因为有 1000 多个 Linux 系统命令为它作支撑。</p>
+<h3 id="常见的shell：sh-bash-csh-tcsh-ash"><a href="#常见的shell：sh-bash-csh-tcsh-ash" class="headerlink" title="常见的shell：sh, bash, csh, tcsh, ash"></a>常见的shell：sh, bash, csh, tcsh, ash</h3><p>Linux由多个组织机构开发，<strong>不同的组织机构为了发展自己的 Linux 分支可能会开发出功能类似的软件，它们各有优缺点，用户可以自由选择</strong>。Shell  就是这样的一款软件，不同的组织机构开发了不同的 Shell，它们各有所长，有的占用资源少，有的支持高级编程功能，有的兼容性好，有的重视用户体验。 </p>
+<p><strong>Shell 既是一种脚本编程语言，也是一个连接内核和用户的软件。</strong></p>
+<p>常见的 Shell 有 sh、bash、csh、tcsh、ash 等。</p>
+<h4 id="sh"><a href="#sh" class="headerlink" title="sh"></a>sh</h4><p>sh 的全称是 Bourne shell，由 AT&amp;T 公司的 Steve Bourne开发，为了纪念他，就用他的名字命名。</p>
+<p>sh 是 UNIX 上的标准 shell，很多 UNIX 版本都配有 sh。sh 是第一个流行的 Shell。</p>
+<h4 id="csh"><a href="#csh" class="headerlink" title="csh"></a>csh</h4><p>sh 之后另一个广为流传的 shell 是由柏克莱大学的 Bill Joy (Bill Joy 是一个风云人物，他创立了 BSD 操作系统，开发了 vi 编辑器，还是 Sun 公司的创始人之一)。设计的，这个 shell 的语法有点类似C语言，所以才得名为 C shell ，简称为 csh。</p>
+<p><strong>BSD 是 UNIX 的一个重要分支</strong>，后人在此基础上发展出了很多现代的操作系统，最著名的有 FreeBSD、OpenBSD 和 NetBSD，就连 Mac OS X 在很大程度上也基于BSD。</p>
+<h4 id="tcsh"><a href="#tcsh" class="headerlink" title="tcsh"></a>tcsh</h4><p>tcsh 是 csh 的增强版，加入了命令补全功能，提供了更加强大的语法支持。</p>
+<h4 id="ash"><a href="#ash" class="headerlink" title="ash"></a>ash</h4><p>一个简单的轻量级的 Shell，<strong>占用资源少，适合运行于低内存环境</strong>，但是与下面讲到的 bash shell 完全兼容。</p>
+<h4 id="bash"><a href="#bash" class="headerlink" title="bash"></a>bash</h4><p><strong>bash shell 是 Linux 的默认 shell</strong>. bash 兼容 sh ：<strong>针对 sh 编写的 Shell 代码可以不加修改地在 bash 中运行</strong>。</p>
+<p>bash 和 sh 的一些不同之处： </p>
+<ul>
+<li>bash 扩展了一些命令和参数；</li>
+<li>bash 并不完全和 sh 兼容，它们有些行为并不一致，但在大多数企业运维的情况下区别不大，特殊场景可以使用 bash 代替 sh。</li>
+</ul>
+<h4 id="shell查看"><a href="#shell查看" class="headerlink" title="shell查看"></a>shell查看</h4><p>Shell 是一个程序，一般都是放在<code>/bin</code>或者<code>/user/bin</code>目录下，当前 Linux 系统可用的 Shell 都记录在<code>/etc/shells</code>文件中。<code>/etc/shells</code>是一个纯文本文件，你可以在图形界面下打开它，也可以使用 cat 命令（cat（英文全拼：concatenate）命令用于连接文件并打印到标准输出设备上）查看。</p>
+<p>通过 cat 命令来查看当前 Linux 系统的可用 Shell：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash">cat /etc/shells</span></span><br><span class="line">/bin/sh</span><br><span class="line">/bin/dash</span><br><span class="line">/bin/bash</span><br><span class="line">/bin/rbash</span><br></pre></td></tr></table></figure>
+<p>在现代的 Linux 上，sh 已经被 bash 代替，<code>/bin/sh</code>往往是指向<code>/bin/bash</code>的符号链接。</p>
+<p>如果希望查看当前 Linux 的默认 Shell，那么可以输出 SHELL 环境变量： </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> <span class="built_in">echo</span> <span class="variable">$SHELL</span></span></span><br><span class="line">/bin/bash</span><br></pre></td></tr></table></figure>
+<p>输出结果表明默认的 Shell 是 bash。</p>
+<p><code>echo</code>是一个 Shell 命令，用来输出变量的值，<code>SHELL</code>是 Linux 系统中的<strong>环境变量</strong>，它<strong>指明了当前使用的 Shell 程序的位置，也就是使用的哪个 Shell。</strong></p>
+<h3 id="终端使用shell"><a href="#终端使用shell" class="headerlink" title="终端使用shell"></a>终端使用shell</h3><p>一种进入 Shell 的方法是让 Linux 系统退出图形界面模式，进入控制台模式，这样一来，显示器上只有一个简单的带着白色文字的“黑屏”，就像图形界面出现之前的样子。这种模式称为 Linux 控制台（Console）。</p>
+<p>现代 Linux 系统在启动时会自动创建几个虚拟控制台（Virtual Console），其中一个供图形桌面程序使用，其他的保留原生控制台的样子。虚拟控制台其实就是 Linux 系统内存中运行的虚拟终端（Virtual Terminal）。</p>
+<p>从图形界面模式进入控制台模式也很简单，往往按下<code>Ctrl + Alt + Fn(n=1,2,3,4,5...)</code>快捷键就能够来回切换。</p>
+<p>例如，CentOS 在启动时会创建 6 个虚拟控制台，按下快捷键<code>Ctrl + Alt + Fn(n=2,3,4,5,6)</code>可以从图形界面模式切换到控制台模式，按下<code>Ctrl + Alt + F1</code>可以从控制台模式再切换回图形界面模式。可以发现，1号控制台被图形桌面程序占用了。</p>
+<p>Ubuntu中<code>Ctrl + Alt + F7</code>对应图形界面。</p>
+<p>输入用户名和密码，登录成功后就可以进入 Shell 了。<code>$</code>是命令提示符，我们可以在它后面输入 Shell 命令。 </p>
+<blockquote>
+<p> 在图形界面模式下，输入密码时往往会显示为<em>，密码有几个字符就显示几个</em>；而在控制台模式下，输入密码什么都不会显示，好像按键无效一样，但只要输入的密码正确就能够登录。</p>
+</blockquote>
+<p>图形界面也是一个程序，会占用CPU时间和内存空间，当 Linux 作为服务器系统时，安装调试完毕后，应该让 Linux 运行在控制台模式下，以节省服务器资源。正是由于这个原因，很多服务器甚至不安装图形界面程序，管理员只能使用命令来完成各项操作。</p>
+<p>在Ubuntu中也可以用快捷键<code>Ctrl + Alt + t</code>快速启动一个终端。打开终端后即可输入Shell命令。</p>
+<h4 id="shell提示符"><a href="#shell提示符" class="headerlink" title="shell提示符"></a>shell提示符</h4><p>启动终端模拟包或者从 Linux 控制台登录后，便可以看到 Shell 提示符。</p>
+<p>对于<strong>普通用户</strong>，Base shell 默认的提示符是美元符号<code>$</code>；对于<strong>超级用户</strong>（root 用户），Bash Shell 默认的提示符是井号<code>#</code>（可使用<code>sudo su</code>切换到超级用户）。该符号表示 Shell 等待输入命令。</p>
+<p>同的 Linux 发行版使用的提示符格式不同。例如在 Ubuntu中，默认的提示符格式为：<code>dongshifu@dong:~$</code></p>
+<p> 这种格式包含了以下三个方面的信息： </p>
+<ul>
+<li>启动 Shell 的用户名，也即 dongshifu；</li>
+<li>本地主机名称，也即dong；</li>
+<li>当前目录，波浪号<code>~</code>是主目录的简写表示法。</li>
+</ul>
+<h4 id="shell脚本编辑与运行"><a href="#shell脚本编辑与运行" class="headerlink" title="shell脚本编辑与运行"></a>shell脚本编辑与运行</h4><p>打开文本编辑器，新建文件，扩展名为sh（sh代表shell），扩展名并不影响脚本执行，见名知意即可。</p>
+<p>输入shell代码：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/bash</span></span><br><span class="line">echo "Hello World !"</span><br></pre></td></tr></table></figure>
+<p>“#!” <strong>是一个约定的标记，它告诉系统这个脚本需要什么解释器来执行，即使用哪一种Shell。</strong>echo命令用于向窗口输出文本。</p>
+<p>运行shell脚本的方法：</p>
+<ul>
+<li>作为可执行程序</li>
+</ul>
+<p>将上面的代码保存为test.sh，并 cd 到相应目录： </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">chmod +x ./test.sh  #使脚本具有执行权限</span><br><span class="line">./test.sh  #执行脚本</span><br></pre></td></tr></table></figure>
+<p>注意，<strong>一定要写成./test.sh，而不是test.sh。运行其它二进制的程序也一样，直接写test.sh，linux系统会去PATH里寻找有没有叫test.sh的，而只有/bin, /sbin,  /usr/bin，/usr/sbin等在PATH里，你的当前目录通常不在PATH里，所以写成test.sh是会找不到命令的，要用./test.sh告诉系统说，就在当前目录找。</strong></p>
+<p> 通过这种方式运行bash脚本，第一行一定要写对，好让shell查找到正确的解释器。</p>
+<ul>
+<li>作为解释器参数</li>
+</ul>
+<p>这种运行方式是，直接运行解释器，其参数就是shell脚本的文件名，如： </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/bin/bash test.sh</span><br></pre></td></tr></table></figure>
+<p>这种方式运行的脚本<strong>，不需要在第一行指定解释器信息</strong>，写了也没用。</p>
+<p>例子：用read命令从stdin获取输入并赋值给PERSON变量，最后在stdout输出：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/bash</span></span><br><span class="line">echo "what is your name?"</span><br><span class="line">read PERSON</span><br><span class="line">echo "Hello, $PERSON"</span><br></pre></td></tr></table></figure>
+<h3 id="shell变量：shell变量的定义、删除变量、只读变量、变量类型"><a href="#shell变量：shell变量的定义、删除变量、只读变量、变量类型" class="headerlink" title="shell变量：shell变量的定义、删除变量、只读变量、变量类型"></a>shell变量：shell变量的定义、删除变量、只读变量、变量类型</h3><p>脚本语言在定义变量时通常<strong>不需要指明类型，直接赋值就可以</strong>，Shell 变量也遵循这个规则。</p>
+<p>在 Bash shell 中，<strong>每一个变量的值都是字符串，无论你给变量赋值时有没有使用引号，值都会以字符串的形式存储</strong>。这意味着，<strong>Bash shell 在默认情况下不会区分变量类型，即使你将整数和小数赋值给变量，它们也会被视为字符串</strong>，这一点和大部分的编程语言不同。 </p>
+<p>如果有必要，你也可以<strong>使用 declare 关键字显式定义变量的类型</strong>，但在一般情况下没有这个需求。</p>
+<h4 id="定义变量"><a href="#定义变量" class="headerlink" title="定义变量"></a>定义变量</h4><p>三种定义变量方式：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">variable=value</span><br><span class="line">variable='value'</span><br><span class="line">variable="value"</span><br></pre></td></tr></table></figure>
+<p>variable 是<strong>变量名，value 是赋给变量的值</strong>。如<strong>果 value 不包含任何空白符（例如空格、Tab缩进等），那么可以不使用引号；如果 value 包含了空白符，那么就必须使用引号包围起来</strong>。使用单引号和使用双引号有区别。</p>
+<p><strong>注意，赋值号的周围不能有空格</strong></p>
+<p>Shell 变量的命名规范和大部分编程语言都一样： </p>
+<ul>
+<li>变量名由数字、字母、下划线组成；</li>
+<li>必须以字母或者下划线开头；</li>
+<li>不能使用 Shell 里的关键字（通过 help 命令可以查看保留关键字）。</li>
+</ul>
+<h4 id="使用变量"><a href="#使用变量" class="headerlink" title="使用变量"></a>使用变量</h4><p>使用一个定义过的变量，只要在变量名前面加美元符号<code>$</code>即可，如： </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">skill="Java"</span><br><span class="line">echo "I am good at $&#123;skill&#125;Script"</span><br></pre></td></tr></table></figure>
+<p>变量名外面的花括号<code>{ }</code>是可选的，加不加都行，<strong>加花括号是为了帮助解释器识别变量的边界</strong>，如果不给 skill 变量加花括号，写成<code>echo &quot;I am good at $skillScript&quot;</code>，解释器就会把 $skillScript 当成一个变量（其值为空），代码执行结果就不是我们期望的样子了。</p>
+<h4 id="修改变量的值"><a href="#修改变量的值" class="headerlink" title="修改变量的值"></a>修改变量的值</h4><p>已定义的变量，可以被重新赋值，如：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">lang=shell</span><br><span class="line">echo $&#123;lang&#125;</span><br><span class="line">lang=python</span><br><span class="line">echo $&#123;lang&#125;</span><br></pre></td></tr></table></figure>
+<p>第二次对变量赋值时不能在变量名前加<script type="math/tex">`，只有在使用变量时才能加`</script>。 </p>
+<h4 id="单引号与双引号的区别"><a href="#单引号与双引号的区别" class="headerlink" title="单引号与双引号的区别"></a>单引号与双引号的区别</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">test="you are so cute"</span><br><span class="line">chare='hi,$&#123;test&#125;'</span><br><span class="line">chare2="hi,$&#123;test&#125;"</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash">hi,<span class="variable">$&#123;test&#125;</span></span></span><br><span class="line"><span class="meta">#</span><span class="bash">hi,you are so cute</span></span><br></pre></td></tr></table></figure>
+<p><strong>以单引号<code>&#39; &#39;</code>包围变量的值时，单引号里面是什么就输出什么，即使内容中有变量和命令（命令需要反引起来）也会把它们原样输出</strong>。这种方式比较适合定义显示纯字符串的情况，即不希望解析变量、命令等的场景。</p>
+<p><strong>以双引号” “包围变量的值时，输出时会先解析里面的变量和命令，而不是把双引号中的变量名和命令原样输出。</strong>这种方式比较适合字符串中附带有变量和命令并且想将其解析后再输出的变量定义。</p>
+<p>如果变量的内容是数字，那么可以不加引号；如果真的需要原样输出就加单引号；其他没有特别要求的字符串等最好都加上双引号，定义变量时加双引号是最常见的使用场景。</p>
+<h4 id="将命令的结果赋值给变量"><a href="#将命令的结果赋值给变量" class="headerlink" title="将命令的结果赋值给变量"></a>将命令的结果赋值给变量</h4><p>shell支持将命令的执行结果赋值给变量，常见的方式为：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">variable=`command`</span><br><span class="line">variable=$(command)</span><br></pre></td></tr></table></figure>
+<p>eg:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">test=$(ls -al)</span><br><span class="line">echo $test</span><br></pre></td></tr></table></figure>
+<h4 id="只读变量"><a href="#只读变量" class="headerlink" title="只读变量"></a>只读变量</h4><p>使用 <strong>readonly</strong> 命令可以将变量定义为只读变量，只读变量的值不能被改变。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">test="you are so cute"</span><br><span class="line">readonly test</span><br><span class="line">test="you"</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash">bash: <span class="built_in">test</span>: 只读变量</span></span><br></pre></td></tr></table></figure>
+<h4 id="删除变量"><a href="#删除变量" class="headerlink" title="删除变量"></a>删除变量</h4><p>使用 <strong>unset</strong>命令可以删除变量。语法： </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">unset variable_name</span><br></pre></td></tr></table></figure>
+<p> 变量被删除后不能再次使用；unset 命令不能删除只读变量。</p>
+<h4 id="变量类型"><a href="#变量类型" class="headerlink" title="变量类型"></a>变量类型</h4><p> 运行shell时，会同时存在三种变量：</p>
+<h6 id="1-局部变量"><a href="#1-局部变量" class="headerlink" title="1) 局部变量"></a>1) 局部变量</h6><p>局部变量在脚本或命令中定义，仅在当前shell实例中有效，其他shell启动的程序不能访问局部变量。 </p>
+<h6 id="2-环境变量"><a href="#2-环境变量" class="headerlink" title="2) 环境变量"></a>2) 环境变量</h6><p><strong>所有的程序，包括shell启动的程序，都能访问环境变量，有些程序需要环境变量来保证其正常运行。必要的时候shell脚本也可以定义环境变量。</strong> </p>
+<h6 id="3-shell变量"><a href="#3-shell变量" class="headerlink" title="3) shell变量"></a>3) shell变量</h6><p>shell变量是由shell程序设置的特殊变量。shell变量中有一部分是环境变量，有一部分是局部变量，这些变量保证了shell的正常运行</p>
+<h4 id="shell特殊变量：Shell-0-​-和命令行参数"><a href="#shell特殊变量：Shell-0-​-和命令行参数" class="headerlink" title="shell特殊变量：Shell $0, $#, $​*, $@, $?, $$和命令行参数"></a>shell特殊变量：Shell $0, $#, $​*, $@, $?, $$和命令行参数</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>变量</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$0</td>
+<td>当前脚本的文件名</td>
+</tr>
+<tr>
+<td>$n</td>
+<td>传递给脚本或函数的参数。n 是一个数字，表示第几个参数。例如，第一个参数是$1，第二个参数是$2。</td>
+</tr>
+<tr>
+<td>$#</td>
+<td>传递给脚本或函数的参数个数。</td>
+</tr>
+<tr>
+<td>$*</td>
+<td>传递给脚本或函数的所有参数。</td>
+</tr>
+<tr>
+<td>$@</td>
+<td>传递给脚本或函数的所有参数。被双引号(“ “)包含时，与 $* 稍有不同，下面将会讲到。</td>
+</tr>
+<tr>
+<td>$?</td>
+<td>上个命令的退出状态，或函数的返回值。</td>
+</tr>
+<tr>
+<td>$$</td>
+<td>当前Shell进程ID。对于 Shell 脚本，就是这些脚本所在的进程ID。</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h4 id="命令行参数"><a href="#命令行参数" class="headerlink" title="命令行参数"></a>命令行参数</h4><p>运行脚本时传递给脚本的参数称为命令行参数。命令行参数用 $n$ 表示，例如，$1 表示第一个参数，$2 表示第二个参数，依次类推。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">echo "file name: $0"</span><br><span class="line">echo "First parameter: $1"</span><br><span class="line">echo "Second parameter: $2"</span><br><span class="line">echo "Quoted values: $@"</span><br><span class="line">echo "Quoted values: $*"</span><br><span class="line">echo "Total number of parameters: $#"</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash">运行结果</span></span><br><span class="line">./test1.sh shifu dong</span><br><span class="line">file name: ./test1.sh</span><br><span class="line">First parameter: shifu</span><br><span class="line">Second parameter: dong</span><br><span class="line">Quoted values: shifu dong</span><br><span class="line">Quoted values: shifu dong</span><br><span class="line">Total number of parameters: 2</span><br></pre></td></tr></table></figure>
+<h4 id="的区别"><a href="#的区别" class="headerlink" title="$* ,$@的区别"></a>$* ,$@的区别</h4><p>$* 和 $@ 都表示传递给函数或脚本的所有参数，不被双引号(“ “)包含时，都以”$1” “$2” … “$n” 的形式输出所有参数。</p>
+<p>但是当它们被双引号(“ “)包含时，”$*” 会将所有的参数作为一个整体，以”$1 $2 … ​$n”的形式输出所有参数；”​$@” 会将各个参数分开，以”$1” “$2” … “$n” 的形式输出所有参数。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/bash</span></span><br><span class="line">echo "\$*=" $*</span><br><span class="line">echo "\"\$*\"=" "$*"</span><br><span class="line"></span><br><span class="line">echo "\$@=" $@</span><br><span class="line">echo "\"\$@\"=" "$@"</span><br><span class="line"></span><br><span class="line">echo "print each param from \$*"</span><br><span class="line">for var in $*</span><br><span class="line">do </span><br><span class="line">    echo "$var"</span><br><span class="line">done</span><br><span class="line"></span><br><span class="line">echo "print each parm from \$@"</span><br><span class="line">for var in $@</span><br><span class="line">do </span><br><span class="line">    echo $var</span><br><span class="line">done</span><br><span class="line"></span><br><span class="line">echo "print each parm form \"\$*\""</span><br><span class="line">for var in "$*"</span><br><span class="line">do </span><br><span class="line">    echo $var</span><br><span class="line">done</span><br><span class="line"></span><br><span class="line">echo "print each parm from \"\$@\""</span><br><span class="line">for var in "$@"</span><br><span class="line">do </span><br><span class="line">    echo $var</span><br><span class="line">done</span><br><span class="line"></span><br><span class="line">运行结果：</span><br><span class="line">./test2.sh "A" "B"</span><br><span class="line"><span class="meta">$</span><span class="bash">*= A B</span></span><br><span class="line">"$*"= A B</span><br><span class="line"><span class="meta">$</span><span class="bash">@= A B</span></span><br><span class="line">"$@"= A B</span><br><span class="line">print each param from $*</span><br><span class="line">A</span><br><span class="line">B</span><br><span class="line">print each parm from $@</span><br><span class="line">A</span><br><span class="line">B</span><br><span class="line">print each parm form "$*"</span><br><span class="line">A B</span><br><span class="line">print each parm from "$@"</span><br><span class="line">A</span><br><span class="line">B</span><br></pre></td></tr></table></figure>
 
       
     </div>
