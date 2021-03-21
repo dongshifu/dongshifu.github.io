@@ -47,18 +47,18 @@
   };
 </script>
 
-  <meta name="description" content="接口设计的意义 泛型编程：使用 interface 可以实现泛型编程 隐藏具体实现：设计一个函数返回一个 interface，那么只能通过 interface 里面的方法来做一些操作，但是内部的具体实现是完全不知道的。  golang中的接口接口定义了一种规范，描述了类的行为和功能，而不做具体实现。 Interface定义了一个或一组method(s)，这些method(s)只有函数签名，没有具体">
-<meta name="keywords" content="接口">
+  <meta name="description" content="Go 接口的动态类型和动态值从上一篇博客Go接口的底层实现源码分析里可以看到：iface包含两个字段：tab 是接口表指针，指向类型信息；data 是数据指针，则指向具体的数据。它们分别被称为动态类型和动态值。而接口值包括动态类型和动态值。 【引申1】接口类型和 nil 作比较 接口值的零值是指动态类型和动态值都为 nil。当仅且当这两部分的值都为 nil 的情况下，这个接口值就才会被认为 接口值">
+<meta name="keywords" content="Go 接口">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Go接口与C++接口的异同">
-<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;01&#x2F;02&#x2F;Go%20%E6%8E%A5%E5%8F%A3_1Go%E4%B8%8E%20C++%20%E6%8E%A5%E5%8F%A3%E6%9C%89%E4%BD%95%E5%BC%82%E5%90%8C&#x2F;index.html">
+<meta property="og:title" content="Go 接口的动态类型和动态值">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;06&#x2F;04&#x2F;Go%20%E6%8E%A5%E5%8F%A3_4%E6%8E%A5%E5%8F%A3%E7%9A%84%E5%8A%A8%E6%80%81%E7%B1%BB%E5%9E%8B%E5%92%8C%E5%8A%A8%E6%80%81%E5%80%BC&#x2F;index.html">
 <meta property="og:site_name" content="ShifuDong">
-<meta property="og:description" content="接口设计的意义 泛型编程：使用 interface 可以实现泛型编程 隐藏具体实现：设计一个函数返回一个 interface，那么只能通过 interface 里面的方法来做一些操作，但是内部的具体实现是完全不知道的。  golang中的接口接口定义了一种规范，描述了类的行为和功能，而不做具体实现。 Interface定义了一个或一组method(s)，这些method(s)只有函数签名，没有具体">
+<meta property="og:description" content="Go 接口的动态类型和动态值从上一篇博客Go接口的底层实现源码分析里可以看到：iface包含两个字段：tab 是接口表指针，指向类型信息；data 是数据指针，则指向具体的数据。它们分别被称为动态类型和动态值。而接口值包括动态类型和动态值。 【引申1】接口类型和 nil 作比较 接口值的零值是指动态类型和动态值都为 nil。当仅且当这两部分的值都为 nil 的情况下，这个接口值就才会被认为 接口值">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2021-03-16T00:31:03.616Z">
+<meta property="og:updated_time" content="2021-03-21T08:53:03.160Z">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://yoursite.com/2020/01/02/Go%20%E6%8E%A5%E5%8F%A3_1Go%E4%B8%8E%20C++%20%E6%8E%A5%E5%8F%A3%E6%9C%89%E4%BD%95%E5%BC%82%E5%90%8C/">
+<link rel="canonical" href="http://yoursite.com/2020/06/04/Go%20%E6%8E%A5%E5%8F%A3_4%E6%8E%A5%E5%8F%A3%E7%9A%84%E5%8A%A8%E6%80%81%E7%B1%BB%E5%9E%8B%E5%92%8C%E5%8A%A8%E6%80%81%E5%80%BC/">
 
 
 <script id="page-configurations">
@@ -72,7 +72,7 @@
   };
 </script>
 
-  <title>Go接口与C++接口的异同 | ShifuDong</title>
+  <title>Go 接口的动态类型和动态值 | ShifuDong</title>
   
 
 
@@ -206,7 +206,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/02/Go%20%E6%8E%A5%E5%8F%A3_1Go%E4%B8%8E%20C++%20%E6%8E%A5%E5%8F%A3%E6%9C%89%E4%BD%95%E5%BC%82%E5%90%8C/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/04/Go%20%E6%8E%A5%E5%8F%A3_4%E6%8E%A5%E5%8F%A3%E7%9A%84%E5%8A%A8%E6%80%81%E7%B1%BB%E5%9E%8B%E5%92%8C%E5%8A%A8%E6%80%81%E5%80%BC/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -219,7 +219,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Go接口与C++接口的异同
+          Go 接口的动态类型和动态值
         </h1>
 
         <div class="post-meta">
@@ -229,14 +229,14 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2020-01-02 21:29:16" itemprop="dateCreated datePublished" datetime="2020-01-02T21:29:16+08:00">2020-01-02</time>
+              <time title="创建时间：2020-06-04 21:29:16" itemprop="dateCreated datePublished" datetime="2020-06-04T21:29:16+08:00">2020-06-04</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-16 08:31:03" itemprop="dateModified" datetime="2021-03-16T08:31:03+08:00">2021-03-16</time>
+                <time title="修改时间：2021-03-21 16:53:03" itemprop="dateModified" datetime="2021-03-21T16:53:03+08:00">2021-03-21</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -261,29 +261,26 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h3 id="接口设计的意义"><a href="#接口设计的意义" class="headerlink" title="接口设计的意义"></a>接口设计的意义</h3><ul>
-<li>泛型编程：使用 interface 可以实现泛型编程</li>
-<li>隐藏具体实现：设计一个函数返回一个 interface，那么<strong>只能通过 interface 里面的方法来做一些操作，但是内部的具体实现是完全不知道的。</strong></li>
-</ul>
-<h3 id="golang中的接口"><a href="#golang中的接口" class="headerlink" title="golang中的接口"></a>golang中的接口</h3><p>接口定义了一种<strong>规范，描述了类的行为和功能，而不做具体实现</strong>。</p>
-<p>Interface定义了一个或一组method(s)，<strong>这些method(s)只有函数签名，没有具体的实现代码</strong>.</p>
-<p>若某个数据类型实现了Interface中定义的那些被称为”methods”的函数，则称这些<strong>数据类型实现（implement）了interface。</strong></p>
-<h3 id="C-中的接口实现方法"><a href="#C-中的接口实现方法" class="headerlink" title="C++中的接口实现方法"></a>C++中的接口实现方法</h3><p>C++ 的接口是使用<strong>抽象类</strong>来实现的，如果类中至少有一个函数被声明为<strong>纯虚函数</strong>，则这个类就是抽象类。<strong>纯虚函数是通过在声明中使用 “= 0” 来指定的</strong>。例如：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Shape</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">   <span class="keyword">public</span>:</span><br><span class="line">      <span class="comment">// 纯虚函数</span></span><br><span class="line">      <span class="function"><span class="keyword">virtual</span> <span class="keyword">double</span> <span class="title">getArea</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">   <span class="keyword">private</span>:</span><br><span class="line">      <span class="built_in">string</span> name;      <span class="comment">// 名称</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>设计抽象类的目的:<strong>为了给其他类提供一个可以继承的适当的基类。抽象类不能被用于实例化对象，它只能作为接口使用。</strong></p>
-<p><strong>派生类需要明确地声明它继承自基类，并且需要实现基类中所有的纯虚函数</strong>。</p>
-<h3 id="golang接口与C-接口区别"><a href="#golang接口与C-接口区别" class="headerlink" title="golang接口与C++接口区别"></a>golang接口与C++接口区别</h3><ul>
-<li><p>C++ 定义接口的方式称为“侵入式”</p>
-</li>
-<li><p>Go 采用的是 “非侵入式”，<strong>不需要显式声明，只需要实现接口定义的函数，编译器自动会识别。</strong></p>
-</li>
-<li><p>底层实现不同</p>
-<ul>
-<li>实现方式：C++ 通过<strong>虚函数表来实现基类调用派生类的函数</strong>；而 Go 通过 <code>itab</code> 中的 <code>fun</code> 字段来实现接口变量调用实体类型的函数。</li>
-<li>编译生成过程：C++ 中的<strong>虚函数表是在编译期生成</strong>的；而 Go 的 <code>itab</code> 中的 <code>fun</code> 字段是在<strong>运行期间动态生成</strong>的。原因在于，<strong>Go 中实体类型可能会无意中实现 N 多接口，很多接口并不是本来需要的，所以不能为类型实现的所有接口都生成一个 <code>itab</code></strong>， 这也是“非侵入式”带来的影响；这在 C++ 中是不存在的，因为派生需要显示声明它继承自哪个基类。</li>
-</ul>
-</li>
-</ul>
+        <h3 id="Go-接口的动态类型和动态值"><a href="#Go-接口的动态类型和动态值" class="headerlink" title="Go 接口的动态类型和动态值"></a>Go 接口的动态类型和动态值</h3><p>从上一篇博客<a href="https://dongshifu.github.io/2020/01/03/Go%20%E6%8E%A5%E5%8F%A3_3iface%20%E5%92%8C%20eface%20%E7%9A%84%E5%8C%BA%E5%88%AB%E6%98%AF%E4%BB%80%E4%B9%88/" target="_blank" rel="noopener">Go接口的底层实现</a>源码分析里可以看到：<code>iface</code>包含两个字段：<code>tab</code> 是接口表指针，指向类型信息；<code>data</code> 是数据指针，则指向具体的数据。它们分别被称为<strong><code>动态类型</code>和<code>动态值</code></strong>。而接口值包括<code>动态类型</code>和<code>动态值</code>。</p>
+<p>【引申1】接口类型和 <code>nil</code> 作比较</p>
+<p><strong>接口值的零值是指<code>动态类型</code>和<code>动态值</code>都为 <code>nil</code>。当仅且当这两部分的值都为 <code>nil</code> 的情况下，这个接口值就才会被认为 <code>接口值 == nil</code>。</strong></p>
+<p>来看个例子：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Coder <span class="keyword">interface</span> &#123;</span><br><span class="line">	code()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Gopher <span class="keyword">struct</span> &#123;</span><br><span class="line">	name <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(g Gopher)</span> <span class="title">code</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Printf(<span class="string">"%s is coding\n"</span>, g.name)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> c Coder</span><br><span class="line">	fmt.Println(c == <span class="literal">nil</span>)</span><br><span class="line">	fmt.Printf(<span class="string">"c: %T, %v\n"</span>, c, c)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">var</span> g *Gopher</span><br><span class="line">	fmt.Println(g == <span class="literal">nil</span>)</span><br><span class="line"></span><br><span class="line">	c = g</span><br><span class="line">	fmt.Println(c == <span class="literal">nil</span>)</span><br><span class="line">	fmt.Printf(<span class="string">"c: %T, %v\n"</span>, c, c)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">true</span><br><span class="line">c: &lt;nil&gt;, &lt;nil&gt;</span><br><span class="line">true</span><br><span class="line">false</span><br><span class="line">c: *main.Gopher, &lt;nil&gt;</span><br></pre></td></tr></table></figure>
+<p>一开始，<strong><code>c</code> 的 动态类型和动态值都为 <code>nil</code>，<code>g</code> 也为 <code>nil</code>，当把 <code>g</code> 赋值给 <code>c</code> 后，<code>c</code> 的动态类型变成了 <code>*main.Gopher</code>，仅管 <code>c</code> 的动态值仍为 <code>nil</code>，但是当 <code>c</code> 和 <code>nil</code> 作比较的时候，结果就是 <code>false</code> 了。</strong></p>
+<p>【引申2】</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> MyError <span class="keyword">struct</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(i MyError)</span> <span class="title">Error</span><span class="params">()</span> <span class="title">string</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="string">"MyError"</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	err := Process()</span><br><span class="line">	fmt.Println(err)</span><br><span class="line"></span><br><span class="line">	fmt.Println(err == <span class="literal">nil</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Process</span><span class="params">()</span> <span class="title">error</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> err *MyError = <span class="literal">nil</span></span><br><span class="line">	<span class="keyword">return</span> err</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>函数运行结果：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;nil&gt;</span><br><span class="line">false</span><br></pre></td></tr></table></figure>
+<p><strong>这里先定义了一个 <code>MyError</code> 结构体，实现了 <code>Error</code> 函数，也就实现了 <code>error</code> 接口。<code>Process</code> 函数返回了一个 <code>error</code> 接口，这块隐含了类型转换。所以，虽然它的值是 <code>nil</code>，其实它的类型是 <code>*MyError</code>，最后和 <code>nil</code> 比较的时候，结果为 <code>false</code>。</strong></p>
+<p>【引申3】如何打印出接口的动态类型和值？</p>
+<p>直接看代码：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"unsafe"</span></span><br><span class="line">	<span class="string">"fmt"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> iface <span class="keyword">struct</span> &#123;</span><br><span class="line">	itab, data <span class="keyword">uintptr</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> a <span class="keyword">interface</span>&#123;&#125; = <span class="literal">nil</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">var</span> b <span class="keyword">interface</span>&#123;&#125; = (*<span class="keyword">int</span>)(<span class="literal">nil</span>)</span><br><span class="line"></span><br><span class="line">	x := <span class="number">5</span></span><br><span class="line">	<span class="keyword">var</span> c <span class="keyword">interface</span>&#123;&#125; = (*<span class="keyword">int</span>)(&amp;x)</span><br><span class="line">	</span><br><span class="line">	ia := *(*iface)(unsafe.Pointer(&amp;a))</span><br><span class="line">	ib := *(*iface)(unsafe.Pointer(&amp;b))</span><br><span class="line">	ic := *(*iface)(unsafe.Pointer(&amp;c))</span><br><span class="line"></span><br><span class="line">	fmt.Println(ia, ib, ic)</span><br><span class="line"></span><br><span class="line">	fmt.Println(*(*<span class="keyword">int</span>)(unsafe.Pointer(ic.data)))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>代码里直接定义了一个 <code>iface</code> 结构体，<strong>用两个指针来描述 <code>itab</code> 和 <code>data</code>，之后将 a, b, c 在内存中的内容强制解释成我们自定义的 <code>iface</code>。最后就可以打印出动态类型和动态值的地址。</strong></p>
+<p>运行结果如下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#123;0 0&#125; &#123;4843168 0&#125; &#123;4843168 824634355376&#125;</span><br><span class="line">5</span><br></pre></td></tr></table></figure>
+<p>a 的动态类型和动态值的地址均为 0，也就是 nil；<strong>b 的动态类型和 c 的动态类型一致，都是 <code>*int</code></strong>；最后，c 的动态值为 5。</p>
 
     </div>
 
@@ -293,7 +290,7 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/%E6%8E%A5%E5%8F%A3/" rel="tag"># 接口</a>
+              <a href="/tags/Go-%E6%8E%A5%E5%8F%A3/" rel="tag"># Go 接口</a>
           </div>
 
         
@@ -302,12 +299,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2020/01/01/Go_%E6%8E%A5%E5%8F%A3_8%E7%BC%96%E8%AF%91%E5%99%A8%E8%87%AA%E5%8A%A8%E6%A3%80%E6%B5%8B%E7%B1%BB%E5%9E%8B%E6%98%AF%E5%90%A6%E5%AE%9E%E7%8E%B0%E6%8E%A5%E5%8F%A3/" rel="prev" title="Go 编译器自动检测类型是否实现接口">
-      <i class="fa fa-chevron-left"></i> Go 编译器自动检测类型是否实现接口
+    <a href="/2020/06/03/Go%20%E6%8E%A5%E5%8F%A3_3iface%20%E5%92%8C%20eface%20%E7%9A%84%E5%8C%BA%E5%88%AB%E6%98%AF%E4%BB%80%E4%B9%88/" rel="prev" title="Go 接口的底层实现">
+      <i class="fa fa-chevron-left"></i> Go 接口的底层实现
     </a></div>
       <div class="post-nav-item">
-    <a href="/2020/01/02/Go%20%E6%8E%A5%E5%8F%A3_2Go%E8%AF%AD%E8%A8%80%E4%B8%8E%E9%B8%AD%E5%AD%90%E7%B1%BB%E5%9E%8B%E7%9A%84%E5%85%B3%E7%B3%BB/" rel="next" title="Go鸭子类型">
-      Go鸭子类型 <i class="fa fa-chevron-right"></i>
+    <a href="/2020/06/04/Go%20%E6%8E%A5%E5%8F%A3_5%E6%8E%A5%E5%8F%A3%E7%9A%84%E6%9E%84%E9%80%A0%E8%BF%87%E7%A8%8B%E6%98%AF%E6%80%8E%E6%A0%B7%E7%9A%84/" rel="next" title="Go 接口的构造过程">
+      Go 接口的构造过程 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -380,7 +377,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#接口设计的意义"><span class="nav-number">1.</span> <span class="nav-text">接口设计的意义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#golang中的接口"><span class="nav-number">2.</span> <span class="nav-text">golang中的接口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#C-中的接口实现方法"><span class="nav-number">3.</span> <span class="nav-text">C++中的接口实现方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#golang接口与C-接口区别"><span class="nav-number">4.</span> <span class="nav-text">golang接口与C++接口区别</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Go-接口的动态类型和动态值"><span class="nav-number">1.</span> <span class="nav-text">Go 接口的动态类型和动态值</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -573,7 +570,7 @@ window.addEventListener('pjax:success', () => {
       repo: 'dongshifu.github.io',
       owner: 'dongshifu',
       admin: ['dongshifu'],
-      id: '21df53a0a006b88d0c0107929b7f31e3',
+      id: 'eb107f4056707c5fd728df07ecf993d4',
         language: 'zh-CN',
       distractionFreeMode: 'true'
     });

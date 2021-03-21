@@ -47,18 +47,18 @@
   };
 </script>
 
-  <meta name="description" content="鸭子类型维基百科: 如果某个东西长得像鸭子，像鸭子一样游泳，像鸭子一样嘎嘎叫，那它就可以被看成是一只鸭子。  Duck Typing，鸭子类型，是动态编程语言的一种对象推断策略，它更关注对象能如何被使用，而不是对象的类型本身。  Go 语言作为一门静态语言，它通过通过接口的方式完美支持鸭子类型。   动态语言实现动态语言的特点：  变量绑定的类型是不确定的，在运行期间才能确定函数和方法可以接收任何">
-<meta name="keywords" content="接口 鸭子类型">
+  <meta name="description" content="Go 编译器自动检测类型是否实现接口开源库里会有一些类似下面这种奇怪的用法： 1var _ io.Writer = (*myWriter)(nil) 这时候会有点懵，不知道作者想要干什么，实际上这就是此问题的答案。编译器会由此检查 *myWriter 类型是否实现了 io.Writer 接口。 例子： 12345678910111213141516171819package mainimport">
+<meta name="keywords" content="Golang">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Go鸭子类型">
-<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;01&#x2F;02&#x2F;Go%20%E6%8E%A5%E5%8F%A3_2Go%E8%AF%AD%E8%A8%80%E4%B8%8E%E9%B8%AD%E5%AD%90%E7%B1%BB%E5%9E%8B%E7%9A%84%E5%85%B3%E7%B3%BB&#x2F;index.html">
+<meta property="og:title" content="Go 编译器自动检测类型是否实现接口">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;06&#x2F;09&#x2F;Go_%E6%8E%A5%E5%8F%A3_8%E7%BC%96%E8%AF%91%E5%99%A8%E8%87%AA%E5%8A%A8%E6%A3%80%E6%B5%8B%E7%B1%BB%E5%9E%8B%E6%98%AF%E5%90%A6%E5%AE%9E%E7%8E%B0%E6%8E%A5%E5%8F%A3&#x2F;index.html">
 <meta property="og:site_name" content="ShifuDong">
-<meta property="og:description" content="鸭子类型维基百科: 如果某个东西长得像鸭子，像鸭子一样游泳，像鸭子一样嘎嘎叫，那它就可以被看成是一只鸭子。  Duck Typing，鸭子类型，是动态编程语言的一种对象推断策略，它更关注对象能如何被使用，而不是对象的类型本身。  Go 语言作为一门静态语言，它通过通过接口的方式完美支持鸭子类型。   动态语言实现动态语言的特点：  变量绑定的类型是不确定的，在运行期间才能确定函数和方法可以接收任何">
+<meta property="og:description" content="Go 编译器自动检测类型是否实现接口开源库里会有一些类似下面这种奇怪的用法： 1var _ io.Writer = (*myWriter)(nil) 这时候会有点懵，不知道作者想要干什么，实际上这就是此问题的答案。编译器会由此检查 *myWriter 类型是否实现了 io.Writer 接口。 例子： 12345678910111213141516171819package mainimport">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2021-03-10T00:21:27.621Z">
+<meta property="og:updated_time" content="2021-03-21T08:53:48.487Z">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://yoursite.com/2020/01/02/Go%20%E6%8E%A5%E5%8F%A3_2Go%E8%AF%AD%E8%A8%80%E4%B8%8E%E9%B8%AD%E5%AD%90%E7%B1%BB%E5%9E%8B%E7%9A%84%E5%85%B3%E7%B3%BB/">
+<link rel="canonical" href="http://yoursite.com/2020/06/09/Go_%E6%8E%A5%E5%8F%A3_8%E7%BC%96%E8%AF%91%E5%99%A8%E8%87%AA%E5%8A%A8%E6%A3%80%E6%B5%8B%E7%B1%BB%E5%9E%8B%E6%98%AF%E5%90%A6%E5%AE%9E%E7%8E%B0%E6%8E%A5%E5%8F%A3/">
 
 
 <script id="page-configurations">
@@ -72,7 +72,7 @@
   };
 </script>
 
-  <title>Go鸭子类型 | ShifuDong</title>
+  <title>Go 编译器自动检测类型是否实现接口 | ShifuDong</title>
   
 
 
@@ -206,7 +206,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/02/Go%20%E6%8E%A5%E5%8F%A3_2Go%E8%AF%AD%E8%A8%80%E4%B8%8E%E9%B8%AD%E5%AD%90%E7%B1%BB%E5%9E%8B%E7%9A%84%E5%85%B3%E7%B3%BB/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/09/Go_%E6%8E%A5%E5%8F%A3_8%E7%BC%96%E8%AF%91%E5%99%A8%E8%87%AA%E5%8A%A8%E6%A3%80%E6%B5%8B%E7%B1%BB%E5%9E%8B%E6%98%AF%E5%90%A6%E5%AE%9E%E7%8E%B0%E6%8E%A5%E5%8F%A3/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -219,7 +219,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Go鸭子类型
+          Go 编译器自动检测类型是否实现接口
         </h1>
 
         <div class="post-meta">
@@ -229,14 +229,14 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2020-01-02 21:30:16" itemprop="dateCreated datePublished" datetime="2020-01-02T21:30:16+08:00">2020-01-02</time>
+              <time title="创建时间：2020-06-09 20:29:16" itemprop="dateCreated datePublished" datetime="2020-06-09T20:29:16+08:00">2020-06-09</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-10 08:21:27" itemprop="dateModified" datetime="2021-03-10T08:21:27+08:00">2021-03-10</time>
+                <time title="修改时间：2021-03-21 16:53:48" itemprop="dateModified" datetime="2021-03-21T16:53:48+08:00">2021-03-21</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -261,38 +261,18 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h3 id="鸭子类型"><a href="#鸭子类型" class="headerlink" title="鸭子类型"></a>鸭子类型</h3><p>维基百科: 如果某个东西长得像鸭子，像鸭子一样游泳，像鸭子一样嘎嘎叫，那它就可以被看成是一只鸭子。</p>
-<ul>
-<li><p><code>Duck Typing</code>，鸭子类型，是<strong>动态编程语言的一种对象推断策略，它更关注对象能如何被使用，而不是对象的类型本身</strong>。</p>
-</li>
-<li><p>Go 语言作为一门静态语言，它通过<strong>通过接口的方式完美支持鸭子类型</strong>。</p>
-</li>
-</ul>
-<h3 id="动态语言实现"><a href="#动态语言实现" class="headerlink" title="动态语言实现"></a>动态语言实现</h3><p>动态语言的特点：</p>
-<blockquote>
-<p>变量绑定的类型是不确定的，在运行期间才能确定<br>函数和方法可以接收任何类型的参数，且调用时不检查参数类型<br>不需要实现接口</p>
-</blockquote>
-<p>在动态语言 python 中，定义一个这样的函数：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">hello_world</span><span class="params">(coder)</span>:</span></span><br><span class="line">    coder.say_hello()</span><br></pre></td></tr></table></figure>
-<p>当调用此函数的时候，可以传入任意类型，只要它实现了 <code>say_hello()</code> 函数就可以。如果没有实现，<strong>运行过程</strong>中会出现错误。</p>
-<h3 id="静态语言实现"><a href="#静态语言实现" class="headerlink" title="静态语言实现"></a>静态语言实现</h3><p>而在静态语言如 Java, C++ 中，必须要<strong>显示地声明实现了某个接后，才能用在任何需要这个接口的地方。</strong> <strong>如果你在程序中调用 <code>hello_world</code> 函数，却传入了一个根本就没有实现 <code>say_hello()</code> 的类型，那在编译阶段就不会通过。</strong>这也是静态语言比动态语言更安全的原因。</p>
-<p>动态语言和静态语言的差别在此就有所体现。<strong>静态语言在编译期间就能发现类型不匹配的错误，不像动态语言，必须要运行到那一行代码才会报错。</strong></p>
-<p>静态语言要求程序员在编码阶段就要按照规定来编写程序，为每个变量规定数据类型，这在某种程度上，加大了工作量，也加长了代码量。动态语言则没有这些要求，可以让人更专注在业务上，代码也更短，写起来更快，这一点，eg. python 。</p>
-<h3 id="Go鸭子类型实现"><a href="#Go鸭子类型实现" class="headerlink" title="Go鸭子类型实现"></a>Go鸭子类型实现</h3><p>Go 语言作为一门现代静态语言，是有后发优势的。它<strong>引入了动态语言的便利，同时又会进行静态语言的类型检查</strong>，写起来是非常高效的。</p>
-<p>Go 采用了折中的做法：<strong>不要求类型显示地声明实现了某个接口，只要实现了相关的方法即可，编译器就能检测到。</strong></p>
+        <h3 id="Go-编译器自动检测类型是否实现接口"><a href="#Go-编译器自动检测类型是否实现接口" class="headerlink" title="Go 编译器自动检测类型是否实现接口"></a>Go 编译器自动检测类型是否实现接口</h3><p>开源库里会有一些类似下面这种奇怪的用法：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> _ io.Writer = (*myWriter)(<span class="literal">nil</span>)</span><br></pre></td></tr></table></figure>
+<p>这时候会有点懵，不知道作者想要干什么，实际上这就是此问题的答案。<strong>编译器会由此检查 <code>*myWriter</code> 类型是否实现了 <code>io.Writer</code> 接口。</strong></p>
 <p>例子：</p>
-<p>定义一个接口，和使用此接口作为参数的函数：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> IGreeting <span class="keyword">interface</span> &#123;</span><br><span class="line">	sayHello()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">sayHello</span><span class="params">(i IGreeting)</span></span> &#123;</span><br><span class="line">	i.sayHello()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>定义两个结构体：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Go <span class="keyword">struct</span> &#123;&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(g Go)</span> <span class="title">sayHello</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Println(<span class="string">"Hi, I am GO!"</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> PHP <span class="keyword">struct</span> &#123;&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p PHP)</span> <span class="title">sayHello</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Println(<span class="string">"Hi, I am PHP!"</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>最后，在 main 函数里调用 sayHello() 函数：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	golang := Go&#123;&#125;</span><br><span class="line">	php := PHP&#123;&#125;</span><br><span class="line"></span><br><span class="line">	sayHello(golang)</span><br><span class="line">	sayHello(php)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>程序输出：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Hi, I am GO!</span><br><span class="line">Hi, I am PHP!</span><br></pre></td></tr></table></figure>
-<p><strong>在 main 函数中，调用 sayHello() 函数时，传入了 <code>golang, php</code> 对象，它们并没有显式地声明实现了 IGreeting 类型，只是实现了接口所规定的 sayHello() 函数。实际上，编译器在调用 sayHello() 函数时，会隐式地将 <code>golang, php</code> 对象转换成 IGreeting 类型，这也是静态语言的类型检查功能。</strong></p>
-<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>鸭子类型是一种动态语言的风格，在这种风格中，<strong>一个对象有效的语义，不是由继承自特定的类或实现特定的接口，而是由它”当前方法和属性的集合”决定。Go 作为一种静态语言，通过接口实现了 <code>鸭子类型</code>，实际上是 Go 的编译器在其中作了隐匿的转换工作。</strong></p>
-<h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><p>【Golang 与鸭子类型，讲得比较好】<a href="https://blog.csdn.net/cszhouwei/article/details/33741731" target="_blank" rel="noopener">https://blog.csdn.net/cszhouwei/article/details/33741731</a></p>
-<p>【各种面向对象的名词】<a href="https://cyent.github.io/golang/other/oo/" target="_blank" rel="noopener">https://cyent.github.io/golang/other/oo/</a></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"io"</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> myWriter <span class="keyword">struct</span> &#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*func (w myWriter) Write(p []byte) (n int, err error) &#123;</span></span><br><span class="line"><span class="comment">	return</span></span><br><span class="line"><span class="comment">&#125;*/</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="comment">// 检查 *myWriter 类型是否实现了 io.Writer 接口</span></span><br><span class="line">    <span class="keyword">var</span> _ io.Writer = (*myWriter)(<span class="literal">nil</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 检查 myWriter 类型是否实现了 io.Writer 接口</span></span><br><span class="line">    <span class="keyword">var</span> _ io.Writer = myWriter&#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注释掉为 myWriter 定义的 Write 函数后，运行程序：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> <span class="built_in">command</span>-line-arguments</span></span><br><span class="line">src/learn/tongbu/tongbu.go:14:6: cannot use (*myWriter)(nil) (type *myWriter) as type io.Writer in assignment:</span><br><span class="line">	*myWriter does not implement io.Writer (missing Write method)</span><br><span class="line">src/learn/tongbu/tongbu.go:17:6: cannot use myWriter&#123;&#125; (type myWriter) as type io.Writer in assignment:</span><br><span class="line">	myWriter does not implement io.Writer (missing Write method)</span><br></pre></td></tr></table></figure>
+<p>报错信息：<strong>*myWriter/myWriter 未实现 io.Writer 接口，也就是未实现 Write 方法。</strong></p>
+<p>解除注释后，运行程序不报错。</p>
+<p>实际上，上述赋值语句会发生<strong>隐式地类型转换</strong>，<strong>在转换的过程中，编译器会检测等号右边的类型是否实现了等号左边接口所规定的函数。</strong></p>
+<p>总结: 可通过在代码中添加类似如下的代码，用来检测类型是否实现了接口：</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> _ io.Writer = (*myWriter)(<span class="literal">nil</span>)</span><br><span class="line"><span class="keyword">var</span> _ io.Writer = myWriter&#123;&#125;</span><br></pre></td></tr></table></figure>
 
     </div>
 
@@ -302,7 +282,7 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/%E6%8E%A5%E5%8F%A3-%E9%B8%AD%E5%AD%90%E7%B1%BB%E5%9E%8B/" rel="tag"># 接口 鸭子类型</a>
+              <a href="/tags/Golang/" rel="tag"># Golang</a>
           </div>
 
         
@@ -311,12 +291,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2020/01/02/Go%20%E6%8E%A5%E5%8F%A3_1Go%E4%B8%8E%20C++%20%E6%8E%A5%E5%8F%A3%E6%9C%89%E4%BD%95%E5%BC%82%E5%90%8C/" rel="prev" title="Go接口与C++接口的异同">
-      <i class="fa fa-chevron-left"></i> Go接口与C++接口的异同
+    <a href="/2020/06/08/Go%E6%8E%A5%E5%8F%A3_7%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E5%92%8C%E6%96%AD%E8%A8%80%E7%9A%84%E5%8C%BA%E5%88%AB/" rel="prev" title="Go 类型转换和断言">
+      <i class="fa fa-chevron-left"></i> Go 类型转换和断言
     </a></div>
       <div class="post-nav-item">
-    <a href="/2020/01/03/Go%20%E6%8E%A5%E5%8F%A3_3iface%20%E5%92%8C%20eface%20%E7%9A%84%E5%8C%BA%E5%88%AB%E6%98%AF%E4%BB%80%E4%B9%88/" rel="next" title="Go 接口的底层实现">
-      Go 接口的底层实现 <i class="fa fa-chevron-right"></i>
+    <a href="/2020/12/10/mysql-1mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E5%88%86%E6%9E%90-%E7%B4%A2%E5%BC%95/" rel="next" title="mysql性能优化分析-索引">
+      mysql性能优化分析-索引 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -389,7 +369,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#鸭子类型"><span class="nav-number">1.</span> <span class="nav-text">鸭子类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#动态语言实现"><span class="nav-number">2.</span> <span class="nav-text">动态语言实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#静态语言实现"><span class="nav-number">3.</span> <span class="nav-text">静态语言实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Go鸭子类型实现"><span class="nav-number">4.</span> <span class="nav-text">Go鸭子类型实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考资料"><span class="nav-number">6.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Go-编译器自动检测类型是否实现接口"><span class="nav-number">1.</span> <span class="nav-text">Go 编译器自动检测类型是否实现接口</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -582,7 +562,7 @@ window.addEventListener('pjax:success', () => {
       repo: 'dongshifu.github.io',
       owner: 'dongshifu',
       admin: ['dongshifu'],
-      id: 'd8282bf58bad2e92464df9118196ba60',
+      id: '399b936fb9e44271a09c34659f79ae9b',
         language: 'zh-CN',
       distractionFreeMode: 'true'
     });

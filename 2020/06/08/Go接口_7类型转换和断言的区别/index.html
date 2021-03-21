@@ -51,14 +51,14 @@
 <meta name="keywords" content="Go">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Go 类型转换和断言">
-<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;01&#x2F;05&#x2F;Go%E6%8E%A5%E5%8F%A3_7%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E5%92%8C%E6%96%AD%E8%A8%80%E7%9A%84%E5%8C%BA%E5%88%AB&#x2F;index.html">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;06&#x2F;08&#x2F;Go%E6%8E%A5%E5%8F%A3_7%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E5%92%8C%E6%96%AD%E8%A8%80%E7%9A%84%E5%8C%BA%E5%88%AB&#x2F;index.html">
 <meta property="og:site_name" content="ShifuDong">
 <meta property="og:description" content="Go 类型转换和断言Go 语言中不允许隐式类型转换，也就是说 = 两边，不允许出现类型不相同的变量。 类型转换、类型断言本质都是把一个类型转换成另外一个类型。不同之处在于，类型断言是对接口变量进行的操作。 类型转换对于类型转换而言，转换前后的两个类型要相互兼容才行。类型转换的语法为：  &amp;lt;结果类型&amp;gt; := &amp;lt;目标类型&amp;gt; ( &amp;lt;表达式&amp;gt; )  1234567891">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2021-03-09T06:20:58.806Z">
+<meta property="og:updated_time" content="2021-03-21T08:54:00.319Z">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://yoursite.com/2020/01/05/Go%E6%8E%A5%E5%8F%A3_7%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E5%92%8C%E6%96%AD%E8%A8%80%E7%9A%84%E5%8C%BA%E5%88%AB/">
+<link rel="canonical" href="http://yoursite.com/2020/06/08/Go%E6%8E%A5%E5%8F%A3_7%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E5%92%8C%E6%96%AD%E8%A8%80%E7%9A%84%E5%8C%BA%E5%88%AB/">
 
 
 <script id="page-configurations">
@@ -206,7 +206,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/05/Go%E6%8E%A5%E5%8F%A3_7%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E5%92%8C%E6%96%AD%E8%A8%80%E7%9A%84%E5%8C%BA%E5%88%AB/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/08/Go%E6%8E%A5%E5%8F%A3_7%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E5%92%8C%E6%96%AD%E8%A8%80%E7%9A%84%E5%8C%BA%E5%88%AB/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -229,14 +229,14 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2020-01-05 22:29:16" itemprop="dateCreated datePublished" datetime="2020-01-05T22:29:16+08:00">2020-01-05</time>
+              <time title="创建时间：2020-06-08 22:29:16" itemprop="dateCreated datePublished" datetime="2020-06-08T22:29:16+08:00">2020-06-08</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-09 14:20:58" itemprop="dateModified" datetime="2021-03-09T14:20:58+08:00">2021-03-09</time>
+                <time title="修改时间：2021-03-21 16:54:00" itemprop="dateModified" datetime="2021-03-21T16:54:00+08:00">2021-03-21</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -342,12 +342,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2020/01/04/Go%20%E6%8E%A5%E5%8F%A3_5%E6%8E%A5%E5%8F%A3%E7%9A%84%E6%9E%84%E9%80%A0%E8%BF%87%E7%A8%8B%E6%98%AF%E6%80%8E%E6%A0%B7%E7%9A%84/" rel="prev" title="Go 接口的构造过程">
-      <i class="fa fa-chevron-left"></i> Go 接口的构造过程
+    <a href="/2020/06/07/Go%20%E6%8E%A5%E5%8F%A3_6%E6%8E%A5%E5%8F%A3%E8%BD%AC%E6%8D%A2%E7%9A%84%E5%8E%9F%E7%90%86/" rel="prev" title="Go 接口转换原理">
+      <i class="fa fa-chevron-left"></i> Go 接口转换原理
     </a></div>
       <div class="post-nav-item">
-    <a href="/2020/01/05/Go%20%E6%8E%A5%E5%8F%A3_6%E6%8E%A5%E5%8F%A3%E8%BD%AC%E6%8D%A2%E7%9A%84%E5%8E%9F%E7%90%86/" rel="next" title="Go 接口转换原理">
-      Go 接口转换原理 <i class="fa fa-chevron-right"></i>
+    <a href="/2020/06/09/Go_%E6%8E%A5%E5%8F%A3_8%E7%BC%96%E8%AF%91%E5%99%A8%E8%87%AA%E5%8A%A8%E6%A3%80%E6%B5%8B%E7%B1%BB%E5%9E%8B%E6%98%AF%E5%90%A6%E5%AE%9E%E7%8E%B0%E6%8E%A5%E5%8F%A3/" rel="next" title="Go 编译器自动检测类型是否实现接口">
+      Go 编译器自动检测类型是否实现接口 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -613,7 +613,7 @@ window.addEventListener('pjax:success', () => {
       repo: 'dongshifu.github.io',
       owner: 'dongshifu',
       admin: ['dongshifu'],
-      id: '93a89a7d9c200faf9de02c9dee1e5669',
+      id: '9a13b1df00a11bffe43a2c3fe61ab5b4',
         language: 'zh-CN',
       distractionFreeMode: 'true'
     });
