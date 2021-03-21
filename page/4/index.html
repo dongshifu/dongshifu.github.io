@@ -236,7 +236,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-21 14:24:48" itemprop="dateModified" datetime="2021-03-21T14:24:48+08:00">2021-03-21</time>
+                <time title="修改时间：2021-03-21 20:04:02" itemprop="dateModified" datetime="2021-03-21T20:04:02+08:00">2021-03-21</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -545,6 +545,31 @@
 </ul>
 <p>为了避免同一个文件被include多次，c/c++中有两种方式：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> <span class="comment">//一般定义的方式为</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> \__SOMEFILE_H__</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> \__SOMEFILE_H__</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> once <span class="comment">//只能用于windows中</span></span></span><br></pre></td></tr></table></figure>
+<h4 id="函数的三种参数传递方式"><a href="#函数的三种参数传递方式" class="headerlink" title="函数的三种参数传递方式"></a>函数的三种参数传递方式</h4><ul>
+<li><p>传入参数:</p>
+<ul>
+<li>指针作为函数参数</li>
+<li>同时有const关键字修饰</li>
+<li>指针指向有效区域, 在函数内部做读操作</li>
+</ul>
+</li>
+<li><p>传出参数:</p>
+<ul>
+<li>指针作为函数参数</li>
+<li>在函数调用前, 指针指向的空间可以无意义, 但必须有效</li>
+<li>在函数内部做写操作</li>
+<li>函数调用结束后充当函数返回值</li>
+</ul>
+</li>
+<li><p>传入传出参数:</p>
+<ul>
+<li>指针作为函数参数</li>
+<li>在函数调用前, 指针指向的空间有实际意义</li>
+<li>在函数内部, 先做读操作, 再做写操作</li>
+<li>函数调用结束后, 充当函数返回值</li>
+</ul>
+</li>
+</ul>
 <h3 id="指针"><a href="#指针" class="headerlink" title="指针"></a>指针</h3><p>内存是沟通CPU和硬盘的桥梁</p>
 <ul>
 <li>暂存放CPU中的运算数据</li>
