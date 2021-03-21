@@ -376,6 +376,131 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/23/linux-%E7%B3%BB%E7%BB%9F-04%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95%E6%93%8D%E4%BD%9C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/03/23/linux-%E7%B3%BB%E7%BB%9F-04%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95%E6%93%8D%E4%BD%9C/" class="post-title-link" itemprop="url">linux系统下文件和目录操作</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-23 10:50:49" itemprop="dateCreated datePublished" datetime="2020-03-23T10:50:49+08:00">2020-03-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-21 13:00:38" itemprop="dateModified" datetime="2021-03-21T13:00:38+08:00">2021-03-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index">
+                    <span itemprop="name">linux系统编程</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="系统调用说明"><a href="#系统调用说明" class="headerlink" title="系统调用说明"></a>系统调用说明</h3><p>系统调用: <strong>内核提供的函数</strong>，由操作系统实现并提供给外部应用程序的编程接口, 是应用程序同操作系统之间交互数据的桥梁</p>
+<p>为了保证系统的安全性, <strong>manPage中的系统调用都是对系统调用的一次浅封装</strong>, 比如open对应的是sys_open…</p>
+<h4 id="系统调用和库函数的比较：预读入和缓输出"><a href="#系统调用和库函数的比较：预读入和缓输出" class="headerlink" title="系统调用和库函数的比较：预读入和缓输出"></a>系统调用和库函数的比较：预读入和缓输出</h4><p>使用<code>strace</code>工具可以跟踪一个程序执行时所需的<strong>系统调用</strong>。</p>
+<p>如果规定逐字节的进行拷贝, 用库函数会比用系统调用快很多, 因为<strong>有预读入和缓输出机制:</strong></p>
+<p><img src="https://api2.mubu.com/v3/document_image/ca853e5c-878b-4feb-80a4-2d4205eb88e3-11197877.jpg" alt="预读入和缓输出机制"></p>
+<p>操作系统不会让用户逐字节的向磁盘上写数据, 实际上它<strong>维护了一个系统级缓冲</strong>, <strong>只有当从用户空间过来的数据在该缓冲上写满时, 才会一次性将数据冲刷到Disk上</strong></p>
+<p><strong>当使用系统调用的方法时, 要不断的在用户空间和内核空间进行来回切换, 这会消耗大量时间</strong></p>
+<p>而使用fputc(库函数)时, <strong>在设计之初自己在用户空间维护了一个缓冲, 这样在用户空间把自己的缓冲写满, 再一次性写入内核缓冲(写入了内核缓冲就认为写到了磁盘上), 可见这样大大减少了在用户空间和内核空间来回切换的次数</strong></p>
+<p><strong>read和write函数常被称为UnbufferedIO, 指无用户级缓冲区, 但不保证不使用内核缓冲区</strong></p>
+<h3 id="文件及相关操作"><a href="#文件及相关操作" class="headerlink" title="文件及相关操作"></a>文件及相关操作</h3><h4 id="文件描述符"><a href="#文件描述符" class="headerlink" title="文件描述符"></a>文件描述符</h4><p><img src="https://api2.mubu.com/v3/document_image/1148cba1-a13e-4a4f-a00d-e12aafbae072-11197877.jpg" alt="文件描述符"></p>
+<ul>
+<li>PCB中有一个指针, <strong>指向了该进程的文件描述符表, 每个表项都是一个键值对, 其中的value是指向文件结构体的指针, 其中的索引是fd,</strong> <strong>操作系统暴露给用户的唯一操作文件的依据</strong></li>
+<li>新打开的文件描述符一定是所有文件描述符表中<strong>可用的, 最小的</strong>那个文件描述符</li>
+<li>文件描述符最大1023, 说明<strong>一个进程最多能打开1024个文件</strong></li>
+</ul>
+<h4 id="open"><a href="#open" class="headerlink" title="open"></a>open</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">open</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* pathname, <span class="keyword">int</span> flags)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">open</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* pathname, <span class="keyword">int</span> flags, <span class="keyword">mode_t</span> mode)</span></span>;	<span class="comment">//mode_t是一个8进制整型,指定文件权限,只有当参2指定了CREAT才有用</span></span><br></pre></td></tr></table></figure>
+<p>flag的参数:</p>
+<ul>
+<li>O_RDONLY</li>
+<li>O_WRONLY</li>
+<li>O_RDWR</li>
+<li>O_APPEND</li>
+<li>O_CREATE</li>
+<li>O_EXCL</li>
+<li>O_TRUNC</li>
+<li>O_NONBLOCK</li>
+</ul>
+<p>成功返回<strong>文件描述符</strong>, 失败返回-1并设置errno;</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> fd1=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> fd2=<span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	fd1=<span class="built_in">open</span>(<span class="string">"./dirt.txt"</span>,O_RDONLY|O_CREAT|O_TRUNC,<span class="number">0644</span>);</span><br><span class="line">    <span class="comment">/*打开的文件不存在*/</span></span><br><span class="line">	fd2=<span class="built_in">open</span>(<span class="string">"./dirt2.txt"</span>,O_RDONLY);</span><br><span class="line"></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"fd1=%d\n"</span>,fd1);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"fd2=%d,errno=%d:%s\n"</span>,fd2,errno,strerror(errno));</span><br><span class="line">	<span class="built_in">close</span>(fd1);</span><br><span class="line">	<span class="built_in">close</span>(fd2);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>创建文件权限时, 指定文件访问权限, 权限同时受umask影响:<code>文件权限=mode&amp;(~umask)</code></strong></p>
+<h4 id="read和write"><a href="#read和write" class="headerlink" title="read和write"></a>read和write</h4><ul>
+<li>read:从<strong>文件中读数据到缓冲区</strong></li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="keyword">ssize_t</span> <span class="built_in">read</span>(<span class="keyword">int</span> fd, <span class="keyword">void</span>* buf, <span class="keyword">size_t</span> count);<span class="comment">//count是缓冲区的大小;</span></span><br></pre></td></tr></table></figure>
+<p><strong>成功返回实际读到的字节数, 返回0时意味着读到了文件末尾, 失败返回-1并设置errno</strong></p>
+<ul>
+<li>wirte:从<strong>缓冲区中读数据到文件</strong></li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="keyword">ssize_t</span> <span class="built_in">write</span>(<span class="keyword">int</span> fd, <span class="keyword">const</span> <span class="keyword">void</span>* buf, <span class="keyword">size_t</span> count); <span class="comment">//count是数据的大小(字节数);</span></span><br></pre></td></tr></table></figure>
+<p><strong>成功返回实际写入的字节数, 失败返回-1, 并设置errno</strong></p>
+<h4 id="read和write实现文件拷贝"><a href="#read和write实现文件拷贝" class="headerlink" title="read和write实现文件拷贝"></a>read和write实现文件拷贝</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">char</span> buf[<span class="number">1024</span>];</span><br><span class="line">	<span class="keyword">int</span> n=<span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">int</span> fd1=<span class="built_in">open</span>(argv[<span class="number">1</span>],O_RDONLY);</span><br><span class="line">	<span class="keyword">if</span>(fd1==<span class="number">-1</span>)&#123;</span><br><span class="line">		perror(<span class="string">"open argv1 error"</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line">    </span><br><span class="line">	<span class="keyword">int</span> fd2=<span class="built_in">open</span>(argv[<span class="number">2</span>],O_RDWR|O_CREAT|O_TRUNC,<span class="number">0644</span>);</span><br><span class="line">	<span class="keyword">if</span>(fd2==<span class="number">-1</span>)&#123;</span><br><span class="line">		perror(<span class="string">"open argv2 error"</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">while</span>((n=<span class="built_in">read</span>(fd1,buf,<span class="keyword">sizeof</span>(buf)))!=<span class="number">0</span>)&#123;</span><br><span class="line">		<span class="keyword">if</span>(n&lt;<span class="number">0</span>)&#123;</span><br><span class="line">			perror(<span class="string">"open argv2 error"</span>);</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="built_in">write</span>(fd2,buf,n);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="built_in">close</span>(fd1);</span><br><span class="line">	<span class="built_in">close</span>(fd2);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+<h4 id="阻塞和非阻塞"><a href="#阻塞和非阻塞" class="headerlink" title="阻塞和非阻塞"></a>阻塞和非阻塞</h4><p>阻塞：<strong>当进程调用一个阻塞的系统调用时，该进程被置于睡眠状态，这时内核调度其他进程运行，直到该进程等待的事件发生了（比如网络上接收到数据包或者调用sleep指定的睡眠时间到了）它才可能继续运行</strong>。与睡眠状态相对的是运行状态。</p>
+<p>正在被调度执行的进程：cpu处于该进程的上下文环境中，程序计数器中保存着该进程的指令地址，通用寄存器中保存着进程运算过程中的中间结果，正在执行该进程的指令，正在读写该进程的地址空间。</p>
+<p>常规读文件是不会阻塞的，不论读多少字节，read一定会在有限时间内返回。<strong>从终端或网络读则不一定，如果从终端输入的数据没有换行符，调用read读终端设备就会阻塞</strong>。<strong>如果网络上没有接收到数据包，调用read从网络读就会阻塞，至于阻塞多长时间也是不确定的，如果一直没有数据到达就会一直阻塞。同样，写常规文件也是不会阻塞的，而向终端设备或网络写则不一定。</strong></p>
+<h5 id="echo程序"><a href="#echo程序" class="headerlink" title="echo程序"></a>echo程序</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> n=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">char</span> buf[<span class="number">10</span>];</span><br><span class="line"></span><br><span class="line">	n=<span class="built_in">read</span>(STDIN_FILENO,buf,<span class="keyword">sizeof</span>(buf));</span><br><span class="line">	<span class="keyword">if</span>(n==<span class="number">-1</span>)&#123;</span><br><span class="line">		perror(<span class="string">"read error"</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="built_in">write</span>(STDOUT_FILENO,buf,n);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当不敲入换行符时, read会一直阻塞等待用户输入</p>
+<p>阻塞是<strong>设备文件, 网络文件</strong>的属性</p>
+<h5 id="非阻塞方式从tty中读数据"><a href="#非阻塞方式从tty中读数据" class="headerlink" title="非阻塞方式从tty中读数据"></a>非阻塞方式从tty中读数据</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> fd=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">char</span> buf[<span class="number">10</span>];</span><br><span class="line">	<span class="keyword">int</span> n=<span class="number">0</span>;</span><br><span class="line">	<span class="comment">/*以非阻塞方式打开终端文件*/</span></span><br><span class="line">	fd=<span class="built_in">open</span>(<span class="string">"/dev/tty"</span>,O_RDONLY|O_NONBLOCK);</span><br><span class="line">	<span class="keyword">if</span>(fd&lt;<span class="number">0</span>)&#123;</span><br><span class="line">		perror(<span class="string">"open /dev/tty error"</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">tryagain: </span><br><span class="line">	n=<span class="built_in">read</span>(fd,buf,<span class="keyword">sizeof</span>(buf));</span><br><span class="line">    <span class="comment">/*当read的返回值小于0*/</span></span><br><span class="line">	<span class="keyword">if</span>(n&lt;<span class="number">0</span>)&#123;</span><br><span class="line">        <span class="comment">/*errno不是EWOULDBLOCK,说明出现了其他问题*/</span></span><br><span class="line">		<span class="keyword">if</span>(errno!=EWOULDBLOCK)&#123;</span><br><span class="line">			perror(<span class="string">"read /dev/tty error"</span>);</span><br><span class="line">			<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">		&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">            <span class="comment">/*errno是EWOULDBLOCK,说明读到为空,则打印提示信息,并再次尝试*/</span></span><br><span class="line">			<span class="built_in">write</span>(STDOUT_FILENO,<span class="string">"try again\n"</span>,<span class="built_in">strlen</span>(<span class="string">"try again\n"</span>));</span><br><span class="line">			sleep(<span class="number">2</span>);</span><br><span class="line">			<span class="keyword">goto</span> tryagain;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">/*当read的返回值大于0,说明读到了数据,写到标准输出上*/</span></span><br><span class="line">	<span class="built_in">write</span>(STDOUT_FILENO,buf,n);</span><br><span class="line">	<span class="built_in">close</span>(fd);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+<p>当<code>read</code>函数返回-1, 并且<code>errno=EAGAIN或EWOULDBLOCK</code>, 说明不是<code>read</code>失败, 而是read在以非阻塞方式读一个<strong>设备文件</strong>或<strong>网络文件</strong>, 而文件中无数据。</p>
+<p>阻塞方式存在的问题也正是网络IO中<code>select, poll和epoll</code>函数存在的原因。</p>
+<h3 id="目录操作"><a href="#目录操作" class="headerlink" title="目录操作"></a>目录操作</h3>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/21/linux-%E7%B3%BB%E7%BB%9F-03makefile/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -407,7 +532,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-21 10:44:48" itemprop="dateModified" datetime="2021-03-21T10:44:48+08:00">2021-03-21</time>
+                <time title="修改时间：2021-03-21 11:00:39" itemprop="dateModified" datetime="2021-03-21T11:00:39+08:00">2021-03-21</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -2848,147 +2973,6 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/25/linux-%E7%B3%BB%E7%BB%9F-01%E9%9D%99%E6%80%81%E5%BA%93%E5%92%8C%E5%8A%A8%E6%80%81%E5%BA%93/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/01/25/linux-%E7%B3%BB%E7%BB%9F-01%E9%9D%99%E6%80%81%E5%BA%93%E5%92%8C%E5%8A%A8%E6%80%81%E5%BA%93/" class="post-title-link" itemprop="url">静态库和动态库</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-01-25 21:04:38" itemprop="dateCreated datePublished" datetime="2020-01-25T21:04:38+08:00">2020-01-25</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-21 09:02:53" itemprop="dateModified" datetime="2021-03-21T09:02:53+08:00">2021-03-21</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index">
-                    <span itemprop="name">linux系统编程</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="静态库和动态库对比"><a href="#静态库和动态库对比" class="headerlink" title="静态库和动态库对比"></a>静态库和动态库对比</h3><h4 id="静态库"><a href="#静态库" class="headerlink" title="静态库"></a>静态库</h4><p>一些目标代码的集合。按照习惯，linux中一般一<code>.a</code>作为文件名后缀。使用<strong>ar(archiver)</strong>命令可以创建静态库。</p>
-<p><strong>在可执行程序运行前就已经加入到执行码中，成为执行程序的一部分。</strong></p>
-<p>静态库在应用程序生成时，可以不必再编译，节省编译时间。</p>
-<p>静态库会占用大量存储空间。</p>
-<p><img src="https://api2.mubu.com/v3/document_image/506cf53c-136f-4e57-955b-b776192442d4-11197877.jpg" alt="静态库"></p>
-<h4 id="动态库"><a href="#动态库" class="headerlink" title="动态库"></a>动态库</h4><p><strong>在执行程序启动时加载到执行程序中，可以被多个执行程序共享使用。</strong></p>
-<p>动态库不需要编译入程序, <strong>运行时动态加载, 导致速度慢了一些</strong></p>
-<p><img src="https://api2.mubu.com/v3/document_image/c9562cc4-9a25-44f0-85b7-5e38bb10ba50-11197877.jpg" alt="动态库"></p>
-<p>二者的适合场景:</p>
-<ul>
-<li><strong>静态库: 对空间要求较低, 对时间要求较高</strong></li>
-<li><strong>动态库: 对时间要求较低, 对空间要求较高</strong></li>
-</ul>
-<h4 id="静态库制作"><a href="#静态库制作" class="headerlink" title="静态库制作"></a>静态库制作</h4><p><strong>先用gcc的-c参数将源文件编译成二进制文件, 再用ar命令封装静态库</strong></p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 有文件add.c div1.c sub.c</span></span><br><span class="line">gcc -c add.c -o add.o </span><br><span class="line">gcc -c sub.c -o sub.o</span><br><span class="line">gcc -c div1.c -o div1.o</span><br><span class="line"></span><br><span class="line">ar rcs libMyMath.a add.o sub.o div1.o</span><br></pre></td></tr></table></figure>
-<p>使用：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 将库直接加入编译的源文件中即可使用</span></span><br><span class="line">gcc test.c libMyMath.a -o test1</span><br></pre></td></tr></table></figure>
-<h4 id="静态库使用及头文件对应"><a href="#静态库使用及头文件对应" class="headerlink" title="静态库使用及头文件对应"></a>静态库使用及头文件对应</h4><p>隐式声明: 编译过程中没有遇到函数定义和函数声明, 编译器会帮助做隐式声明;</p>
-<p>但是这种隐式声明只能对于返回值为int型的;</p>
-<p>解决方法：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*添加头文件,防止头文件重复包含,一旦头文件被展开过一次,_MYMATH_H_就被定义过了,后面就不会再展开*/</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> _MYMATH_H_</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _MYMATH_H_</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">add</span><span class="params">(<span class="keyword">int</span>,<span class="keyword">int</span>)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">sub</span><span class="params">(<span class="keyword">int</span>,<span class="keyword">int</span>)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">div1</span><span class="params">(<span class="keyword">int</span>,<span class="keyword">int</span>)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure>
-<p>然后将源文件和库联编即可, 注意<strong>源文件在前</strong></p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 动态库存放在~/sys/staticLib/lib</span></span><br><span class="line">~/sys/staticLib$ gcc test.c ./lib/libMyMath.a -o <span class="built_in">test</span> -I ./inc</span><br></pre></td></tr></table></figure>
-<h4 id="动态库制作"><a href="#动态库制作" class="headerlink" title="动态库制作"></a>动态库制作</h4><p>生成与位置无关的代码</p>
-<p>将源文件.c编译为目标文件.o, 生成与位置无关的代码, <strong>借助参数-fPIC</strong></p>
-<p><img src="https://api2.mubu.com/v3/document_image/657aac6a-4f0e-4343-a366-d1e086496ec8-11197877.jpg" alt="动态库加载"></p>
-<p><strong>编译生成hello.o的时候, 各个函数的地址还是相对于main的地址, 链接阶段填入main的地址;</strong></p>
-<p><strong>由于动态库的函数在库里, 不能像程序内部的函数一样直接填入main的地址, 动态函数在a.out中没有位置, 依赖于@plt, 进行延迟绑定;</strong></p>
-<ul>
-<li><p>查看二进制文件的反汇编代码:<code>objdump -dS test</code></p>
-</li>
-<li><p>输出重定向:<code>objdump -dS test &gt; test.s</code></p>
-</li>
-</ul>
-<p>制作演示：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1. 将.c文件生成.o文件(生成与位置无关的代码-fPIC):</span></span><br><span class="line">gcc -c add.c -o add.o -fPIC</span><br><span class="line"><span class="comment"># 2. 使用gcc -shared制作动态库:</span></span><br><span class="line">gcc -shared add.o sub.o div1.o -o libMyMath.so</span><br><span class="line"><span class="comment"># 3. 编译可执行程序时, 指定所使用的动态库, -l 指定库名, -L 指定库路径:</span></span><br><span class="line">gcc test.c -o <span class="built_in">test</span> -l MyMath -L ./lib</span><br><span class="line"><span class="comment"># 4. 运行可执行程序</span></span><br><span class="line">./<span class="built_in">test</span> <span class="comment"># 报错(编译通过，执行错误，找不到文件)</span></span><br></pre></td></tr></table></figure>
-<h4 id="动态库加载错误原因及解决办法"><a href="#动态库加载错误原因及解决办法" class="headerlink" title="动态库加载错误原因及解决办法"></a>动态库加载错误原因及解决办法</h4><p>上面的错误原因:</p>
-<ul>
-<li>链接器:工作于链接阶段, 工作时需要指定-l和-L参数, 上面已经指定</li>
-<li>动态链接器:工作于程序运行阶段, <strong>工作时需要提供动态库所在目录</strong></li>
-</ul>
-<p>上面两者没有任何关系</p>
-<p>方法1：</p>
-<ul>
-<li><p>动态链接器要根据环境变量寻找动态库:<code>LD_LIBRARY_PATH</code></p>
-</li>
-<li><p>执行<code>export LD_LIBRARY_PATH=./lib</code></p>
-</li>
-<li><p>指定后就可以执行了(但是上面指定的只是临时的, 环境变量是进程的概念)</p>
-</li>
-<li><p>要想<strong>永久指定, 需要更改配置文件, 加入环境变量, 重启终端使之生效</strong>:</p>
-</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ~/.bashrc下加入</span></span><br><span class="line"><span class="built_in">export</span> LD_LIBRARY_PATH=./lib</span><br></pre></td></tr></table></figure>
-<p>方法2：</p>
-<ul>
-<li><p>像标准C库这种本身就在系统的环境变量里, 所以能找到;</p>
-</li>
-<li><p>滥竽充数法:<strong>将库文件放到系统根目录下的lib里就可以了;</strong></p>
-</li>
-<li><p><code>ldd test</code>可以查看程序运行所需要的动态库</p>
-</li>
-</ul>
-<p>最后一种方法:修改配置文件法;</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo vim /etc/ld.so.conf</span><br><span class="line"><span class="comment"># 写入动态库绝对路径, 保存;</span></span><br><span class="line">sudo ldconfig -v <span class="comment">#使配置文件生效</span></span><br></pre></td></tr></table></figure>
-<p><strong>动态库和静态库共存时, 编译器优先使用动态库;</strong></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
@@ -3039,7 +3023,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">37</span>
+          <span class="site-state-item-count">38</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
