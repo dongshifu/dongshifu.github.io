@@ -205,6 +205,593 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/01/linux_01%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/03/01/linux_01%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/" class="post-title-link" itemprop="url">Linux 文件和目录及相关操作</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-01 21:29:16" itemprop="dateCreated datePublished" datetime="2020-03-01T21:29:16+08:00">2020-03-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-20 20:52:54" itemprop="dateModified" datetime="2021-03-20T20:52:54+08:00">2021-03-20</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux/" itemprop="url" rel="index">
+                    <span itemprop="name">linux</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="单用户操作系统和多用户操作系统"><a href="#单用户操作系统和多用户操作系统" class="headerlink" title="单用户操作系统和多用户操作系统"></a>单用户操作系统和多用户操作系统</h3><ul>
+<li><strong>单用户操作系统</strong>：指一台计算机在同一时间 <strong>只能由一个用户</strong> 使用，<strong>一个用户独自享用系统的全部硬件和软件资源</strong><ul>
+<li><strong>Windows XP</strong> 之前的版本都是单用户操作系统</li>
+</ul>
+</li>
+<li><strong>多用户操作系统</strong>：指一台计算机在同一时间可以由 <strong>多个用户</strong> 使用，多个用户共<strong>同享用系统的全部硬件和软件资源</strong><ul>
+<li><strong>Unix</strong> 和 <strong>Linux</strong> 的设计初衷就是多用户操作系统</li>
+</ul>
+</li>
+</ul>
+<h3 id="linux下的文件系统"><a href="#linux下的文件系统" class="headerlink" title="linux下的文件系统"></a>linux下的文件系统</h3><h4 id="Linux文件类型"><a href="#Linux文件类型" class="headerlink" title="Linux文件类型"></a>Linux文件类型</h4><ul>
+<li>普通-</li>
+<li>目录d</li>
+<li>字符设备c</li>
+<li>块设备b</li>
+<li>软连接l</li>
+<li>管道p</li>
+<li>套接字s</li>
+<li>Unknown</li>
+</ul>
+<h4 id="文件结构"><a href="#文件结构" class="headerlink" title="文件结构"></a>文件结构</h4><ul>
+<li><p>在 <code>Windows</code> 下，打开 “计算机”，看到的是一个个的驱动器盘符：eg: C盘，D盘…。</p>
+<ul>
+<li>每个驱动器都有自己的根目录结构，形成多个树并列的情形。</li>
+</ul>
+</li>
+<li><p>在 <code>Linux</code> 下，看不到驱动器盘符，看到的是<strong>文件夹（目录）</strong></p>
+<ul>
+<li>linux没有盘符概念，只有一个根目录 <code>/</code>，所有文件都在它下面</li>
+</ul>
+</li>
+</ul>
+<p><img src="https://api2.mubu.com/v3/document_image/fe5a0a8b-ade0-401a-b879-f7264d3f0a80-11197877.jpg" alt="linux文件系统"></p>
+<ul>
+<li><p>用户目录</p>
+<ul>
+<li><p>位于 <code>/home/xxx</code>，称之为用户工作目录或家目录，表示方式：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/home/xx</span><br><span class="line">~</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>/：根目录，<strong>一般根目录下只存放目录</strong>，在 linux 下有且只有一个根目录，所有的东西都是从这里开始 </p>
+<ul>
+<li>当在终端里输入 <code>cd /home</code>，其实是在告诉电脑，先从 <code>/</code>（根目录）开始，再进入到 <code>home</code> 目录</li>
+</ul>
+</li>
+<li><p>/bin、/usr/bin：可执行二进制文件的目录，如<strong>常用的命令 ls、tar、mv、cat</strong> 等</p>
+</li>
+<li><p>/boot：放置 linux <strong>系统启动</strong>时用到的一些文件，如 linux 的<strong>内核</strong>文件：<code>/boot/vmlinuz</code>，<strong>系统引导</strong>管理器：<code>/boot/grub</code></p>
+</li>
+<li><p>/dev：存放linux系统下的<strong>设备文件</strong>，<strong>访问该目录下某个文件，相当于访问某个设备</strong>，常用的是挂载光驱<code>mount /dev/cdrom /mnt</code></p>
+</li>
+<li><p>/etc：<strong>系统配置文件</strong>存放的目录，不建议在此目录下存放可执行文件，重要的配置文件有  </p>
+<ul>
+<li>/etc/inittab</li>
+<li>/etc/fstab</li>
+<li>/etc/init.d</li>
+<li>/etc/X11</li>
+<li>/etc/sysconfig</li>
+<li><p>/etc/xinetd.d</p>
+</li>
+<li><p>/etc/profile</p>
+</li>
+</ul>
+</li>
+<li><p>/home：系统默认的用户家目录，新增用户账号时，用户的家目录都存放在此目录下 </p>
+<ul>
+<li><strong><code>~</code> 表示当前用户的家目录</strong></li>
+<li><code>~xxx</code> 表示用户 <code>xxx</code> 的家目录</li>
+</ul>
+</li>
+<li><p>/lib、/usr/lib、/usr/local/lib：<strong>系统使用的函数库的目录，程序在执行过程中，需要调用一些额外的参数时需要函数库的协助</strong></p>
+</li>
+<li><p>/lost+fount：系统异常产生错误时，会将一些遗失的片段放置于此目录下</p>
+</li>
+<li><p>/mnt: /media：光盘默认<strong>挂载点</strong>，通常光盘挂载于 /mnt/cdrom 下，也不一定，可以选择任意位置进行挂载</p>
+</li>
+<li><p>/opt：给主机<strong>额外安装软件所摆放的目录</strong></p>
+</li>
+<li><p>/proc：<strong>此目录的数据都在内存中，如系统核心，外部设备，网络状态，由于数据都存放于内存中，所以不占用磁盘空间</strong>，比较重要的文件有：/proc/cpuinfo、/proc/interrupts、/proc/dma、/proc/ioports、/proc/net/* 等</p>
+</li>
+<li><p>/root：<strong>系统管理员root的家目录</strong></p>
+</li>
+<li><p>/sbin、/usr/sbin、/usr/local/sbin：放置<strong>系统管理员使用的可执行命令</strong>，如 fdisk、shutdown、mount 等。与 /bin 不同的是，这几个目录是给系统管理员 root 使用的命令<strong>，一般用户只能”查看”而不能设置和使用</strong></p>
+</li>
+<li><p>/tmp：一般用户或正在执行的程序<strong>临时存放文件的目录</strong>，任何人都可以访问，<strong>重要数据不可放置在此目录下</strong></p>
+</li>
+<li><p>/srv：<strong>服务启动之后需要访问的数据目录</strong>，如 www 服务需要访问的网页数据存放在 /srv/www 内</p>
+</li>
+<li><p>/usr：<strong>应用程序存</strong>放目录 </p>
+<ul>
+<li>/usr/bin：存放应用程序</li>
+<li>/usr/share：存放共享数据</li>
+<li>/usr/lib：存放不能直接运行的，<strong>却是许多程序运行所必需的一些函数库文件</strong></li>
+<li>/usr/local：存放<strong>软件升级包</strong></li>
+<li>/usr/share/doc：系统说明文件存放目录</li>
+<li>/usr/share/man：程序说明文件存放目录</li>
+</ul>
+</li>
+<li><p>/var：放置系统执行过程中<strong>经常变化的文件</strong> </p>
+<ul>
+<li>/var/log：随时更改的<strong>日志</strong>文件 </li>
+<li>/var/spool/mail：邮件存放的目录</li>
+<li>/var/run：程序或服务启动后，其 PID 存放在该目录下</li>
+</ul>
+</li>
+</ul>
+<h4 id="文件和目录常用命令"><a href="#文件和目录常用命令" class="headerlink" title="文件和目录常用命令"></a>文件和目录常用命令</h4><ul>
+<li>查看目录内容 <ul>
+<li><code>ls</code></li>
+</ul>
+</li>
+<li>切换目录 <ul>
+<li><code>cd</code></li>
+</ul>
+</li>
+<li>创建和删除操作 <ul>
+<li><code>touch</code></li>
+<li><code>rm</code></li>
+<li><code>mkdir</code></li>
+</ul>
+</li>
+<li>拷贝和移动文件 <ul>
+<li><code>cp</code></li>
+<li><code>mv</code></li>
+</ul>
+</li>
+<li>查看文件内容 <ul>
+<li><code>cat</code></li>
+<li><code>more</code></li>
+<li><code>grep</code></li>
+</ul>
+</li>
+<li>其他 <ul>
+<li><code>echo</code></li>
+<li>重定向 <code>&gt;</code> 和 <code>&gt;&gt;</code></li>
+<li>管道 <code>|</code></li>
+</ul>
+</li>
+</ul>
+<h5 id="查看目录ls-命令说明"><a href="#查看目录ls-命令说明" class="headerlink" title="查看目录ls 命令说明"></a>查看目录<code>ls</code> 命令说明</h5><ul>
+<li><code>ls</code> 是英文单词 <strong>list</strong> 的简写，其功能为列出目录的内容，是用户最常用的命令之一，类似于 <strong>DOS</strong> 下的 <code>dir</code> 命令</li>
+</ul>
+<h5 id="Linux-下文件和目录的特点"><a href="#Linux-下文件和目录的特点" class="headerlink" title="Linux 下文件和目录的特点"></a>Linux 下文件和目录的特点</h5><ul>
+<li>Linux <strong>文件</strong> 或者 <strong>目录</strong> 名称最长可以有 <code>256</code> 个字符</li>
+<li>以 <code>.</code> 开头的文件为隐藏文件，需要用 -a 参数才能显示</li>
+<li><strong>.</strong> 代表当前目录</li>
+<li><strong>..</strong> 代表上一级目录</li>
+</ul>
+<h5 id="ls-常用选项"><a href="#ls-常用选项" class="headerlink" title="ls 常用选项"></a>ls 常用选项</h5><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>-a</td>
+<td>显示指定目录下所有子目录与文件，包括隐藏文件</td>
+</tr>
+<tr>
+<td>-l</td>
+<td>以列表方式显示文件的详细信息</td>
+</tr>
+<tr>
+<td>-h</td>
+<td>配合 -l 以人性化的方式显示文件大小</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h5 id="计算机中文件大小的表示方式"><a href="#计算机中文件大小的表示方式" class="headerlink" title="计算机中文件大小的表示方式"></a>计算机中文件大小的表示方式</h5><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>单位</th>
+<th>英文</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>字节</td>
+<td>B（Byte）</td>
+<td>在计算机中作为一个数字单元，一般为 8 位二进制数</td>
+</tr>
+<tr>
+<td>千</td>
+<td>K（Kibibyte）</td>
+<td>1 KB = 1024 B，千字节 （1024 = 2 ** 10）</td>
+</tr>
+<tr>
+<td>兆</td>
+<td>M（Mebibyte）</td>
+<td>1 MB = 1024 KB，百万字节</td>
+</tr>
+<tr>
+<td>千兆</td>
+<td>G（Gigabyte）</td>
+<td>1 GB = 1024 MB，十亿字节，千兆字节</td>
+</tr>
+<tr>
+<td>太</td>
+<td>T（Terabyte）</td>
+<td>1 TB = 1024 GB，万亿字节，太字节</td>
+</tr>
+<tr>
+<td>拍</td>
+<td>P（Petabyte）</td>
+<td>1 PB = 1024 TB，千万亿字节，拍字节</td>
+</tr>
+<tr>
+<td>艾</td>
+<td>E（Exabyte）</td>
+<td>1 EB = 1024 PB，百亿亿字节，艾字节</td>
+</tr>
+<tr>
+<td>泽</td>
+<td>Z（Zettabyte）</td>
+<td>1 ZB = 1024 EB，十万亿亿字节，泽字节</td>
+</tr>
+<tr>
+<td>尧</td>
+<td>Y（Yottabyte）</td>
+<td>1 YB = 1024 ZB，一亿亿亿字节，尧字节</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h5 id="ls-通配符的使用"><a href="#ls-通配符的使用" class="headerlink" title="ls 通配符的使用"></a>ls 通配符的使用</h5><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>通配符</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>*</td>
+<td>代表任意个数个字符</td>
+</tr>
+<tr>
+<td>?</td>
+<td>代表任意一个字符，至少 1 个</td>
+</tr>
+<tr>
+<td>[]</td>
+<td>表示可以匹配字符组中的任一一个</td>
+</tr>
+<tr>
+<td>[abc]</td>
+<td>匹配 a、b、c 中的任意一个</td>
+</tr>
+<tr>
+<td>[a-f]</td>
+<td>匹配从 a 到 f 范围内的的任意一个字符</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h5 id="文件操作基本命令"><a href="#文件操作基本命令" class="headerlink" title="文件操作基本命令"></a>文件操作基本命令</h5><p><code>more</code>-分屏显示文件内容, 空格翻页;</p>
+<p><code>less</code>同理;</p>
+<p><code>head -n file</code>-查看file的前n行;</p>
+<p><code>tail -n file</code>-查看file的后n行;</p>
+<h5 id="目录及操作基本命令"><a href="#目录及操作基本命令" class="headerlink" title="目录及操作基本命令"></a>目录及操作基本命令</h5><p><strong>一个目录所占的磁盘大小为4K;</strong></p>
+<p><code>cd -</code>-在两个目录之间来回切换;</p>
+<p><code>rmdir</code>-删除空目录;</p>
+<p><code>cp -a/-r srcdir dstdir</code>-拷贝目录;</p>
+<h5 id="查找文件"><a href="#查找文件" class="headerlink" title="查找文件"></a>查找文件</h5><ul>
+<li><code>find</code> 命令功能非常强大，通常用来在 <strong>特定的目录下</strong> <strong>搜索</strong> 符合条件的文件</li>
+</ul>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>命令</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>01</td>
+<td>find [路径] -name “*.py”</td>
+<td>查找指定路径下扩展名是 <code>.py</code> 的文件，包括子目录</td>
+</tr>
+</tbody>
+</table>
+</div>
+<ul>
+<li><strong>如果省略路径，表示在当前文件夹下查找</strong></li>
+<li>之前学习的通配符，在使用 <code>find</code> 命令时同时可用</li>
+</ul>
+<h5 id="硬链接和软链接"><a href="#硬链接和软链接" class="headerlink" title="硬链接和软链接"></a>硬链接和软链接</h5><ul>
+<li><p>软连接是<strong>一个文件</strong>，其中存的就是<strong>文件的路径</strong>, 路径有几个字符就占几个字节, 所以建议用绝对路径创建软连接;</p>
+<ul>
+<li>注意文件的权限, <strong>软连接的权限代表其本身的权限, 与指向的目的文件无关</strong>;</li>
+</ul>
+</li>
+<li><p>创建硬链接会增加硬链接计数;</p>
+<ul>
+<li>这些硬链接只想同一个文件, 修改一个其余的会同步变化;</li>
+<li>所有的硬链接有相同的<strong>Inode</strong>(文件统一id);</li>
+<li>删除只是把硬链接计数-1;</li>
+</ul>
+</li>
+</ul>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>命令</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>01</td>
+<td>ln -s 被链接的源文件 链接文件</td>
+<td>建立文件的软链接，用通俗的方式讲<strong>类似于</strong> Windows 下的<strong>快捷方式</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<ul>
+<li>没有 <code>-s</code> 选项建立的是一个 <strong>硬链接文件</strong><ul>
+<li>两个文件占用相同大小的硬盘空间，<strong>工作中几乎不会建立文件的硬链接</strong></li>
+</ul>
+</li>
+<li><strong>源文件要使用绝对路径</strong>，不能使用相对路径，这样可以方便移动链接文件后，仍然能够正常使用</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ln -s hello.c hello.c.s #创建软连接;</span><br><span class="line">ln hello.c hello.c.h #创建硬链接;</span><br></pre></td></tr></table></figure>
+<h5 id="文件软硬链接的示意图"><a href="#文件软硬链接的示意图" class="headerlink" title="文件软硬链接的示意图"></a>文件软硬链接的示意图</h5><p><img src="https://api2.mubu.com/v3/document_image/1f4e640f-dc3e-4678-bb88-9fa7c1321aeb-11197877.jpg" alt="文件软硬链接示意图"></p>
+<blockquote>
+<p>在 Linux 中，<strong>文件名</strong> 和 <strong>文件的数据</strong> 是分开存储的</p>
+</blockquote>
+<ul>
+<li>提示： <ul>
+<li>在 Linux 中，只有文件的 <code>硬链接数 == 0</code> 才会被删除</li>
+<li>使用 <code>ls -l</code> 可以查看一个文件的硬链接的数量</li>
+</ul>
+</li>
+</ul>
+<h4 id="磁盘分区类型"><a href="#磁盘分区类型" class="headerlink" title="磁盘分区类型"></a>磁盘分区类型</h4><ul>
+<li>主分区：最多只能有四个</li>
+<li>扩展分区：最多一个，算作主分区的一种，主分区加扩展分区最多有四个。扩展分区不能存储数据和格式化，必须再划分为逻辑分区才可以使用。</li>
+<li>逻辑分区：在扩展分区中划分</li>
+</ul>
+<p>逻辑分区的编号从5开始</p>
+<h4 id="支持的文件系统"><a href="#支持的文件系统" class="headerlink" title="支持的文件系统"></a>支持的文件系统</h4><ul>
+<li>ext2:ext文件系统的升级版。最大支持16TB的分区和最大2TB的文件。</li>
+<li>ext3:ext2的升级，增加日志功能。</li>
+<li>ext4:ext3升级版本，主流使用，功能强大</li>
+</ul>
+<h4 id="文件系统常用命令"><a href="#文件系统常用命令" class="headerlink" title="文件系统常用命令"></a>文件系统常用命令</h4><h4 id="df-du-fsck-dump2fs"><a href="#df-du-fsck-dump2fs" class="headerlink" title="df, du, fsck, dump2fs"></a>df, du, fsck, dump2fs</h4><h5 id="文件系统查看命令df"><a href="#文件系统查看命令df" class="headerlink" title="文件系统查看命令df"></a>文件系统查看命令df</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">df \[选项][挂载点]</span><br><span class="line"></span><br><span class="line">-a 所有文件系统信息</span><br><span class="line"></span><br><span class="line">-h 使用习惯单位显示容量，如kB,MB,GB</span><br><span class="line"></span><br><span class="line">ls 只统计目录下的大小，而不会统计子目录下的数据大小。</span><br></pre></td></tr></table></figure>
+<h5 id="统计目录或文件大小du"><a href="#统计目录或文件大小du" class="headerlink" title="统计目录或文件大小du"></a>统计目录或文件大小du</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-a , -h , -s</span><br></pre></td></tr></table></figure>
+<p>df命令从文件系统考虑，不光要考虑文件占用的空间，还要统计被命令或程序占用的空间（eg. 文件已经被删除，但程序并没有释放空间）</p>
+<p><strong>du命令面向文件，只会计算文件或目录占用的空间。</strong></p>
+<h5 id="文件系统修复命令fsck"><a href="#文件系统修复命令fsck" class="headerlink" title="文件系统修复命令fsck"></a>文件系统修复命令fsck</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fsck[选项]分区设备文件名</span><br></pre></td></tr></table></figure>
+<h5 id="显示磁盘状态命令dumpe2fs"><a href="#显示磁盘状态命令dumpe2fs" class="headerlink" title="显示磁盘状态命令dumpe2fs"></a>显示磁盘状态命令dumpe2fs</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dumpe2fs 分区设备文件名</span><br></pre></td></tr></table></figure>
+<h4 id="文件系统常用命令-挂载命令"><a href="#文件系统常用命令-挂载命令" class="headerlink" title="文件系统常用命令-挂载命令"></a>文件系统常用命令-挂载命令</h4><h5 id="查询与自动挂载"><a href="#查询与自动挂载" class="headerlink" title="查询与自动挂载"></a>查询与自动挂载</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mount [-l]：查询系统中已经挂载的设备，-l会显示卷标名称</span><br><span class="line"></span><br><span class="line">mount -a 依据配置文件/etc/fastb的内容，自动挂载</span><br></pre></td></tr></table></figure>
+<h5 id="挂载命令格式"><a href="#挂载命令格式" class="headerlink" title="挂载命令格式"></a>挂载命令格式</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">mount [-t 文件系统] [-L 卷标名] [-o 特殊选项] 设备文件名 挂载点</span><br><span class="line"></span><br><span class="line">选项：</span><br><span class="line"></span><br><span class="line">-t 文件系统：加入文件系统类型来指定挂载的类型，可以ext3，ext4,iso9660等文件系统</span><br><span class="line"></span><br><span class="line">-L 卷标名：挂载指定卷标的分区，而不是安装设备文件名挂载</span><br><span class="line"></span><br><span class="line">-o 特殊指令（remount ...）</span><br><span class="line"></span><br><span class="line">mount -o remount ,noexec /home</span><br></pre></td></tr></table></figure>
+<h5 id="挂载光盘与U盘"><a href="#挂载光盘与U盘" class="headerlink" title="挂载光盘与U盘"></a>挂载光盘与U盘</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">挂载光盘</span></span><br><span class="line"></span><br><span class="line">mkdir /mnt/cdrom/ #建立挂载点</span><br><span class="line"></span><br><span class="line">mount -t iso9660 /dev/cdrom /mnt/cdrom #挂载光盘</span><br><span class="line"></span><br><span class="line">mount /dev/sr0 /mnt/cdrom</span><br></pre></td></tr></table></figure>
+<h5 id="卸载命令"><a href="#卸载命令" class="headerlink" title="卸载命令"></a>卸载命令</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">umount 设备文件名或挂载点</span><br><span class="line"></span><br><span class="line">umount /mnt/cdrom</span><br></pre></td></tr></table></figure>
+<h5 id="挂载U盘"><a href="#挂载U盘" class="headerlink" title="挂载U盘"></a>挂载U盘</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">fdisk -l 查看U盘设备文件名</span><br><span class="line"></span><br><span class="line">mount -t vfat /dev/sdb1 /mnt/usb/</span><br><span class="line"></span><br><span class="line">linux默认不支持NTFS文件系统</span><br></pre></td></tr></table></figure>
+<h4 id="fdisk分区"><a href="#fdisk分区" class="headerlink" title="fdisk分区"></a>fdisk分区</h4><h5 id="fdisk命令分区过程"><a href="#fdisk命令分区过程" class="headerlink" title="fdisk命令分区过程"></a>fdisk命令分区过程</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">1.添加硬盘，虚拟机必须在关机的情况下添加</span><br><span class="line"></span><br><span class="line">2.查看新硬盘 fdisk -l</span><br><span class="line"></span><br><span class="line">3.使用fdisk命令分区</span><br><span class="line"></span><br><span class="line">fdisk /dev/sdb</span><br><span class="line"></span><br><span class="line">4.重新读取分区表信息</span><br><span class="line"></span><br><span class="line">partprobe</span><br><span class="line"></span><br><span class="line">5.格式化分区</span><br><span class="line"></span><br><span class="line">扩展分区不可以格式化</span><br><span class="line"></span><br><span class="line">mkfs -t ext4 /dev/sdb1</span><br><span class="line"></span><br><span class="line">6.建立挂载分区</span><br></pre></td></tr></table></figure>
+<h5 id="分区自动挂载与fstab文件修复"><a href="#分区自动挂载与fstab文件修复" class="headerlink" title="分区自动挂载与fstab文件修复"></a>分区自动挂载与fstab文件修复</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">将挂载写入/etc/fstab文件，一定要写对</span><br><span class="line"></span><br><span class="line">mount -a 依据配置文件 /etc/fstab的内容，自动挂载</span><br><span class="line"></span><br><span class="line">/etc/fstab文件修复</span><br><span class="line"></span><br><span class="line">mount -o remount,rm /</span><br></pre></td></tr></table></figure>
+<h4 id="分配swap分区"><a href="#分配swap分区" class="headerlink" title="分配swap分区"></a>分配swap分区</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">1.free命令</span><br><span class="line">查看内存与swap分区使用情况</span><br><span class="line">cached(缓存):加速数据的读取过程</span><br><span class="line">buffer(缓冲)：写入数据过程中，将分散的写入操作保存到内存中，当达到一定的程度再集中写入硬盘，加速数据的写入过程。</span><br><span class="line"></span><br><span class="line">2.新建swap分区</span><br><span class="line">fdisk /dev/sdb</span><br><span class="line">还需将分区ID改为82</span><br><span class="line"></span><br><span class="line">3.格式化</span><br><span class="line">mkswap /dev/sdb6</span><br><span class="line"></span><br><span class="line">4.加入swap分区</span><br><span class="line">swapon /dev/sdb6 加入swap分区</span><br><span class="line">swapoff /dev/sdb6 取消swap分区</span><br><span class="line"></span><br><span class="line">5.swap分区开机自动挂载</span><br><span class="line">vi /etc/fstab</span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/25/linux-%E7%B3%BB%E7%BB%9F-01%E9%9D%99%E6%80%81%E5%BA%93%E5%92%8C%E5%8A%A8%E6%80%81%E5%BA%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/01/25/linux-%E7%B3%BB%E7%BB%9F-01%E9%9D%99%E6%80%81%E5%BA%93%E5%92%8C%E5%8A%A8%E6%80%81%E5%BA%93/" class="post-title-link" itemprop="url">静态库和动态库</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-01-25 21:04:38" itemprop="dateCreated datePublished" datetime="2020-01-25T21:04:38+08:00">2020-01-25</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-21 09:02:53" itemprop="dateModified" datetime="2021-03-21T09:02:53+08:00">2021-03-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index">
+                    <span itemprop="name">linux系统编程</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="静态库和动态库对比"><a href="#静态库和动态库对比" class="headerlink" title="静态库和动态库对比"></a>静态库和动态库对比</h3><h4 id="静态库"><a href="#静态库" class="headerlink" title="静态库"></a>静态库</h4><p>一些目标代码的集合。按照习惯，linux中一般一<code>.a</code>作为文件名后缀。使用<strong>ar(archiver)</strong>命令可以创建静态库。</p>
+<p><strong>在可执行程序运行前就已经加入到执行码中，成为执行程序的一部分。</strong></p>
+<p>静态库在应用程序生成时，可以不必再编译，节省编译时间。</p>
+<p>静态库会占用大量存储空间。</p>
+<p><img src="https://api2.mubu.com/v3/document_image/506cf53c-136f-4e57-955b-b776192442d4-11197877.jpg" alt="静态库"></p>
+<h4 id="动态库"><a href="#动态库" class="headerlink" title="动态库"></a>动态库</h4><p><strong>在执行程序启动时加载到执行程序中，可以被多个执行程序共享使用。</strong></p>
+<p>动态库不需要编译入程序, <strong>运行时动态加载, 导致速度慢了一些</strong></p>
+<p><img src="https://api2.mubu.com/v3/document_image/c9562cc4-9a25-44f0-85b7-5e38bb10ba50-11197877.jpg" alt="动态库"></p>
+<p>二者的适合场景:</p>
+<ul>
+<li><strong>静态库: 对空间要求较低, 对时间要求较高</strong></li>
+<li><strong>动态库: 对时间要求较低, 对空间要求较高</strong></li>
+</ul>
+<h4 id="静态库制作"><a href="#静态库制作" class="headerlink" title="静态库制作"></a>静态库制作</h4><p><strong>先用gcc的-c参数将源文件编译成二进制文件, 再用ar命令封装静态库</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 有文件add.c div1.c sub.c</span></span><br><span class="line">gcc -c add.c -o add.o </span><br><span class="line">gcc -c sub.c -o sub.o</span><br><span class="line">gcc -c div1.c -o div1.o</span><br><span class="line"></span><br><span class="line">ar rcs libMyMath.a add.o sub.o div1.o</span><br></pre></td></tr></table></figure>
+<p>使用：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 将库直接加入编译的源文件中即可使用</span></span><br><span class="line">gcc test.c libMyMath.a -o test1</span><br></pre></td></tr></table></figure>
+<h4 id="静态库使用及头文件对应"><a href="#静态库使用及头文件对应" class="headerlink" title="静态库使用及头文件对应"></a>静态库使用及头文件对应</h4><p>隐式声明: 编译过程中没有遇到函数定义和函数声明, 编译器会帮助做隐式声明;</p>
+<p>但是这种隐式声明只能对于返回值为int型的;</p>
+<p>解决方法：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*添加头文件,防止头文件重复包含,一旦头文件被展开过一次,_MYMATH_H_就被定义过了,后面就不会再展开*/</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> _MYMATH_H_</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _MYMATH_H_</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">add</span><span class="params">(<span class="keyword">int</span>,<span class="keyword">int</span>)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">sub</span><span class="params">(<span class="keyword">int</span>,<span class="keyword">int</span>)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">div1</span><span class="params">(<span class="keyword">int</span>,<span class="keyword">int</span>)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+<p>然后将源文件和库联编即可, 注意<strong>源文件在前</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 动态库存放在~/sys/staticLib/lib</span></span><br><span class="line">~/sys/staticLib$ gcc test.c ./lib/libMyMath.a -o <span class="built_in">test</span> -I ./inc</span><br></pre></td></tr></table></figure>
+<h4 id="动态库制作"><a href="#动态库制作" class="headerlink" title="动态库制作"></a>动态库制作</h4><p>生成与位置无关的代码</p>
+<p>将源文件.c编译为目标文件.o, 生成与位置无关的代码, <strong>借助参数-fPIC</strong></p>
+<p><img src="https://api2.mubu.com/v3/document_image/657aac6a-4f0e-4343-a366-d1e086496ec8-11197877.jpg" alt="动态库加载"></p>
+<p><strong>编译生成hello.o的时候, 各个函数的地址还是相对于main的地址, 链接阶段填入main的地址;</strong></p>
+<p><strong>由于动态库的函数在库里, 不能像程序内部的函数一样直接填入main的地址, 动态函数在a.out中没有位置, 依赖于@plt, 进行延迟绑定;</strong></p>
+<ul>
+<li><p>查看二进制文件的反汇编代码:<code>objdump -dS test</code></p>
+</li>
+<li><p>输出重定向:<code>objdump -dS test &gt; test.s</code></p>
+</li>
+</ul>
+<p>制作演示：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1. 将.c文件生成.o文件(生成与位置无关的代码-fPIC):</span></span><br><span class="line">gcc -c add.c -o add.o -fPIC</span><br><span class="line"><span class="comment"># 2. 使用gcc -shared制作动态库:</span></span><br><span class="line">gcc -shared add.o sub.o div1.o -o libMyMath.so</span><br><span class="line"><span class="comment"># 3. 编译可执行程序时, 指定所使用的动态库, -l 指定库名, -L 指定库路径:</span></span><br><span class="line">gcc test.c -o <span class="built_in">test</span> -l MyMath -L ./lib</span><br><span class="line"><span class="comment"># 4. 运行可执行程序</span></span><br><span class="line">./<span class="built_in">test</span> <span class="comment"># 报错(编译通过，执行错误，找不到文件)</span></span><br></pre></td></tr></table></figure>
+<h4 id="动态库加载错误原因及解决办法"><a href="#动态库加载错误原因及解决办法" class="headerlink" title="动态库加载错误原因及解决办法"></a>动态库加载错误原因及解决办法</h4><p>上面的错误原因:</p>
+<ul>
+<li>链接器:工作于链接阶段, 工作时需要指定-l和-L参数, 上面已经指定</li>
+<li>动态链接器:工作于程序运行阶段, <strong>工作时需要提供动态库所在目录</strong></li>
+</ul>
+<p>上面两者没有任何关系</p>
+<p>方法1：</p>
+<ul>
+<li><p>动态链接器要根据环境变量寻找动态库:<code>LD_LIBRARY_PATH</code></p>
+</li>
+<li><p>执行<code>export LD_LIBRARY_PATH=./lib</code></p>
+</li>
+<li><p>指定后就可以执行了(但是上面指定的只是临时的, 环境变量是进程的概念)</p>
+</li>
+<li><p>要想<strong>永久指定, 需要更改配置文件, 加入环境变量, 重启终端使之生效</strong>:</p>
+</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ~/.bashrc下加入</span></span><br><span class="line"><span class="built_in">export</span> LD_LIBRARY_PATH=./lib</span><br></pre></td></tr></table></figure>
+<p>方法2：</p>
+<ul>
+<li><p>像标准C库这种本身就在系统的环境变量里, 所以能找到;</p>
+</li>
+<li><p>滥竽充数法:<strong>将库文件放到系统根目录下的lib里就可以了;</strong></p>
+</li>
+<li><p><code>ldd test</code>可以查看程序运行所需要的动态库</p>
+</li>
+</ul>
+<p>最后一种方法:修改配置文件法;</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo vim /etc/ld.so.conf</span><br><span class="line"><span class="comment"># 写入动态库绝对路径, 保存;</span></span><br><span class="line">sudo ldconfig -v <span class="comment">#使配置文件生效</span></span><br></pre></td></tr></table></figure>
+<p><strong>动态库和静态库共存时, 编译器优先使用动态库;</strong></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/06/c%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1817,14 +2404,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">38</span>
+          <span class="site-state-item-count">40</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-count">11</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">

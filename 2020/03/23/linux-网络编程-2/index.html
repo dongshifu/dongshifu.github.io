@@ -47,22 +47,20 @@
   };
 </script>
 
-  <meta name="description" content="静态库和动态库对比静态库一些目标代码的集合。按照习惯，linux中一般一.a作为文件名后缀。使用ar(archiver)命令可以创建静态库。 在可执行程序运行前就已经加入到执行码中，成为执行程序的一部分。 静态库在应用程序生成时，可以不必再编译，节省编译时间。 静态库会占用大量存储空间。  动态库在执行程序启动时加载到执行程序中，可以被多个执行程序共享使用。 动态库不需要编译入程序, 运行时动态加">
-<meta name="keywords" content="静态库和动态库">
+  <meta name="description" content="socket模型创建  socket()—创建一个套接字, 用fd或文件句柄索引  bind()—绑定IP和port  listen()—设置监听上限(同时与Server建立连接数)  accpet()—阻塞监听客户端连接(传入一个上面创建的套接字, 传出一个连接的套接字)  在客户端中的connect()中绑定IP和port, 并建立连接   socket函数123456789101112131">
+<meta name="keywords" content="linux,网络">
 <meta property="og:type" content="article">
-<meta property="og:title" content="静态库和动态库">
-<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;01&#x2F;25&#x2F;linux-%E7%B3%BB%E7%BB%9F-01%E9%9D%99%E6%80%81%E5%BA%93%E5%92%8C%E5%8A%A8%E6%80%81%E5%BA%93&#x2F;index.html">
+<meta property="og:title" content="linux网络编程-2">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;03&#x2F;23&#x2F;linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-2&#x2F;index.html">
 <meta property="og:site_name" content="ShifuDong">
-<meta property="og:description" content="静态库和动态库对比静态库一些目标代码的集合。按照习惯，linux中一般一.a作为文件名后缀。使用ar(archiver)命令可以创建静态库。 在可执行程序运行前就已经加入到执行码中，成为执行程序的一部分。 静态库在应用程序生成时，可以不必再编译，节省编译时间。 静态库会占用大量存储空间。  动态库在执行程序启动时加载到执行程序中，可以被多个执行程序共享使用。 动态库不需要编译入程序, 运行时动态加">
+<meta property="og:description" content="socket模型创建  socket()—创建一个套接字, 用fd或文件句柄索引  bind()—绑定IP和port  listen()—设置监听上限(同时与Server建立连接数)  accpet()—阻塞监听客户端连接(传入一个上面创建的套接字, 传出一个连接的套接字)  在客户端中的connect()中绑定IP和port, 并建立连接   socket函数123456789101112131">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;506cf53c-136f-4e57-955b-b776192442d4-11197877.jpg">
-<meta property="og:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;c9562cc4-9a25-44f0-85b7-5e38bb10ba50-11197877.jpg">
-<meta property="og:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;657aac6a-4f0e-4343-a366-d1e086496ec8-11197877.jpg">
-<meta property="og:updated_time" content="2021-03-21T01:02:53.667Z">
+<meta property="og:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;adf756a3-757c-4204-a5d5-4484f2bd1600-11197877.jpg">
+<meta property="og:updated_time" content="2021-03-23T02:27:34.447Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;506cf53c-136f-4e57-955b-b776192442d4-11197877.jpg">
+<meta name="twitter:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;adf756a3-757c-4204-a5d5-4484f2bd1600-11197877.jpg">
 
-<link rel="canonical" href="http://yoursite.com/2020/01/25/linux-%E7%B3%BB%E7%BB%9F-01%E9%9D%99%E6%80%81%E5%BA%93%E5%92%8C%E5%8A%A8%E6%80%81%E5%BA%93/">
+<link rel="canonical" href="http://yoursite.com/2020/03/23/linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-2/">
 
 
 <script id="page-configurations">
@@ -76,7 +74,7 @@
   };
 </script>
 
-  <title>静态库和动态库 | ShifuDong</title>
+  <title>linux网络编程-2 | ShifuDong</title>
   
 
 
@@ -210,7 +208,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/25/linux-%E7%B3%BB%E7%BB%9F-01%E9%9D%99%E6%80%81%E5%BA%93%E5%92%8C%E5%8A%A8%E6%80%81%E5%BA%93/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/23/linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-2/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -223,7 +221,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          静态库和动态库
+          linux网络编程-2
         </h1>
 
         <div class="post-meta">
@@ -233,14 +231,14 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2020-01-25 21:04:38" itemprop="dateCreated datePublished" datetime="2020-01-25T21:04:38+08:00">2020-01-25</time>
+              <time title="创建时间：2020-03-23 10:04:33" itemprop="dateCreated datePublished" datetime="2020-03-23T10:04:33+08:00">2020-03-23</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-21 09:02:53" itemprop="dateModified" datetime="2021-03-21T09:02:53+08:00">2021-03-21</time>
+                <time title="修改时间：2021-03-23 10:27:34" itemprop="dateModified" datetime="2021-03-23T10:27:34+08:00">2021-03-23</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -248,8 +246,8 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index">
-                    <span itemprop="name">linux系统编程</span>
+                  <a href="/categories/linux%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index">
+                    <span itemprop="name">linux网络编程</span>
                   </a>
                 </span>
             </span>
@@ -265,72 +263,29 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h3 id="静态库和动态库对比"><a href="#静态库和动态库对比" class="headerlink" title="静态库和动态库对比"></a>静态库和动态库对比</h3><h4 id="静态库"><a href="#静态库" class="headerlink" title="静态库"></a>静态库</h4><p>一些目标代码的集合。按照习惯，linux中一般一<code>.a</code>作为文件名后缀。使用<strong>ar(archiver)</strong>命令可以创建静态库。</p>
-<p><strong>在可执行程序运行前就已经加入到执行码中，成为执行程序的一部分。</strong></p>
-<p>静态库在应用程序生成时，可以不必再编译，节省编译时间。</p>
-<p>静态库会占用大量存储空间。</p>
-<p><img src="https://api2.mubu.com/v3/document_image/506cf53c-136f-4e57-955b-b776192442d4-11197877.jpg" alt="静态库"></p>
-<h4 id="动态库"><a href="#动态库" class="headerlink" title="动态库"></a>动态库</h4><p><strong>在执行程序启动时加载到执行程序中，可以被多个执行程序共享使用。</strong></p>
-<p>动态库不需要编译入程序, <strong>运行时动态加载, 导致速度慢了一些</strong></p>
-<p><img src="https://api2.mubu.com/v3/document_image/c9562cc4-9a25-44f0-85b7-5e38bb10ba50-11197877.jpg" alt="动态库"></p>
-<p>二者的适合场景:</p>
+        <h3 id="socket模型创建"><a href="#socket模型创建" class="headerlink" title="socket模型创建"></a>socket模型创建</h3><p><img src="https://api2.mubu.com/v3/document_image/adf756a3-757c-4204-a5d5-4484f2bd1600-11197877.jpg" alt="socket模型创建"></p>
 <ul>
-<li><strong>静态库: 对空间要求较低, 对时间要求较高</strong></li>
-<li><strong>动态库: 对时间要求较低, 对空间要求较高</strong></li>
-</ul>
-<h4 id="静态库制作"><a href="#静态库制作" class="headerlink" title="静态库制作"></a>静态库制作</h4><p><strong>先用gcc的-c参数将源文件编译成二进制文件, 再用ar命令封装静态库</strong></p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 有文件add.c div1.c sub.c</span></span><br><span class="line">gcc -c add.c -o add.o </span><br><span class="line">gcc -c sub.c -o sub.o</span><br><span class="line">gcc -c div1.c -o div1.o</span><br><span class="line"></span><br><span class="line">ar rcs libMyMath.a add.o sub.o div1.o</span><br></pre></td></tr></table></figure>
-<p>使用：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 将库直接加入编译的源文件中即可使用</span></span><br><span class="line">gcc test.c libMyMath.a -o test1</span><br></pre></td></tr></table></figure>
-<h4 id="静态库使用及头文件对应"><a href="#静态库使用及头文件对应" class="headerlink" title="静态库使用及头文件对应"></a>静态库使用及头文件对应</h4><p>隐式声明: 编译过程中没有遇到函数定义和函数声明, 编译器会帮助做隐式声明;</p>
-<p>但是这种隐式声明只能对于返回值为int型的;</p>
-<p>解决方法：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*添加头文件,防止头文件重复包含,一旦头文件被展开过一次,_MYMATH_H_就被定义过了,后面就不会再展开*/</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> _MYMATH_H_</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _MYMATH_H_</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">add</span><span class="params">(<span class="keyword">int</span>,<span class="keyword">int</span>)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">sub</span><span class="params">(<span class="keyword">int</span>,<span class="keyword">int</span>)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">div1</span><span class="params">(<span class="keyword">int</span>,<span class="keyword">int</span>)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure>
-<p>然后将源文件和库联编即可, 注意<strong>源文件在前</strong></p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 动态库存放在~/sys/staticLib/lib</span></span><br><span class="line">~/sys/staticLib$ gcc test.c ./lib/libMyMath.a -o <span class="built_in">test</span> -I ./inc</span><br></pre></td></tr></table></figure>
-<h4 id="动态库制作"><a href="#动态库制作" class="headerlink" title="动态库制作"></a>动态库制作</h4><p>生成与位置无关的代码</p>
-<p>将源文件.c编译为目标文件.o, 生成与位置无关的代码, <strong>借助参数-fPIC</strong></p>
-<p><img src="https://api2.mubu.com/v3/document_image/657aac6a-4f0e-4343-a366-d1e086496ec8-11197877.jpg" alt="动态库加载"></p>
-<p><strong>编译生成hello.o的时候, 各个函数的地址还是相对于main的地址, 链接阶段填入main的地址;</strong></p>
-<p><strong>由于动态库的函数在库里, 不能像程序内部的函数一样直接填入main的地址, 动态函数在a.out中没有位置, 依赖于@plt, 进行延迟绑定;</strong></p>
-<ul>
-<li><p>查看二进制文件的反汇编代码:<code>objdump -dS test</code></p>
+<li><p>socket()—创建一个套接字, 用fd或文件句柄索引</p>
 </li>
-<li><p>输出重定向:<code>objdump -dS test &gt; test.s</code></p>
+<li><p>bind()—绑定IP和port</p>
+</li>
+<li><p>listen()—设置<strong>监听上限</strong>(同时与Server建立连接数)</p>
+</li>
+<li><p>accpet()—<strong>阻塞监听</strong>客户端连接(传入一个上面创建的套接字, 传出一个连接的套接字)</p>
+</li>
+<li><p>在客户端中的connect()中绑定IP和port, 并建立连接</p>
 </li>
 </ul>
-<p>制作演示：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1. 将.c文件生成.o文件(生成与位置无关的代码-fPIC):</span></span><br><span class="line">gcc -c add.c -o add.o -fPIC</span><br><span class="line"><span class="comment"># 2. 使用gcc -shared制作动态库:</span></span><br><span class="line">gcc -shared add.o sub.o div1.o -o libMyMath.so</span><br><span class="line"><span class="comment"># 3. 编译可执行程序时, 指定所使用的动态库, -l 指定库名, -L 指定库路径:</span></span><br><span class="line">gcc test.c -o <span class="built_in">test</span> -l MyMath -L ./lib</span><br><span class="line"><span class="comment"># 4. 运行可执行程序</span></span><br><span class="line">./<span class="built_in">test</span> <span class="comment"># 报错(编译通过，执行错误，找不到文件)</span></span><br></pre></td></tr></table></figure>
-<h4 id="动态库加载错误原因及解决办法"><a href="#动态库加载错误原因及解决办法" class="headerlink" title="动态库加载错误原因及解决办法"></a>动态库加载错误原因及解决办法</h4><p>上面的错误原因:</p>
-<ul>
-<li>链接器:工作于链接阶段, 工作时需要指定-l和-L参数, 上面已经指定</li>
-<li>动态链接器:工作于程序运行阶段, <strong>工作时需要提供动态库所在目录</strong></li>
-</ul>
-<p>上面两者没有任何关系</p>
-<p>方法1：</p>
-<ul>
-<li><p>动态链接器要根据环境变量寻找动态库:<code>LD_LIBRARY_PATH</code></p>
-</li>
-<li><p>执行<code>export LD_LIBRARY_PATH=./lib</code></p>
-</li>
-<li><p>指定后就可以执行了(但是上面指定的只是临时的, 环境变量是进程的概念)</p>
-</li>
-<li><p>要想<strong>永久指定, 需要更改配置文件, 加入环境变量, 重启终端使之生效</strong>:</p>
-</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ~/.bashrc下加入</span></span><br><span class="line"><span class="built_in">export</span> LD_LIBRARY_PATH=./lib</span><br></pre></td></tr></table></figure>
-<p>方法2：</p>
-<ul>
-<li><p>像标准C库这种本身就在系统的环境变量里, 所以能找到;</p>
-</li>
-<li><p>滥竽充数法:<strong>将库文件放到系统根目录下的lib里就可以了;</strong></p>
-</li>
-<li><p><code>ldd test</code>可以查看程序运行所需要的动态库</p>
-</li>
-</ul>
-<p>最后一种方法:修改配置文件法;</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo vim /etc/ld.so.conf</span><br><span class="line"><span class="comment"># 写入动态库绝对路径, 保存;</span></span><br><span class="line">sudo ldconfig -v <span class="comment">#使配置文件生效</span></span><br></pre></td></tr></table></figure>
-<p><strong>动态库和静态库共存时, 编译器优先使用动态库;</strong></p>
+<h4 id="socket函数"><a href="#socket函数" class="headerlink" title="socket函数"></a>socket函数</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt; /* See NOTES */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">socket</span><span class="params">(<span class="keyword">int</span> domain, <span class="keyword">int</span> type, <span class="keyword">int</span> protocol)</span></span>;</span><br><span class="line">参数详解：</span><br><span class="line">domain:</span><br><span class="line">	AF_INET 大多数用来产生socket的协议，使用TCP或UDP来传输，用IPv4的地址</span><br><span class="line">	AF_INET6 与上面类似，不过是来用IPv6的地址</span><br><span class="line">	AF_UNIX 本地协议，使用在Unix和Linux系统上，一般都是当客户端和服务器在同一台及其上的时候使用</span><br><span class="line">        </span><br><span class="line">type:</span><br><span class="line">	SOCK_STREAM 这个协议是按照顺序的、可靠的、数据完整的基于字节流的连接。这是一个使用最多的socket类型，这个socket是使用TCP来进行传输。</span><br><span class="line">	SOCK_DGRAM 这个协议是无连接的、固定长度的传输调用。该协议是不可靠的，使用UDP来进行它的连接。</span><br><span class="line">    SOCK_SEQPACKET该协议是双线路的、可靠的连接，发送固定长度的数据包进行传输。必须把这个包完整的接受才能进行读取。</span><br><span class="line">	SOCK_RAW socket类型提供单一的网络访问，这个socket类型使用ICMP公共协议。（ping、traceroute使用该协议）</span><br><span class="line">	SOCK_RDM 这个类型是很少使用的，在大部分的操作系统上没有实现，它是提供给数据链路层使用，不保证数据包的顺序</span><br><span class="line">        </span><br><span class="line">protocol:</span><br><span class="line">	传<span class="number">0</span> 表示使用默认协议。</span><br><span class="line">        </span><br><span class="line">返回值：</span><br><span class="line">	成功：返回指向新创建的socket的文件描述符，失败：返回<span class="number">-1</span>，设置errno</span><br></pre></td></tr></table></figure>
+<p><code>socket()</code>打开一个网络通讯端口，如果成功的话，就像<code>open()</code>一样返回一个文件描述符，<strong>应用程序可以像读写文件一样用<code>read/write</code>在网络上收发数据，如果<code>socket()</code>调用出错则返回-1 </strong> <strong>对于IPv4，domain参数指定为AF_INET。对于TCP协议，type参数指定为SOCK_STREAM，表示面向流的传输协议。如果是UDP协议，则type参数指定为SOCK_DGRAM，表示面向数据报的传输协议</strong>。protocol指定为0即可。</p>
+<h4 id="bind函数"><a href="#bind函数" class="headerlink" title="bind函数"></a>bind函数</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt; /* See NOTES */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">bind</span><span class="params">(<span class="keyword">int</span> sockfd, <span class="keyword">const</span> struct sockaddr *addr, <span class="keyword">socklen_t</span> addrlen)</span></span>;</span><br><span class="line"></span><br><span class="line">sockfd：</span><br><span class="line">	socket文件描述符</span><br><span class="line">    </span><br><span class="line">addr: </span><br><span class="line">	构造出IP地址加端口号</span><br><span class="line">        </span><br><span class="line">addrlen:</span><br><span class="line">	<span class="keyword">sizeof</span>(addr)长度</span><br><span class="line">        </span><br><span class="line">返回值：</span><br><span class="line">	成功返回<span class="number">0</span>，失败返回<span class="number">-1</span>, 设置errno</span><br></pre></td></tr></table></figure>
+<p><strong>服务器程序所监听的网络地址和端口号通常是固定不变的，客户端程序得知服务器程序的地址和端口号后就可以向服务器发起连接，因此服务器需要调用bind绑定一个固定的网络地址和端口号。</strong></p>
+<p><code>bind()</code>的作用是将参数sockfd和addr绑定在一起，<strong>使sockfd这个用于网络通讯的文件描述符监听addr所描述的地址和端口号</strong>。<code>struct sockaddr *</code>是一个通用指针类型，<strong><code>addr</code>参数实际上可以接受多种协议的<code>sockaddr</code>结构体，而它们的长度各不相同，所以需要第三个参数addrlen指定结构体的长度</strong>。如：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">servaddr</span>;</span></span><br><span class="line">bzero(&amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line">servaddr.sin_family = AF_INET; <span class="comment">//addr.family应该与sofkfd的domain保持一致;</span></span><br><span class="line">servaddr.sin_addr.s_addr = htonl(INADDR_ANY);</span><br><span class="line">servaddr.sin_port = htons(<span class="number">6666</span>); <span class="comment">//端口号为short类型(16bit)</span></span><br></pre></td></tr></table></figure>
+<p>首先将整个结构体清零，然后设置地址类型为AF_INET，<strong>网络地址为INADDR_ANY，这个宏表示本地的任意IP地址</strong>，因为服务器可能有多个网卡，<strong>每个网卡也可能绑定多个IP地址，这样设置可以在所有的IP地址上监听，直到与某个客户端建立了连接时才确定下来到底用哪个IP地址</strong>，端口号为6666。</p>
+<h4 id="listen函数"><a href="#listen函数" class="headerlink" title="listen函数"></a>listen函数</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt; /* See NOTES */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">listen</span><span class="params">(<span class="keyword">int</span> sockfd, <span class="keyword">int</span> backlog)</span></span>;</span><br><span class="line">sockfd:</span><br><span class="line">	socket文件描述符</span><br><span class="line">backlog:</span><br><span class="line">	排队建立<span class="number">3</span>次握手队列和刚刚建立<span class="number">3</span>次握手队列的链接数和</span><br></pre></td></tr></table></figure>
+<p>查看系统默认backlog：<code>cat /proc/sys/net/ipv4/tcp_max_syn_backlog</code></p>
+<p>典型的服务器程序可以同时服务于多个客户端，当有客户端发起连接时，服务器调用的<code>accept()</code>返回并接受这个连接，<strong>如果有大量的客户端发起连接而服务器来不及处理，尚未accept的客户端就处于连接等待状态，listen()声明sockfd处于监听状态，并且最多允许有backlog个客户端处于连接待状态，如果接收到更多的连接请求就忽略。listen()成功返回0，失败返回-1。</strong></p>
 
     </div>
 
@@ -340,7 +295,8 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/%E9%9D%99%E6%80%81%E5%BA%93%E5%92%8C%E5%8A%A8%E6%80%81%E5%BA%93/" rel="tag"># 静态库和动态库</a>
+              <a href="/tags/linux/" rel="tag"># linux</a>
+              <a href="/tags/%E7%BD%91%E7%BB%9C/" rel="tag"># 网络</a>
           </div>
 
         
@@ -349,12 +305,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2020/01/06/c%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/" rel="prev" title="C基础">
-      <i class="fa fa-chevron-left"></i> C基础
+    <a href="/2020/03/22/linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-1/" rel="prev" title="linux网络编程-1">
+      <i class="fa fa-chevron-left"></i> linux网络编程-1
     </a></div>
       <div class="post-nav-item">
-    <a href="/2020/03/01/linux_01%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/" rel="next" title="Linux 文件和目录及相关操作">
-      Linux 文件和目录及相关操作 <i class="fa fa-chevron-right"></i>
+    <a href="/2020/03/23/linux-%E7%B3%BB%E7%BB%9F-04%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95%E6%93%8D%E4%BD%9C/" rel="next" title="linux系统下文件和目录操作">
+      linux系统下文件和目录操作 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -427,7 +383,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#静态库和动态库对比"><span class="nav-number">1.</span> <span class="nav-text">静态库和动态库对比</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#静态库"><span class="nav-number">1.1.</span> <span class="nav-text">静态库</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#动态库"><span class="nav-number">1.2.</span> <span class="nav-text">动态库</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#静态库制作"><span class="nav-number">1.3.</span> <span class="nav-text">静态库制作</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#静态库使用及头文件对应"><span class="nav-number">1.4.</span> <span class="nav-text">静态库使用及头文件对应</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#动态库制作"><span class="nav-number">1.5.</span> <span class="nav-text">动态库制作</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#动态库加载错误原因及解决办法"><span class="nav-number">1.6.</span> <span class="nav-text">动态库加载错误原因及解决办法</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#socket模型创建"><span class="nav-number">1.</span> <span class="nav-text">socket模型创建</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#socket函数"><span class="nav-number">1.1.</span> <span class="nav-text">socket函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#bind函数"><span class="nav-number">1.2.</span> <span class="nav-text">bind函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#listen函数"><span class="nav-number">1.3.</span> <span class="nav-text">listen函数</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -634,7 +590,7 @@ window.addEventListener('pjax:success', () => {
       repo: 'dongshifu.github.io',
       owner: 'dongshifu',
       admin: ['dongshifu'],
-      id: 'd9ce7606b1dcd3cb05a1210bb6bf9a0d',
+      id: 'ad038f30d4e3142d837fa2185ecef65b',
         language: 'zh-CN',
       distractionFreeMode: 'true'
     });
