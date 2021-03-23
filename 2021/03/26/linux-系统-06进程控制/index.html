@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="alternate" href="/atom.xml" title="ShifuDong" type="application/atom+xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.5.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":"flat"},
+    back2top: {"enable":true,"sidebar":true,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":5,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="进程控制fork函数创建一个子进程, 原型： 1234567pid_t fork();		&#x2F;*函数原型相当简单:空参,返回一个整数pid*&#x2F;&#x2F;&#x2F;返回值：&#x2F;&#x2F;    返回值有两个:父进程的fork返回子进程的id，子进程返回0（表示fork成功）&#x2F;&#x2F;    返回子进程的pid(一个非负整数&amp;gt;0)&#x2F;&#x2F;    返回0&#x2F;&#x2F;    失败返回-1并设置errno fork确实创建了一个子进程并完全复制父">
+<meta name="keywords" content="linux">
+<meta property="og:type" content="article">
+<meta property="og:title" content="linux-系统-06进程管理">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2021&#x2F;03&#x2F;26&#x2F;linux-%E7%B3%BB%E7%BB%9F-06%E8%BF%9B%E7%A8%8B%E6%8E%A7%E5%88%B6&#x2F;index.html">
+<meta property="og:site_name" content="ShifuDong">
+<meta property="og:description" content="进程控制fork函数创建一个子进程, 原型： 1234567pid_t fork();		&#x2F;*函数原型相当简单:空参,返回一个整数pid*&#x2F;&#x2F;&#x2F;返回值：&#x2F;&#x2F;    返回值有两个:父进程的fork返回子进程的id，子进程返回0（表示fork成功）&#x2F;&#x2F;    返回子进程的pid(一个非负整数&amp;gt;0)&#x2F;&#x2F;    返回0&#x2F;&#x2F;    失败返回-1并设置errno fork确实创建了一个子进程并完全复制父">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-03-23T14:19:20.624Z">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2021/03/26/linux-%E7%B3%BB%E7%BB%9F-06%E8%BF%9B%E7%A8%8B%E6%8E%A7%E5%88%B6/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>linux-系统-06进程管理 | ShifuDong</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ShifuDong</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">Knowledge Sharing</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/dongshifu" class="github-corner" title="ShifuDong GitHub" aria-label="ShifuDong GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/03/26/linux-%E7%B3%BB%E7%BB%9F-06%E8%BF%9B%E7%A8%8B%E6%8E%A7%E5%88%B6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          linux-系统-06进程管理
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-03-26 16:51:35" itemprop="dateCreated datePublished" datetime="2021-03-26T16:51:35+08:00">2021-03-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-23 22:19:20" itemprop="dateModified" datetime="2021-03-23T22:19:20+08:00">2021-03-23</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index">
+                    <span itemprop="name">linux系统编程</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="进程控制"><a href="#进程控制" class="headerlink" title="进程控制"></a>进程控制</h3><h4 id="fork函数"><a href="#fork函数" class="headerlink" title="fork函数"></a>fork函数</h4><p>创建一个子进程, 原型：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pid_t</span> fork();		<span class="comment">/*函数原型相当简单:空参,返回一个整数pid*/</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//返回值：</span></span><br><span class="line"><span class="comment">//    返回值有两个:父进程的fork返回子进程的id，子进程返回0（表示fork成功）</span></span><br><span class="line"><span class="comment">//    返回子进程的pid(一个非负整数&gt;0)</span></span><br><span class="line"><span class="comment">//    返回0</span></span><br><span class="line"><span class="comment">//    失败返回-1并设置errno</span></span><br></pre></td></tr></table></figure>
+<p><code>fork</code>确实创建了一个子进程并完全复制父进程，但是<strong>子进程是从<code>fork</code>后面那个指令开始执行的。</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">pid_t</span> pid;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"sdsfdfdsfd\n"</span>);</span><br><span class="line">    pid = fork();</span><br><span class="line">    <span class="keyword">if</span>(pid == <span class="number">-1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        perror(<span class="string">"fork"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(pid == <span class="number">0</span>)</span><br><span class="line">    &#123;   </span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"I'm child, pid =%u,ppid = %u\n"</span>,getpid(),getppid());</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> </span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"I'm Parent, pid =%u,ppid = %u\n"</span>,getpid(),getppid());</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"yyyyyyy\n"</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>创建n个线程：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i;</span><br><span class="line">    <span class="keyword">pid_t</span> pid;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"xxxxxxx\n"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(i=<span class="number">0</span>; i&lt;<span class="number">5</span> ;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        pid = fork();</span><br><span class="line">        <span class="keyword">if</span>(pid == <span class="number">-1</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            perror(<span class="string">"fork"</span>);</span><br><span class="line">            <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span>(pid == <span class="number">0</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(i &lt; <span class="number">5</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        sleep(i);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"I'm %d child, pid = %u\n"</span>,i+<span class="number">1</span>, getpid());</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        sleep(i);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"I'm parent\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>父进程和子进程谁先执行？谁先抢到cpu就谁先执行。</strong>如果不加<code>sleep</code>，则输出是乱序的(反映了操作系统对进程调度的无序性)。</p>
+<h4 id="getuid"><a href="#getuid" class="headerlink" title="getuid"></a>getuid</h4><ul>
+<li><p>获取当前进程实际用户ID： <code>uid_t getuid(void)</code></p>
+</li>
+<li><p>获取当前进程有效用户ID： <code>uid_t geteuid(void)</code></p>
+</li>
+</ul>
+<h4 id="getgid"><a href="#getgid" class="headerlink" title="getgid"></a>getgid</h4><ul>
+<li><p>获取当前进程使用用户组ID： <code>gid_t getgid()</code></p>
+</li>
+<li><p>获取当前进程有效用户组ID： <code>gid_t getegid()</code></p>
+</li>
+</ul>
+<h3 id="进程共享"><a href="#进程共享" class="headerlink" title="进程共享"></a>进程共享</h3><p><strong>父子进程之间在fork后，有哪些相同，哪些相异？</strong></p>
+<p>刚fork之后：</p>
+<p><strong>父子相同之处：全局变量、.data段,.text段，栈，堆，环境变量，用户ID，宿主目录，进程工作目录，信号处理方式…</strong></p>
+<p>父子不同之处：<strong>进程ID，fork返回值，父子进程ID，进程运行时间，闹钟（定时器），未决定信号集</strong></p>
+<p>注意：子进程并不是把父进程0~3G地址空间完全cpoy一份, 然后映射到物理内存。 父子进程之间遵循<strong>读时共享写时复制</strong>的原则。这样设计，<strong>无论子进程执行父进程的逻辑还是执行自己的逻辑都能节省内存开销。</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> var = <span class="number">34</span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">pid_t</span> pid;</span><br><span class="line"></span><br><span class="line">    pid = fork();</span><br><span class="line">    <span class="keyword">if</span>(pid == <span class="number">-1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        perror(<span class="string">"fork"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(pid &gt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        sleep(<span class="number">2</span>);</span><br><span class="line">        <span class="comment">// var = 55;/*读时共享,写时复制*/</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"I'm parent pid = %d, parentID = %d, var = %d\n"</span>,getpid(), getppid(),var);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(pid == <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        var = <span class="number">100</span>;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"child pid = %d, parentID = %d, var = %d\n"</span>,getpid(),getppid(),var);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"var = %d\n"</span>,var);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>重点：</p>
+<ul>
+<li><p>躲避父子进程共享全局变量的误区(线程之间可以共享全局变量)。</p>
+</li>
+<li><p>父子进程共享</p>
+<ul>
+<li>文件描述符（打开文件的结构体）</li>
+<li>mmap建立的映射区（进程间通信）</li>
+</ul>
+</li>
+</ul>
+<p><strong>特别：fork之后父进程先执行还是子进程先执行不确定。取决于内核所使用的调度算法。</strong></p>
+<h3 id="gdb调试"><a href="#gdb调试" class="headerlink" title="gdb调试"></a>gdb调试</h3><p>使用gdb调试的时候，<strong>gdb只能跟踪一个进程。可以在fork函数调用之前，通过命令设置gdb调试工具跟踪父进程或是子进程。默认跟踪父进程。</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">set follow-fork-mode child #命令设置gdb在fork之后跟踪子进程</span><br><span class="line">set follow-fork-mode parent #设置跟踪父进程</span><br></pre></td></tr></table></figure>
+<p>注意：一定要在fork函数调用之前设置才有效。</p>
+<h3 id="exec函数族"><a href="#exec函数族" class="headerlink" title="exec函数族"></a>exec函数族</h3><p><strong>fork函数创建子进程后执行的是和父进程相同的程序（但可能执行不同的代码分支）</strong>，<strong>子进程往往要调用一种exec函数以执行另一个程序</strong>。<strong>当进程调用一种exec函数时，该进程的用户空间代码和数据完全被新程序替换，从新程序的启动例程开始执行。调用exec并不创建新进程，所以调用exec前后该进程的id并未改变。</strong></p>
+<p><strong>将当前进程的.text, .data替换为所要加载的程序的.text, .data，然后让进程从新的.text第一条指令开始执行，但进程ID不变，换核不换壳。</strong></p>
+<ul>
+<li>int execl()</li>
+<li>int execlp()</li>
+<li>int  execle()</li>
+<li>int execv()</li>
+<li>int execvp()</li>
+<li>int execve()</li>
+</ul>
+<h4 id="execlp"><a href="#execlp" class="headerlink" title="execlp"></a>execlp</h4><p><code>execlp</code>中的p表示环境变量, <strong>所以该函数通常用来调用系统程序</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">execlp</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* file, <span class="keyword">const</span> <span class="keyword">char</span>* arg, ... <span class="comment">/* (char  *) NULL */</span>)</span></span>;</span><br><span class="line"><span class="comment">/*参数1：要加载的程序的名字的，该函数需要配合PATH环境变量来使用，当PATH中所有目录搜索后但没有参数1则出错返回。*/</span></span><br></pre></td></tr></table></figure>
+<p><strong>注意结尾加上NULL指定变参结束, printf函数也是变参, 结尾也要加上NULL作为哨兵</strong>.</p>
+<p>该函数通常用来调用系统程序。如<code>ls, cat , date</code>等命令</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">pid_t</span> pid=fork();</span><br><span class="line">	<span class="keyword">if</span>(pid==<span class="number">-1</span>)</span><br><span class="line">		perr_exit(<span class="string">"fork error"</span>);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span>(pid==<span class="number">0</span>)&#123;</span><br><span class="line">		<span class="comment">/*参数从argv[0]开始算*/</span></span><br><span class="line">		execlp(<span class="string">"ls"</span>,<span class="string">"ls"</span>,<span class="string">"-l"</span>,<span class="string">"-R"</span>,<span class="string">"-h"</span>,<span class="literal">NULL</span>);</span><br><span class="line">		<span class="comment">/*正常情况下是不会执行到这里的,只有当出错时才会返回到这里执行*/</span></span><br><span class="line">		perror(<span class="string">"execlp error"</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;<span class="keyword">else</span> <span class="keyword">if</span>(pid&gt;<span class="number">0</span>)&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"I'm parent:%d\n"</span>,getpid());</span><br><span class="line">		sleep(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>先fork, 再exec, 这就是bash的大概原理.</p>
+<p>如果要执行自己的可执行文件:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">execl(<span class="string">"./test"</span>,<span class="string">"./test"</span>,<span class="literal">NULL</span>);</span><br></pre></td></tr></table></figure>
+<h4 id="execl"><a href="#execl" class="headerlink" title="execl"></a>execl</h4><p>加载一个进程，通过 路径+程序名 来加载。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">execl</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *path, <span class="keyword">const</span> <span class="keyword">char</span>\* arg, ...)</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="comment">//对比execlp</span></span></span><br><span class="line"><span class="function"><span class="title">execlp</span><span class="params">(<span class="string">"ls"</span>,<span class="string">"ls"</span>,<span class="string">"-a"</span>,<span class="string">"-l"</span>,<span class="literal">NULL</span>)</span></span>;</span><br><span class="line">execl(<span class="string">"/bin/ls"</span>,<span class="string">"ls"</span>,<span class="string">"-a"</span>,<span class="string">"-l"</span>);</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//exec_ps.c</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">int</span> ret=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> fd1=<span class="number">0</span>;</span><br><span class="line">    <span class="comment">/*打开或创建一个文件*/</span></span><br><span class="line">	fd1=<span class="built_in">open</span>(<span class="string">"ps.log"</span>,O_RDWR|O_CREAT|O_TRUNC,<span class="number">0644</span>);</span><br><span class="line">	<span class="keyword">if</span>(fd1==<span class="number">-1</span>)</span><br><span class="line">		perr_exit(<span class="string">"open error"</span>);</span><br><span class="line">	<span class="comment">/*将STDOUT_FILENO指向fd1*/</span></span><br><span class="line">	ret=dup2(fd1,STDOUT_FILENO);</span><br><span class="line">	<span class="keyword">if</span>(ret==<span class="number">-1</span>)</span><br><span class="line">		perr_exit(<span class="string">"dup2 error"</span>);</span><br><span class="line">	<span class="comment">/*执行命令*/</span></span><br><span class="line">	execlp(<span class="string">"ps"</span>,<span class="string">"ps"</span>,<span class="string">"aux"</span>,<span class="literal">NULL</span>);</span><br><span class="line">	perror(<span class="string">"execlp error"</span>);</span><br><span class="line">	<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="exec函数族一般规律"><a href="#exec函数族一般规律" class="headerlink" title="exec函数族一般规律"></a>exec函数族一般规律</h4><p><strong>exec函数一旦调用成功即执行新的程序，不返回。只有失败才返回，错误值-1。所以通常直接在exec函数后直接调用perror()和exit()，无需if判断。</strong></p>
+<ul>
+<li><p>l (list) 命令行参数列表</p>
+</li>
+<li><p>p (path) 搜索file时使用<strong>path变量</strong></p>
+</li>
+<li><p>v (vector) 使用<strong>命令行参数数组</strong></p>
+</li>
+<li><p>e (environment) 使用<strong>环境变量数组，不使用进程原有的环境变量，设置新加载程序运行的环境变量。</strong></p>
+</li>
+</ul>
+<p>事实上，只有<code>execve</code>是真正的系统调用，其他五个函数最终都调用<code>execev</code>,所以<code>execve</code>在man手册第二节，而其他函数在man手册第三节。</p>
+<h3 id="回收子进程"><a href="#回收子进程" class="headerlink" title="回收子进程"></a>回收子进程</h3><h4 id="孤儿进程"><a href="#孤儿进程" class="headerlink" title="孤儿进程"></a>孤儿进程</h4><p><strong>父进程先于子进程结束，则子进程变为孤儿进程，子进程的父进程变为<code>init</code>进程，称为<code>init</code>进程领养孤儿进程。</strong></p>
+<h4 id="僵尸进程"><a href="#僵尸进程" class="headerlink" title="僵尸进程"></a>僵尸进程</h4><p><strong>进程终止，父进程尚未回收，子进程残留资源(PCB)存放在内核中，变成僵尸(Zombie)进程。</strong></p>
+<p>特别注意：<strong>僵尸进程不能使用kill命令来清除。因为kill命令只是用来终止进程的，而僵尸进程已经终止。</strong></p>
+<p>进程的运行状态：R 运行， S 后台运行， Z 僵尸进程</p>
+<p>用什么办法可以清除僵尸进程？<strong>避免僵尸进程：回收</strong></p>
+<h4 id="wait函数"><a href="#wait函数" class="headerlink" title="wait函数"></a>wait函数</h4><p><strong>一个进程在终止的时候会关闭所有的文件描述符，释放在该用户空间分配的内存，但它的PCB还保留着，内核在其中保存了一些信息。如果是正常终止则保存着退出状态，如果是异常终止则保存着导致该进程终止的信号是哪个。这个进程的父进程可以调用<code>wait</code>或者<code>waitpid</code>获取这些信息，然后彻底清除掉这个进程。一个进程的退出状态可以在<code>shell</code>中用特殊变量<code>$?</code>查看，因为shell是它的父进程，当它终止时<code>shell</code>调用<code>wait</code>或<code>waitpid</code>得到它的退出状态同时彻底清除掉这个进程。</strong></p>
+<p><strong>父进程调用wait函数可以回收子进程终止信息，</strong>该函数的三个功能：</p>
+<ul>
+<li><strong>阻塞等待子进程退出</strong></li>
+<li><strong>回收子进程残留资源</strong></li>
+<li><strong>获取子进程结束状态（退出原因）</strong></li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pid_t</span> wait(<span class="keyword">int</span> *status);</span><br><span class="line"><span class="comment">//成功：清理掉的子进程ID， 失败：-1(没有子进程)</span></span><br></pre></td></tr></table></figure>
+<p>当进程终止时，操作系统的隐式回收机制会：</p>
+<ul>
+<li>关闭所有文件描述符</li>
+<li>释放用户空间分配的内存，<strong>内核的PCB仍存在。其中保存该进程的退出状态。（正常终止：退出值;异常终止：终止信号）</strong></li>
+</ul>
+<p>可使用<code>wait</code>函数传出参数<code>status</code>来保存进程的退出状态。借助宏函数来进一步判断进程终止的具体原因。宏函数可以分为三组：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">WIFEXITED(status) <span class="comment">//为非0 :进程正常结束</span></span><br><span class="line">WEXITSTATUS(status） <span class="comment">//如上宏为真，使用此宏：获取进程退出状态（exit的参数）</span></span><br><span class="line"></span><br><span class="line">WIFSIGNALED(status)  <span class="comment">//为非0： 进程异常终止</span></span><br><span class="line">WTERMSIG(status) <span class="comment">//如上宏函数为真，使用此宏：取得使进程终止的那个信号的编号</span></span><br><span class="line"></span><br><span class="line">WIFSTOPED(status) <span class="comment">//为非0：进程处于暂停状态</span></span><br><span class="line">WSTOPSIG(status) <span class="comment">//加上宏为真，使用此宏：取得使进程暂停的那个信号的编号</span></span><br><span class="line">WIFCONTINUED(status) <span class="comment">//为真，进程暂停后已经继续运行</span></span><br></pre></td></tr></table></figure>
+<p><code>kill -l</code> 可以<strong>查看进程结束的所有状态</strong></p>
+<p><strong>程序所有异常终止的原因都是因为信号</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">pid_t</span> pid,wpid;</span><br><span class="line">	<span class="keyword">int</span> status=<span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	pid=fork();</span><br><span class="line">	<span class="keyword">if</span>(pid==<span class="number">-1</span>)</span><br><span class="line">		perr_exit(<span class="string">"fork error"</span>);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span>(pid==<span class="number">0</span>)&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"I'm child:%d,my parent is %d,I'm going to sleep 10s\n"</span>,getpid(),getppid());</span><br><span class="line">		sleep(<span class="number">10</span>);</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"I'm child,I'm going to die\n"</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">73</span>;</span><br><span class="line">	&#125;<span class="keyword">else</span> <span class="keyword">if</span>(pid&gt;<span class="number">0</span>)&#123;</span><br><span class="line">		<span class="comment">//wpid=wait(NULL);		//不关心子进程退出原因</span></span><br><span class="line">		wpid=wait(&amp;status);</span><br><span class="line">		<span class="keyword">if</span>(wpid==<span class="number">-1</span>)</span><br><span class="line">			perr_exit(<span class="string">"wait error"</span>);</span><br><span class="line">		<span class="comment">/*如果子进程正常终止,则可获取它的退出值*/</span></span><br><span class="line">		<span class="keyword">if</span>(WIFEXITED(status))</span><br><span class="line">			<span class="built_in">printf</span>(<span class="string">"My child exited with:%d\n"</span>,WEXITSTATUS(status));</span><br><span class="line">        <span class="comment">/*如果子进程被信号终止,可获取结束它的信号*/</span></span><br><span class="line">		<span class="keyword">else</span> <span class="keyword">if</span>(WIFSIGNALED(status))</span><br><span class="line">			<span class="built_in">printf</span>(<span class="string">"My child killed by:%d\n"</span>,WTERMSIG(status));</span><br><span class="line">		<span class="comment">/*提示回收完成*/</span></span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"I'm parent,wait %d finish\n"</span>,wpid);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="waitpid函数"><a href="#waitpid函数" class="headerlink" title="waitpid函数"></a>waitpid函数</h4><p><strong>作用同wait,但可指定pid进程清理，可以不阻塞</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pid_t</span> waitpid(<span class="keyword">pid_t</span> pid, <span class="keyword">int</span> *status, <span class="keyword">int</span> options); </span><br><span class="line"><span class="comment">//成功：返回清理的子进程ID, 失败：-1(无子进程)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/*特殊参数和返回情况：</span></span><br><span class="line"><span class="comment">参数pid:</span></span><br><span class="line"><span class="comment">&gt;0 回收指定ID的子进程</span></span><br><span class="line"><span class="comment">-1 回收任意子进程（相当与wait）</span></span><br><span class="line"><span class="comment">0 回收和当前调用waitpid一个组的所有子进程</span></span><br><span class="line"><span class="comment">&lt;-1 回收指定进程组内的任意子进程(进程组号取反, 表示回收指定进程组的任意子进程)</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">参2传进程结束状态, 如果不关心直接传NULL(传出参数)</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">参3传回收方式:WNOHANG(非阻塞)*/</span></span><br></pre></td></tr></table></figure>
+<p>注意：<strong>一次<code>wait</code>或<code>waitpid</code>调用只能清理一个子进程，清理多个子进程应该使用循环。</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//带有bug的版本</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> i=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> wpid=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> pid=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;<span class="number">5</span>;++i)&#123;</span><br><span class="line">		<span class="keyword">if</span>(fork()==<span class="number">0</span>)&#123;</span><br><span class="line">			<span class="keyword">if</span>(i==<span class="number">2</span>)</span><br><span class="line">				pid=getpid();</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span>(i==<span class="number">5</span>)&#123;</span><br><span class="line">		<span class="comment">//wpid=waitpid(-1,NULL,WNOHANG);		//以非阻塞的方式回收任意子进程</span></span><br><span class="line">		sleep(<span class="number">5</span>);</span><br><span class="line">		wpid=waitpid(pid,<span class="literal">NULL</span>,WNOHANG);</span><br><span class="line">		<span class="keyword">if</span>(wpid==<span class="number">-1</span>)</span><br><span class="line">			perr_exit(<span class="string">"waitpid error"</span>);</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"I'm parent,wait a child finish:%d\n"</span>,wpid);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span>&#123;</span><br><span class="line">		sleep(i);</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"I'm %dth child,my pid=%d\n"</span>,i+<span class="number">1</span>,getpid());</span><br><span class="line">	&#125;</span><br><span class="line">	sleep(<span class="number">1</span>);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>bug的原因:在<code>fork()==0</code>时是在子进程的执行逻辑中保存了<code>pid</code>, 但是子进程执行结束后直接返回, 用户空间的地址空间被回收, 当然也就没有了<code>pid</code>这个变量, 所以后面父进程<code>waitpid</code>时拿到的<code>pid</code>一直是0。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//修改bug后</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> i=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> wpid=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> pid=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> temppid=<span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;<span class="number">5</span>;++i)&#123;</span><br><span class="line">		pid=fork();</span><br><span class="line">		<span class="keyword">if</span>(pid==<span class="number">0</span>)</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		<span class="comment">/*在父进程中,如果i==2,将fork的返回值存入temppid*/</span></span><br><span class="line">		<span class="keyword">if</span>(i==<span class="number">2</span>)</span><br><span class="line">			temppid=pid;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span>(i==<span class="number">5</span>)&#123;</span><br><span class="line">		<span class="comment">//wpid=waitpid(-1,NULL,WNOHANG);		//以非阻塞的方式回收任意子进程</span></span><br><span class="line">		sleep(<span class="number">5</span>);</span><br><span class="line">		wpid=waitpid(temppid,<span class="literal">NULL</span>,WNOHANG);</span><br><span class="line">		<span class="keyword">if</span>(wpid==<span class="number">-1</span>)</span><br><span class="line">			perr_exit(<span class="string">"waitpid error"</span>);</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"I'm parent,wait a child finish:%d\n"</span>,wpid);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span>&#123;</span><br><span class="line">		sleep(i);</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"I'm %dth child,my pid=%d\n"</span>,i+<span class="number">1</span>,getpid());</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	sleep(<span class="number">1</span>);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>回收多个子进程: <strong>用while循环</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> i=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> wpid=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> pid=<span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;<span class="number">5</span>;++i)&#123;</span><br><span class="line">		pid=fork();</span><br><span class="line">		<span class="keyword">if</span>(pid==<span class="number">0</span>)</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span>(i==<span class="number">5</span>)&#123;</span><br><span class="line">        <span class="comment">/*以非阻塞忙轮询的方式回收子进程*/</span></span><br><span class="line">		<span class="keyword">while</span>((wpid=waitpid(<span class="number">-1</span>,<span class="literal">NULL</span>,WNOHANG))!=<span class="number">-1</span>)&#123;</span><br><span class="line">			<span class="keyword">if</span>(wpid&gt;<span class="number">0</span>)</span><br><span class="line">				<span class="built_in">printf</span>(<span class="string">"wait chile:%d\n"</span>,wpid);</span><br><span class="line">			<span class="keyword">else</span> <span class="keyword">if</span>(wpid==<span class="number">0</span>)</span><br><span class="line">				sleep(<span class="number">1</span>);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">		sleep(i);</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"I'm %dth child,my pid=%d\n"</span>,i+<span class="number">1</span>,getpid());</span><br><span class="line">	&#125;</span><br><span class="line">	sleep(<span class="number">1</span>);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/linux/" rel="tag"># linux</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/03/17/%E4%BD%BF%E7%94%A8https%E8%AE%BF%E9%97%AE%E7%9A%84%E7%9A%84%E6%85%95%E5%B8%83%E6%89%98%E7%AE%A1%E5%8D%9A%E5%AE%A2%E5%9B%BE%E7%89%87/" rel="prev" title="使用带https访问的慕布托管博客图片">
+      <i class="fa fa-chevron-left"></i> 使用带https访问的慕布托管博客图片
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+      <div class="tabs tabs-comment">
+        <ul class="nav-tabs">
+            <li class="tab"><a href="#comment-gitalk">gitalk</a></li>
+            <li class="tab"><a href="#comment-livere">livere</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane gitalk" id="comment-gitalk">
+              <div class="comments" id="gitalk-container"></div>
+            </div>
+            <div class="tab-pane livere" id="comment-livere">
+              
+  <div class="comments" id="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81MjkwMy8yOTM4MA=="></div>
+  </div>
+  
+            </div>
+        </div>
+      </div>
+      <script>
+        window.addEventListener('tabs:register', () => {
+          let activeClass = 'gitalk';
+            activeClass = localStorage.getItem('comments_active') || activeClass;
+          if (activeClass) {
+            let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+            if (activeTab) {
+              activeTab.click();
+            }
+          }
+        });
+        window.addEventListener('tabs:click', event => {
+          let commentClass = event.target.classList[1];
+          localStorage.setItem('comments_active', commentClass);
+        });
+      </script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#进程控制"><span class="nav-number">1.</span> <span class="nav-text">进程控制</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#fork函数"><span class="nav-number">1.1.</span> <span class="nav-text">fork函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#getuid"><span class="nav-number">1.2.</span> <span class="nav-text">getuid</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#getgid"><span class="nav-number">1.3.</span> <span class="nav-text">getgid</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#进程共享"><span class="nav-number">2.</span> <span class="nav-text">进程共享</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#gdb调试"><span class="nav-number">3.</span> <span class="nav-text">gdb调试</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#exec函数族"><span class="nav-number">4.</span> <span class="nav-text">exec函数族</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#execlp"><span class="nav-number">4.1.</span> <span class="nav-text">execlp</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#execl"><span class="nav-number">4.2.</span> <span class="nav-text">execl</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#exec函数族一般规律"><span class="nav-number">4.3.</span> <span class="nav-text">exec函数族一般规律</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#回收子进程"><span class="nav-number">5.</span> <span class="nav-text">回收子进程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#孤儿进程"><span class="nav-number">5.1.</span> <span class="nav-text">孤儿进程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#僵尸进程"><span class="nav-number">5.2.</span> <span class="nav-text">僵尸进程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#wait函数"><span class="nav-number">5.3.</span> <span class="nav-text">wait函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#waitpid函数"><span class="nav-number">5.4.</span> <span class="nav-text">waitpid函数</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ShifuDong"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">ShifuDong</p>
+  <div class="site-description" itemprop="description">记录生活， 记录学习， 分享知识</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">44</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ShifuDong</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.0.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.5.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.getAttribute('pjax') !== null) {
+      element.setAttribute('pjax', '');
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'a6ee5b68c97a3db64850',
+      clientSecret: '1dfa06f32032431e4af79b80f9ddf9dfd13dbda2',
+      repo: 'dongshifu.github.io',
+      owner: 'dongshifu',
+      admin: ['dongshifu'],
+      id: 'a7477e18f3f0ff975eec8f2d00863e09',
+        language: 'zh-CN',
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script>
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+</script>
+
+    </div>
+</body>
+</html>
