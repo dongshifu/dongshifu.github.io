@@ -50,13 +50,13 @@
   <meta name="description" content="socket模型创建  socket()—创建一个套接字, 用fd或文件句柄索引  bind()—绑定IP和port  listen()—设置监听上限(同时与Server建立连接数)  accpet()—阻塞监听客户端连接(传入一个上面创建的套接字, 传出一个连接的套接字)  在客户端中的connect()中绑定IP和port, 并建立连接   socket函数123456789101112131">
 <meta name="keywords" content="linux,网络">
 <meta property="og:type" content="article">
-<meta property="og:title" content="linux网络编程-2">
+<meta property="og:title" content="linux网络编程-socket模型创建">
 <meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;03&#x2F;23&#x2F;linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-2&#x2F;index.html">
 <meta property="og:site_name" content="ShifuDong">
 <meta property="og:description" content="socket模型创建  socket()—创建一个套接字, 用fd或文件句柄索引  bind()—绑定IP和port  listen()—设置监听上限(同时与Server建立连接数)  accpet()—阻塞监听客户端连接(传入一个上面创建的套接字, 传出一个连接的套接字)  在客户端中的connect()中绑定IP和port, 并建立连接   socket函数123456789101112131">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;adf756a3-757c-4204-a5d5-4484f2bd1600-11197877.jpg">
-<meta property="og:updated_time" content="2021-03-23T02:27:34.447Z">
+<meta property="og:updated_time" content="2021-03-23T02:58:37.300Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;adf756a3-757c-4204-a5d5-4484f2bd1600-11197877.jpg">
 
@@ -74,7 +74,7 @@
   };
 </script>
 
-  <title>linux网络编程-2 | ShifuDong</title>
+  <title>linux网络编程-socket模型创建 | ShifuDong</title>
   
 
 
@@ -221,7 +221,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          linux网络编程-2
+          linux网络编程-socket模型创建
         </h1>
 
         <div class="post-meta">
@@ -238,7 +238,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-23 10:27:34" itemprop="dateModified" datetime="2021-03-23T10:27:34+08:00">2021-03-23</time>
+                <time title="修改时间：2021-03-23 10:58:37" itemprop="dateModified" datetime="2021-03-23T10:58:37+08:00">2021-03-23</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -286,6 +286,13 @@
 <h4 id="listen函数"><a href="#listen函数" class="headerlink" title="listen函数"></a>listen函数</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt; /* See NOTES */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">listen</span><span class="params">(<span class="keyword">int</span> sockfd, <span class="keyword">int</span> backlog)</span></span>;</span><br><span class="line">sockfd:</span><br><span class="line">	socket文件描述符</span><br><span class="line">backlog:</span><br><span class="line">	排队建立<span class="number">3</span>次握手队列和刚刚建立<span class="number">3</span>次握手队列的链接数和</span><br></pre></td></tr></table></figure>
 <p>查看系统默认backlog：<code>cat /proc/sys/net/ipv4/tcp_max_syn_backlog</code></p>
 <p>典型的服务器程序可以同时服务于多个客户端，当有客户端发起连接时，服务器调用的<code>accept()</code>返回并接受这个连接，<strong>如果有大量的客户端发起连接而服务器来不及处理，尚未accept的客户端就处于连接等待状态，listen()声明sockfd处于监听状态，并且最多允许有backlog个客户端处于连接待状态，如果接收到更多的连接请求就忽略。listen()成功返回0，失败返回-1。</strong></p>
+<h4 id="connect函数"><a href="#connect函数" class="headerlink" title="connect函数"></a>connect函数</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt; 					</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">connect</span><span class="params">(<span class="keyword">int</span> sockfd, <span class="keyword">const</span> struct sockaddr *addr, <span class="keyword">socklen_t</span> addrlen)</span></span>;</span><br><span class="line">sockdf:</span><br><span class="line">	socket文件描述符</span><br><span class="line">        </span><br><span class="line">addr:</span><br><span class="line">	传入参数，指定服务器端地址信息，含IP地址和端口号</span><br><span class="line">        </span><br><span class="line">addrlen:</span><br><span class="line">	传入参数,传入<span class="keyword">sizeof</span>(addr)大小</span><br><span class="line">        </span><br><span class="line">返回值：</span><br><span class="line">	成功返回<span class="number">0</span>，失败返回<span class="number">-1</span>，设置errno</span><br></pre></td></tr></table></figure>
+<p>客户端需要调用<code>connect()</code>连接服务器，<strong>connect和bind的参数形式一致，区别在于bind的参数是自己的地址，而connect的参数是对方的地址。connect()成功返回0，出错返回-1。</strong></p>
+<h4 id="accept函数"><a href="#accept函数" class="headerlink" title="accept函数"></a>accept函数</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt; 		</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">accept</span><span class="params">(<span class="keyword">int</span> sockfd, struct sockaddr *addr, <span class="keyword">socklen_t</span> *addrlen)</span></span>;</span><br><span class="line">sockdf:</span><br><span class="line">	socket文件描述符</span><br><span class="line">        </span><br><span class="line">addr:</span><br><span class="line">	传出参数，返回链接客户端地址信息，含IP地址和端口号</span><br><span class="line">        </span><br><span class="line">addrlen:</span><br><span class="line">	传入传出参数（值-结果）,传入<span class="keyword">sizeof</span>(addr)大小，函数返回时返回真正接收到地址结构体的大小</span><br><span class="line">        </span><br><span class="line">返回值：</span><br><span class="line">	成功返回一个新的socket文件描述符，用于和客户端通信，失败返回<span class="number">-1</span>，设置errno</span><br></pre></td></tr></table></figure>
+<p><strong>三次握手完成后，服务器调用accept()接受连接，如果服务器调用accept()时还没有客户端的连接请求，就阻塞等待直到有客户端连接上来。</strong> <strong>addr是一个传出参数，accept()返回时传出客户端的地址和端口号。addrlen参数是一个传入传出参数（value-result argument），传入的是调用者提供的缓冲区addr的长度以避免缓冲区溢出问题，传出的是客户端地址结构体的实际长度（有可能没有占满调用者提供的缓冲区）。如果给addr参数传NULL，表示不关心客户端的地址。</strong></p>
+<p>服务器的结构一般如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line">	cliaddr_len = <span class="keyword">sizeof</span>(cliaddr);</span><br><span class="line">	connfd = accept(listenfd, (struct sockaddr *)&amp;cliaddr, &amp;cliaddr_len);</span><br><span class="line">	n = <span class="built_in">read</span>(connfd, buf, MAXLINE);</span><br><span class="line">	......</span><br><span class="line">	<span class="built_in">close</span>(connfd);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>整个是一个<code>while</code>死循环，每次循环处理一个客户端连接。由于<code>cliaddr_len</code>是传入传出参数，每次调用accept()之前应该重新赋初值。<strong><code>accept()</code>的参数<code>listenfd</code>是先前的监听文件描述符，而<code>accept()</code>的返回值是另外一个文件描述符<code>connfd</code>，之后与客户端之间就通过这个<code>connfd</code>通讯，最后关闭<code>connfd</code>断开连接，而不关闭<code>listenfd</code>，再次回到循环开头<code>listenfd</code>仍然用作<code>accept</code>的参数。<code>accept()</code>成功返回一个文件描述符，出错返回-1。</strong></p>
 
     </div>
 
@@ -327,19 +334,19 @@
           
       <div class="tabs tabs-comment">
         <ul class="nav-tabs">
-            <li class="tab"><a href="#comment-livere">livere</a></li>
             <li class="tab"><a href="#comment-gitalk">gitalk</a></li>
+            <li class="tab"><a href="#comment-livere">livere</a></li>
         </ul>
         <div class="tab-content">
+            <div class="tab-pane gitalk" id="comment-gitalk">
+              <div class="comments" id="gitalk-container"></div>
+            </div>
             <div class="tab-pane livere" id="comment-livere">
               
   <div class="comments" id="comments">
     <div id="lv-container" data-id="city" data-uid="MTAyMC81MjkwMy8yOTM4MA=="></div>
   </div>
   
-            </div>
-            <div class="tab-pane gitalk" id="comment-gitalk">
-              <div class="comments" id="gitalk-container"></div>
             </div>
         </div>
       </div>
@@ -383,7 +390,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#socket模型创建"><span class="nav-number">1.</span> <span class="nav-text">socket模型创建</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#socket函数"><span class="nav-number">1.1.</span> <span class="nav-text">socket函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#bind函数"><span class="nav-number">1.2.</span> <span class="nav-text">bind函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#listen函数"><span class="nav-number">1.3.</span> <span class="nav-text">listen函数</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#socket模型创建"><span class="nav-number">1.</span> <span class="nav-text">socket模型创建</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#socket函数"><span class="nav-number">1.1.</span> <span class="nav-text">socket函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#bind函数"><span class="nav-number">1.2.</span> <span class="nav-text">bind函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#listen函数"><span class="nav-number">1.3.</span> <span class="nav-text">listen函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#connect函数"><span class="nav-number">1.4.</span> <span class="nav-text">connect函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#accept函数"><span class="nav-number">1.5.</span> <span class="nav-text">accept函数</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -399,7 +406,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">40</span>
+          <span class="site-state-item-count">42</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -566,20 +573,6 @@ window.addEventListener('pjax:success', () => {
 
   
 
-<script>
-  window.livereOptions = {
-    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
-  };
-  (function(d, s) {
-    var j, e = d.getElementsByTagName(s)[0];
-    if (typeof LivereTower === 'function') { return; }
-    j = d.createElement(s);
-    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
-    j.async = true;
-    e.parentNode.insertBefore(j, e);
-  })(document, 'script');
-</script>
-
 <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
 
 <script>
@@ -596,6 +589,20 @@ window.addEventListener('pjax:success', () => {
     });
     gitalk.render('gitalk-container');
   }, window.Gitalk);
+</script>
+
+<script>
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
 </script>
 
     </div>
