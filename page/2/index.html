@@ -205,416 +205,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/14/mysql-3mysql%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90-%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E5%8F%8A%E8%BF%90%E8%A1%8C%E6%9C%BA%E7%90%86/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/12/14/mysql-3mysql%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90-%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E5%8F%8A%E8%BF%90%E8%A1%8C%E6%9C%BA%E7%90%86/" class="post-title-link" itemprop="url">mysql性能分析-体系结构及运行机理</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-12-14 09:38:25" itemprop="dateCreated datePublished" datetime="2020-12-14T09:38:25+08:00">2020-12-14</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-17 21:23:07" itemprop="dateModified" datetime="2021-03-17T21:23:07+08:00">2021-03-17</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/mysql/" itemprop="url" rel="index">
-                    <span itemprop="name">mysql</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="Mysql体系结构"><a href="#Mysql体系结构" class="headerlink" title="Mysql体系结构"></a>Mysql体系结构</h3><p><img src="https://api2.mubu.com/v3/document_image/a1619f89-f86a-4530-ab7c-6db518222e98-11197877.jpg" alt="mysql体系结构"></p>
-<ul>
-<li><p>Client Connectors  </p>
-<ul>
-<li>接入方 支持协议很多  </li>
-<li>Management Serveices &amp; Utilities 系统管理和控制工具，mysql dump、 mysql复制集群、分区管理等  </li>
-</ul>
-</li>
-<li><p>Connection Pool  </p>
-<ul>
-<li>连接池:管理缓冲用户连接、用户名、<strong>密码、权限校验</strong>、线程处理等需要缓存的需求  </li>
-</ul>
-</li>
-<li><p>SQL Interface  </p>
-<ul>
-<li>SQL接口:接受用户的SQL命令，并且返回用户需要查询的结果  </li>
-</ul>
-</li>
-<li><p>Parser  </p>
-<ul>
-<li>解析器，SQL命令传递到解析器的时候会被<strong>解析器验证和解析</strong>。解析器是由Lex和YACC实现的  </li>
-</ul>
-</li>
-<li><p>Optimizer  </p>
-<ul>
-<li>查询优化器，<strong>SQL语句在查询之前会使用查询优化器对查询进行优化</strong>  </li>
-</ul>
-</li>
-<li><p>Cache和Buffer(高速缓存区)  </p>
-<ul>
-<li>查询缓存，如果<strong>查询缓存有命中的查询结果，查询语句就可以直接去查询缓存中取数据</strong>  </li>
-</ul>
-</li>
-<li><p>pluggable storage Engines </p>
-<ul>
-<li>插件式存储引擎。<strong>存储引擎是MySql中具体的与文件打交道的子系统</strong>  </li>
-</ul>
-</li>
-<li><p>file system  </p>
-<ul>
-<li>文件系统，数据、日志(redo，undo)、索引、错误日志、查询记录、慢查询等</li>
-</ul>
-</li>
-</ul>
-<h3 id="Mysql查询优化"><a href="#Mysql查询优化" class="headerlink" title="Mysql查询优化"></a>Mysql查询优化</h3><p><img src="https://api2.mubu.com/v3/document_image/38b5c5c9-ec61-4671-80ff-2eb68bbd83f1-11197877.jpg" alt="查询过程"></p>
-<h4 id="client-server通信"><a href="#client-server通信" class="headerlink" title="client/server通信"></a>client/server通信</h4><p>Mysql客户端与服务端的通信方式是<strong>“半双工”;</strong>  </p>
-<ul>
-<li>全双工:双向通信，发送同时也可以接收(tcp握手过程)  </li>
-<li>半双工:<strong>双向通信，同时只能接收或者是发送，无法同时做操作</strong>  <ul>
-<li>半双工通信: 在任何一个时刻，要么是有服务器向客户端发送数据，要么是客户端向服务端发送数据，这<strong>两个动作不能同时发生</strong>。所以我们无法也无需将一个消息切成小块进行传输。  </li>
-<li>特点和限制: 客户端一旦开始发送消息，另一端要接收完整个消息才能响应。  </li>
-<li>客户端一旦开始接收数据没法停下来发送指令。  </li>
-</ul>
-</li>
-<li>单工:只能单一方向传送  </li>
-</ul>
-<h4 id="查询状态"><a href="#查询状态" class="headerlink" title="查询状态"></a>查询状态</h4><p>对于一个mysql连接，或者说一个线程，时刻都有一个状态来标识这个连接正在做什么。</p>
-<p>查看命令 <code>show full processlist / show processlist</code>  </p>
-<p><img src="https://api2.mubu.com/v3/document_image/4e83270b-5e57-4839-8470-5e4141670dfc-11197877.jpg" alt="查询参数"></p>
-<ul>
-<li>Sleep:线程正在等待客户端发送数据  </li>
-<li>Query:连接线程正在执行查询</li>
-<li>Locked:线程正在等待表锁的释放  </li>
-<li>Sorting result:线程正在对结果进行排序  </li>
-<li>Sending data:向请求端返回数据</li>
-</ul>
-<p>可通过<code>kill {id}</code>的方式进行连接的杀掉 </p>
-<h4 id="查询缓存"><a href="#查询缓存" class="headerlink" title="查询缓存"></a>查询缓存</h4><ul>
-<li>工作原理:<ul>
-<li>缓存SELECT操作的结果集和SQL语句</li>
-<li>新的SELECT语句，先去查询缓存，判断是否存在可用的记录集</li>
-</ul>
-</li>
-<li>判断标准: <ul>
-<li>与缓存的SQL语句，<strong>是否完全一样</strong>，区分大小写(简单认为存储了一个key-value结构，<strong>key为sql，value为sql查询结果集</strong>)。</li>
-</ul>
-</li>
-<li>几个关键字<ul>
-<li>query_cache_type<ul>
-<li>值:0 -– <strong>不启用</strong>查询缓存，<strong>默认值</strong></li>
-<li>值:1 -– 启用查询缓存，<strong>只要符合查询缓存的要求，客户端的查询语句和记录集都可以缓存起来，供其他客户端使用，加上SQL_NO_CACHE将不缓存</strong></li>
-<li>值:2 -– 启用查询缓存，只要<strong>查询语句中添加了参数:SQL_CACHE，且符合查询缓存的要求</strong>，客户端的查询语句和记录集，则可以缓存起来，供其他客户端使用</li>
-</ul>
-</li>
-<li>query_cache_size  <ul>
-<li>允许设置query_cache_size的值最小为40K，默认1M，推荐设置为:64M/128M</li>
-</ul>
-</li>
-<li>query_cache_limit <ul>
-<li>限制查询缓存区最大能缓存的查询记录集，默认设置为1M </li>
-<li><code>show status like &#39;Qcache%&#39;</code>命令可查看缓存情况。  </li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>不会缓存的情况</p>
-<ul>
-<li>当查询语句中有一些不确定的数据时，则不会被缓存。如包含函数NOW()，CURRENT_DATE()等类似的函数，或者用户自定义的函数，存储函数，用户变量等都不会被缓存。</li>
-<li>当查询的结果大于query_cache_limit设置的值时，结果不会被缓存。</li>
-<li>对于InnoDB引擎来说，<strong>当一个语句在事务中修改了某个表，那么在这个事务提交之前，所有与这个表相关的查询都无法被缓存。因此长时间执行事务，会大大降低缓存命中率。</strong>  </li>
-<li>查询的表是系统表  </li>
-<li>查询语句不涉及到表</li>
-</ul>
-</li>
-<li><p>为什么mysql默认关闭了缓存开启  </p>
-<ul>
-<li>在查询之前必须<strong>先检查是否命中缓存,浪费计算资源。</strong></li>
-<li>如果这个查询可以被缓存，那么执行完成后，MySQL发现查询缓存中没有这个查询，则会将结果存入查询缓存，这会带来额外的系统消耗。</li>
-<li>针对表进行<strong>写入或更新数据时，将对应表的所有缓存都设置失效。</strong> </li>
-<li>如果<strong>查询缓存很大或者碎片很多</strong>时，这个操作可能带来很大的系统消耗。</li>
-</ul>
-</li>
-<li><p>缓存适用业务场景</p>
-<ul>
-<li>以<strong>读为主的业务</strong>，数据生成之后就不常改变的业务</li>
-<li>比如门户类、新闻类、报表类、论坛类等  </li>
-</ul>
-</li>
-</ul>
-<h4 id="查询优化处理"><a href="#查询优化处理" class="headerlink" title="查询优化处理"></a>查询优化处理</h4><p>查询优化处理的三个阶段:  </p>
-<ul>
-<li>解析:解析sql通过lex<strong>词法分析</strong>，yacc语法分析将sql语句解析成<strong>解析树</strong>。</li>
-<li>预处理阶段：根据mysql的语法的规则<strong>进一步检查解析树的合法性</strong>，如：<strong>检查数据的表和列是否存在，解析名字和别名的设置，还会进行权限的验证</strong>。</li>
-<li>查询优化器 ：优化器的主要作用就是<strong>找到最优的执行计划</strong>。</li>
-</ul>
-<p>查询优化器如何找到最优执行计划：</p>
-<ul>
-<li>使用等价变化规则  <ul>
-<li>数据表的关联并不总是按照查询语句的顺序进行。 </li>
-<li>5=5 and a&gt;5 改写成 a&gt;5  ，a<b and a=5 改写成 b>5 and a=5  </li>
-</ul>
-</li>
-<li>将外连接转化为内连接 <ul>
-<li>并不是所有的OUTER JOIN都必须以外链接的方式进行。  </li>
-</ul>
-</li>
-<li>优化count 、min、max等函数<ul>
-<li>min函数只需找索引<strong>最左边</strong></li>
-<li>max函数只需找索引最右边 </li>
-<li>myisam引擎count(*)  </li>
-</ul>
-</li>
-<li>覆盖索引扫描  </li>
-<li>子查询优化</li>
-<li>提前终止查询  <ul>
-<li>用了<strong>limit关键字</strong>或者使用<strong>不存在的条件</strong></li>
-</ul>
-</li>
-<li>IN的优化<ul>
-<li>先进行<strong>排序</strong>，再采用<strong>二分查找</strong>的方式</li>
-</ul>
-</li>
-</ul>
-<p>Mysql的查询优化器基于<strong>成本计算</strong>的原则，会尝试各种执行计划，<strong>以数据抽样的方式进行试验(随机的读取一个4K的数据块进行分析)。</strong>可用explain来进行分析。</p>
-<h4 id="查询执行引擎"><a href="#查询执行引擎" class="headerlink" title="查询执行引擎"></a>查询执行引擎</h4><p>调用插件式的存储引擎的原子API的功能进行执行计划的执行。 </p>
-<h4 id="返回客户端"><a href="#返回客户端" class="headerlink" title="返回客户端"></a>返回客户端</h4><ul>
-<li>有需要做缓存的，执行缓存操作。  </li>
-<li>增量的返回结果：<strong>开始生成第一条结果时，mysql就开始往请求方逐步返回数据</strong>。  <ul>
-<li>好处: mysql服务器无须保存过多的数据，浪费内存；用户体验好，马上就拿到了数据。 </li>
-</ul>
-</li>
-</ul>
-<h4 id="慢SQL"><a href="#慢SQL" class="headerlink" title="慢SQL"></a>慢SQL</h4><p>定位慢SQL:</p>
-<ul>
-<li>业务驱动  </li>
-<li>测试驱动  </li>
-<li>慢查询日志  </li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">show variables like 'slow_query_log';</span><br><span class="line">set global slow_query_log = on;</span><br><span class="line">set global slow_query_log_file = '/var/lib/mysql/test-slow.log';   </span><br><span class="line">set global log_queries_not_using_indexes = on;</span><br><span class="line">set global long_query_time = 0.1;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>慢查询日志分析</li>
-</ul>
-<p><img src="https://api2.mubu.com/v3/document_image/b4851df7-e19f-44fa-8b14-87d44517f53e-11197877.jpg" alt="慢查询日志分析"></p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Time :日志记录的时间  </span><br><span class="line">User@Host:执行的用户及主机  </span><br><span class="line">Query_time:查询耗费时间  </span><br><span class="line">Lock_time 锁表时间  </span><br><span class="line">Rows_sent 发送给请求方的记录条数  </span><br><span class="line">Rows_examined 语句扫描的记录条数  </span><br><span class="line"><span class="keyword">SET</span> <span class="built_in">timestamp</span> 语句执行的时间点  </span><br><span class="line"><span class="keyword">select</span> .... 执行的具体语句</span><br></pre></td></tr></table></figure>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysqldumpslow -t 10 -s at /var/lib/mysql/test-slow.log</span><br></pre></td></tr></table></figure>
-<p><img src="https://api2.mubu.com/v3/document_image/e937e8cb-5a7b-4587-89ba-fba600203b88-11197877.jpg" alt="慢查询工具"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/12/mysql-2mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/12/12/mysql-2mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/" class="post-title-link" itemprop="url">mysql性能优化-存储引擎</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-12-12 09:05:57" itemprop="dateCreated datePublished" datetime="2020-12-12T09:05:57+08:00">2020-12-12</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-17 21:37:23" itemprop="dateModified" datetime="2021-03-17T21:37:23+08:00">2021-03-17</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/mysql/" itemprop="url" rel="index">
-                    <span itemprop="name">mysql</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="Mysql插拔式存储引擎"><a href="#Mysql插拔式存储引擎" class="headerlink" title="Mysql插拔式存储引擎"></a>Mysql插拔式存储引擎</h3><h4 id="mysql存储引擎简介"><a href="#mysql存储引擎简介" class="headerlink" title="mysql存储引擎简介"></a>mysql存储引擎简介</h4><ul>
-<li>插拔式的插件方式。  </li>
-<li><strong>存储引擎是指定在表之上的</strong>，即<strong>一个库中的每一个表都可以指定专用的存储引擎。</strong>  </li>
-<li>不管表采用什么样的存储引擎，都会在数据区产生对应的一个<strong>frm文件(表结构定义描述文件)。</strong></li>
-</ul>
-<h4 id="Innodb"><a href="#Innodb" class="headerlink" title="Innodb"></a>Innodb</h4><ul>
-<li><p>Mysql5.5及以后版本的默认存储引擎  </p>
-</li>
-<li><p>Key Advantages:  </p>
-<ul>
-<li>Its DML operations follow the ACID model [<strong>事务ACID</strong>]  </li>
-<li>Row-level locking[<strong>行级锁</strong>]  </li>
-<li>InnoDB tables arrange your data on disk to optimize queries based on primary keys[<strong>聚集索引(主键索引)方式进行数据存储</strong>]  </li>
-<li>To maintain data integrity, InnoDB supports FOREIGN KEY constraints[<strong>支持外键关系保证数据完整性</strong>]  </li>
-</ul>
-</li>
-</ul>
-<h4 id="Myisam"><a href="#Myisam" class="headerlink" title="Myisam"></a>Myisam</h4><ul>
-<li><p>Mysql5.5版本之前的默认存储引擎 ,较多的系统表也还是使用这个存储引,系统临时表也会用到Myisam存储引擎  </p>
-</li>
-<li><p>特点:  </p>
-<ul>
-<li>select count(*) from table 无需进行数据的扫描  </li>
-<li>数据(MYD)和索引(MYI)分开存储  </li>
-<li>表级锁  </li>
-<li>不支持事务  </li>
-</ul>
-</li>
-</ul>
-<h4 id="Memory存储引擎"><a href="#Memory存储引擎" class="headerlink" title="Memory存储引擎"></a>Memory存储引擎</h4><ul>
-<li><strong>数据都是存储在内存中，IO效率要比其他引擎高很多。</strong>  </li>
-<li><p><strong>服务重启数据丢失，内存数据表默认只有16M</strong>。  </p>
-</li>
-<li><p>特点:  </p>
-<ul>
-<li>支持hash索引，B tree索引，<strong>默认hash(查找复杂度0(1))</strong>  </li>
-<li>字段长度都是固定长度varchar(32)=char(32)   </li>
-<li>不支持大数据存储类型字段如 blog，text  </li>
-<li>表级锁  </li>
-</ul>
-</li>
-<li><p>应用场景:  </p>
-<ul>
-<li>等值查找热度较高数据  </li>
-<li>查询结果内存中的计算，大多数都是采用这种存储引擎  </li>
-<li>作为临时表存储需计算的数据  </li>
-</ul>
-</li>
-</ul>
-<h4 id="Archive存储引擎"><a href="#Archive存储引擎" class="headerlink" title="Archive存储引擎"></a>Archive存储引擎</h4><ul>
-<li><p>压缩协议进行数据的存储 ,数据存储为ARZ文件格式  </p>
-</li>
-<li><p>特点:  </p>
-<ul>
-<li>只支持insert和select两种操作   </li>
-<li>只允许自增ID列建立索引  </li>
-<li>行级锁  </li>
-<li>不支持事务  </li>
-<li>数据占用磁盘少  </li>
-</ul>
-</li>
-<li><p>应用场景:  </p>
-<ul>
-<li>日志系统  </li>
-<li>大量的设备数据采集 </li>
-</ul>
-</li>
-</ul>
-<h4 id="CSV存储引擎"><a href="#CSV存储引擎" class="headerlink" title="CSV存储引擎"></a>CSV存储引擎</h4><ul>
-<li>数据存储以CSV文件  </li>
-<li><p>特点:  </p>
-<ul>
-<li>不能定义索引、列定义必须为NOT NULL、不能设置自增列 —&gt;不适用大表或者数据的在线处理   </li>
-<li>CSV数据的存储用,隔开，可直接编辑CSV文件进行数据的编排 —&gt;数据安全性低  </li>
-<li>注:编辑之后，要生效使用flush table XXX 命令  </li>
-</ul>
-</li>
-<li><p>应用场景:  </p>
-<ul>
-<li>数据的快速导出导入 表格直接转换成CSV  </li>
-</ul>
-</li>
-</ul>
-<h4 id="各引擎对比"><a href="#各引擎对比" class="headerlink" title="各引擎对比"></a>各引擎对比</h4><p><img src="https://api2.mubu.com/v3/document_image/6091bb4c-98c4-4513-8069-954152ee02e8-11197877.jpg" alt="各引擎对比"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/10/mysql-1mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E5%88%86%E6%9E%90-%E7%B4%A2%E5%BC%95/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1579,6 +1169,202 @@
 <h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>鸭子类型是一种动态语言的风格，在这种风格中，<strong>一个对象有效的语义，不是由继承自特定的类或实现特定的接口，而是由它”当前方法和属性的集合”决定。Go 作为一种静态语言，通过接口实现了 <code>鸭子类型</code>，实际上是 Go 的编译器在其中作了隐匿的转换工作。</strong></p>
 <h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><p>【Golang 与鸭子类型，讲得比较好】<a href="https://blog.csdn.net/cszhouwei/article/details/33741731" target="_blank" rel="noopener">https://blog.csdn.net/cszhouwei/article/details/33741731</a></p>
 <p>【各种面向对象的名词】<a href="https://cyent.github.io/golang/other/oo/" target="_blank" rel="noopener">https://cyent.github.io/golang/other/oo/</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/01/Go%20%E6%8E%A5%E5%8F%A3_1Go%E4%B8%8E%20C++%20%E6%8E%A5%E5%8F%A3%E6%9C%89%E4%BD%95%E5%BC%82%E5%90%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/06/01/Go%20%E6%8E%A5%E5%8F%A3_1Go%E4%B8%8E%20C++%20%E6%8E%A5%E5%8F%A3%E6%9C%89%E4%BD%95%E5%BC%82%E5%90%8C/" class="post-title-link" itemprop="url">Go接口与C++接口的异同</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-06-01 21:29:16" itemprop="dateCreated datePublished" datetime="2020-06-01T21:29:16+08:00">2020-06-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-21 16:52:22" itemprop="dateModified" datetime="2021-03-21T16:52:22+08:00">2021-03-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Go-interface/" itemprop="url" rel="index">
+                    <span itemprop="name">Go interface</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="接口设计的意义"><a href="#接口设计的意义" class="headerlink" title="接口设计的意义"></a>接口设计的意义</h3><ul>
+<li>泛型编程：使用 interface 可以实现泛型编程</li>
+<li>隐藏具体实现：设计一个函数返回一个 interface，那么<strong>只能通过 interface 里面的方法来做一些操作，但是内部的具体实现是完全不知道的。</strong></li>
+</ul>
+<h3 id="golang中的接口"><a href="#golang中的接口" class="headerlink" title="golang中的接口"></a>golang中的接口</h3><p>接口定义了一种<strong>规范，描述了类的行为和功能，而不做具体实现</strong>。</p>
+<p>Interface定义了一个或一组method(s)，<strong>这些method(s)只有函数签名，没有具体的实现代码</strong>.</p>
+<p>若某个数据类型实现了Interface中定义的那些被称为”methods”的函数，则称这些<strong>数据类型实现（implement）了interface。</strong></p>
+<h3 id="C-中的接口实现方法"><a href="#C-中的接口实现方法" class="headerlink" title="C++中的接口实现方法"></a>C++中的接口实现方法</h3><p>C++ 的接口是使用<strong>抽象类</strong>来实现的，如果类中至少有一个函数被声明为<strong>纯虚函数</strong>，则这个类就是抽象类。<strong>纯虚函数是通过在声明中使用 “= 0” 来指定的</strong>。例如：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Shape</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">   <span class="keyword">public</span>:</span><br><span class="line">      <span class="comment">// 纯虚函数</span></span><br><span class="line">      <span class="function"><span class="keyword">virtual</span> <span class="keyword">double</span> <span class="title">getArea</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">   <span class="keyword">private</span>:</span><br><span class="line">      <span class="built_in">string</span> name;      <span class="comment">// 名称</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>设计抽象类的目的:<strong>为了给其他类提供一个可以继承的适当的基类。抽象类不能被用于实例化对象，它只能作为接口使用。</strong></p>
+<p><strong>派生类需要明确地声明它继承自基类，并且需要实现基类中所有的纯虚函数</strong>。</p>
+<h3 id="golang接口与C-接口区别"><a href="#golang接口与C-接口区别" class="headerlink" title="golang接口与C++接口区别"></a>golang接口与C++接口区别</h3><ul>
+<li><p>C++ 定义接口的方式称为“侵入式”</p>
+</li>
+<li><p>Go 采用的是 “非侵入式”，<strong>不需要显式声明，只需要实现接口定义的函数，编译器自动会识别。</strong></p>
+</li>
+<li><p>底层实现不同</p>
+<ul>
+<li>实现方式：C++ 通过<strong>虚函数表来实现基类调用派生类的函数</strong>；而 Go 通过 <code>itab</code> 中的 <code>fun</code> 字段来实现接口变量调用实体类型的函数。</li>
+<li>编译生成过程：C++ 中的<strong>虚函数表是在编译期生成</strong>的；而 Go 的 <code>itab</code> 中的 <code>fun</code> 字段是在<strong>运行期间动态生成</strong>的。原因在于，<strong>Go 中实体类型可能会无意中实现 N 多接口，很多接口并不是本来需要的，所以不能为类型实现的所有接口都生成一个 <code>itab</code></strong>， 这也是“非侵入式”带来的影响；这在 C++ 中是不存在的，因为派生需要显示声明它继承自哪个基类。</li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/05/30/Go%20%E6%8E%A5%E5%8F%A3_0Go%E7%94%A8%20interface%20%E5%AE%9E%E7%8E%B0%E5%A4%9A%E6%80%81/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/05/30/Go%20%E6%8E%A5%E5%8F%A3_0Go%E7%94%A8%20interface%20%E5%AE%9E%E7%8E%B0%E5%A4%9A%E6%80%81/" class="post-title-link" itemprop="url">Go 用interface实现多态</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-05-30 21:29:16" itemprop="dateCreated datePublished" datetime="2020-05-30T21:29:16+08:00">2020-05-30</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-21 16:51:52" itemprop="dateModified" datetime="2021-03-21T16:51:52+08:00">2021-03-21</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Go-interface/" itemprop="url" rel="index">
+                    <span itemprop="name">Go interface</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="Go-用interface实现多态"><a href="#Go-用interface实现多态" class="headerlink" title="Go 用interface实现多态"></a>Go 用interface实现多态</h3><p>Go 语言并没有设计诸如虚函数、纯虚函数、继承、多重继承等概念，但它通过接口却非常优雅地支持了面向对象的特性。</p>
+<p>多态是一种运行期的行为，它有以下几个特点：</p>
+<blockquote>
+<ol>
+<li>一种类型具有多种类型的能力</li>
+<li>允许不同的对象对同一消息做出灵活的反应</li>
+<li>以一种通用的方式对待个使用的对象</li>
+<li>非动态语言必须通过继承和接口的方式来实现</li>
+</ol>
+</blockquote>
+<p>看一个实现了多态的代码例子：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	qcrao := Student&#123;age: <span class="number">18</span>&#125;</span><br><span class="line">	whatJob(&amp;qcrao)</span><br><span class="line"></span><br><span class="line">	growUp(&amp;qcrao)</span><br><span class="line">	fmt.Println(qcrao)</span><br><span class="line"></span><br><span class="line">	stefno := Programmer&#123;age: <span class="number">100</span>&#125;</span><br><span class="line">	whatJob(stefno)</span><br><span class="line"></span><br><span class="line">	growUp(stefno)</span><br><span class="line">	fmt.Println(stefno)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">whatJob</span><span class="params">(p Person)</span></span> &#123;</span><br><span class="line">	p.job()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">growUp</span><span class="params">(p Person)</span></span> &#123;</span><br><span class="line">	p.growUp()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Person <span class="keyword">interface</span> &#123;</span><br><span class="line">	job()</span><br><span class="line">	growUp()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Student <span class="keyword">struct</span> &#123;</span><br><span class="line">	age <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p Student)</span> <span class="title">job</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Println(<span class="string">"I am a student."</span>)</span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p *Student)</span> <span class="title">growUp</span><span class="params">()</span></span> &#123;</span><br><span class="line">	p.age += <span class="number">1</span></span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Programmer <span class="keyword">struct</span> &#123;</span><br><span class="line">	age <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p Programmer)</span> <span class="title">job</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Println(<span class="string">"I am a programmer."</span>)</span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p Programmer)</span> <span class="title">growUp</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="comment">// 程序员老得太快 ^_^</span></span><br><span class="line">	p.age += <span class="number">10</span></span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>代码里先定义了 1 个 <code>Person</code> 接口，包含两个函数：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">job()</span><br><span class="line">growUp()</span><br></pre></td></tr></table></figure>
+<p>然后，又定义了 2 个结构体，<code>Student</code> 和 <code>Programmer</code>，同时，类型 <code>*Student</code>、<code>Programmer</code> 实现了 <code>Person</code> 接口定义的两个函数。注意，<code>*Student</code> 类型实现了接口， <code>Student</code> 类型却没有。</p>
+<p>之后，我又定义了函数参数是 <code>Person</code> 接口的两个函数：</p>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">whatJob</span><span class="params">(p Person)</span></span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">growUp</span><span class="params">(p Person)</span></span></span><br></pre></td></tr></table></figure>
+<p><code>main</code> 函数里先生成 <code>Student</code> 和 <code>Programmer</code> 的对象，再将它们分别传入到函数 <code>whatJob</code> 和 <code>growUp</code>。函数中，直接调用接口函数，实际执行的时候是看最终传入的实体类型是什么，调用的是实体类型实现的函数。于是，不同对象针对同一消息就有多种表现，<code>多态</code>就实现了。</p>
+<p>更深入一点来说的话，在函数 <code>whatJob()</code> 或者 <code>growUp()</code> 内部，接口 <code>person</code> 绑定了实体类型 <code>*Student</code> 或者 <code>Programmer</code>。根据前面分析的 <code>iface</code> 源码，这里会直接调用 <code>fun</code> 里保存的函数，类似于： <code>s.tab-&gt;fun[0]</code>，而因为 <code>fun</code> 数组里保存的是实体类型实现的函数，所以当函数传入不同的实体类型时，调用的实际上是不同的函数实现，从而实现多态。</p>
+<p>运行一下代码：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">I am a student.</span><br><span class="line">&#123;<span class="number">19</span>&#125;</span><br><span class="line">I am a programmer.</span><br><span class="line">&#123;<span class="number">100</span>&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><p>【各种面向对象的名词】<a href="https://cyent.github.io/golang/other/oo/" target="_blank" rel="noopener">https://cyent.github.io/golang/other/oo/</a></p>
+<p>【多态与鸭子类型】<a href="https://www.jb51.net/article/116025.htm" target="_blank" rel="noopener">https://www.jb51.net/article/116025.htm</a></p>
 
       
     </div>

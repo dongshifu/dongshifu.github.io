@@ -205,179 +205,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/03/25/linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-4/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/03/25/linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-4/" class="post-title-link" itemprop="url">linux网络编程-多进程并发服务器</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-03-25 14:45:00" itemprop="dateCreated datePublished" datetime="2021-03-25T14:45:00+08:00">2021-03-25</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-23 14:46:07" itemprop="dateModified" datetime="2021-03-23T14:46:07+08:00">2021-03-23</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/linux%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index">
-                    <span itemprop="name">linux网络编程</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/03/23/linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2021/03/23/linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-3/" class="post-title-link" itemprop="url">linux-网络编程-使用TCP的C/S模型</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2021-03-23 10:57:39 / 修改时间：14:44:20" itemprop="dateCreated datePublished" datetime="2021-03-23T10:57:39+08:00">2021-03-23</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/linux%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index">
-                    <span itemprop="name">linux网络编程</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="基于TCP协议的客户端-服务器程序的一般流程"><a href="#基于TCP协议的客户端-服务器程序的一般流程" class="headerlink" title="基于TCP协议的客户端/服务器程序的一般流程"></a>基于TCP协议的客户端/服务器程序的一般流程</h3><p><img src="https://api2.mubu.com/v3/document_image/f6c51f91-0005-44c9-8010-64d523fe5e12-11197877.jpg" alt="TCP协议下的C/S流程"></p>
-<h4 id="服务器"><a href="#服务器" class="headerlink" title="服务器"></a>服务器</h4><p>调用socket()、bind()、listen()完成初始化后，调用accept()阻塞等待，处于<strong>监听端口的状态。</strong></p>
-<h4 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h4><p>调用<code>socket()</code>初始化后，调用<code>connect()</code>发出<code>SYN</code>段并阻塞等待服务器应答，服务器应答一个<code>SYN-ACK</code>段，客户端收到后从<code>connect()</code>返回，同时应答一个<code>ACK</code>段，服务器收到后从<code>accept()</code>返回。</p>
-<h4 id="数据传输的过程"><a href="#数据传输的过程" class="headerlink" title="数据传输的过程"></a>数据传输的过程</h4><p>建立连接后，TCP协议提供<strong>全双工</strong>的通信服务，但是一般的客户端/服务器程序的流程是由客户端主动发起请求，服务器被动处理请求，一问一答的方式。因此，服务器从<code>accept()</code>返回后立刻调用<code>read()</code>，<strong>读socket就像读管道一样，如果没有数据到达就阻塞等待，这时客户端调用write()发送请求给服务器，服务器收到后从read()返回，对客户端的请求进行处理，在此期间客户端调用read()阻塞等待服务器的应答，服务器调用write()将处理结果发回给客户端，再次调用read()阻塞等待下一条请求，客户端收到后从read()返回，发送下一条请求，如此循环下去。</strong></p>
-<p>如果客户端没有更多的请求了，就调用<code>close()</code>关闭连接，<strong>就像写端关闭的管道一样，服务器的<code>read()</code>返回0，这样服务器就知道客户端关闭了连接，</strong>也调用<code>close()</code>关闭连接。注意，<strong>任何一方调用close()后，连接的两个传输方向都关闭，不能再发送数据了。如果一方调用shutdown()则连接处于半关闭状态，仍可接收对方发来的数据。</strong></p>
-<h4 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//server 端，作用是从客户端读字符，然后将每个字符转换为大写并回送给客户端。</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;netinet/in.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;arpa/inet.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SERV_PORT 9726</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/*错误处理函数*/</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">sys_err</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* str)</span></span>&#123;</span><br><span class="line">	perror(str);</span><br><span class="line">	<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> link_fd=<span class="number">0</span>;						<span class="comment">//建立连接的socket文件描述符</span></span><br><span class="line">    <span class="keyword">int</span> connect_fd=<span class="number">0</span>					<span class="comment">//用于通信的文件描述符</span></span><br><span class="line">    <span class="keyword">int</span> ret=<span class="number">0</span>;							<span class="comment">//用于检查是否出错</span></span><br><span class="line">    <span class="keyword">char</span> buf[BUFSIZ];					<span class="comment">//缓冲区</span></span><br><span class="line">    <span class="keyword">char</span> client_IP[<span class="number">1024</span>]				<span class="comment">//存入客户端IP字符串</span></span><br><span class="line">    <span class="keyword">int</span> num=<span class="number">0</span>;							<span class="comment">//读出的字节数</span></span><br><span class="line">    <span class="comment">/*服务器端地址结构*/</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">serv_addr</span>;</span></span><br><span class="line">    serv_addr.sin_family=AF_INET;</span><br><span class="line">    serv_addr.sin_port=htons(SERV_PORT);</span><br><span class="line">    serv_addr.sin_addr.s_addr=htonl(INADDR_ANY);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/*成功与服务器建立连接的客户端地址结构*/</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">clint_addr</span>;</span></span><br><span class="line">    <span class="keyword">socklen_t</span> clint_addr_len=<span class="keyword">sizeof</span>(clint_addr);</span><br><span class="line">        </span><br><span class="line">    <span class="comment">/*socket函数:创建用于建立连接的socket,返回的文件描述符存入link_fd*/</span></span><br><span class="line">    link_fd=socket(AF_INET,SOCK_STREAM,<span class="number">0</span>);</span><br><span class="line">    <span class="keyword">if</span>(link_fd==<span class="number">-1</span>)</span><br><span class="line">        sys_err(<span class="string">"socket error"</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/*bind函数:绑定服务器端的地址结构*/</span></span><br><span class="line">    ret=bind(link_fd,(<span class="keyword">const</span> struct sockaddr*)&amp;serv_addr,<span class="keyword">sizeof</span>(serv_addr));</span><br><span class="line">    <span class="keyword">if</span>(ret==<span class="number">-1</span>)</span><br><span class="line">        sys_err(<span class="string">"bind error"</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/*listen函数:设定监听(连接)上线*/</span></span><br><span class="line">    ret=<span class="built_in">listen</span>(link_fd,<span class="number">128</span>);</span><br><span class="line">    <span class="keyword">if</span>(ret==<span class="number">-1</span>)</span><br><span class="line">        sys_err(<span class="string">"listen error"</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/*accept函数:阻塞等待客户端建立连接*/</span></span><br><span class="line">    connect_fd=accept(link_fd,(struct sockaddr*)&amp;clint_addr,&amp;clint_addr_len);</span><br><span class="line">    <span class="keyword">if</span>(connect_fd==<span class="number">-1</span>)</span><br><span class="line">        sys_err(<span class="string">"accept error"</span>);</span><br><span class="line">    <span class="comment">/*建立连接后打印客户端的IP和端口号*/</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"client IP:%s,client port:%d"</span>,</span><br><span class="line">           inet_ntop(AF_INET,&amp;clint_addr.sin_addr.s_addr,client_IP,<span class="keyword">sizeof</span>(client_IP)),</span><br><span class="line">          ntohs(clint_addr.sin_port));</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/*业务逻辑*/</span></span><br><span class="line">    <span class="keyword">while</span>(<span class="number">1</span>)&#123;</span><br><span class="line">        num=<span class="built_in">read</span>(connect_fd,buf,<span class="keyword">sizeof</span>(buf));</span><br><span class="line">        <span class="built_in">write</span>(STDOUT_FILENO,buf,num);</span><br><span class="line">        <span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;num;i++)</span><br><span class="line">            buf[i]=<span class="built_in">toupper</span>(buf[i]);</span><br><span class="line">        <span class="built_in">write</span>(connect_fd,buf,num);</span><br><span class="line">        sleep(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">close</span>(connect_fd);</span><br><span class="line">    <span class="built_in">close</span>(link_fd);</span><br><span class="line">   	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>获取客户端的地址：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">printf</span>(<span class="string">"client IP:%s,client port:%d"</span>,</span><br><span class="line">         inet_ntop(AF_INET,&amp;clint_addr.sin_addr.s_addr,client_IP,<span class="keyword">sizeof</span>(client_IP));</span><br><span class="line">ntohs(clint_addr.sin_port);</span><br></pre></td></tr></table></figure>
-<p>client端实现：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//client的作用是从命令行参数中获得一个字符串发给服务器，然后接收服务器返回的字符串并打印</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;netinet/in.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;arpa/inet.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SERV_PORT 9726</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/*错误处理函数*/</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">sys_err</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* str)</span></span>&#123;</span><br><span class="line">	perror(str);</span><br><span class="line">	<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> client_fd=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> ret=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> num=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> cnt=<span class="number">10</span>;</span><br><span class="line">	<span class="keyword">char</span> buf[BUFSIZ];</span><br><span class="line"></span><br><span class="line">	<span class="comment">//connect的参数2填入服务器的文件描述符!</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">serv_addr</span>;</span></span><br><span class="line">	serv_addr.sin_family=AF_INET;</span><br><span class="line">	serv_addr.sin_port=htons(SERV_PORT);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/*点分十进制-&gt;网络二进制*/</span></span><br><span class="line">    <span class="comment">/*协议族,源数据,目的数据(int32足够,因为IP地址就是32位)*/</span></span><br><span class="line">	inet_pton(AF_INET,<span class="string">"127.0.0.1"</span>,(<span class="keyword">void</span>*)&amp;serv_addr.sin_addr.s_addr);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*客户端直接创建用于连接的套接字即可*/</span></span><br><span class="line">	client_fd=socket(AF_INET,SOCK_STREAM,<span class="number">0</span>);</span><br><span class="line">	<span class="keyword">if</span>(client_fd==<span class="number">-1</span>)</span><br><span class="line">		sys_err(<span class="string">"socket error"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*将客户端套接字与服务器地址结构连接起来*/</span></span><br><span class="line">	ret=<span class="built_in">connect</span>(client_fd,(struct sockaddr*)&amp;serv_addr,<span class="keyword">sizeof</span>(serv_addr));</span><br><span class="line">	<span class="keyword">if</span>(ret!=<span class="number">0</span>)</span><br><span class="line">		sys_err(<span class="string">"connect error"</span>);</span><br><span class="line">    </span><br><span class="line">	<span class="comment">//业务逻辑</span></span><br><span class="line">	<span class="keyword">while</span>(--cnt)&#123;</span><br><span class="line">		<span class="built_in">write</span>(client_fd,<span class="string">"fuckyou\n"</span>,<span class="number">8</span>);</span><br><span class="line">		num=<span class="built_in">read</span>(client_fd,buf,<span class="keyword">sizeof</span>(buf));</span><br><span class="line">		<span class="built_in">write</span>(STDOUT_FILENO,buf,num);</span><br><span class="line">		sleep(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="built_in">close</span>(client_fd);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>注意：套接字: <strong>一个fd可以索引读写两个缓冲区</strong></p>
-<p>由于<strong>客户端不需要固定的端口号，因此不必调用bind()，客户端的端口号由内核自动分配。</strong>注意，<strong>客户端不是不允许调用bind()，只是没有必要调用bind()固定一个端口号，服务器也不是必须调用bind()，但如果服务器不调用bind()，内核会自动给服务器分配监听端口，每次启动服务器时端口号都不一样，客户端要连接服务器就会遇到麻烦。</strong></p>
-<p>客户端和服务器启动后可以使用netstat命令查看链接情况：</p>
-<p><code>netstat -apn | grep 9726</code></p>
-<h4 id="出错处理"><a href="#出错处理" class="headerlink" title="出错处理"></a>出错处理</h4><p>为使错误处理的代码不影响主程序的可读性，把与socket相关的一些系统函数加上错误处理代码封装成新的函数，做成一个模块wrap.c。</p>
-<p>封装的目的：在server.c编译过程中突出逻辑，将出错处理与逻辑分开。<strong>将原函数首字母大写进行错误处理，这样还可以跳转到原函数的manPage.</strong></p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//wrap.h</span></span><br><span class="line"><span class="comment">//存放网络通信相关常用自定义函数(声明)</span></span><br><span class="line"><span class="comment">//在server.c 和client.c中调用自定义函数</span></span><br><span class="line"><span class="comment">//联合编译server.c和wrap.c生成server</span></span><br><span class="line"><span class="comment">//联合编译client.c和wrap.c生成client</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> __WRAP_H_</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> __WRAP_H_</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">perr_exit</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *s)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">Accept</span><span class="params">(<span class="keyword">int</span> fd, struct sockaddr *sa, <span class="keyword">socklen_t</span> *salenptr)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">Bind</span><span class="params">(<span class="keyword">int</span> fd, <span class="keyword">const</span> struct sockaddr *sa, <span class="keyword">socklen_t</span> salen)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">Connect</span><span class="params">(<span class="keyword">int</span> fd, <span class="keyword">const</span> struct sockaddr *sa, <span class="keyword">socklen_t</span> salen)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">Listen</span><span class="params">(<span class="keyword">int</span> fd, <span class="keyword">int</span> backlog)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">Socket</span><span class="params">(<span class="keyword">int</span> family, <span class="keyword">int</span> type, <span class="keyword">int</span> protocol)</span></span>;</span><br><span class="line"><span class="keyword">ssize_t</span> Read(<span class="keyword">int</span> fd, <span class="keyword">void</span> *ptr, <span class="keyword">size_t</span> nbytes);</span><br><span class="line"><span class="keyword">ssize_t</span> Write(<span class="keyword">int</span> fd, <span class="keyword">const</span> <span class="keyword">void</span> *ptr, <span class="keyword">size_t</span> nbytes);</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">Close</span><span class="params">(<span class="keyword">int</span> fd)</span></span>;</span><br><span class="line"><span class="keyword">ssize_t</span> Readn(<span class="keyword">int</span> fd, <span class="keyword">void</span> *vptr, <span class="keyword">size_t</span> n);</span><br><span class="line"><span class="keyword">ssize_t</span> Writen(<span class="keyword">int</span> fd, <span class="keyword">const</span> <span class="keyword">void</span> *vptr, <span class="keyword">size_t</span> n);</span><br><span class="line"><span class="keyword">ssize_t</span> my_read(<span class="keyword">int</span> fd, <span class="keyword">char</span> *ptr);</span><br><span class="line"><span class="keyword">ssize_t</span> Readline(<span class="keyword">int</span> fd, <span class="keyword">void</span> *vptr, <span class="keyword">size_t</span> maxlen);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// wrap.c</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;errno.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">perr_exit</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *s)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	perror(s);</span><br><span class="line">	<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">Accept</span><span class="params">(<span class="keyword">int</span> fd, struct sockaddr *sa, <span class="keyword">socklen_t</span> *salenptr)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> n;</span><br><span class="line">	again:</span><br><span class="line">	<span class="keyword">if</span> ( (n = accept(fd, sa, salenptr)) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">		<span class="keyword">if</span> ((errno == ECONNABORTED) || (errno == EINTR))</span><br><span class="line">			<span class="keyword">goto</span> again;</span><br><span class="line">		<span class="keyword">else</span></span><br><span class="line">			perr_exit(<span class="string">"accept error"</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> n;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">Bind</span><span class="params">(<span class="keyword">int</span> fd, <span class="keyword">const</span> struct sockaddr *sa, <span class="keyword">socklen_t</span> salen)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> n;</span><br><span class="line">	<span class="keyword">if</span> ((n = bind(fd, sa, salen)) &lt; <span class="number">0</span>)</span><br><span class="line">		perr_exit(<span class="string">"bind error"</span>);</span><br><span class="line">	<span class="keyword">return</span> n;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">Connect</span><span class="params">(<span class="keyword">int</span> fd, <span class="keyword">const</span> struct sockaddr *sa, <span class="keyword">socklen_t</span> salen)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> n;</span><br><span class="line">	<span class="keyword">if</span> ((n = <span class="built_in">connect</span>(fd, sa, salen)) &lt; <span class="number">0</span>)</span><br><span class="line">		perr_exit(<span class="string">"connect error"</span>);</span><br><span class="line">	<span class="keyword">return</span> n;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">Listen</span><span class="params">(<span class="keyword">int</span> fd, <span class="keyword">int</span> backlog)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> n;</span><br><span class="line">	<span class="keyword">if</span> ((n = <span class="built_in">listen</span>(fd, backlog)) &lt; <span class="number">0</span>)</span><br><span class="line">		perr_exit(<span class="string">"listen error"</span>);</span><br><span class="line">	<span class="keyword">return</span> n;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">Socket</span><span class="params">(<span class="keyword">int</span> family, <span class="keyword">int</span> type, <span class="keyword">int</span> protocol)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> n;</span><br><span class="line">	<span class="keyword">if</span> ( (n = socket(family, type, protocol)) &lt; <span class="number">0</span>)</span><br><span class="line">		perr_exit(<span class="string">"socket error"</span>);</span><br><span class="line">	<span class="keyword">return</span> n;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">ssize_t</span> Read(<span class="keyword">int</span> fd, <span class="keyword">void</span> *ptr, <span class="keyword">size_t</span> nbytes)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">ssize_t</span> n;</span><br><span class="line">again:</span><br><span class="line">	<span class="keyword">if</span> ( (n = <span class="built_in">read</span>(fd, ptr, nbytes)) == <span class="number">-1</span>) &#123;</span><br><span class="line">		<span class="keyword">if</span> (errno == EINTR)</span><br><span class="line">			<span class="keyword">goto</span> again;</span><br><span class="line">		<span class="keyword">else</span></span><br><span class="line">			<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> n;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">ssize_t</span> Write(<span class="keyword">int</span> fd, <span class="keyword">const</span> <span class="keyword">void</span> *ptr, <span class="keyword">size_t</span> nbytes)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">ssize_t</span> n;</span><br><span class="line">again:</span><br><span class="line">	<span class="keyword">if</span> ( (n = <span class="built_in">write</span>(fd, ptr, nbytes)) == <span class="number">-1</span>) &#123;</span><br><span class="line">		<span class="keyword">if</span> (errno == EINTR)</span><br><span class="line">			<span class="keyword">goto</span> again;</span><br><span class="line">		<span class="keyword">else</span></span><br><span class="line">			<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> n;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">Close</span><span class="params">(<span class="keyword">int</span> fd)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> n;</span><br><span class="line">	<span class="keyword">if</span> ((n = <span class="built_in">close</span>(fd)) == <span class="number">-1</span>)</span><br><span class="line">		perr_exit(<span class="string">"close error"</span>);</span><br><span class="line">	<span class="keyword">return</span> n;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">ssize_t</span> Readn(<span class="keyword">int</span> fd, <span class="keyword">void</span> *vptr, <span class="keyword">size_t</span> n)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">size_t</span> nleft;</span><br><span class="line">	<span class="keyword">ssize_t</span> nread;</span><br><span class="line">	<span class="keyword">char</span> *ptr;</span><br><span class="line"></span><br><span class="line">	ptr = vptr;</span><br><span class="line">	nleft = n;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">while</span> (nleft &gt; <span class="number">0</span>) &#123;</span><br><span class="line">		<span class="keyword">if</span> ( (nread = <span class="built_in">read</span>(fd, ptr, nleft)) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">			<span class="keyword">if</span> (errno == EINTR)</span><br><span class="line">				nread = <span class="number">0</span>;</span><br><span class="line">			<span class="keyword">else</span></span><br><span class="line">				<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (nread == <span class="number">0</span>)</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		nleft -= nread;</span><br><span class="line">		ptr += nread;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> n - nleft;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">ssize_t</span> Writen(<span class="keyword">int</span> fd, <span class="keyword">const</span> <span class="keyword">void</span> *vptr, <span class="keyword">size_t</span> n)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">size_t</span> nleft;</span><br><span class="line">	<span class="keyword">ssize_t</span> nwritten;</span><br><span class="line">	<span class="keyword">const</span> <span class="keyword">char</span> *ptr;</span><br><span class="line"></span><br><span class="line">	ptr = vptr;</span><br><span class="line">	nleft = n;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">while</span> (nleft &gt; <span class="number">0</span>) &#123;</span><br><span class="line">		<span class="keyword">if</span> ( (nwritten = <span class="built_in">write</span>(fd, ptr, nleft)) &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">			<span class="keyword">if</span> (nwritten &lt; <span class="number">0</span> &amp;&amp; errno == EINTR)</span><br><span class="line">				nwritten = <span class="number">0</span>;</span><br><span class="line">			<span class="keyword">else</span></span><br><span class="line">				<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		nleft -= nwritten;</span><br><span class="line">		ptr += nwritten;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> n;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> ssize_t <span class="title">my_read</span><span class="params">(<span class="keyword">int</span> fd, <span class="keyword">char</span> *ptr)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">static</span> <span class="keyword">int</span> read_cnt;</span><br><span class="line">	<span class="keyword">static</span> <span class="keyword">char</span> *read_ptr;</span><br><span class="line">	<span class="keyword">static</span> <span class="keyword">char</span> read_buf[<span class="number">100</span>];</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (read_cnt &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">again:</span><br><span class="line">		<span class="keyword">if</span> ((read_cnt = <span class="built_in">read</span>(fd, read_buf, <span class="keyword">sizeof</span>(read_buf))) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">			<span class="keyword">if</span> (errno == EINTR)</span><br><span class="line">				<span class="keyword">goto</span> again;</span><br><span class="line">			<span class="keyword">return</span> <span class="number">-1</span>;	</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (read_cnt == <span class="number">0</span>)</span><br><span class="line">			<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">		read_ptr = read_buf;</span><br><span class="line">	&#125;</span><br><span class="line">	read_cnt--;</span><br><span class="line">	*ptr = *read_ptr++;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">ssize_t</span> Readline(<span class="keyword">int</span> fd, <span class="keyword">void</span> *vptr, <span class="keyword">size_t</span> maxlen)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">ssize_t</span> n, rc;</span><br><span class="line">	<span class="keyword">char</span> c, *ptr;</span><br><span class="line">	ptr = vptr;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> (n = <span class="number">1</span>; n &lt; maxlen; n++) &#123;</span><br><span class="line">		<span class="keyword">if</span> ( (rc = my_read(fd, &amp;c)) == <span class="number">1</span>) &#123;</span><br><span class="line">			*ptr++ = c;</span><br><span class="line">			<span class="keyword">if</span> (c == <span class="string">'\n'</span>)</span><br><span class="line">				<span class="keyword">break</span>;</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (rc == <span class="number">0</span>) &#123;</span><br><span class="line">			*ptr = <span class="number">0</span>;</span><br><span class="line">			<span class="keyword">return</span> n - <span class="number">1</span>;</span><br><span class="line">		&#125; <span class="keyword">else</span></span><br><span class="line">			<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	*ptr = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">return</span> n;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h4 id="半关闭"><a href="#半关闭" class="headerlink" title="半关闭"></a>半关闭</h4><p><strong>由原来的双工通信变为了单工通信, 客户端只能接受数据(缓冲区中的数据)</strong></p>
-<p>实现原理: </p>
-<p><strong>关闭了客户端套接字的写缓冲区</strong></p>
-<ul>
-<li><p>之所以半关闭后Client仍能向Server发送ACK数据包, 是因为Client关闭的只是写缓冲, 连接还在</p>
-</li>
-<li><p>连接在内核层面, 写缓冲在用户层面</p>
-</li>
-<li><p>如果Server没有收到Client最后发来的ACK数据包, 它会一直发送FIN数据包, 直到Client回执为止</p>
-</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/03/17/%E4%BD%BF%E7%94%A8https%E8%AE%BF%E9%97%AE%E7%9A%84%E7%9A%84%E6%85%95%E5%B8%83%E6%89%98%E7%AE%A1%E5%8D%9A%E5%AE%A2%E5%9B%BE%E7%89%87/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1181,6 +1008,416 @@
 <li><strong>降低隔离级别</strong>，如果业务允许，将隔离级别调低也是较好的选择  </li>
 <li>为表添加<strong>合理的索引</strong>。可以看到<strong>如果不走索引将会为表的每一行记录添 加上锁(或者说是表锁)</strong>  </li>
 </ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/14/mysql-3mysql%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90-%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E5%8F%8A%E8%BF%90%E8%A1%8C%E6%9C%BA%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/12/14/mysql-3mysql%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90-%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E5%8F%8A%E8%BF%90%E8%A1%8C%E6%9C%BA%E7%90%86/" class="post-title-link" itemprop="url">mysql性能分析-体系结构及运行机理</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-12-14 09:38:25" itemprop="dateCreated datePublished" datetime="2020-12-14T09:38:25+08:00">2020-12-14</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-17 21:23:07" itemprop="dateModified" datetime="2021-03-17T21:23:07+08:00">2021-03-17</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mysql/" itemprop="url" rel="index">
+                    <span itemprop="name">mysql</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="Mysql体系结构"><a href="#Mysql体系结构" class="headerlink" title="Mysql体系结构"></a>Mysql体系结构</h3><p><img src="https://api2.mubu.com/v3/document_image/a1619f89-f86a-4530-ab7c-6db518222e98-11197877.jpg" alt="mysql体系结构"></p>
+<ul>
+<li><p>Client Connectors  </p>
+<ul>
+<li>接入方 支持协议很多  </li>
+<li>Management Serveices &amp; Utilities 系统管理和控制工具，mysql dump、 mysql复制集群、分区管理等  </li>
+</ul>
+</li>
+<li><p>Connection Pool  </p>
+<ul>
+<li>连接池:管理缓冲用户连接、用户名、<strong>密码、权限校验</strong>、线程处理等需要缓存的需求  </li>
+</ul>
+</li>
+<li><p>SQL Interface  </p>
+<ul>
+<li>SQL接口:接受用户的SQL命令，并且返回用户需要查询的结果  </li>
+</ul>
+</li>
+<li><p>Parser  </p>
+<ul>
+<li>解析器，SQL命令传递到解析器的时候会被<strong>解析器验证和解析</strong>。解析器是由Lex和YACC实现的  </li>
+</ul>
+</li>
+<li><p>Optimizer  </p>
+<ul>
+<li>查询优化器，<strong>SQL语句在查询之前会使用查询优化器对查询进行优化</strong>  </li>
+</ul>
+</li>
+<li><p>Cache和Buffer(高速缓存区)  </p>
+<ul>
+<li>查询缓存，如果<strong>查询缓存有命中的查询结果，查询语句就可以直接去查询缓存中取数据</strong>  </li>
+</ul>
+</li>
+<li><p>pluggable storage Engines </p>
+<ul>
+<li>插件式存储引擎。<strong>存储引擎是MySql中具体的与文件打交道的子系统</strong>  </li>
+</ul>
+</li>
+<li><p>file system  </p>
+<ul>
+<li>文件系统，数据、日志(redo，undo)、索引、错误日志、查询记录、慢查询等</li>
+</ul>
+</li>
+</ul>
+<h3 id="Mysql查询优化"><a href="#Mysql查询优化" class="headerlink" title="Mysql查询优化"></a>Mysql查询优化</h3><p><img src="https://api2.mubu.com/v3/document_image/38b5c5c9-ec61-4671-80ff-2eb68bbd83f1-11197877.jpg" alt="查询过程"></p>
+<h4 id="client-server通信"><a href="#client-server通信" class="headerlink" title="client/server通信"></a>client/server通信</h4><p>Mysql客户端与服务端的通信方式是<strong>“半双工”;</strong>  </p>
+<ul>
+<li>全双工:双向通信，发送同时也可以接收(tcp握手过程)  </li>
+<li>半双工:<strong>双向通信，同时只能接收或者是发送，无法同时做操作</strong>  <ul>
+<li>半双工通信: 在任何一个时刻，要么是有服务器向客户端发送数据，要么是客户端向服务端发送数据，这<strong>两个动作不能同时发生</strong>。所以我们无法也无需将一个消息切成小块进行传输。  </li>
+<li>特点和限制: 客户端一旦开始发送消息，另一端要接收完整个消息才能响应。  </li>
+<li>客户端一旦开始接收数据没法停下来发送指令。  </li>
+</ul>
+</li>
+<li>单工:只能单一方向传送  </li>
+</ul>
+<h4 id="查询状态"><a href="#查询状态" class="headerlink" title="查询状态"></a>查询状态</h4><p>对于一个mysql连接，或者说一个线程，时刻都有一个状态来标识这个连接正在做什么。</p>
+<p>查看命令 <code>show full processlist / show processlist</code>  </p>
+<p><img src="https://api2.mubu.com/v3/document_image/4e83270b-5e57-4839-8470-5e4141670dfc-11197877.jpg" alt="查询参数"></p>
+<ul>
+<li>Sleep:线程正在等待客户端发送数据  </li>
+<li>Query:连接线程正在执行查询</li>
+<li>Locked:线程正在等待表锁的释放  </li>
+<li>Sorting result:线程正在对结果进行排序  </li>
+<li>Sending data:向请求端返回数据</li>
+</ul>
+<p>可通过<code>kill {id}</code>的方式进行连接的杀掉 </p>
+<h4 id="查询缓存"><a href="#查询缓存" class="headerlink" title="查询缓存"></a>查询缓存</h4><ul>
+<li>工作原理:<ul>
+<li>缓存SELECT操作的结果集和SQL语句</li>
+<li>新的SELECT语句，先去查询缓存，判断是否存在可用的记录集</li>
+</ul>
+</li>
+<li>判断标准: <ul>
+<li>与缓存的SQL语句，<strong>是否完全一样</strong>，区分大小写(简单认为存储了一个key-value结构，<strong>key为sql，value为sql查询结果集</strong>)。</li>
+</ul>
+</li>
+<li>几个关键字<ul>
+<li>query_cache_type<ul>
+<li>值:0 -– <strong>不启用</strong>查询缓存，<strong>默认值</strong></li>
+<li>值:1 -– 启用查询缓存，<strong>只要符合查询缓存的要求，客户端的查询语句和记录集都可以缓存起来，供其他客户端使用，加上SQL_NO_CACHE将不缓存</strong></li>
+<li>值:2 -– 启用查询缓存，只要<strong>查询语句中添加了参数:SQL_CACHE，且符合查询缓存的要求</strong>，客户端的查询语句和记录集，则可以缓存起来，供其他客户端使用</li>
+</ul>
+</li>
+<li>query_cache_size  <ul>
+<li>允许设置query_cache_size的值最小为40K，默认1M，推荐设置为:64M/128M</li>
+</ul>
+</li>
+<li>query_cache_limit <ul>
+<li>限制查询缓存区最大能缓存的查询记录集，默认设置为1M </li>
+<li><code>show status like &#39;Qcache%&#39;</code>命令可查看缓存情况。  </li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>不会缓存的情况</p>
+<ul>
+<li>当查询语句中有一些不确定的数据时，则不会被缓存。如包含函数NOW()，CURRENT_DATE()等类似的函数，或者用户自定义的函数，存储函数，用户变量等都不会被缓存。</li>
+<li>当查询的结果大于query_cache_limit设置的值时，结果不会被缓存。</li>
+<li>对于InnoDB引擎来说，<strong>当一个语句在事务中修改了某个表，那么在这个事务提交之前，所有与这个表相关的查询都无法被缓存。因此长时间执行事务，会大大降低缓存命中率。</strong>  </li>
+<li>查询的表是系统表  </li>
+<li>查询语句不涉及到表</li>
+</ul>
+</li>
+<li><p>为什么mysql默认关闭了缓存开启  </p>
+<ul>
+<li>在查询之前必须<strong>先检查是否命中缓存,浪费计算资源。</strong></li>
+<li>如果这个查询可以被缓存，那么执行完成后，MySQL发现查询缓存中没有这个查询，则会将结果存入查询缓存，这会带来额外的系统消耗。</li>
+<li>针对表进行<strong>写入或更新数据时，将对应表的所有缓存都设置失效。</strong> </li>
+<li>如果<strong>查询缓存很大或者碎片很多</strong>时，这个操作可能带来很大的系统消耗。</li>
+</ul>
+</li>
+<li><p>缓存适用业务场景</p>
+<ul>
+<li>以<strong>读为主的业务</strong>，数据生成之后就不常改变的业务</li>
+<li>比如门户类、新闻类、报表类、论坛类等  </li>
+</ul>
+</li>
+</ul>
+<h4 id="查询优化处理"><a href="#查询优化处理" class="headerlink" title="查询优化处理"></a>查询优化处理</h4><p>查询优化处理的三个阶段:  </p>
+<ul>
+<li>解析:解析sql通过lex<strong>词法分析</strong>，yacc语法分析将sql语句解析成<strong>解析树</strong>。</li>
+<li>预处理阶段：根据mysql的语法的规则<strong>进一步检查解析树的合法性</strong>，如：<strong>检查数据的表和列是否存在，解析名字和别名的设置，还会进行权限的验证</strong>。</li>
+<li>查询优化器 ：优化器的主要作用就是<strong>找到最优的执行计划</strong>。</li>
+</ul>
+<p>查询优化器如何找到最优执行计划：</p>
+<ul>
+<li>使用等价变化规则  <ul>
+<li>数据表的关联并不总是按照查询语句的顺序进行。 </li>
+<li>5=5 and a&gt;5 改写成 a&gt;5  ，a<b and a=5 改写成 b>5 and a=5  </li>
+</ul>
+</li>
+<li>将外连接转化为内连接 <ul>
+<li>并不是所有的OUTER JOIN都必须以外链接的方式进行。  </li>
+</ul>
+</li>
+<li>优化count 、min、max等函数<ul>
+<li>min函数只需找索引<strong>最左边</strong></li>
+<li>max函数只需找索引最右边 </li>
+<li>myisam引擎count(*)  </li>
+</ul>
+</li>
+<li>覆盖索引扫描  </li>
+<li>子查询优化</li>
+<li>提前终止查询  <ul>
+<li>用了<strong>limit关键字</strong>或者使用<strong>不存在的条件</strong></li>
+</ul>
+</li>
+<li>IN的优化<ul>
+<li>先进行<strong>排序</strong>，再采用<strong>二分查找</strong>的方式</li>
+</ul>
+</li>
+</ul>
+<p>Mysql的查询优化器基于<strong>成本计算</strong>的原则，会尝试各种执行计划，<strong>以数据抽样的方式进行试验(随机的读取一个4K的数据块进行分析)。</strong>可用explain来进行分析。</p>
+<h4 id="查询执行引擎"><a href="#查询执行引擎" class="headerlink" title="查询执行引擎"></a>查询执行引擎</h4><p>调用插件式的存储引擎的原子API的功能进行执行计划的执行。 </p>
+<h4 id="返回客户端"><a href="#返回客户端" class="headerlink" title="返回客户端"></a>返回客户端</h4><ul>
+<li>有需要做缓存的，执行缓存操作。  </li>
+<li>增量的返回结果：<strong>开始生成第一条结果时，mysql就开始往请求方逐步返回数据</strong>。  <ul>
+<li>好处: mysql服务器无须保存过多的数据，浪费内存；用户体验好，马上就拿到了数据。 </li>
+</ul>
+</li>
+</ul>
+<h4 id="慢SQL"><a href="#慢SQL" class="headerlink" title="慢SQL"></a>慢SQL</h4><p>定位慢SQL:</p>
+<ul>
+<li>业务驱动  </li>
+<li>测试驱动  </li>
+<li>慢查询日志  </li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">show variables like 'slow_query_log';</span><br><span class="line">set global slow_query_log = on;</span><br><span class="line">set global slow_query_log_file = '/var/lib/mysql/test-slow.log';   </span><br><span class="line">set global log_queries_not_using_indexes = on;</span><br><span class="line">set global long_query_time = 0.1;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>慢查询日志分析</li>
+</ul>
+<p><img src="https://api2.mubu.com/v3/document_image/b4851df7-e19f-44fa-8b14-87d44517f53e-11197877.jpg" alt="慢查询日志分析"></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Time :日志记录的时间  </span><br><span class="line">User@Host:执行的用户及主机  </span><br><span class="line">Query_time:查询耗费时间  </span><br><span class="line">Lock_time 锁表时间  </span><br><span class="line">Rows_sent 发送给请求方的记录条数  </span><br><span class="line">Rows_examined 语句扫描的记录条数  </span><br><span class="line"><span class="keyword">SET</span> <span class="built_in">timestamp</span> 语句执行的时间点  </span><br><span class="line"><span class="keyword">select</span> .... 执行的具体语句</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysqldumpslow -t 10 -s at /var/lib/mysql/test-slow.log</span><br></pre></td></tr></table></figure>
+<p><img src="https://api2.mubu.com/v3/document_image/e937e8cb-5a7b-4587-89ba-fba600203b88-11197877.jpg" alt="慢查询工具"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/12/mysql-2mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/12/12/mysql-2mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/" class="post-title-link" itemprop="url">mysql性能优化-存储引擎</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-12-12 09:05:57" itemprop="dateCreated datePublished" datetime="2020-12-12T09:05:57+08:00">2020-12-12</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-17 21:37:23" itemprop="dateModified" datetime="2021-03-17T21:37:23+08:00">2021-03-17</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mysql/" itemprop="url" rel="index">
+                    <span itemprop="name">mysql</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="Mysql插拔式存储引擎"><a href="#Mysql插拔式存储引擎" class="headerlink" title="Mysql插拔式存储引擎"></a>Mysql插拔式存储引擎</h3><h4 id="mysql存储引擎简介"><a href="#mysql存储引擎简介" class="headerlink" title="mysql存储引擎简介"></a>mysql存储引擎简介</h4><ul>
+<li>插拔式的插件方式。  </li>
+<li><strong>存储引擎是指定在表之上的</strong>，即<strong>一个库中的每一个表都可以指定专用的存储引擎。</strong>  </li>
+<li>不管表采用什么样的存储引擎，都会在数据区产生对应的一个<strong>frm文件(表结构定义描述文件)。</strong></li>
+</ul>
+<h4 id="Innodb"><a href="#Innodb" class="headerlink" title="Innodb"></a>Innodb</h4><ul>
+<li><p>Mysql5.5及以后版本的默认存储引擎  </p>
+</li>
+<li><p>Key Advantages:  </p>
+<ul>
+<li>Its DML operations follow the ACID model [<strong>事务ACID</strong>]  </li>
+<li>Row-level locking[<strong>行级锁</strong>]  </li>
+<li>InnoDB tables arrange your data on disk to optimize queries based on primary keys[<strong>聚集索引(主键索引)方式进行数据存储</strong>]  </li>
+<li>To maintain data integrity, InnoDB supports FOREIGN KEY constraints[<strong>支持外键关系保证数据完整性</strong>]  </li>
+</ul>
+</li>
+</ul>
+<h4 id="Myisam"><a href="#Myisam" class="headerlink" title="Myisam"></a>Myisam</h4><ul>
+<li><p>Mysql5.5版本之前的默认存储引擎 ,较多的系统表也还是使用这个存储引,系统临时表也会用到Myisam存储引擎  </p>
+</li>
+<li><p>特点:  </p>
+<ul>
+<li>select count(*) from table 无需进行数据的扫描  </li>
+<li>数据(MYD)和索引(MYI)分开存储  </li>
+<li>表级锁  </li>
+<li>不支持事务  </li>
+</ul>
+</li>
+</ul>
+<h4 id="Memory存储引擎"><a href="#Memory存储引擎" class="headerlink" title="Memory存储引擎"></a>Memory存储引擎</h4><ul>
+<li><strong>数据都是存储在内存中，IO效率要比其他引擎高很多。</strong>  </li>
+<li><p><strong>服务重启数据丢失，内存数据表默认只有16M</strong>。  </p>
+</li>
+<li><p>特点:  </p>
+<ul>
+<li>支持hash索引，B tree索引，<strong>默认hash(查找复杂度0(1))</strong>  </li>
+<li>字段长度都是固定长度varchar(32)=char(32)   </li>
+<li>不支持大数据存储类型字段如 blog，text  </li>
+<li>表级锁  </li>
+</ul>
+</li>
+<li><p>应用场景:  </p>
+<ul>
+<li>等值查找热度较高数据  </li>
+<li>查询结果内存中的计算，大多数都是采用这种存储引擎  </li>
+<li>作为临时表存储需计算的数据  </li>
+</ul>
+</li>
+</ul>
+<h4 id="Archive存储引擎"><a href="#Archive存储引擎" class="headerlink" title="Archive存储引擎"></a>Archive存储引擎</h4><ul>
+<li><p>压缩协议进行数据的存储 ,数据存储为ARZ文件格式  </p>
+</li>
+<li><p>特点:  </p>
+<ul>
+<li>只支持insert和select两种操作   </li>
+<li>只允许自增ID列建立索引  </li>
+<li>行级锁  </li>
+<li>不支持事务  </li>
+<li>数据占用磁盘少  </li>
+</ul>
+</li>
+<li><p>应用场景:  </p>
+<ul>
+<li>日志系统  </li>
+<li>大量的设备数据采集 </li>
+</ul>
+</li>
+</ul>
+<h4 id="CSV存储引擎"><a href="#CSV存储引擎" class="headerlink" title="CSV存储引擎"></a>CSV存储引擎</h4><ul>
+<li>数据存储以CSV文件  </li>
+<li><p>特点:  </p>
+<ul>
+<li>不能定义索引、列定义必须为NOT NULL、不能设置自增列 —&gt;不适用大表或者数据的在线处理   </li>
+<li>CSV数据的存储用,隔开，可直接编辑CSV文件进行数据的编排 —&gt;数据安全性低  </li>
+<li>注:编辑之后，要生效使用flush table XXX 命令  </li>
+</ul>
+</li>
+<li><p>应用场景:  </p>
+<ul>
+<li>数据的快速导出导入 表格直接转换成CSV  </li>
+</ul>
+</li>
+</ul>
+<h4 id="各引擎对比"><a href="#各引擎对比" class="headerlink" title="各引擎对比"></a>各引擎对比</h4><p><img src="https://api2.mubu.com/v3/document_image/6091bb4c-98c4-4513-8069-954152ee02e8-11197877.jpg" alt="各引擎对比"></p>
 
       
     </div>
