@@ -205,6 +205,244 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/23/linux-%E7%B3%BB%E7%BB%9F-04%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95%E6%93%8D%E4%BD%9C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/03/23/linux-%E7%B3%BB%E7%BB%9F-04%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95%E6%93%8D%E4%BD%9C/" class="post-title-link" itemprop="url">linux系统下文件和目录操作</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-23 10:50:49" itemprop="dateCreated datePublished" datetime="2020-03-23T10:50:49+08:00">2020-03-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-23 16:00:25" itemprop="dateModified" datetime="2021-03-23T16:00:25+08:00">2021-03-23</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index">
+                    <span itemprop="name">linux系统编程</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="系统调用说明"><a href="#系统调用说明" class="headerlink" title="系统调用说明"></a>系统调用说明</h3><p>系统调用: <strong>内核提供的函数</strong>，由操作系统实现并提供给外部应用程序的编程接口, 是应用程序同操作系统之间交互数据的桥梁</p>
+<p>为了保证系统的安全性, <strong>manPage中的系统调用都是对系统调用的一次浅封装</strong>, 比如open对应的是sys_open…</p>
+<h4 id="系统调用和库函数的比较：预读入和缓输出"><a href="#系统调用和库函数的比较：预读入和缓输出" class="headerlink" title="系统调用和库函数的比较：预读入和缓输出"></a>系统调用和库函数的比较：预读入和缓输出</h4><p>使用<code>strace</code>工具可以跟踪一个程序执行时所需的<strong>系统调用</strong>。</p>
+<p>如果规定逐字节的进行拷贝, 用库函数会比用系统调用快很多, 因为<strong>有预读入和缓输出机制:</strong></p>
+<p><img src="https://api2.mubu.com/v3/document_image/ca853e5c-878b-4feb-80a4-2d4205eb88e3-11197877.jpg" alt="预读入和缓输出机制"></p>
+<p>操作系统不会让用户逐字节的向磁盘上写数据, 实际上它<strong>维护了一个系统级缓冲</strong>, <strong>只有当从用户空间过来的数据在该缓冲上写满时, 才会一次性将数据冲刷到Disk上</strong></p>
+<p><strong>当使用系统调用的方法时, 要不断的在用户空间和内核空间进行来回切换, 这会消耗大量时间</strong></p>
+<p>而使用fputc(库函数)时, <strong>在设计之初自己在用户空间维护了一个缓冲, 这样在用户空间把自己的缓冲写满, 再一次性写入内核缓冲(写入了内核缓冲就认为写到了磁盘上), 可见这样大大减少了在用户空间和内核空间来回切换的次数</strong></p>
+<p><strong>read和write函数常被称为UnbufferedIO, 指无用户级缓冲区, 但不保证不使用内核缓冲区</strong></p>
+<h3 id="文件及相关操作"><a href="#文件及相关操作" class="headerlink" title="文件及相关操作"></a>文件及相关操作</h3><h4 id="文件描述符"><a href="#文件描述符" class="headerlink" title="文件描述符"></a>文件描述符</h4><p><img src="https://api2.mubu.com/v3/document_image/1148cba1-a13e-4a4f-a00d-e12aafbae072-11197877.jpg" alt="文件描述符"></p>
+<ul>
+<li>PCB中有一个指针, <strong>指向了该进程的文件描述符表, 每个表项都是一个键值对, 其中的value是指向文件结构体的指针, 其中的索引是fd,</strong> <strong>操作系统暴露给用户的唯一操作文件的依据</strong></li>
+<li>新打开的文件描述符一定是所有文件描述符表中<strong>可用的, 最小的</strong>那个文件描述符</li>
+<li>文件描述符最大1023, 说明<strong>一个进程最多能打开1024个文件</strong></li>
+</ul>
+<h4 id="open"><a href="#open" class="headerlink" title="open"></a>open</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">open</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* pathname, <span class="keyword">int</span> flags)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">open</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* pathname, <span class="keyword">int</span> flags, <span class="keyword">mode_t</span> mode)</span></span>;	<span class="comment">//mode_t是一个8进制整型,指定文件权限,只有当参2指定了CREAT才有用</span></span><br></pre></td></tr></table></figure>
+<p>flag的参数:</p>
+<ul>
+<li>O_RDONLY</li>
+<li>O_WRONLY</li>
+<li>O_RDWR</li>
+<li>O_APPEND</li>
+<li>O_CREATE</li>
+<li>O_EXCL</li>
+<li>O_TRUNC</li>
+<li>O_NONBLOCK</li>
+</ul>
+<p>成功返回<strong>文件描述符</strong>, 失败返回-1并设置errno;</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> fd1=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> fd2=<span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	fd1=<span class="built_in">open</span>(<span class="string">"./dirt.txt"</span>,O_RDONLY|O_CREAT|O_TRUNC,<span class="number">0644</span>);</span><br><span class="line">    <span class="comment">/*打开的文件不存在*/</span></span><br><span class="line">	fd2=<span class="built_in">open</span>(<span class="string">"./dirt2.txt"</span>,O_RDONLY);</span><br><span class="line"></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"fd1=%d\n"</span>,fd1);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"fd2=%d,errno=%d:%s\n"</span>,fd2,errno,strerror(errno));</span><br><span class="line">	<span class="built_in">close</span>(fd1);</span><br><span class="line">	<span class="built_in">close</span>(fd2);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>创建文件权限时, 指定文件访问权限, 权限同时受umask影响:<code>文件权限=mode&amp;(~umask)</code></strong></p>
+<h4 id="read和write"><a href="#read和write" class="headerlink" title="read和write"></a>read和write</h4><ul>
+<li>read:从<strong>文件中读数据到缓冲区</strong></li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="keyword">ssize_t</span> <span class="built_in">read</span>(<span class="keyword">int</span> fd, <span class="keyword">void</span>* buf, <span class="keyword">size_t</span> count);<span class="comment">//count是缓冲区的大小;</span></span><br></pre></td></tr></table></figure>
+<p><strong>成功返回实际读到的字节数, 返回0时意味着读到了文件末尾, 失败返回-1并设置errno</strong></p>
+<ul>
+<li>wirte:从<strong>缓冲区中读数据到文件</strong></li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="keyword">ssize_t</span> <span class="built_in">write</span>(<span class="keyword">int</span> fd, <span class="keyword">const</span> <span class="keyword">void</span>* buf, <span class="keyword">size_t</span> count); <span class="comment">//count是数据的大小(字节数);</span></span><br></pre></td></tr></table></figure>
+<p><strong>成功返回实际写入的字节数, 失败返回-1, 并设置errno</strong></p>
+<h4 id="read和write实现文件拷贝"><a href="#read和write实现文件拷贝" class="headerlink" title="read和write实现文件拷贝"></a>read和write实现文件拷贝</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">char</span> buf[<span class="number">1024</span>];</span><br><span class="line">	<span class="keyword">int</span> n=<span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">int</span> fd1=<span class="built_in">open</span>(argv[<span class="number">1</span>],O_RDONLY);</span><br><span class="line">	<span class="keyword">if</span>(fd1==<span class="number">-1</span>)&#123;</span><br><span class="line">		perror(<span class="string">"open argv1 error"</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line">    </span><br><span class="line">	<span class="keyword">int</span> fd2=<span class="built_in">open</span>(argv[<span class="number">2</span>],O_RDWR|O_CREAT|O_TRUNC,<span class="number">0644</span>);</span><br><span class="line">	<span class="keyword">if</span>(fd2==<span class="number">-1</span>)&#123;</span><br><span class="line">		perror(<span class="string">"open argv2 error"</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">while</span>((n=<span class="built_in">read</span>(fd1,buf,<span class="keyword">sizeof</span>(buf)))!=<span class="number">0</span>)&#123;</span><br><span class="line">		<span class="keyword">if</span>(n&lt;<span class="number">0</span>)&#123;</span><br><span class="line">			perror(<span class="string">"open argv2 error"</span>);</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="built_in">write</span>(fd2,buf,n);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="built_in">close</span>(fd1);</span><br><span class="line">	<span class="built_in">close</span>(fd2);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+<h4 id="阻塞和非阻塞"><a href="#阻塞和非阻塞" class="headerlink" title="阻塞和非阻塞"></a>阻塞和非阻塞</h4><p>阻塞：<strong>当进程调用一个阻塞的系统调用时，该进程被置于睡眠状态，这时内核调度其他进程运行，直到该进程等待的事件发生了（比如网络上接收到数据包或者调用sleep指定的睡眠时间到了）它才可能继续运行</strong>。与睡眠状态相对的是运行状态。</p>
+<p>正在被调度执行的进程：cpu处于该进程的上下文环境中，程序计数器中保存着该进程的指令地址，通用寄存器中保存着进程运算过程中的中间结果，正在执行该进程的指令，正在读写该进程的地址空间。</p>
+<p>常规读文件是不会阻塞的，不论读多少字节，read一定会在有限时间内返回。<strong>从终端或网络读则不一定，如果从终端输入的数据没有换行符，调用read读终端设备就会阻塞</strong>。<strong>如果网络上没有接收到数据包，调用read从网络读就会阻塞，至于阻塞多长时间也是不确定的，如果一直没有数据到达就会一直阻塞。同样，写常规文件也是不会阻塞的，而向终端设备或网络写则不一定。</strong></p>
+<h5 id="echo程序"><a href="#echo程序" class="headerlink" title="echo程序"></a>echo程序</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> n=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">char</span> buf[<span class="number">10</span>];</span><br><span class="line"></span><br><span class="line">	n=<span class="built_in">read</span>(STDIN_FILENO,buf,<span class="keyword">sizeof</span>(buf));</span><br><span class="line">	<span class="keyword">if</span>(n==<span class="number">-1</span>)&#123;</span><br><span class="line">		perror(<span class="string">"read error"</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="built_in">write</span>(STDOUT_FILENO,buf,n);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当不敲入换行符时, read会一直阻塞等待用户输入</p>
+<p>阻塞是<strong>设备文件, 网络文件</strong>的属性</p>
+<h5 id="非阻塞方式从tty中读数据"><a href="#非阻塞方式从tty中读数据" class="headerlink" title="非阻塞方式从tty中读数据"></a>非阻塞方式从tty中读数据</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> fd=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">char</span> buf[<span class="number">10</span>];</span><br><span class="line">	<span class="keyword">int</span> n=<span class="number">0</span>;</span><br><span class="line">    </span><br><span class="line">	<span class="comment">/*以非阻塞方式打开终端文件*/</span></span><br><span class="line">	fd=<span class="built_in">open</span>(<span class="string">"/dev/tty"</span>,O_RDONLY|O_NONBLOCK);</span><br><span class="line">	<span class="keyword">if</span>(fd&lt;<span class="number">0</span>)&#123;</span><br><span class="line">		perror(<span class="string">"open /dev/tty error"</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">tryagain: </span><br><span class="line">	n=<span class="built_in">read</span>(fd,buf,<span class="keyword">sizeof</span>(buf));</span><br><span class="line">    <span class="comment">/*当read的返回值小于0*/</span></span><br><span class="line">	<span class="keyword">if</span>(n&lt;<span class="number">0</span>)&#123;</span><br><span class="line">        <span class="comment">/*errno不是EWOULDBLOCK,说明出现了其他问题*/</span></span><br><span class="line">		<span class="keyword">if</span>(errno!=EWOULDBLOCK)&#123;</span><br><span class="line">			perror(<span class="string">"read /dev/tty error"</span>);</span><br><span class="line">			<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">		&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">            <span class="comment">/*errno是EWOULDBLOCK,说明读到为空,则打印提示信息,并再次尝试*/</span></span><br><span class="line">			<span class="built_in">write</span>(STDOUT_FILENO,<span class="string">"try again\n"</span>,<span class="built_in">strlen</span>(<span class="string">"try again\n"</span>));</span><br><span class="line">			sleep(<span class="number">2</span>);</span><br><span class="line">			<span class="keyword">goto</span> tryagain;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">    </span><br><span class="line">	<span class="comment">/*当read的返回值大于0,说明读到了数据,写到标准输出上*/</span></span><br><span class="line">	<span class="built_in">write</span>(STDOUT_FILENO,buf,n);</span><br><span class="line">	<span class="built_in">close</span>(fd);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+<p>当<code>read</code>函数返回-1, 并且<code>errno=EAGAIN或EWOULDBLOCK</code>, 说明不是<code>read</code>失败, 而是read在以非阻塞方式读一个<strong>设备文件</strong>或<strong>网络文件</strong>, 而文件中无数据。</p>
+<p>阻塞方式存在的问题也正是网络IO中<code>select, poll和epoll</code>函数存在的原因。</p>
+<h4 id="fcntl修改文件的属性"><a href="#fcntl修改文件的属性" class="headerlink" title="fcntl修改文件的属性"></a>fcntl修改文件的属性</h4><p>改变一个<strong>已经打开的</strong>文件的访问控制属性。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fcntl</span><span class="params">(<span class="keyword">int</span> fd, <span class="keyword">int</span> cmd, ... <span class="comment">/* arg */</span> )</span></span>;</span><br></pre></td></tr></table></figure>
+<p>用fcntl改写上面的程序, <strong>不用重新打开文件:</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> fd=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">char</span> buf[<span class="number">10</span>];</span><br><span class="line">	<span class="keyword">int</span> n=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> ret=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> flags=<span class="number">0</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/*获取原来的flags*/</span></span><br><span class="line">	flags=fcntl(STDIN_FILENO,F_GETFL);</span><br><span class="line">	<span class="keyword">if</span>(flags==<span class="number">-1</span>)&#123;</span><br><span class="line">		perror(<span class="string">"fcntl error"</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/*位或上新的属性*/</span></span><br><span class="line">	flags|=O_NONBLOCK;</span><br><span class="line">    <span class="comment">/*将新的flags设置回去*/</span></span><br><span class="line">	ret=fcntl(STDIN_FILENO,F_SETFL,flags);</span><br><span class="line">	<span class="keyword">if</span>(ret==<span class="number">-1</span>)&#123;</span><br><span class="line">		perror(<span class="string">"fcntl error"</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line">    </span><br><span class="line"><span class="comment">/*与上面的相同*/</span></span><br><span class="line">tryagain:</span><br><span class="line">	n=<span class="built_in">read</span>(STDIN_FILENO,buf,<span class="keyword">sizeof</span>(buf));</span><br><span class="line">	<span class="keyword">if</span>(n&lt;<span class="number">0</span>)&#123;</span><br><span class="line">		<span class="keyword">if</span>(errno!=EWOULDBLOCK)&#123;</span><br><span class="line">			perror(<span class="string">"read /dev/tty error"</span>);</span><br><span class="line">			<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">		&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">			<span class="built_in">write</span>(STDOUT_FILENO,<span class="string">"try again\n"</span>,<span class="built_in">strlen</span>(<span class="string">"try again\n"</span>));</span><br><span class="line">			sleep(<span class="number">2</span>);</span><br><span class="line">			<span class="keyword">goto</span> tryagain;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="built_in">write</span>(STDOUT_FILENO,buf,n);</span><br><span class="line">	<span class="built_in">close</span>(fd);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>文件的flags是一个位图, 每一位代表不同属性的真假值</strong></p>
+<h4 id="lseek函数"><a href="#lseek函数" class="headerlink" title="lseek函数"></a>lseek函数</h4><p><strong>文件偏移：每个打开的文件都记录着当前读写位置，打开文件时候写位置是0,表示文件开头，通常读写多少个字节就会将读写位置往后移动多少个字节。例外：如果以<code>O_APPEND</code>方式打开，每次写操作都会在文件末尾追加数据，然后将读写位置移动到新的文件末尾</strong>。<code>lseek</code>和标准<code>I/O</code>库的<code>fseek</code>函数类似，可以移动当前读写位置(或偏移量)。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fseek</span><span class="params">(FILE *stream, <span class="keyword">long</span> offset, <span class="keyword">int</span> whence)</span></span>; <span class="comment">//成功返回0,失败返回-1.特别：超出文件末尾位置返回0,往回超出文件头位置，返回-1</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">off_t</span> lseek(<span class="keyword">int</span> fd, <span class="keyword">off_t</span> offset, <span class="keyword">int</span> whence); <span class="comment">//失败返回-1,成功：返回的值是较文件起始位置向后的偏移量</span></span><br><span class="line"><span class="comment">//特别：lseek允许超过文件结尾设置偏移量，未见会因此被拓展。</span></span><br></pre></td></tr></table></figure>
+<p>例子：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> fd=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> n=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">char</span> msg[]=<span class="string">"It's a lseek test\n"</span>;</span><br><span class="line">	<span class="keyword">char</span> c;</span><br><span class="line"></span><br><span class="line">	fd=<span class="built_in">open</span>(<span class="string">"./lseek.txt"</span>,O_CREAT|O_RDWR,<span class="number">0644</span>);</span><br><span class="line">	<span class="keyword">if</span>(fd==<span class="number">-1</span>)&#123;</span><br><span class="line">		perror(<span class="string">"open error"</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="built_in">write</span>(fd,msg,<span class="built_in">strlen</span>(msg));</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/*如果这里不进行lseek,由于读写共用同一个偏移位置,下面的读会从文件末尾开始读,读不到任何数据*/</span></span><br><span class="line">	lseek(fd,<span class="number">0</span>,SEEK_SET);</span><br><span class="line">    </span><br><span class="line">	<span class="keyword">while</span>((n=<span class="built_in">read</span>(fd,&amp;c,<span class="number">1</span>)))&#123;</span><br><span class="line">		<span class="keyword">if</span>(n==<span class="number">-1</span>)&#123;</span><br><span class="line">			perror(<span class="string">"read error"</span>);</span><br><span class="line">			<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="built_in">write</span>(STDOUT_FILENO,&amp;c,n);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="built_in">close</span>(fd);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>用lseek获取文件大小:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> fd=<span class="built_in">open</span>(argv[<span class="number">1</span>],O_RDWR);</span><br><span class="line">	<span class="keyword">if</span>(fd==<span class="number">-1</span>)&#123;</span><br><span class="line">		perror(<span class="string">"open error"</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">/*从0开始向后偏移到结尾,返回值表示偏移量,即为文件大小*/</span></span><br><span class="line">	<span class="keyword">int</span> <span class="built_in">size</span>=lseek(fd,<span class="number">0</span>,SEEK_END);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"The file's size:%d\n"</span>,<span class="built_in">size</span>);</span><br><span class="line"></span><br><span class="line">	<span class="built_in">close</span>(fd);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用lseek拓展文件大小: <strong>要想使文件大小真正拓展, 必须引起IO操作</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> fd=<span class="built_in">open</span>(argv[<span class="number">1</span>],O_RDWR);</span><br><span class="line">	<span class="keyword">if</span>(fd==<span class="number">-1</span>)&#123;</span><br><span class="line">		perror(<span class="string">"open error"</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">/*从文件的结束位置开始,向后偏移110，被填入的是文件空洞*/</span></span><br><span class="line">	<span class="keyword">int</span> <span class="built_in">size</span>=lseek(fd,<span class="number">110</span>,SEEK_END);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"The file's size:%d\n"</span>,<span class="built_in">size</span>);</span><br><span class="line">	<span class="comment">/*然后写入一个空字符*/</span></span><br><span class="line">	<span class="built_in">write</span>(fd,<span class="string">"\0"</span>,<span class="number">1</span>);</span><br><span class="line">	<span class="built_in">close</span>(fd);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以HEX查看文件:<code>od -tcx filename</code>。</p>
+<p>也可以使用truncate拓展文件大小:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> ret=truncate(<span class="string">"dict.cp"</span>,<span class="number">250</span>);</span><br></pre></td></tr></table></figure>
+<h3 id="目录操作"><a href="#目录操作" class="headerlink" title="目录操作"></a>目录操作</h3><h4 id="目录项和inode"><a href="#目录项和inode" class="headerlink" title="目录项和inode"></a>目录项和inode</h4><p>文件存储的关键点：inode, denty,数据存储，文件系统。</p>
+<p>inode: <strong>本质为结构体，存储文件的属性信息。如：权限、大小、时间、用户、盘块位置…也叫做文件属性管理结构，大多数的inode都存储在磁盘上。</strong></p>
+<p><strong>可以用stat命令，查看某个文件的inode信息：</strong><br><code>stat example.txt</code></p>
+<p>inode的大小：<br>inode会消耗硬盘空间，所以<strong>硬盘格式化的时候，操作系统自动将硬盘分成两个区域。一个是数据区，存放文件数据；另一个是inode区（inode table），存放inode所包含的信息。</strong><br>查看每个硬盘分区的inode总数和已经使用的数量，可以使用df命令：</p>
+<p><code>df -i</code></p>
+<p>denty: 目录项，<strong>本质依然是结构体</strong>，重要成员变量:文件名，inode。文<strong>件内容(data)保存在磁盘块中。</strong></p>
+<p><strong>增加文件的硬链接只是增加dentry, 指向相同的inode</strong></p>
+<p>同样, <strong>删除硬链接也只是删除dentry, 要注意删除文件并不会让数据在磁盘消失, 只是OS丢失了inode, 磁盘只能覆盖, 不能擦除</strong>。</p>
+<h4 id="stat函数"><a href="#stat函数" class="headerlink" title="stat函数"></a>stat函数</h4><p>stat函数作用:<strong>获取文件属性(从inode中获取)</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">stat</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* pathname, struct stat* statbuf)</span></span>;</span><br><span class="line"><span class="comment">//参数:</span></span><br><span class="line"><span class="comment">//path:文件路径;</span></span><br><span class="line"><span class="comment">//buf(传出参数)存放文件属性;</span></span><br><span class="line"><span class="comment">//返回值: 成功返回0, 失败返回-1并设置errno;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/*结构体信息*/</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">stat</span> &#123;</span></span><br><span class="line">	<span class="keyword">dev_t</span>     st_dev;         <span class="comment">/* ID of device containing file */</span></span><br><span class="line">	<span class="keyword">ino_t</span>     st_ino;         <span class="comment">/* Inode number */</span></span><br><span class="line">	<span class="keyword">mode_t</span>    st_mode;        <span class="comment">/* File type and mode */</span></span><br><span class="line">	<span class="keyword">nlink_t</span>   st_nlink;       <span class="comment">/* Number of hard links */</span></span><br><span class="line">	<span class="keyword">uid_t</span>     st_uid;         <span class="comment">/* User ID of owner */</span></span><br><span class="line">	<span class="keyword">gid_t</span>     st_gid;         <span class="comment">/* Group ID of owner */</span></span><br><span class="line">	<span class="keyword">dev_t</span>     st_rdev;        <span class="comment">/* Device ID (if special file) */</span></span><br><span class="line">	<span class="keyword">off_t</span>     st_size;        <span class="comment">/* Total size, in bytes */</span></span><br><span class="line">	<span class="keyword">blksize_t</span> st_blksize;     <span class="comment">/* Block size for filesystem I/O */</span></span><br><span class="line">	<span class="keyword">blkcnt_t</span>  st_blocks;      <span class="comment">/* Number of 512B blocks allocated */</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* Since Linux 2.6, the kernel supports nanosecond precision for the following timestamp fields.For the details before Linux 2.6, see NOTES. */</span></span><br><span class="line"></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">timespec</span> <span class="title">st_atim</span>;</span>  <span class="comment">/* Time of last access */</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">timespec</span> <span class="title">st_mtim</span>;</span>  <span class="comment">/* Time of last modification */</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">timespec</span> <span class="title">st_ctim</span>;</span>  <span class="comment">/* Time of last status change */</span></span><br><span class="line"></span><br><span class="line">	<span class="meta">#<span class="meta-keyword">define</span> st_atime st_atim.tv_sec      <span class="comment">/* Backward compatibility */</span></span></span><br><span class="line">	<span class="meta">#<span class="meta-keyword">define</span> st_mtime st_mtim.tv_sec</span></span><br><span class="line">	<span class="meta">#<span class="meta-keyword">define</span> st_ctime st_ctim.tv_sec</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>利用stat获取文件大小:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">stat</span> <span class="title">sbuf</span>;</span></span><br><span class="line">	<span class="keyword">int</span> ret=<span class="number">0</span>;</span><br><span class="line">	ret=stat(argv[<span class="number">1</span>],&amp;sbuf);</span><br><span class="line">	<span class="keyword">if</span>(ret==<span class="number">-1</span>)&#123;</span><br><span class="line">		perror(<span class="string">"stat error"</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"file size:%ld\n"</span>,sbuf.st_size);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用宏函数获取文件属性:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">stat</span> <span class="title">sbuf</span>;</span></span><br><span class="line">	<span class="keyword">int</span> ret=<span class="number">0</span>;</span><br><span class="line">	ret=stat(argv[<span class="number">1</span>],&amp;sbuf);</span><br><span class="line">	<span class="keyword">if</span>(ret==<span class="number">-1</span>)&#123;</span><br><span class="line">		perror(<span class="string">"stat error"</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line">    <span class="comment">/*宏函数一般返回布尔值*/</span></span><br><span class="line">	<span class="keyword">if</span>(S_ISREG(sbuf.st_mode))</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"It's a regular\n"</span>);</span><br><span class="line">	<span class="keyword">else</span> <span class="keyword">if</span>(S_ISDIR(sbuf.st_mode))</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"It's a dir\n"</span>);</span><br><span class="line">	<span class="keyword">else</span> <span class="keyword">if</span>(S_ISFIFO(sbuf.st_mode))</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"It's a pipe\n"</span>);</span><br><span class="line">	<span class="keyword">else</span> <span class="keyword">if</span>(S_ISLNK(sbuf.st_mode))</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"It's a symbol"</span>);</span><br><span class="line">	<span class="comment">/*and so on...*/</span></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="lstat"><a href="#lstat" class="headerlink" title="lstat"></a>lstat</h4><p><code>ln -s makefile makefile.soft</code>:创建软连接</p>
+<p><code>mkfifo f1</code>:创建管道文件</p>
+<p><strong>stat穿透: 当用stat获取软连接的文件属性时, 会穿透符号连接直接返回软连接指向的本尊的文件属性</strong>(vim,cat命令也有穿透作用)</p>
+<p>解决方法: 换lstat函数</p>
+<p>S_IFMT是一个文件类型掩码(文件类型那四位全1), st_mode与它位与后就可以提取出文件类型(后面的权限位被归零)</p>
+<h4 id="link和unlink"><a href="#link和unlink" class="headerlink" title="link和unlink"></a>link和unlink</h4><p>特殊权限位：包含三个二进制位。依次是：设置组ID位：setGID; 设置用户ID位setID; 黏住位sticky</p>
+<p>黏住位： 早期计算机内存紧张<strong>，只有精要的常用的程序可以常驻物理内存，剩下的要暂存在磁盘中。**</strong>当内存不够的时候会将该部分程序存回磁盘，腾出内存空间。若文件设置了黏住位，即使在内存比较吃紧的情况下也不会将该文件回存到磁盘上。**现阶段操作系统的虚拟内存管理分页算法比较完善，该功能已经被废弃。</p>
+<p>仍然可以<strong>对目录设置黏住位。</strong>被设置了该位的目录，其内部文件只有：</p>
+<ul>
+<li>超级管理员</li>
+<li>该目录所有者</li>
+<li>改文件的所有者</li>
+</ul>
+<p>这三种用户有权限做删除、修改操作。其他用户可以读、创建，但不能随意删除。</p>
+<p>link函数</p>
+<p><strong>可以为已经存在的文件创建目录项(硬链接)</strong></p>
+<p><code>ln makefile makefile.hard</code>:为makefile创建硬连接</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">link</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *oldpath, <span class="keyword">const</span> <span class="keyword">char</span> *newpath)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>使用link和unlink函数实现mv命令:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> ret=<span class="number">0</span>;</span><br><span class="line">	ret=link(argv[<span class="number">1</span>],argv[<span class="number">2</span>]);</span><br><span class="line">	<span class="keyword">if</span>(ret==<span class="number">-1</span>)&#123;</span><br><span class="line">		perror(<span class="string">"link error"</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	ret=unlink(argv[<span class="number">1</span>]);</span><br><span class="line">	<span class="keyword">if</span>(ret==<span class="number">-1</span>)&#123;</span><br><span class="line">		perror(<span class="string">"unlink error"</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>Linux下的文件删除机制: 不断的将文件的st_nlink-1, 直到减到0为止. 无目录项对应的文件, 会被操作系统择机释放</strong>。因此删除文件, 从某种意义上来说只是让文件具备了被删除的条件</p>
+<p>unlink函数的特征:<strong>清除文件时, 如果文件的硬连接计数减到了0, 没有dentry与之对应, 但该文件仍不会马上被释放掉. 要等到所有打开该文件的进程关闭该文件, 系统才会择机将文件释放。</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> fd=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> ret=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">char</span>* p=<span class="string">"test of unlink\n"</span>;</span><br><span class="line">	<span class="keyword">char</span>* p2=<span class="string">"after write something\n"</span>;</span><br><span class="line"></span><br><span class="line">	fd=<span class="built_in">open</span>(<span class="string">"temp.txt"</span>,O_RDWR|O_TRUNC|O_CREAT,<span class="number">0644</span>);</span><br><span class="line">	<span class="keyword">if</span>(fd&lt;<span class="number">0</span>)</span><br><span class="line">		perr_exit(<span class="string">"open file error"</span>);</span><br><span class="line"></span><br><span class="line">	ret=<span class="built_in">write</span>(fd,p,<span class="built_in">strlen</span>(p));</span><br><span class="line">	<span class="keyword">if</span>(ret==<span class="number">-1</span>)</span><br><span class="line">		perr_exit(<span class="string">"write error"</span>);</span><br><span class="line"></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"hello,I'm printf\n"</span>);</span><br><span class="line">	ret=<span class="built_in">write</span>(fd,p2,<span class="built_in">strlen</span>(p2));</span><br><span class="line">	<span class="keyword">if</span>(ret==<span class="number">-1</span>)</span><br><span class="line">		perr_exit(<span class="string">"write error"</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"Entry key to continue\n"</span>);</span><br><span class="line">    <span class="comment">/*程序在此阻塞等待用户输入*/</span></span><br><span class="line">	getchar();</span><br><span class="line">	<span class="built_in">close</span>(fd);</span><br><span class="line">	<span class="comment">/*删除该文件*/</span></span><br><span class="line">	ret=unlink(<span class="string">"temp.txt"</span>);</span><br><span class="line">	<span class="keyword">if</span>(ret==<span class="number">-1</span>)</span><br><span class="line">		perr_exit(<span class="string">"unlink error"</span>);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>如果在unlink之前诱发段错误, 程序崩溃, temp.txt就会存活下来. 所以将unlink这一步放到打开文件之后紧接着就unlink掉</strong></p>
+<p><strong>虽然文件被unlink掉了, 用户用cat查看不到磁盘上的对应文件, 但是write函数拿到fd写文件是向内核的buffer中写, 仍可正常写入</strong></p>
+<p>隐式回收:</p>
+<p>当<strong>进程运行结束时, 所有该进程打开的文件会被关闭, 申请的内存空间会被释放</strong>, 系统的这一特性称为<strong>隐式回收系统资源</strong></p>
+<h4 id="文件目录权限"><a href="#文件目录权限" class="headerlink" title="文件目录权限"></a>文件目录权限</h4><p><code>readlink m1.soft</code>:查看软连接的内容</p>
+<p>Linux下所见皆文件, 如果用vim打开一个目录，目录也是”文件”。文件内容是该目录下所有子文件的目录项dentry。</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th></th>
+<th>r</th>
+<th>w</th>
+<th>x</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>文件</td>
+<td>文件内容可以被查看，cat、more、less…</td>
+<td>内容可以被修改vi…</td>
+<td>运行产生一个进程 ./文件名</td>
+</tr>
+<tr>
+<td>目录</td>
+<td>目录可以被浏览</td>
+<td>创建、删除、修改文件mv, touch, mkdir…</td>
+<td>可以被打开、进入 cd</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h4 id="目录操作函数"><a href="#目录操作函数" class="headerlink" title="目录操作函数"></a>目录操作函数</h4><p>文件名不能超过255个字符, 引文dirent中的d_name长度为256, 再算上\0, 有255个字符可用。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;dirent.h&gt;</span></span></span><br><span class="line"><span class="function">DIR* <span class="title">opendir</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* name)</span></span>;	<span class="comment">/*返回的是一个目录结构体指针*/</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">closedir</span><span class="params">(DIR* dirp)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function">struct dirent* <span class="title">readdir</span><span class="params">(DIR* dirp)</span></span>;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">dirent</span> &#123;</span></span><br><span class="line">	<span class="keyword">ino_t</span>          d_ino;       <span class="comment">/* Inode number */</span></span><br><span class="line">	<span class="keyword">off_t</span>          d_off;       <span class="comment">/* Not an offset; see below */</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">short</span> d_reclen;    <span class="comment">/* Length of this record */</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span>  d_type;      <span class="comment">/* Type of file; not supported by all filesystem types */</span></span><br><span class="line">	<span class="keyword">char</span>           d_name[<span class="number">256</span>]; <span class="comment">/* Null-terminated filename */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>用目录操作函数实现ls的功能:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	DIR* dp;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">dirent</span>* <span class="title">sdp</span>;</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">/*根据输入的内容打开一个目录文件,拿到一个类似文件描述符的东西dp*/</span></span><br><span class="line">	dp=opendir(argv[<span class="number">1</span>]);</span><br><span class="line">	<span class="keyword">if</span>(dp==<span class="literal">NULL</span>)</span><br><span class="line">		perr_exit(<span class="string">"opendir error"</span>);</span><br><span class="line">    </span><br><span class="line">	<span class="comment">/*循环从dirent流中读取数据*/</span></span><br><span class="line">	<span class="keyword">while</span>((sdp=readdir(dp))!=<span class="literal">NULL</span>)&#123;</span><br><span class="line">        <span class="comment">/*跳过当前目录和上一级目录*/</span></span><br><span class="line">		<span class="keyword">if</span>(!<span class="built_in">strcmp</span>(sdp-&gt;d_name,<span class="string">"."</span>))</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line">		<span class="keyword">if</span>(!<span class="built_in">strcmp</span>(sdp-&gt;d_name,<span class="string">".."</span>))</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line">        <span class="comment">/*打印文件名*/</span></span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"%s\n"</span>,sdp-&gt;d_name);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"\n"</span>);</span><br><span class="line">    </span><br><span class="line">	<span class="comment">/*关闭文件*/</span></span><br><span class="line">	closedir(dp);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="递归遍历目录"><a href="#递归遍历目录" class="headerlink" title="递归遍历目录"></a>递归遍历目录</h4><p>思路：</p>
+<ul>
+<li><p>判断命令行参数, 获取用户要查询的目录名-argv[1]</p>
+<ul>
+<li>注意如果argc==1, 说明要查询的是当前目录./</li>
+</ul>
+</li>
+<li><p>判断用户指定的是否是目录: stat S_ISDIR()-&gt;封装函数isFile()</p>
+</li>
+<li>读目录:</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">opendir(dir);	</span><br><span class="line"><span class="keyword">while</span>(readdir())&#123;</span><br><span class="line">	普通文件:直接打印;</span><br><span class="line">	目录文件:拼接目录访问绝对路径:<span class="built_in">sprintf</span>(path,<span class="string">"%s%s"</span>,dir,d_name);</span><br><span class="line">	递归调用自己:opendir(path), readdir, closedir;</span><br><span class="line">&#125;</span><br><span class="line">closedir();</span><br></pre></td></tr></table></figure>
+<p>实现：<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*参2是回调函数名*/</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">fetchdir</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* dir,<span class="keyword">void</span>(*fcn)(<span class="keyword">char</span>*))</span></span>&#123;</span><br><span class="line">	<span class="keyword">char</span> name[PATH_LEN];</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">dirent</span>* <span class="title">sdp</span>;</span></span><br><span class="line">	DIR* dp;</span><br><span class="line">	<span class="comment">/*打开目录失败*/</span></span><br><span class="line">	<span class="keyword">if</span>((dp=opendir(dir))==<span class="literal">NULL</span>)&#123;</span><br><span class="line">		<span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">"fetchdir:can't open %s\n"</span>,dir);</span><br><span class="line">		<span class="keyword">return</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">/*循环读取内容*/</span></span><br><span class="line">	<span class="keyword">while</span>((sdp=readdir(dp))!=<span class="literal">NULL</span>)&#123;</span><br><span class="line">        <span class="comment">/*遇到当前目录和上一级目录,跳过,否则会陷入死循环*/</span></span><br><span class="line">		<span class="keyword">if</span>((<span class="built_in">strcmp</span>(sdp-&gt;d_name,<span class="string">"."</span>)==<span class="number">0</span>)||(<span class="built_in">strcmp</span>(sdp-&gt;d_name,<span class="string">".."</span>)==<span class="number">0</span>))</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line">		<span class="comment">/*路径名是否越界*/</span></span><br><span class="line">		<span class="keyword">if</span>(<span class="built_in">strlen</span>(dir)+<span class="built_in">strlen</span>(sdp-&gt;d_name)+<span class="number">2</span>&gt;<span class="keyword">sizeof</span>(name))&#123;</span><br><span class="line">			<span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">"fetchdir:name %s %s is too long\n"</span>,dir,sdp-&gt;d_name);</span><br><span class="line">		&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">            <span class="comment">/*拼接为一个路径,传给isFile函数*/</span></span><br><span class="line">			<span class="built_in">sprintf</span>(name,<span class="string">"%s/%s"</span>,dir,sdp-&gt;d_name);</span><br><span class="line">			(*fcn)(name);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	closedir(dp);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">isFile</span><span class="params">(<span class="keyword">char</span>* name)</span></span>&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">stat</span> <span class="title">sbuf</span>;</span></span><br><span class="line">    <span class="comment">/*获取文件属性失败*/</span></span><br><span class="line">	<span class="keyword">if</span>(stat(name,&amp;sbuf)==<span class="number">-1</span>)&#123;</span><br><span class="line">		<span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">"isFile:can't access %s\n"</span>,name);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line">    <span class="comment">/*这是一个目录文件:调用函数fetchdir*/</span></span><br><span class="line">	<span class="keyword">if</span>((sbuf.st_mode&amp;S_IFMT)==S_IFDIR)&#123;</span><br><span class="line">		fetchdir(name,isFile);</span><br><span class="line">	&#125;</span><br><span class="line">    <span class="comment">/*不是目录文件:是一个普通文件,打印文件信息*/</span></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"%ld\t\t%s\n"</span>,sbuf.st_size,name);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="comment">/*不指定命令行参数*/</span></span><br><span class="line">	<span class="keyword">if</span>(argc==<span class="number">1</span>)</span><br><span class="line">		isFile(<span class="string">"."</span>);</span><br><span class="line">	<span class="keyword">else</span>&#123;</span><br><span class="line">		<span class="keyword">while</span>(--argc&gt;<span class="number">0</span>)</span><br><span class="line">			isFile(*++argv);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="dup和dup2"><a href="#dup和dup2" class="headerlink" title="dup和dup2"></a>dup和dup2</h4><p><code>cat makefile &gt; m1</code>:将cat的结果重定向到m1(此时m1与makefile内容相同)</p>
+<p><code>cat makefile &gt;&gt; m1</code>:将cat的结果重定向并追加到m1后面(此时m1是双份的makefile)</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">dup</span><span class="params">(<span class="keyword">int</span> oldfd)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">dup2</span><span class="params">(<span class="keyword">int</span> oldfd, <span class="keyword">int</span> newfd)</span></span>;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>The dup() system call creates a copy of the file descriptor oldfd, using the lowest-numbered unused file descriptor for the new descriptor.</p>
+</blockquote>
+<p>传入已有的文件描述符, 返回一个新的文件描述符:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">    <span class="comment">/*open或创建一个文件,拿到文件描述符fd1*/</span></span><br><span class="line">        <span class="keyword">int</span> fd1=<span class="built_in">open</span>(argv[<span class="number">1</span>],O_RDWR|O_CREAT|O_TRUNC,<span class="number">0644</span>);</span><br><span class="line">        <span class="keyword">if</span>(fd1==<span class="number">-1</span>)&#123;</span><br><span class="line">                perror(<span class="string">"open error"</span>);</span><br><span class="line">                <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">/*fd2作为fd1的副本,拿着fd2也可以向被open的文件写入*/</span></span><br><span class="line">        <span class="keyword">int</span> fd2=dup(fd1);</span><br><span class="line">        <span class="keyword">if</span>(fd2==<span class="number">-1</span>)&#123;</span><br><span class="line">                perror(<span class="string">"dup error"</span>);</span><br><span class="line">                <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"fd1=%d  fd2=%d\n"</span>,fd1,fd2);</span><br><span class="line">        <span class="comment">/*向fd2(fd1)中写入一句话*/</span></span><br><span class="line">        <span class="built_in">write</span>(fd2,<span class="string">"love you\n"</span>,<span class="number">8</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>dup的返回值fd2相当于fd1的副本, 拿着它也可以操作fd1</strong></p>
+<p>dup2<strong>:后面的指向前面的。</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> fd1=<span class="built_in">open</span>(argv[<span class="number">1</span>],O_RDWR|O_CREAT|O_TRUNC,<span class="number">0644</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> fd2=<span class="built_in">open</span>(argv[<span class="number">2</span>],O_RDWR|O_CREAT|O_TRUNC,<span class="number">0644</span>);</span><br><span class="line">        <span class="comment">/*dup2后fd2也指向了fd1的文件*/</span></span><br><span class="line">        <span class="keyword">int</span> fdret=dup2(fd1,fd2);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"fdret=%d\n"</span>,fdret);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> ret=<span class="built_in">write</span>(fd2,<span class="string">"love you\n"</span>,<span class="number">9</span>);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"ret=%d\n"</span>,ret);</span><br><span class="line">        <span class="comment">/*现在标准输出也指向了fd1*/</span></span><br><span class="line">        dup2(fd1,STDOUT_FILENO);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"--------love you--------\n"</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="fcntl实现dup描述符"><a href="#fcntl实现dup描述符" class="headerlink" title="fcntl实现dup描述符"></a>fcntl实现dup描述符</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> fd1=<span class="built_in">open</span>(argv[<span class="number">1</span>],O_RDWR|O_CREAT,<span class="number">0644</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"fd1=%d\n"</span>,fd1);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> newfd1=fcntl(fd1,F_DUPFD,<span class="number">0</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"newfd1=%d\n"</span>,newfd1);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">int</span> newfd2=fcntl(fd1,F_DUPFD,<span class="number">8</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"newfd2=%d\n"</span>,newfd2);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">int</span> ret=<span class="built_in">write</span>(newfd2,<span class="string">"fuckyou\n"</span>,<span class="number">8</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"ret=%d\n"</span>,ret);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//fcntl 参3传0, 则从0开始向下寻找可用的文件描述符返回给newfd1</span></span><br><span class="line"><span class="comment">//fcntl 参3传8, 则从8开始向下寻找可用的文件描述符返回给newfd2</span></span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/21/linux-%E7%B3%BB%E7%BB%9F-03makefile/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -417,6 +655,499 @@
 <p>栈帧:随着函数调用而在stack上开辟的一块内存空间, 用于存放函数调用时产生的局部变量和临时值</p>
 <p>其他命令：</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">start		<span class="comment">#单步执行;</span></span><br><span class="line">finish		<span class="comment">#结束当前函数调用, 返回调用点;</span></span><br><span class="line"><span class="built_in">set</span> args aa bb cc	<span class="comment">#给函数添加参数, 或者`run aa bb cc`;</span></span><br><span class="line">info b		<span class="comment">#查看断点信息;</span></span><br><span class="line">b 20 <span class="keyword">if</span> i=5	<span class="comment">#设置条件断点;</span></span><br><span class="line">ptype arr	<span class="comment">#查看变量类型;</span></span><br><span class="line">backtrace	<span class="comment">#简称bt查看函数调用的栈帧和层级关系;</span></span><br><span class="line">frame 1		<span class="comment">#切换函数栈帧;</span></span><br><span class="line">display j	<span class="comment">#一直显示j变量;</span></span><br><span class="line">undisplay num	<span class="comment">#取消监视;</span></span><br><span class="line">delete		<span class="comment">#删除断点;</span></span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/02/linux-02linux%E5%91%BD%E4%BB%A4%E4%BD%BF%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/03/02/linux-02linux%E5%91%BD%E4%BB%A4%E4%BD%BF%E7%94%A8/" class="post-title-link" itemprop="url">Linux常用命令使用-1</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-02 21:29:16" itemprop="dateCreated datePublished" datetime="2020-03-02T21:29:16+08:00">2020-03-02</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-20 20:48:45" itemprop="dateModified" datetime="2021-03-20T20:48:45+08:00">2021-03-20</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux/" itemprop="url" rel="index">
+                    <span itemprop="name">linux</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="Linux终端命令格式"><a href="#Linux终端命令格式" class="headerlink" title="Linux终端命令格式"></a>Linux终端命令格式</h3><h4 id="终端命令格式"><a href="#终端命令格式" class="headerlink" title="终端命令格式"></a>终端命令格式</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">command</span> [-options] [parameter]</span><br></pre></td></tr></table></figure>
+<p>说明：</p>
+<ul>
+<li><code>command</code>：命令名，相应功能的英文单词或单词的缩写</li>
+<li><code>[-options]</code>：选项，可用来对命令进行控制，也可以省略</li>
+<li><code>parameter</code>：传给命令的参数，可以是 <strong>零个</strong>、<strong>一个</strong> 或者 <strong>多个</strong></li>
+<li><code>[]</code> 代表可选 </li>
+</ul>
+<h4 id="查阅命令帮助信息"><a href="#查阅命令帮助信息" class="headerlink" title="查阅命令帮助信息"></a>查阅命令帮助信息</h4><h5 id="help"><a href="#help" class="headerlink" title="help"></a>help</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">command</span> --<span class="built_in">help</span></span><br></pre></td></tr></table></figure>
+<p>说明：</p>
+<ul>
+<li>显示 <code>command</code> 命令的帮助信息</li>
+</ul>
+<h5 id="man"><a href="#man" class="headerlink" title="man"></a>man</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">man <span class="built_in">command</span></span><br></pre></td></tr></table></figure>
+<p>说明：</p>
+<ul>
+<li>查阅 <code>command</code> 命令的使用手册</li>
+</ul>
+<p>man 手册：</p>
+<ul>
+<li>1 可执行程序或shell命令</li>
+<li>2 系统调用（内核提供的函数）</li>
+<li>3 库调用(程序库中的函数)</li>
+</ul>
+<p><code>man</code> 是 <strong>manual</strong> 的缩写，是 Linux 提供的一个 <strong>手册</strong>，包含了绝大部分的命令、函数的详细使用说明</p>
+<p>使用 <code>man</code> 时的操作键：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>操作键</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>空格键</td>
+<td>显示手册页的下一屏</td>
+</tr>
+<tr>
+<td>Enter 键</td>
+<td>一次滚动手册页的一行</td>
+</tr>
+<tr>
+<td>b</td>
+<td>回滚一屏</td>
+</tr>
+<tr>
+<td>f</td>
+<td>前滚一屏</td>
+</tr>
+<tr>
+<td>q</td>
+<td>退出</td>
+</tr>
+<tr>
+<td>/word</td>
+<td>搜索 <strong>word</strong> 字符串</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="常用的Linux命令"><a href="#常用的Linux命令" class="headerlink" title="常用的Linux命令"></a>常用的Linux命令</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>命令</th>
+<th>对应英文</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>01</td>
+<td>ls</td>
+<td>list</td>
+<td>查看当前文件夹下的内容</td>
+</tr>
+<tr>
+<td>02</td>
+<td>pwd</td>
+<td>print wrok directory</td>
+<td>查看当前所在文件夹</td>
+</tr>
+<tr>
+<td>03</td>
+<td>cd [目录名]</td>
+<td>change directory</td>
+<td>切换文件夹</td>
+</tr>
+<tr>
+<td>04</td>
+<td>touch [文件名]</td>
+<td>touch</td>
+<td>如果文件不存在，新建文件</td>
+</tr>
+<tr>
+<td>05</td>
+<td>mkdir [目录名]</td>
+<td>make directory</td>
+<td>创建目录</td>
+</tr>
+<tr>
+<td>06</td>
+<td>rm [文件名]</td>
+<td>remove</td>
+<td>删除指定的文件名</td>
+</tr>
+<tr>
+<td>07</td>
+<td>clear</td>
+<td>clear</td>
+<td>清屏</td>
+</tr>
+</tbody>
+</table>
+</div>
+<blockquote>
+<p>小技巧</p>
+<ul>
+<li><code>ctrl + shift + =</code> <strong>放大</strong>终端窗口的字体显示</li>
+<li><code>ctrl + -</code> <strong>缩小</strong>终端窗口的字体显示</li>
+<li>在敲出 文件 目录 命令 <code>tab</code><ul>
+<li>如果输入的没有歧义，系统会自动补全</li>
+<li>如果还存在其他 <code>文件</code>／<code>目录</code>／<code>命令</code>，再按一下 <code>tab</code> 键，系统会提示可能存在的命令</li>
+</ul>
+</li>
+<li>按 <code>上</code>／<code>下</code> 光标键可以在曾经使用过的命令之间来回切换</li>
+<li>如果想要退出选择，并且不想执行当前选中的命令，可以按 <code>ctrl + c</code></li>
+</ul>
+</blockquote>
+<h3 id="远程管理常用命令"><a href="#远程管理常用命令" class="headerlink" title="远程管理常用命令"></a>远程管理常用命令</h3><h4 id="关机-重启"><a href="#关机-重启" class="headerlink" title="关机/重启"></a>关机/重启</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>命令</th>
+<th>对应英文</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>01</td>
+<td>shutdown 选项 时间</td>
+<td>shutdown</td>
+<td>关机／重新启动</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h4 id="shutdown"><a href="#shutdown" class="headerlink" title="shutdown"></a><code>shutdown</code></h4><ul>
+<li><code>shutdown</code> 命令可以 <strong>安全</strong> <strong>关闭</strong> 或者 <strong>重新启动系统</strong></li>
+</ul>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>-r</td>
+<td>重新启动</td>
+</tr>
+</tbody>
+</table>
+</div>
+<blockquote>
+<p>提示：</p>
+<ul>
+<li><strong>不指定选项和参数</strong>，默认表示 <strong>1 分钟</strong>之后 <strong>关闭电脑</strong></li>
+<li>远程维护服务器时，最好不要关闭系统，而应该重新启动系统</li>
+</ul>
+</blockquote>
+<ul>
+<li>常用命令示例</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 重新启动操作系统，其中 now 表示现在</span></span><br><span class="line">$ shutdown -r now</span><br><span class="line"></span><br><span class="line"><span class="comment"># 立刻关机，其中 now 表示现在</span></span><br><span class="line">$ shutdown now</span><br><span class="line"></span><br><span class="line"><span class="comment"># 系统在今天的 20:25 会关机</span></span><br><span class="line">$ shutdown 20:25</span><br><span class="line"></span><br><span class="line"><span class="comment"># 系统再过十分钟后自动关机</span></span><br><span class="line">$ shutdown +10</span><br><span class="line"></span><br><span class="line"><span class="comment"># 取消之前指定的关机计划</span></span><br><span class="line">$ shutdown -c</span><br></pre></td></tr></table></figure>
+<h4 id="查看或配置网卡信息"><a href="#查看或配置网卡信息" class="headerlink" title="查看或配置网卡信息"></a>查看或配置网卡信息</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>命令</th>
+<th>对应英文</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>01</td>
+<td>ifconfig</td>
+<td>configure a network interface</td>
+<td>查看/配置计算机当前的网卡配置信息</td>
+</tr>
+<tr>
+<td>02</td>
+<td>ping ip地址</td>
+<td>ping</td>
+<td>检测到目标 ip地址 的连接是否正常</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h4 id="网卡-和-IP-地址"><a href="#网卡-和-IP-地址" class="headerlink" title="网卡 和 IP 地址"></a>网卡 和 IP 地址</h4><h5 id="网卡"><a href="#网卡" class="headerlink" title="网卡"></a>网卡</h5><ul>
+<li>网卡是一个专门负责网络通讯的硬件设备</li>
+<li><strong>IP 地址</strong>是设置在网卡上的地址信息</li>
+</ul>
+<blockquote>
+<p>我们可以把 <strong>电脑</strong> 比作 <strong>电话</strong>，<strong>网卡</strong> 相当于 <strong>SIM 卡</strong>，<strong>IP 地址</strong> 相当于 <strong>电话号码</strong></p>
+</blockquote>
+<h5 id="IP-地址"><a href="#IP-地址" class="headerlink" title="IP 地址"></a>IP 地址</h5><ul>
+<li><strong>每台联网的电脑上</strong>都有 <strong>IP 地址</strong>，<strong>是保证电脑之间正常通讯的重要设置</strong></li>
+</ul>
+<blockquote>
+<p>注意：每台电脑的 IP 地址不能相同，否则会出现 IP 地址冲突，并且没有办法正常通讯</p>
+</blockquote>
+<h5 id="ifconfig"><a href="#ifconfig" class="headerlink" title="ifconfig"></a><code>ifconfig</code></h5><ul>
+<li><code>ifconfig</code> 可以查看／配置计算机当前的网卡配置信息</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看网卡配置信息</span></span><br><span class="line">$ ifconfig</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看网卡对应的 IP 地址</span></span><br><span class="line">$ ifconfig | grep inet</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>提示：一台计算机中有可能会有一个 <strong>物理网卡</strong> 和 <strong>多个虚拟网卡</strong>，在 Linux 中物理网卡的名字通常以 <code>ensXX</code> 表示</p>
+</blockquote>
+<ul>
+<li><code>127.0.0.1</code> 被称为 <strong>本地回环/环回地址</strong>，一般用来测试本机网卡是否正常</li>
+</ul>
+<h5 id="ping"><a href="#ping" class="headerlink" title="ping"></a><code>ping</code></h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 检测到目标主机是否连接正常</span></span><br><span class="line">$ ping IP地址</span><br><span class="line"></span><br><span class="line"><span class="comment"># 检测本地网卡工作正常</span></span><br><span class="line">$ ping 127.0.0.1</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>ping</code> 一般用于检测当前计算机到目标计算机之间的网络 <strong>是否通畅</strong>，<strong>数值越大，速度越慢</strong></li>
+</ul>
+<blockquote>
+<ul>
+<li><code>ping</code> 的工作原理与潜水艇的声纳相似，<code>ping</code> 这个命令就是取自 <strong>声纳的声音</strong> </li>
+<li>网络管理员之间也常将 <code>ping</code> 用作动词 —— <strong>ping 一下计算机X，看他是否开着</strong></li>
+</ul>
+</blockquote>
+<p>原理：网络上的机器都有 <strong>唯一确定的 IP 地址</strong>，我们给<strong>目标 IP 地址</strong>发送一个数据包，对方就要返回一个数据包，根据返回的数据包以及时间，我们可以确定目标主机的存在</p>
+<blockquote>
+<p>提示：在 Linux 中，想要终止一个终端程序的执行，绝大多数都可以使用 <code>CTRL + C</code></p>
+</blockquote>
+<h4 id="远程登录和复制文件"><a href="#远程登录和复制文件" class="headerlink" title="远程登录和复制文件"></a>远程登录和复制文件</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>命令</th>
+<th>对应英文</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>01</td>
+<td>ssh 用户名@ip</td>
+<td>secure shell</td>
+<td>关机／重新启动</td>
+</tr>
+<tr>
+<td>02</td>
+<td>scp 用户名@ip:文件名或路径 用户名@ip:文件名或路径</td>
+<td>secure copy</td>
+<td>远程复制文件</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h4 id="ssh-基础"><a href="#ssh-基础" class="headerlink" title="ssh 基础"></a><code>ssh</code> 基础</h4><p>在 Linux 中 SSH 是 <strong>非常常用</strong> 的工具，通过 <strong>SSH 客户端</strong> 可以连接到运行了 <strong>SSH 服务器</strong> 的远程机器上</p>
+<p><img src="https://api2.mubu.com/v3/document_image/42fbfc2f-408c-4442-80da-087ddbd5b687-11197877.jpg" alt="SSH示意图">￼</p>
+<ul>
+<li><strong>SSH 客户端</strong>是一种使用 <code>Secure Shell（SSH）</code> 协议连接到远程计算机的软件程序</li>
+<li><code>SSH</code> 是目前较可靠，<strong>专为远程登录会话和其他网络服务</strong> 提供安全性的协议<ul>
+<li>利用 <code>SSH 协议</code> 可以有效<strong>防止远程管理过程中的信息泄露</strong></li>
+<li>通过 <code>SSH 协议</code> 可以对所有传输的数据进行<strong>加密</strong>，也能够防止 DNS 欺骗和 IP 欺骗</li>
+</ul>
+</li>
+<li><code>SSH</code> 的另一项优点是传输的数据可以是经过<strong>压缩</strong>的，所以可以加快传输的速度</li>
+</ul>
+<h4 id="域名-和-端口号"><a href="#域名-和-端口号" class="headerlink" title="域名 和 端口号"></a>域名 和 端口号</h4><h5 id="域名"><a href="#域名" class="headerlink" title="域名"></a>域名</h5><ul>
+<li>由一串 <strong>用点分隔</strong> 的名字组成，例如：<code>www.baidu.com</code></li>
+<li>是 <strong>IP 地址</strong> 的别名，方便用户记忆</li>
+</ul>
+<h5 id="端口号"><a href="#端口号" class="headerlink" title="端口号"></a>端口号</h5><ul>
+<li><strong>IP 地址</strong>：通过 <strong>IP 地址</strong> 找到网络上的 <strong>计算机</strong></li>
+<li><strong>端口号</strong>：通过 <strong>端口号</strong> 可以找到 <strong>计算机上运行的应用程序</strong><ul>
+<li><strong>SSH 服务器</strong> 的默认端口号是 <code>22</code>，如果是默认端口号，在连接的时候，可以省略</li>
+</ul>
+</li>
+<li>常见服务端口号列表：</li>
+</ul>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>服务</th>
+<th>端口号</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>01</td>
+<td>SSH 服务器</td>
+<td>22</td>
+</tr>
+<tr>
+<td>02</td>
+<td>Web 服务器</td>
+<td>80</td>
+</tr>
+<tr>
+<td>03</td>
+<td>HTTPS</td>
+<td>443</td>
+</tr>
+<tr>
+<td>04</td>
+<td>FTP 服务器</td>
+<td>21</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h4 id="SSH-客户端的简单使用"><a href="#SSH-客户端的简单使用" class="headerlink" title="SSH 客户端的简单使用"></a>SSH 客户端的简单使用</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh [-p port] user@remote</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>user</code> 是在远程机器上的用户名，如果不指定的话默认为当前用户</li>
+<li><code>remote</code> 是远程机器的地址，可以是 <strong>IP</strong>／<strong>域名</strong>，或者是 <strong>后面会提到的别名</strong></li>
+<li><code>port</code> 是 <strong>SSH Server 监听的端口</strong>，如果不指定，就为默认值 <code>22</code></li>
+</ul>
+<blockquote>
+<p>提示：</p>
+<ul>
+<li>使用 <code>exit</code> 退出当前用户的登录</li>
+</ul>
+<p>注意：</p>
+<ul>
+<li><code>ssh</code> 这个终端命令只能在 <code>Linux</code> 或者 <code>UNIX</code> 系统下使用</li>
+<li>如果在 <code>Windows</code> 系统中，可以安装 <code>PuTTY</code> 或者 <code>XShell</code> 客户端软件即可</li>
+</ul>
+<p>提示：</p>
+<ul>
+<li>在工作中，SSH 服务器的端口号很有可能<strong>不是 22</strong>，如果遇到这种情况就需要使用 <code>-p</code> 选项，指定正确的端口号，否则无法正常连接到服务器</li>
+</ul>
+</blockquote>
+<h4 id="Windows-下-SSH-客户端的安装"><a href="#Windows-下-SSH-客户端的安装" class="headerlink" title="Windows 下 SSH 客户端的安装"></a>Windows 下 SSH 客户端的安装</h4><ul>
+<li><code>Putty</code> <a href="http://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html" target="_blank" rel="noopener">http://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html</a></li>
+<li><code>XShell</code> <a href="http://xshellcn.com" target="_blank" rel="noopener">http://xshellcn.com</a></li>
+</ul>
+<h4 id="scp"><a href="#scp" class="headerlink" title="scp"></a><code>scp</code></h4><ul>
+<li>scp 就是 <code>secure copy</code>，是一个在 Linux 下用来进行 <strong>远程拷贝文件</strong> 的命令</li>
+<li>它的<strong>地址格式与 ssh 基本相同</strong>，<strong>需要注意的是</strong>，在指定<strong>端口时用的是大写的 <code>-P</code> 而不是小写的</strong></li>
+</ul>
+<p><img src="https://api2.mubu.com/v3/document_image/be4dc3b6-1fd2-44b3-8d3a-90afee22e1c8-11197877.jpg" alt="SCP示意图">￼</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 把本地当前目录下的 01.py 文件 复制到 远程 家目录下的 Desktop/01.py</span></span><br><span class="line"><span class="comment"># 注意：`:` 后面的路径如果不是绝对路径，则以用户的家目录作为参照路径</span></span><br><span class="line">scp -P port 01.py user@remote:Desktop/01.py</span><br><span class="line"></span><br><span class="line"><span class="comment"># 把远程 家目录下的 Desktop/01.py 文件 复制到 本地当前目录下的 01.py</span></span><br><span class="line">scp -P port user@remote:Desktop/01.py 01.py</span><br><span class="line"></span><br><span class="line"><span class="comment"># 加上 -r 选项可以传送文件夹</span></span><br><span class="line"><span class="comment"># 把当前目录下的 demo 文件夹 复制到 远程 家目录下的 Desktop</span></span><br><span class="line">scp -r demo user@remote:Desktop</span><br><span class="line"></span><br><span class="line"><span class="comment"># 把远程 家目录下的 Desktop 复制到 当前目录下的 demo 文件夹</span></span><br><span class="line">scp -r user@remote:Desktop demo</span><br></pre></td></tr></table></figure>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>-r</td>
+<td>若给出的源文件是目录文件，则 scp 将递归复制该目录下的所有子目录和文件，目标文件必须为一个目录名</td>
+</tr>
+<tr>
+<td>-P</td>
+<td>若远程 SSH 服务器的端口不是 22，需要使用大写字母 -P 选项指定端口</td>
+</tr>
+</tbody>
+</table>
+</div>
+<blockquote>
+<p>注意：</p>
+<ul>
+<li><code>scp</code> 这个终端命令只能在 <code>Linux</code> 或者 <code>UNIX</code> 系统下使用</li>
+<li>如果在 <code>Windows</code> 系统中，可以安装 <code>PuTTY</code>，使用 <code>pscp</code> 命令行工具或者安装 <code>FileZilla</code> 使用 <code>FTP</code> 进行文件传输</li>
+</ul>
+</blockquote>
+<h4 id="FileZilla"><a href="#FileZilla" class="headerlink" title="FileZilla"></a><code>FileZilla</code></h4><ul>
+<li>官方网站：<a href="https://www.filezilla.cn/download/client" target="_blank" rel="noopener">https://www.filezilla.cn/download/client</a></li>
+<li><code>FileZilla</code> 在传输文件时，使用的是 <code>FTP 服务</code> 而不是 <code>SSH 服务</code>，因此端口号应该设置为 <code>21</code></li>
+</ul>
+<h4 id="SSH-高级"><a href="#SSH-高级" class="headerlink" title="SSH 高级"></a>SSH 高级</h4><ul>
+<li>免密码登录</li>
+<li>配置别名</li>
+</ul>
+<blockquote>
+<p>提示：有关 SSH 配置信息都保存在用户家目录下的 <code>.ssh</code> 目录下</p>
+</blockquote>
+<h5 id="免密码登录"><a href="#免密码登录" class="headerlink" title="免密码登录"></a>免密码登录</h5><h5 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h5><ul>
+<li>配置公钥 <ul>
+<li>执行 <code>ssh-keygen</code> 即可生成 SSH 钥匙，一路回车即可</li>
+</ul>
+</li>
+<li>上传公钥到服务器 <ul>
+<li>执行 <code>ssh-copy-id -p port user@remote</code>，可以让远程服务器记住我们的公钥</li>
+</ul>
+</li>
+</ul>
+<h5 id="示意图"><a href="#示意图" class="headerlink" title="示意图"></a>示意图</h5><p><img src="https://api2.mubu.com/v3/document_image/d2e4130c-8c39-4c4c-99bf-9efde29eb97b-11197877.jpg" alt="SSH 免密码示意图">￼</p>
+<blockquote>
+<p>非对称加密算法</p>
+<ul>
+<li>使用 <strong>公钥</strong> 加密的数据，需要使用 <strong>私钥</strong> 解密</li>
+<li>使用 <strong>私钥</strong> 加密的数据，需要使用 <strong>公钥</strong> 解密</li>
+</ul>
+</blockquote>
+<h5 id="配置别名"><a href="#配置别名" class="headerlink" title="配置别名"></a>配置别名</h5><p>每次都输入 <code>ssh -p port user@remote</code>，时间久了会觉得很麻烦，特别是当 <code>user</code>, <code>remote</code> 和 <code>port</code> 都得输入，而且还不好记忆</p>
+<p>而 <strong>配置别名</strong> 可以让进一步偷懒，譬如用：<code>ssh mac</code> 来替代上面这么一长串，那么就在 <code>~/.ssh/config</code> 里面追加以下内容：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Host mac</span><br><span class="line">    HostName ip地址</span><br><span class="line">    User itheima</span><br><span class="line">    Port 22</span><br></pre></td></tr></table></figure>
+<p><strong>保存之后，即可用 <code>ssh mac</code> 实现远程登录了，<code>scp</code> 同样可以使用</strong></p>
+
       
     </div>
 
@@ -1102,499 +1833,6 @@
 </blockquote>
 <h5 id="通过deb包安装"><a href="#通过deb包安装" class="headerlink" title="通过deb包安装"></a>通过deb包安装</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">安装deb软件包命令： sudo dpkg -i xxx.deb</span><br><span class="line">删除软件包命令： sudo dpkg -r xxx.deb</span><br><span class="line">连同配置文件一起删除：sudo dpkg -r --purge xxx.deb</span><br><span class="line">查看软件包信息命令：sudo dpkg -info xxx.deb</span><br><span class="line">查看文件拷贝详细命令：sudo dpkg -L xxx.deb</span><br><span class="line">查看系统中已安装软件包信息：sudo dpkg -l</span><br><span class="line">重新配置软件包命令：sudo dpkg -reconfigure xxx</span><br></pre></td></tr></table></figure>
 <h5 id="源码安装"><a href="#源码安装" class="headerlink" title="源码安装"></a>源码安装</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">1.解压缩源代码包</span><br><span class="line">2.cd dir</span><br><span class="line">3. ./configure <span class="comment"># 检测文件是否缺失，创建Makefile, 检查编译环境</span></span><br><span class="line">4. make <span class="comment"># 编译源码，生成库和可执行程序</span></span><br><span class="line">5. sudo make install <span class="comment">#将库和可执行程序，安装到系统路径下</span></span><br><span class="line">6. sudo make distclean <span class="comment"># 删除和卸载软件</span></span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/02/linux-02linux%E5%91%BD%E4%BB%A4%E4%BD%BF%E7%94%A8/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/03/02/linux-02linux%E5%91%BD%E4%BB%A4%E4%BD%BF%E7%94%A8/" class="post-title-link" itemprop="url">Linux常用命令使用-1</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-03-02 21:29:16" itemprop="dateCreated datePublished" datetime="2020-03-02T21:29:16+08:00">2020-03-02</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-20 20:48:45" itemprop="dateModified" datetime="2021-03-20T20:48:45+08:00">2021-03-20</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/linux/" itemprop="url" rel="index">
-                    <span itemprop="name">linux</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="Linux终端命令格式"><a href="#Linux终端命令格式" class="headerlink" title="Linux终端命令格式"></a>Linux终端命令格式</h3><h4 id="终端命令格式"><a href="#终端命令格式" class="headerlink" title="终端命令格式"></a>终端命令格式</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">command</span> [-options] [parameter]</span><br></pre></td></tr></table></figure>
-<p>说明：</p>
-<ul>
-<li><code>command</code>：命令名，相应功能的英文单词或单词的缩写</li>
-<li><code>[-options]</code>：选项，可用来对命令进行控制，也可以省略</li>
-<li><code>parameter</code>：传给命令的参数，可以是 <strong>零个</strong>、<strong>一个</strong> 或者 <strong>多个</strong></li>
-<li><code>[]</code> 代表可选 </li>
-</ul>
-<h4 id="查阅命令帮助信息"><a href="#查阅命令帮助信息" class="headerlink" title="查阅命令帮助信息"></a>查阅命令帮助信息</h4><h5 id="help"><a href="#help" class="headerlink" title="help"></a>help</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">command</span> --<span class="built_in">help</span></span><br></pre></td></tr></table></figure>
-<p>说明：</p>
-<ul>
-<li>显示 <code>command</code> 命令的帮助信息</li>
-</ul>
-<h5 id="man"><a href="#man" class="headerlink" title="man"></a>man</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">man <span class="built_in">command</span></span><br></pre></td></tr></table></figure>
-<p>说明：</p>
-<ul>
-<li>查阅 <code>command</code> 命令的使用手册</li>
-</ul>
-<p>man 手册：</p>
-<ul>
-<li>1 可执行程序或shell命令</li>
-<li>2 系统调用（内核提供的函数）</li>
-<li>3 库调用(程序库中的函数)</li>
-</ul>
-<p><code>man</code> 是 <strong>manual</strong> 的缩写，是 Linux 提供的一个 <strong>手册</strong>，包含了绝大部分的命令、函数的详细使用说明</p>
-<p>使用 <code>man</code> 时的操作键：</p>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>操作键</th>
-<th>功能</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>空格键</td>
-<td>显示手册页的下一屏</td>
-</tr>
-<tr>
-<td>Enter 键</td>
-<td>一次滚动手册页的一行</td>
-</tr>
-<tr>
-<td>b</td>
-<td>回滚一屏</td>
-</tr>
-<tr>
-<td>f</td>
-<td>前滚一屏</td>
-</tr>
-<tr>
-<td>q</td>
-<td>退出</td>
-</tr>
-<tr>
-<td>/word</td>
-<td>搜索 <strong>word</strong> 字符串</td>
-</tr>
-</tbody>
-</table>
-</div>
-<h3 id="常用的Linux命令"><a href="#常用的Linux命令" class="headerlink" title="常用的Linux命令"></a>常用的Linux命令</h3><div class="table-container">
-<table>
-<thead>
-<tr>
-<th>序号</th>
-<th>命令</th>
-<th>对应英文</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>01</td>
-<td>ls</td>
-<td>list</td>
-<td>查看当前文件夹下的内容</td>
-</tr>
-<tr>
-<td>02</td>
-<td>pwd</td>
-<td>print wrok directory</td>
-<td>查看当前所在文件夹</td>
-</tr>
-<tr>
-<td>03</td>
-<td>cd [目录名]</td>
-<td>change directory</td>
-<td>切换文件夹</td>
-</tr>
-<tr>
-<td>04</td>
-<td>touch [文件名]</td>
-<td>touch</td>
-<td>如果文件不存在，新建文件</td>
-</tr>
-<tr>
-<td>05</td>
-<td>mkdir [目录名]</td>
-<td>make directory</td>
-<td>创建目录</td>
-</tr>
-<tr>
-<td>06</td>
-<td>rm [文件名]</td>
-<td>remove</td>
-<td>删除指定的文件名</td>
-</tr>
-<tr>
-<td>07</td>
-<td>clear</td>
-<td>clear</td>
-<td>清屏</td>
-</tr>
-</tbody>
-</table>
-</div>
-<blockquote>
-<p>小技巧</p>
-<ul>
-<li><code>ctrl + shift + =</code> <strong>放大</strong>终端窗口的字体显示</li>
-<li><code>ctrl + -</code> <strong>缩小</strong>终端窗口的字体显示</li>
-<li>在敲出 文件 目录 命令 <code>tab</code><ul>
-<li>如果输入的没有歧义，系统会自动补全</li>
-<li>如果还存在其他 <code>文件</code>／<code>目录</code>／<code>命令</code>，再按一下 <code>tab</code> 键，系统会提示可能存在的命令</li>
-</ul>
-</li>
-<li>按 <code>上</code>／<code>下</code> 光标键可以在曾经使用过的命令之间来回切换</li>
-<li>如果想要退出选择，并且不想执行当前选中的命令，可以按 <code>ctrl + c</code></li>
-</ul>
-</blockquote>
-<h3 id="远程管理常用命令"><a href="#远程管理常用命令" class="headerlink" title="远程管理常用命令"></a>远程管理常用命令</h3><h4 id="关机-重启"><a href="#关机-重启" class="headerlink" title="关机/重启"></a>关机/重启</h4><div class="table-container">
-<table>
-<thead>
-<tr>
-<th>序号</th>
-<th>命令</th>
-<th>对应英文</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>01</td>
-<td>shutdown 选项 时间</td>
-<td>shutdown</td>
-<td>关机／重新启动</td>
-</tr>
-</tbody>
-</table>
-</div>
-<h4 id="shutdown"><a href="#shutdown" class="headerlink" title="shutdown"></a><code>shutdown</code></h4><ul>
-<li><code>shutdown</code> 命令可以 <strong>安全</strong> <strong>关闭</strong> 或者 <strong>重新启动系统</strong></li>
-</ul>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>选项</th>
-<th>含义</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>-r</td>
-<td>重新启动</td>
-</tr>
-</tbody>
-</table>
-</div>
-<blockquote>
-<p>提示：</p>
-<ul>
-<li><strong>不指定选项和参数</strong>，默认表示 <strong>1 分钟</strong>之后 <strong>关闭电脑</strong></li>
-<li>远程维护服务器时，最好不要关闭系统，而应该重新启动系统</li>
-</ul>
-</blockquote>
-<ul>
-<li>常用命令示例</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 重新启动操作系统，其中 now 表示现在</span></span><br><span class="line">$ shutdown -r now</span><br><span class="line"></span><br><span class="line"><span class="comment"># 立刻关机，其中 now 表示现在</span></span><br><span class="line">$ shutdown now</span><br><span class="line"></span><br><span class="line"><span class="comment"># 系统在今天的 20:25 会关机</span></span><br><span class="line">$ shutdown 20:25</span><br><span class="line"></span><br><span class="line"><span class="comment"># 系统再过十分钟后自动关机</span></span><br><span class="line">$ shutdown +10</span><br><span class="line"></span><br><span class="line"><span class="comment"># 取消之前指定的关机计划</span></span><br><span class="line">$ shutdown -c</span><br></pre></td></tr></table></figure>
-<h4 id="查看或配置网卡信息"><a href="#查看或配置网卡信息" class="headerlink" title="查看或配置网卡信息"></a>查看或配置网卡信息</h4><div class="table-container">
-<table>
-<thead>
-<tr>
-<th>序号</th>
-<th>命令</th>
-<th>对应英文</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>01</td>
-<td>ifconfig</td>
-<td>configure a network interface</td>
-<td>查看/配置计算机当前的网卡配置信息</td>
-</tr>
-<tr>
-<td>02</td>
-<td>ping ip地址</td>
-<td>ping</td>
-<td>检测到目标 ip地址 的连接是否正常</td>
-</tr>
-</tbody>
-</table>
-</div>
-<h4 id="网卡-和-IP-地址"><a href="#网卡-和-IP-地址" class="headerlink" title="网卡 和 IP 地址"></a>网卡 和 IP 地址</h4><h5 id="网卡"><a href="#网卡" class="headerlink" title="网卡"></a>网卡</h5><ul>
-<li>网卡是一个专门负责网络通讯的硬件设备</li>
-<li><strong>IP 地址</strong>是设置在网卡上的地址信息</li>
-</ul>
-<blockquote>
-<p>我们可以把 <strong>电脑</strong> 比作 <strong>电话</strong>，<strong>网卡</strong> 相当于 <strong>SIM 卡</strong>，<strong>IP 地址</strong> 相当于 <strong>电话号码</strong></p>
-</blockquote>
-<h5 id="IP-地址"><a href="#IP-地址" class="headerlink" title="IP 地址"></a>IP 地址</h5><ul>
-<li><strong>每台联网的电脑上</strong>都有 <strong>IP 地址</strong>，<strong>是保证电脑之间正常通讯的重要设置</strong></li>
-</ul>
-<blockquote>
-<p>注意：每台电脑的 IP 地址不能相同，否则会出现 IP 地址冲突，并且没有办法正常通讯</p>
-</blockquote>
-<h5 id="ifconfig"><a href="#ifconfig" class="headerlink" title="ifconfig"></a><code>ifconfig</code></h5><ul>
-<li><code>ifconfig</code> 可以查看／配置计算机当前的网卡配置信息</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看网卡配置信息</span></span><br><span class="line">$ ifconfig</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看网卡对应的 IP 地址</span></span><br><span class="line">$ ifconfig | grep inet</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>提示：一台计算机中有可能会有一个 <strong>物理网卡</strong> 和 <strong>多个虚拟网卡</strong>，在 Linux 中物理网卡的名字通常以 <code>ensXX</code> 表示</p>
-</blockquote>
-<ul>
-<li><code>127.0.0.1</code> 被称为 <strong>本地回环/环回地址</strong>，一般用来测试本机网卡是否正常</li>
-</ul>
-<h5 id="ping"><a href="#ping" class="headerlink" title="ping"></a><code>ping</code></h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 检测到目标主机是否连接正常</span></span><br><span class="line">$ ping IP地址</span><br><span class="line"></span><br><span class="line"><span class="comment"># 检测本地网卡工作正常</span></span><br><span class="line">$ ping 127.0.0.1</span><br></pre></td></tr></table></figure>
-<ul>
-<li><code>ping</code> 一般用于检测当前计算机到目标计算机之间的网络 <strong>是否通畅</strong>，<strong>数值越大，速度越慢</strong></li>
-</ul>
-<blockquote>
-<ul>
-<li><code>ping</code> 的工作原理与潜水艇的声纳相似，<code>ping</code> 这个命令就是取自 <strong>声纳的声音</strong> </li>
-<li>网络管理员之间也常将 <code>ping</code> 用作动词 —— <strong>ping 一下计算机X，看他是否开着</strong></li>
-</ul>
-</blockquote>
-<p>原理：网络上的机器都有 <strong>唯一确定的 IP 地址</strong>，我们给<strong>目标 IP 地址</strong>发送一个数据包，对方就要返回一个数据包，根据返回的数据包以及时间，我们可以确定目标主机的存在</p>
-<blockquote>
-<p>提示：在 Linux 中，想要终止一个终端程序的执行，绝大多数都可以使用 <code>CTRL + C</code></p>
-</blockquote>
-<h4 id="远程登录和复制文件"><a href="#远程登录和复制文件" class="headerlink" title="远程登录和复制文件"></a>远程登录和复制文件</h4><div class="table-container">
-<table>
-<thead>
-<tr>
-<th>序号</th>
-<th>命令</th>
-<th>对应英文</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>01</td>
-<td>ssh 用户名@ip</td>
-<td>secure shell</td>
-<td>关机／重新启动</td>
-</tr>
-<tr>
-<td>02</td>
-<td>scp 用户名@ip:文件名或路径 用户名@ip:文件名或路径</td>
-<td>secure copy</td>
-<td>远程复制文件</td>
-</tr>
-</tbody>
-</table>
-</div>
-<h4 id="ssh-基础"><a href="#ssh-基础" class="headerlink" title="ssh 基础"></a><code>ssh</code> 基础</h4><p>在 Linux 中 SSH 是 <strong>非常常用</strong> 的工具，通过 <strong>SSH 客户端</strong> 可以连接到运行了 <strong>SSH 服务器</strong> 的远程机器上</p>
-<p><img src="https://api2.mubu.com/v3/document_image/42fbfc2f-408c-4442-80da-087ddbd5b687-11197877.jpg" alt="SSH示意图">￼</p>
-<ul>
-<li><strong>SSH 客户端</strong>是一种使用 <code>Secure Shell（SSH）</code> 协议连接到远程计算机的软件程序</li>
-<li><code>SSH</code> 是目前较可靠，<strong>专为远程登录会话和其他网络服务</strong> 提供安全性的协议<ul>
-<li>利用 <code>SSH 协议</code> 可以有效<strong>防止远程管理过程中的信息泄露</strong></li>
-<li>通过 <code>SSH 协议</code> 可以对所有传输的数据进行<strong>加密</strong>，也能够防止 DNS 欺骗和 IP 欺骗</li>
-</ul>
-</li>
-<li><code>SSH</code> 的另一项优点是传输的数据可以是经过<strong>压缩</strong>的，所以可以加快传输的速度</li>
-</ul>
-<h4 id="域名-和-端口号"><a href="#域名-和-端口号" class="headerlink" title="域名 和 端口号"></a>域名 和 端口号</h4><h5 id="域名"><a href="#域名" class="headerlink" title="域名"></a>域名</h5><ul>
-<li>由一串 <strong>用点分隔</strong> 的名字组成，例如：<code>www.baidu.com</code></li>
-<li>是 <strong>IP 地址</strong> 的别名，方便用户记忆</li>
-</ul>
-<h5 id="端口号"><a href="#端口号" class="headerlink" title="端口号"></a>端口号</h5><ul>
-<li><strong>IP 地址</strong>：通过 <strong>IP 地址</strong> 找到网络上的 <strong>计算机</strong></li>
-<li><strong>端口号</strong>：通过 <strong>端口号</strong> 可以找到 <strong>计算机上运行的应用程序</strong><ul>
-<li><strong>SSH 服务器</strong> 的默认端口号是 <code>22</code>，如果是默认端口号，在连接的时候，可以省略</li>
-</ul>
-</li>
-<li>常见服务端口号列表：</li>
-</ul>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>序号</th>
-<th>服务</th>
-<th>端口号</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>01</td>
-<td>SSH 服务器</td>
-<td>22</td>
-</tr>
-<tr>
-<td>02</td>
-<td>Web 服务器</td>
-<td>80</td>
-</tr>
-<tr>
-<td>03</td>
-<td>HTTPS</td>
-<td>443</td>
-</tr>
-<tr>
-<td>04</td>
-<td>FTP 服务器</td>
-<td>21</td>
-</tr>
-</tbody>
-</table>
-</div>
-<h4 id="SSH-客户端的简单使用"><a href="#SSH-客户端的简单使用" class="headerlink" title="SSH 客户端的简单使用"></a>SSH 客户端的简单使用</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh [-p port] user@remote</span><br></pre></td></tr></table></figure>
-<ul>
-<li><code>user</code> 是在远程机器上的用户名，如果不指定的话默认为当前用户</li>
-<li><code>remote</code> 是远程机器的地址，可以是 <strong>IP</strong>／<strong>域名</strong>，或者是 <strong>后面会提到的别名</strong></li>
-<li><code>port</code> 是 <strong>SSH Server 监听的端口</strong>，如果不指定，就为默认值 <code>22</code></li>
-</ul>
-<blockquote>
-<p>提示：</p>
-<ul>
-<li>使用 <code>exit</code> 退出当前用户的登录</li>
-</ul>
-<p>注意：</p>
-<ul>
-<li><code>ssh</code> 这个终端命令只能在 <code>Linux</code> 或者 <code>UNIX</code> 系统下使用</li>
-<li>如果在 <code>Windows</code> 系统中，可以安装 <code>PuTTY</code> 或者 <code>XShell</code> 客户端软件即可</li>
-</ul>
-<p>提示：</p>
-<ul>
-<li>在工作中，SSH 服务器的端口号很有可能<strong>不是 22</strong>，如果遇到这种情况就需要使用 <code>-p</code> 选项，指定正确的端口号，否则无法正常连接到服务器</li>
-</ul>
-</blockquote>
-<h4 id="Windows-下-SSH-客户端的安装"><a href="#Windows-下-SSH-客户端的安装" class="headerlink" title="Windows 下 SSH 客户端的安装"></a>Windows 下 SSH 客户端的安装</h4><ul>
-<li><code>Putty</code> <a href="http://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html" target="_blank" rel="noopener">http://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html</a></li>
-<li><code>XShell</code> <a href="http://xshellcn.com" target="_blank" rel="noopener">http://xshellcn.com</a></li>
-</ul>
-<h4 id="scp"><a href="#scp" class="headerlink" title="scp"></a><code>scp</code></h4><ul>
-<li>scp 就是 <code>secure copy</code>，是一个在 Linux 下用来进行 <strong>远程拷贝文件</strong> 的命令</li>
-<li>它的<strong>地址格式与 ssh 基本相同</strong>，<strong>需要注意的是</strong>，在指定<strong>端口时用的是大写的 <code>-P</code> 而不是小写的</strong></li>
-</ul>
-<p><img src="https://api2.mubu.com/v3/document_image/be4dc3b6-1fd2-44b3-8d3a-90afee22e1c8-11197877.jpg" alt="SCP示意图">￼</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 把本地当前目录下的 01.py 文件 复制到 远程 家目录下的 Desktop/01.py</span></span><br><span class="line"><span class="comment"># 注意：`:` 后面的路径如果不是绝对路径，则以用户的家目录作为参照路径</span></span><br><span class="line">scp -P port 01.py user@remote:Desktop/01.py</span><br><span class="line"></span><br><span class="line"><span class="comment"># 把远程 家目录下的 Desktop/01.py 文件 复制到 本地当前目录下的 01.py</span></span><br><span class="line">scp -P port user@remote:Desktop/01.py 01.py</span><br><span class="line"></span><br><span class="line"><span class="comment"># 加上 -r 选项可以传送文件夹</span></span><br><span class="line"><span class="comment"># 把当前目录下的 demo 文件夹 复制到 远程 家目录下的 Desktop</span></span><br><span class="line">scp -r demo user@remote:Desktop</span><br><span class="line"></span><br><span class="line"><span class="comment"># 把远程 家目录下的 Desktop 复制到 当前目录下的 demo 文件夹</span></span><br><span class="line">scp -r user@remote:Desktop demo</span><br></pre></td></tr></table></figure>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>选项</th>
-<th>含义</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>-r</td>
-<td>若给出的源文件是目录文件，则 scp 将递归复制该目录下的所有子目录和文件，目标文件必须为一个目录名</td>
-</tr>
-<tr>
-<td>-P</td>
-<td>若远程 SSH 服务器的端口不是 22，需要使用大写字母 -P 选项指定端口</td>
-</tr>
-</tbody>
-</table>
-</div>
-<blockquote>
-<p>注意：</p>
-<ul>
-<li><code>scp</code> 这个终端命令只能在 <code>Linux</code> 或者 <code>UNIX</code> 系统下使用</li>
-<li>如果在 <code>Windows</code> 系统中，可以安装 <code>PuTTY</code>，使用 <code>pscp</code> 命令行工具或者安装 <code>FileZilla</code> 使用 <code>FTP</code> 进行文件传输</li>
-</ul>
-</blockquote>
-<h4 id="FileZilla"><a href="#FileZilla" class="headerlink" title="FileZilla"></a><code>FileZilla</code></h4><ul>
-<li>官方网站：<a href="https://www.filezilla.cn/download/client" target="_blank" rel="noopener">https://www.filezilla.cn/download/client</a></li>
-<li><code>FileZilla</code> 在传输文件时，使用的是 <code>FTP 服务</code> 而不是 <code>SSH 服务</code>，因此端口号应该设置为 <code>21</code></li>
-</ul>
-<h4 id="SSH-高级"><a href="#SSH-高级" class="headerlink" title="SSH 高级"></a>SSH 高级</h4><ul>
-<li>免密码登录</li>
-<li>配置别名</li>
-</ul>
-<blockquote>
-<p>提示：有关 SSH 配置信息都保存在用户家目录下的 <code>.ssh</code> 目录下</p>
-</blockquote>
-<h5 id="免密码登录"><a href="#免密码登录" class="headerlink" title="免密码登录"></a>免密码登录</h5><h5 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h5><ul>
-<li>配置公钥 <ul>
-<li>执行 <code>ssh-keygen</code> 即可生成 SSH 钥匙，一路回车即可</li>
-</ul>
-</li>
-<li>上传公钥到服务器 <ul>
-<li>执行 <code>ssh-copy-id -p port user@remote</code>，可以让远程服务器记住我们的公钥</li>
-</ul>
-</li>
-</ul>
-<h5 id="示意图"><a href="#示意图" class="headerlink" title="示意图"></a>示意图</h5><p><img src="https://api2.mubu.com/v3/document_image/d2e4130c-8c39-4c4c-99bf-9efde29eb97b-11197877.jpg" alt="SSH 免密码示意图">￼</p>
-<blockquote>
-<p>非对称加密算法</p>
-<ul>
-<li>使用 <strong>公钥</strong> 加密的数据，需要使用 <strong>私钥</strong> 解密</li>
-<li>使用 <strong>私钥</strong> 加密的数据，需要使用 <strong>公钥</strong> 解密</li>
-</ul>
-</blockquote>
-<h5 id="配置别名"><a href="#配置别名" class="headerlink" title="配置别名"></a>配置别名</h5><p>每次都输入 <code>ssh -p port user@remote</code>，时间久了会觉得很麻烦，特别是当 <code>user</code>, <code>remote</code> 和 <code>port</code> 都得输入，而且还不好记忆</p>
-<p>而 <strong>配置别名</strong> 可以让进一步偷懒，譬如用：<code>ssh mac</code> 来替代上面这么一长串，那么就在 <code>~/.ssh/config</code> 里面追加以下内容：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Host mac</span><br><span class="line">    HostName ip地址</span><br><span class="line">    User itheima</span><br><span class="line">    Port 22</span><br></pre></td></tr></table></figure>
-<p><strong>保存之后，即可用 <code>ssh mac</code> 实现远程登录了，<code>scp</code> 同样可以使用</strong></p>
 
       
     </div>
@@ -3089,115 +3327,6 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/26/linux%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/12/26/linux%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/" class="post-title-link" itemprop="url">linux环境变量设置</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-12-26 15:29:16" itemprop="dateCreated datePublished" datetime="2019-12-26T15:29:16+08:00">2019-12-26</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-02-27 15:56:07" itemprop="dateModified" datetime="2021-02-27T15:56:07+08:00">2021-02-27</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/linux/" itemprop="url" rel="index">
-                    <span itemprop="name">linux</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="Ubuntu环境变量的添加和删除"><a href="#Ubuntu环境变量的添加和删除" class="headerlink" title="Ubuntu环境变量的添加和删除"></a>Ubuntu环境变量的添加和删除</h3><h4 id="添加环境变量的位置"><a href="#添加环境变量的位置" class="headerlink" title="添加环境变量的位置"></a>添加环境变量的位置</h4><ul>
-<li>/etc/profile 该文件为系统的每个用户设置环境信息，当用户第一次登录时，该文件被执行，并从/etc/profile.d目录的配置文件中搜集shell的设置。</li>
-<li>/etc/environment 登录操作系统使用的第二个文件，系统在读取自己的profile之前，设置环境文件的环境变量</li>
-<li>/etc/bashrc 为每一个运行bash shell的用户执行该文件。当bash shell被打开时，该文件被读取</li>
-<li>~/.profile 每个用户都可以使用该文件输入专用于自己使用的shell信息，当用户登录时，该文件仅仅执行一次。默认情况下设置一些环境变量，执行用户的.bashrc文件</li>
-<li>~/.bashrc 该文件包含专用的bash shell的bash信息，当登录以及每次打开新的shell时，该文件被读取。</li>
-</ul>
-<h4 id="添加方法"><a href="#添加方法" class="headerlink" title="添加方法"></a>添加方法</h4><ul>
-<li>方法一：直接修改/etc/enviroment文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">打开/etc/environment文件，其内容如下：</span></span><br><span class="line">PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games" </span><br><span class="line"><span class="meta">#</span><span class="bash">在环境变量PATH中添加你要添加的路径即可。</span></span><br></pre></td></tr></table></figure>
-<ul>
-<li>方法二：修改/etc/profile文件，这种方法的作用域是<strong>全局的，永久性</strong>的。</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">这个文件不是保存环境变量信息的文件，在登录时，系统只是根据它的内容对环境变量进行设置。</span></span><br><span class="line">export PATH=$PATH:[your path1]:[your path2]:[...]  </span><br><span class="line">export PATH=[your path1]:[your path2]:[...]:$PATH #其中，各个PATH之间用冒号分隔，$PATH指代添加your path前的环境变量。</span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>方法三：修改/etc/bashrc或者~/.bashrc文件，这两个文件<strong>不是为了保存环境变量，只是在使用bash shell时进行设置而已，所以设置方法和二中一样。对于/etc/bashrc文件，修改的作用于所有用户，但对于~/.bashrc文件，修改的仅仅作用于当前用户。这种修改的作用也是永久性的。</strong></p>
-</li>
-<li><p>方法四：<strong>修改~/.profile文件，作用仅限于当前用户，但同样也是永久性的。这种方法和修改/etc/profile本质上是一样的，这种之不过是仅仅修改了当前用户自己的配置文件。所以作用仅限于当前用户，但同样也是永久性的。</strong></p>
-</li>
-<li><p>方法五：在Terminal中使用shell命令，只在当前Terminal中起作用，关闭了当前Terminal就无效了。对其他Terminal也无效</p>
-</li>
-</ul>
-<h4 id="显示环境变量"><a href="#显示环境变量" class="headerlink" title="显示环境变量"></a>显示环境变量</h4><ul>
-<li>显示所有环境变量</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">env #打印所有的环境变量</span><br></pre></td></tr></table></figure>
-<ul>
-<li>显示指定环境变量</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo $PATH #打印PATH环境变量</span><br></pre></td></tr></table></figure>
-<h4 id="让修改生效"><a href="#让修改生效" class="headerlink" title="让修改生效"></a>让修改生效</h4><p>使用source命令也可以让修改立即生效。使用方法为：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">source [file name]  # file name 指的是上面修改过的文件的file name</span><br></pre></td></tr></table></figure>
-<h4 id="删除对环境变量的修改"><a href="#删除对环境变量的修改" class="headerlink" title="删除对环境变量的修改"></a>删除对环境变量的修改</h4><p>将以上方法中对配置文件的修改还原回去即可。另外，由于第五种方法由于是临时性质的且局部的，只需要关闭这个Terminal就好了。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
@@ -3248,7 +3377,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">44</span>
+          <span class="site-state-item-count">45</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
