@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="alternate" href="/atom.xml" title="ShifuDong" type="application/atom+xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.5.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":"flat"},
+    back2top: {"enable":true,"sidebar":true,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":5,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="linux进程进程、程序、并发程序：编译好的二进制文件。在磁盘上，不占用系统资源(cpu、 内存、打开的文件、设备、锁…) 进程：一个抽象概念，与操作系统原理联系紧密。进程是活跃的程序，占用系统资源。在内存中执行(程序运行起来则产生一个进程) 并发：操作系统中，一个时间段中有多个进程都处于已启动到运行完毕之间的状态。但一个时刻点上仍只有一个进程在运行（分时复用）。 cpu和MMU(内存管理单元)">
+<meta name="keywords" content="linux">
+<meta property="og:type" content="article">
+<meta property="og:title" content="linux系统编程-进程">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;03&#x2F;25&#x2F;linux-%E7%B3%BB%E7%BB%9F-05%E8%BF%9B%E7%A8%8B&#x2F;index.html">
+<meta property="og:site_name" content="ShifuDong">
+<meta property="og:description" content="linux进程进程、程序、并发程序：编译好的二进制文件。在磁盘上，不占用系统资源(cpu、 内存、打开的文件、设备、锁…) 进程：一个抽象概念，与操作系统原理联系紧密。进程是活跃的程序，占用系统资源。在内存中执行(程序运行起来则产生一个进程) 并发：操作系统中，一个时间段中有多个进程都处于已启动到运行完毕之间的状态。但一个时刻点上仍只有一个进程在运行（分时复用）。 cpu和MMU(内存管理单元)">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;e44706d6-6069-4a0e-9c85-6c1c43c3c19f-11197877.jpg">
+<meta property="og:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;06bd754f-dfe9-4081-a742-5f305d537582-11197877.jpg">
+<meta property="og:updated_time" content="2021-03-23T08:50:46.576Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;e44706d6-6069-4a0e-9c85-6c1c43c3c19f-11197877.jpg">
+
+<link rel="canonical" href="http://yoursite.com/2020/03/25/linux-%E7%B3%BB%E7%BB%9F-05%E8%BF%9B%E7%A8%8B/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>linux系统编程-进程 | ShifuDong</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ShifuDong</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">Knowledge Sharing</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/dongshifu" class="github-corner" title="ShifuDong GitHub" aria-label="ShifuDong GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/25/linux-%E7%B3%BB%E7%BB%9F-05%E8%BF%9B%E7%A8%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          linux系统编程-进程
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-25 16:02:58" itemprop="dateCreated datePublished" datetime="2020-03-25T16:02:58+08:00">2020-03-25</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-23 16:50:46" itemprop="dateModified" datetime="2021-03-23T16:50:46+08:00">2021-03-23</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index">
+                    <span itemprop="name">linux系统编程</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="linux进程"><a href="#linux进程" class="headerlink" title="linux进程"></a>linux进程</h3><h4 id="进程、程序、并发"><a href="#进程、程序、并发" class="headerlink" title="进程、程序、并发"></a>进程、程序、并发</h4><p>程序：编译好的二进制文件。在<strong>磁盘上，不占用系统资源</strong>(cpu、 内存、打开的文件、设备、锁…)</p>
+<p>进程：一个抽象概念，与操作系统原理联系紧密。进程是<strong>活跃的程序，占用系统资源</strong>。在内存中执行(程序运行起来则产生一个进程)</p>
+<p>并发：<strong>操作系统中，一个时间段中有多个进程都处于已启动到运行完毕之间的状态。但一个时刻点上仍只有一个进程在运行（分时复用）。</strong></p>
+<h4 id="cpu和MMU-内存管理单元"><a href="#cpu和MMU-内存管理单元" class="headerlink" title="cpu和MMU(内存管理单元)"></a>cpu和MMU(内存管理单元)</h4><p><img src="https://api2.mubu.com/v3/document_image/e44706d6-6069-4a0e-9c85-6c1c43c3c19f-11197877.jpg" alt="cpu和存储"></p>
+<ul>
+<li><p>存储设备包括寄存器，cache,内存，硬盘，网络等。<strong>与cpu直接打交道的应该是寄存器，多级缓存</strong></p>
+</li>
+<li><p><strong>MMU(内存管理单元), 位于CPU内部</strong></p>
+</li>
+<li>MMU完成<strong>虚拟地址到物理地址的映射</strong>，设置<strong>修改内存访问级别（用户空间，内核空间）。一个page是内存分配的最小单位。</strong></li>
+</ul>
+<ul>
+<li><p>虚拟内存空间产生的时间：进程启动的时候，<strong>进程的所有东西都放在虚拟内存中，并不真实存在</strong>。实际的都放在内存中，虚拟空间如何描述？</p>
+</li>
+<li><p>虚拟地址：可用的地址空间有4G(32位操作系统)</p>
+</li>
+<li><p>如果一个程序跑了两个进程：<strong>两个进程开了两个虚拟空间，两个进程互相独立。两个不同的进程共用一个内存空间</strong>。</p>
+</li>
+</ul>
+<p>虚拟内存和物理内存映射关系：</p>
+<p><img src="https://api2.mubu.com/v3/document_image/06bd754f-dfe9-4081-a742-5f305d537582-11197877.jpg" alt="虚拟内存和物理内存映射关系"></p>
+<ul>
+<li><p>对于一个32位的机器来说, 每个进程都能看到4GB的虚拟地址空间, 且他们的3G~4G的位置都是kernel(<strong>每个进程都有kernel区</strong>)</p>
+</li>
+<li><p>从虚拟内存到物理内存的映射由MMU完成, <strong>不同进程的用户空间被映射到物理内存的不同位置, 而不同进程的kernel空间被映射到物理内存的相同位置</strong>, 对于物理内存来说，<strong>用户空间和内核空间有不同的特权级, 从用户空间到内核空间的转换实质上是特权级的切换。</strong></p>
+</li>
+</ul>
+<h4 id="PCB"><a href="#PCB" class="headerlink" title="PCB"></a>PCB</h4><p><strong>每个进程在内核中都有一个PCB来维护进程相关信息</strong>, Linux内核的进程控制块是task_struct类型的结构体。</p>
+<p>在<code>/usr/src/linux-headers-3.16.0-30/include/linux/sched.h</code>文件中可以查看<code>struct task_struct</code>结构体定义。其内部成员有很多，重点需要掌握部分：</p>
+<ul>
+<li><strong>进程id。系统中每一个进程都有唯一的id,在c语言中用<code>pid_t</code>类型表示，其实就是一个非负整数</strong></li>
+<li><strong>进程的状态，有就绪、运行、挂起、停止等状态</strong></li>
+<li>进程切换时需要保存和恢复的一些CPU寄存器</li>
+<li>描述虚拟地址空间的信息，从虚拟地址映射到物理地址。</li>
+<li>描述控制终端的信息</li>
+<li>当前工作目录：cd 改变当前进程的工作目录，shell也是一个进程。</li>
+<li>umask掩码</li>
+<li><strong>文件描述符表，包含很多指向file结构体的指针</strong></li>
+<li><strong>和信号相关的信息</strong></li>
+<li><strong>用户id和组id</strong></li>
+<li>会话和进程组</li>
+<li>进程可以使用的资源上限：<code>ulimit -a</code></li>
+</ul>
+<p>就绪状态：<strong>等待cpu分配时间片</strong></p>
+<p>挂起状态：<strong>等待除cpu以外的其他资源，主动放弃cpu</strong></p>
+<h4 id="环境变量"><a href="#环境变量" class="headerlink" title="环境变量"></a>环境变量</h4><p>操作系统中用来<strong>指定操作系统运行环境的一些参数</strong>，通常具备以下特征：</p>
+<ul>
+<li><p>字符串（本质）</p>
+</li>
+<li><p>有统一的格式：名=值[:值]</p>
+</li>
+<li><p>值用来描述进程环境信息。</p>
+</li>
+<li><p>存储形式：与命令行参数类似。char* []，数组名 environ, 内部存储字符串，NULL作为哨兵结尾。</p>
+</li>
+<li><p>使用形式：与命令行参数类似</p>
+</li>
+<li><p>加载位置：与命令行参数类似，<strong>位于用户区，高于stack的起始位置</strong></p>
+</li>
+<li><p>引入环境变量表：须声明环境变量。<code>extern char** environ; （extern 声明）</code></p>
+</li>
+</ul>
+<p>常见环境变量：</p>
+<ul>
+<li><p>PATH</p>
+<ul>
+<li>可执行文件的<strong>搜索路径</strong>。<code>ls</code>命令也是一个程序，执行它不需要提供完成的路径名<code>/bin/ls</code>,然而通常执行当前目录下的程序<code>a.out</code>却需要提供完整的路径名<code>./a.out</code>,<strong>这是因为<code>PATH</code>环境变量的值里面包含了ls命令所在的目录/bin，却不包含a.out所在的目录。PATH环境变量的值可以包含多个目录，用:号隔开。在shell中用echo命令可以查看这个环境变量的值。</strong></li>
+<li><p><code>echo $PATH</code></p>
+</li>
+<li><p>使用date 和/bin/date原理是不同的。</p>
+</li>
+<li>shell按照PATH中的目录从前往后查找。</li>
+</ul>
+</li>
+<li><p>SHELL</p>
+<ul>
+<li>当前shell(命令解析器)，值一般是/bin/shell</li>
+</ul>
+</li>
+<li><p>TERM</p>
+<ul>
+<li>当前<strong>终端类型</strong>，在图形界面终端下它的值通常是xterm,终端类型决定了一些程序的输出方式，比如图形界面终端可以显示汉字，而字符终端一般不行。</li>
+</ul>
+</li>
+<li><p>LANG</p>
+<ul>
+<li>语言和locale，决定了字符编码以及时间、货币等信息的显示格式</li>
+</ul>
+</li>
+<li><p>HOME</p>
+<ul>
+<li><strong>当前用户主目录的路径，很多程序需要在主目录下保存配置文件，使得每个用户在运行该程序时都有自己的一套配置。</strong></li>
+</ul>
+</li>
+<li>env:<strong>查看所有环境变量</strong></li>
+</ul>
+<p><code>`getenv函数， setenv函数</code></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/linux/" rel="tag"># linux</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/03/23/linux-%E7%B3%BB%E7%BB%9F-04%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95%E6%93%8D%E4%BD%9C/" rel="prev" title="linux系统下文件和目录操作">
+      <i class="fa fa-chevron-left"></i> linux系统下文件和目录操作
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/05/06/linux_%E7%BD%91%E7%BB%9C01%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80/" rel="next" title="网络基础-1">
+      网络基础-1 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+      <div class="tabs tabs-comment">
+        <ul class="nav-tabs">
+            <li class="tab"><a href="#comment-gitalk">gitalk</a></li>
+            <li class="tab"><a href="#comment-livere">livere</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane gitalk" id="comment-gitalk">
+              <div class="comments" id="gitalk-container"></div>
+            </div>
+            <div class="tab-pane livere" id="comment-livere">
+              
+  <div class="comments" id="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81MjkwMy8yOTM4MA=="></div>
+  </div>
+  
+            </div>
+        </div>
+      </div>
+      <script>
+        window.addEventListener('tabs:register', () => {
+          let activeClass = 'gitalk';
+            activeClass = localStorage.getItem('comments_active') || activeClass;
+          if (activeClass) {
+            let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+            if (activeTab) {
+              activeTab.click();
+            }
+          }
+        });
+        window.addEventListener('tabs:click', event => {
+          let commentClass = event.target.classList[1];
+          localStorage.setItem('comments_active', commentClass);
+        });
+      </script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#linux进程"><span class="nav-number">1.</span> <span class="nav-text">linux进程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#进程、程序、并发"><span class="nav-number">1.1.</span> <span class="nav-text">进程、程序、并发</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#cpu和MMU-内存管理单元"><span class="nav-number">1.2.</span> <span class="nav-text">cpu和MMU(内存管理单元)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#PCB"><span class="nav-number">1.3.</span> <span class="nav-text">PCB</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#环境变量"><span class="nav-number">1.4.</span> <span class="nav-text">环境变量</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ShifuDong"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">ShifuDong</p>
+  <div class="site-description" itemprop="description">记录生活， 记录学习， 分享知识</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">43</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ShifuDong</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.0.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.5.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.getAttribute('pjax') !== null) {
+      element.setAttribute('pjax', '');
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'a6ee5b68c97a3db64850',
+      clientSecret: '1dfa06f32032431e4af79b80f9ddf9dfd13dbda2',
+      repo: 'dongshifu.github.io',
+      owner: 'dongshifu',
+      admin: ['dongshifu'],
+      id: '09d4473864413fed914f79f43af2c3a6',
+        language: 'zh-CN',
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script>
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+</script>
+
+    </div>
+</body>
+</html>

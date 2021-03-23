@@ -51,16 +51,16 @@
 <meta name="keywords" content="linux,网络">
 <meta property="og:type" content="article">
 <meta property="og:title" content="linux-网络编程-使用TCP的C&#x2F;S模型">
-<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;04&#x2F;24&#x2F;linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-3&#x2F;index.html">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;05&#x2F;24&#x2F;linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-3&#x2F;index.html">
 <meta property="og:site_name" content="ShifuDong">
 <meta property="og:description" content="基于TCP协议的客户端&#x2F;服务器程序的一般流程 服务器调用socket()、bind()、listen()完成初始化后，调用accept()阻塞等待，处于监听端口的状态。 客户端调用socket()初始化后，调用connect()发出SYN段并阻塞等待服务器应答，服务器应答一个SYN-ACK段，客户端收到后从connect()返回，同时应答一个ACK段，服务器收到后从accept()返回。 数据传输">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;f6c51f91-0005-44c9-8010-64d523fe5e12-11197877.jpg">
-<meta property="og:updated_time" content="2021-03-23T06:55:43.678Z">
+<meta property="og:updated_time" content="2021-03-23T08:06:54.446Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;f6c51f91-0005-44c9-8010-64d523fe5e12-11197877.jpg">
 
-<link rel="canonical" href="http://yoursite.com/2020/04/24/linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-3/">
+<link rel="canonical" href="http://yoursite.com/2020/05/24/linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-3/">
 
 
 <script id="page-configurations">
@@ -208,7 +208,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/04/24/linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-3/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/05/24/linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-3/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -231,14 +231,14 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2020-04-24 10:57:39" itemprop="dateCreated datePublished" datetime="2020-04-24T10:57:39+08:00">2020-04-24</time>
+              <time title="创建时间：2020-05-24 10:57:39" itemprop="dateCreated datePublished" datetime="2020-05-24T10:57:39+08:00">2020-05-24</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-23 14:55:43" itemprop="dateModified" datetime="2021-03-23T14:55:43+08:00">2021-03-23</time>
+                <time title="修改时间：2021-03-23 16:06:54" itemprop="dateModified" datetime="2021-03-23T16:06:54+08:00">2021-03-23</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -311,11 +311,11 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2020/04/23/linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-2/" rel="prev" title="linux网络编程-socket模型创建">
+    <a href="/2020/05/23/linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-2/" rel="prev" title="linux网络编程-socket模型创建">
       <i class="fa fa-chevron-left"></i> linux网络编程-socket模型创建
     </a></div>
       <div class="post-nav-item">
-    <a href="/2020/04/25/linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-4/" rel="next" title="linux网络编程-并发服务器">
+    <a href="/2020/05/25/linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-4/" rel="next" title="linux网络编程-并发服务器">
       linux网络编程-并发服务器 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
@@ -405,7 +405,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">42</span>
+          <span class="site-state-item-count">43</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -582,7 +582,7 @@ window.addEventListener('pjax:success', () => {
       repo: 'dongshifu.github.io',
       owner: 'dongshifu',
       admin: ['dongshifu'],
-      id: '57586193faf6be8310225a1e166780f0',
+      id: 'b7021d19225c83c41f0382d2ecff46b0',
         language: 'zh-CN',
       distractionFreeMode: 'true'
     });
