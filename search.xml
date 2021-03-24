@@ -62,7 +62,6 @@
 ]]></content>
       <categories>
         <category>Go Channel</category>
-        <category>Go</category>
       </categories>
       <tags>
         <tag>Go</tag>
@@ -102,7 +101,6 @@
 ]]></content>
       <categories>
         <category>Go Channel</category>
-        <category>Go</category>
       </categories>
       <tags>
         <tag>Go</tag>
@@ -153,7 +151,6 @@
 ]]></content>
       <categories>
         <category>Go Channel</category>
-        <category>Go</category>
       </categories>
       <tags>
         <tag>Go</tag>
@@ -795,7 +792,6 @@
 ]]></content>
       <categories>
         <category>Go interface</category>
-        <category>Go</category>
       </categories>
       <tags>
         <tag>Go interface</tag>
@@ -843,7 +839,6 @@
 ]]></content>
       <categories>
         <category>Go interface</category>
-        <category>Go</category>
       </categories>
       <tags>
         <tag>Go interface</tag>
@@ -945,7 +940,6 @@
 ]]></content>
       <categories>
         <category>Go interface</category>
-        <category>Go</category>
       </categories>
       <tags>
         <tag>Go interface</tag>
@@ -977,7 +971,6 @@
 ]]></content>
       <categories>
         <category>Go interface</category>
-        <category>Go</category>
       </categories>
       <tags>
         <tag>Go interface</tag>
@@ -1023,7 +1016,6 @@
 ]]></content>
       <categories>
         <category>Go interface</category>
-        <category>Go</category>
       </categories>
       <tags>
         <tag>Go 接口底层实现</tag>
@@ -1067,7 +1059,6 @@
 ]]></content>
       <categories>
         <category>Go interface</category>
-        <category>Go</category>
       </categories>
       <tags>
         <tag>接口 鸭子类型</tag>
@@ -1102,7 +1093,6 @@
 ]]></content>
       <categories>
         <category>Go interface</category>
-        <category>Go</category>
       </categories>
       <tags>
         <tag>go interface</tag>
@@ -1137,7 +1127,6 @@
 ]]></content>
       <categories>
         <category>Go interface</category>
-        <category>Go</category>
       </categories>
       <tags>
         <tag>go interface</tag>
@@ -4411,7 +4400,6 @@
 ]]></content>
       <categories>
         <category>Go struct</category>
-        <category>Go</category>
       </categories>
       <tags>
         <tag>Go值接收者 指针接收者</tag>
