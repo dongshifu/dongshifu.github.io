@@ -1237,7 +1237,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/27/linux-%E7%B3%BB%E7%BB%9F-07%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/28/linux-%E7%B3%BB%E7%BB%9F-08%E4%BF%A1%E5%8F%B7/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -1251,7 +1251,7 @@
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
           
-            <a href="/2020/03/27/linux-%E7%B3%BB%E7%BB%9F-07%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/" class="post-title-link" itemprop="url">linux-系统-07进程间通信</a>
+            <a href="/2020/03/28/linux-%E7%B3%BB%E7%BB%9F-08%E4%BF%A1%E5%8F%B7/" class="post-title-link" itemprop="url">linux系统-信号</a>
         </h1>
 
         <div class="post-meta">
@@ -1261,14 +1261,14 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2020-03-27 22:21:59" itemprop="dateCreated datePublished" datetime="2020-03-27T22:21:59+08:00">2020-03-27</time>
+              <time title="创建时间：2020-03-28 16:54:01" itemprop="dateCreated datePublished" datetime="2020-03-28T16:54:01+08:00">2020-03-28</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-23 22:22:37" itemprop="dateModified" datetime="2021-03-23T22:22:37+08:00">2021-03-23</time>
+                <time title="修改时间：2021-03-25 16:54:58" itemprop="dateModified" datetime="2021-03-25T16:54:58+08:00">2021-03-25</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1312,6 +1312,221 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/27/linux-%E7%B3%BB%E7%BB%9F-07%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/03/27/linux-%E7%B3%BB%E7%BB%9F-07%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/" class="post-title-link" itemprop="url">linux系统-进程间通信</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-27 22:21:59" itemprop="dateCreated datePublished" datetime="2020-03-27T22:21:59+08:00">2020-03-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-25 16:54:55" itemprop="dateModified" datetime="2021-03-25T16:54:55+08:00">2021-03-25</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index">
+                    <span itemprop="name">linux系统编程</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="进程间通信常见方式"><a href="#进程间通信常见方式" class="headerlink" title="进程间通信常见方式"></a>进程间通信常见方式</h3><p><strong>Linux环境下，进程地址空间相互独立，每个进程各自有不同的用户地址空间，任何一个进程的全局变量在另一个进程中都看不到，所以进程和进程之间不能相互访问，要交换数据必须通过内核，在内核中开辟一块缓冲区，进程1把数据从用户空间拷贝到内核缓冲区，进程2再从内核缓冲区把数据读走，内核提供的这种机制称为进程间通信(<code>IPC,Inter Process Communication</code>).</strong></p>
+<p>在进程间完成数据传递需要<strong>借助操作系统提供特殊的方法</strong>，如：文件、管道、信号、内存共享、消息队列、套接字、命名管道等。常用的进程间通信方式有：</p>
+<ul>
+<li>管道（使用最简单）<ul>
+<li><code>pipe</code></li>
+<li>管道的读写行为</li>
+<li><code>fifo</code><ul>
+<li>用于<strong>非血缘关系进程间通信</strong></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>信号（开销最小），<strong>只能携带固定的少量信息</strong></li>
+<li>共享映射区<ul>
+<li><code>mmap</code></li>
+<li>函数的参数使用注意事项</li>
+<li>用于<strong>非血缘关系的进程通信</strong></li>
+</ul>
+</li>
+<li>本地套接字（最稳定）</li>
+</ul>
+<h3 id="管道"><a href="#管道" class="headerlink" title="管道"></a>管道</h3><h4 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h4><p>管道是一种最基本的<code>IPC</code>机制，<strong>作用于有血缘关系的进程之间，完成数据传递</strong>。调用<code>pipe</code>系统函数即可创建一个管道。有如下特质：</p>
+<ul>
+<li>其本质是一个<strong>伪文件</strong>（实为<strong>内核缓冲区</strong>）</li>
+<li>有<strong>两个文件描述符引用</strong>，一个表示<strong>读端</strong>，一个表示<strong>写端</strong></li>
+<li><strong>规定数据从管道的写端流入管道，从读端流出</strong></li>
+</ul>
+<p>管道的原理：管道实为内核使用<strong>环形队列机</strong>制，借助<strong>内核缓冲区</strong>(4K)实现。</p>
+<p>管道的局限性：</p>
+<ul>
+<li>数据<strong>不能自己读自己写</strong></li>
+<li><strong>数据一旦被读走，便不在管道中存在，不可反复读取</strong></li>
+<li>由于管道采用<strong>半双工通信</strong>方式。因此数据<strong>只能在一个方向上流动</strong></li>
+<li><strong>只能在有公共祖先的进程间使用管道</strong></li>
+</ul>
+<h4 id="管道使用方法"><a href="#管道使用方法" class="headerlink" title="管道使用方法"></a>管道使用方法</h4><p><code>pipe</code>函数: <strong>创建并打开</strong>管道。</p>
+<p>函数调用成功返回<code>r/w</code>两个文件描述符，无需<code>open</code>,但需手动<code>close</code>。规定：<code>fd[0] :r, fd[1]:w</code>,  <strong>类似于0对应标准输入，1对应标准输出</strong>。<strong>向管道文件读写数据其实是在读写内核缓冲区。</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pipe</span><span class="params">(<span class="keyword">int</span> pipefd[<span class="number">2</span>])</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*pipefd[0]-读端;</span></span><br><span class="line"><span class="comment">pipefd[1]-写端;</span></span><br><span class="line"><span class="comment">成功返回0, 失败返回-1并设置errno;*/</span></span><br></pre></td></tr></table></figure>
+<p>刚<code>fork</code>完成时<strong>父进程关闭读端，子进程关闭写端，此时数据能在<code>pipe</code>中单向流动，父子进程能够完成通信</strong>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> ret=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> pipefd[<span class="number">2</span>];</span><br><span class="line">	<span class="keyword">pid_t</span> pid=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">char</span>* str=<span class="string">"loveyou\n"</span>;</span><br><span class="line">	<span class="keyword">char</span> buf[<span class="number">1024</span>];</span><br><span class="line">	<span class="comment">/*创建管道,文件描述符保存在数组里*/</span></span><br><span class="line">	ret=pipe(pipefd);</span><br><span class="line">	<span class="keyword">if</span>(ret==<span class="number">-1</span>)</span><br><span class="line">		perr_exit(<span class="string">"pipe error"</span>);</span><br><span class="line"></span><br><span class="line">	pid=fork();</span><br><span class="line">	<span class="keyword">if</span>(pid&gt;<span class="number">0</span>)&#123;</span><br><span class="line">		<span class="built_in">close</span>(pipefd[<span class="number">0</span>]);						<span class="comment">//父进程关闭读端</span></span><br><span class="line">		<span class="built_in">write</span>(pipefd[<span class="number">1</span>],str,<span class="keyword">sizeof</span>(str));		<span class="comment">//向管道中写入数据</span></span><br><span class="line">		<span class="built_in">close</span>(pipefd[<span class="number">1</span>]);						<span class="comment">//父进程关闭写端</span></span><br><span class="line">	&#125;<span class="keyword">else</span> <span class="keyword">if</span>(pid==<span class="number">0</span>)&#123;</span><br><span class="line">		<span class="built_in">close</span>(pipefd[<span class="number">1</span>]);						<span class="comment">//子进程关闭写端</span></span><br><span class="line">		ret=<span class="built_in">read</span>(pipefd[<span class="number">0</span>],buf,<span class="keyword">sizeof</span>(buf));	<span class="comment">//从管道中读取数据</span></span><br><span class="line">		<span class="built_in">write</span>(STDOUT_FILENO,buf,ret);			<span class="comment">//写到标准输出打印</span></span><br><span class="line">		<span class="built_in">close</span>(pipefd[<span class="number">0</span>]);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="管道读写行为"><a href="#管道读写行为" class="headerlink" title="管道读写行为"></a>管道读写行为</h4><ul>
+<li>读管道<ul>
+<li><strong>管道中有数据：<code>read</code>返回实际读到的字节数</strong></li>
+<li>管道中无数据：<ul>
+<li><strong>写端全关闭：read返回0</strong></li>
+<li><strong>写端没有被全部关闭</strong>（仍有写端打开）, <strong><code>read</code>阻塞等待(不久的将来可能会有数据抵达, 此时会让出CPU</strong></li>
+</ul>
+</li>
+</ul>
+</li>
+<li>写管道<ul>
+<li><strong>管道读端全部被关闭, 进程异常终止</strong>(也可以捕捉<code>SIGPIPE</code>信号, 使进程不终止)</li>
+<li>有读端打开<ul>
+<li>管道未满：<strong>写数据，<code>write</code>将数据写入，返回写入字节数</strong></li>
+<li>管道已满，<code>write</code>阻塞（少见）</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>获取管道缓冲区大小： <code>ulimit -a</code></p>
+<p><strong>父子进程</strong>通信练习：实现 <code>ls | wc -l</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//需要使用exec(), dup2(), pipe()</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> fd[<span class="number">2</span>];</span><br><span class="line">	<span class="keyword">pid_t</span> pid;</span><br><span class="line">	<span class="keyword">int</span> ret=<span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	ret=pipe(fd);</span><br><span class="line">	<span class="keyword">if</span>(ret==<span class="number">-1</span>)</span><br><span class="line">		perr_exit(<span class="string">"pipe error"</span>);</span><br><span class="line"></span><br><span class="line">	pid=fork();</span><br><span class="line">	<span class="keyword">if</span>(pid==<span class="number">-1</span>)</span><br><span class="line">		perr_exit(<span class="string">"fork error"</span>);</span><br><span class="line">	<span class="keyword">if</span>(pid&gt;<span class="number">0</span>)&#123;</span><br><span class="line">        <span class="comment">/*父进程先读管道,如果子进程还没起来,他就会阻塞,这样子进程就会先于父进程结束*/</span></span><br><span class="line">		<span class="built_in">close</span>(fd[<span class="number">1</span>]);</span><br><span class="line">		dup2(fd[<span class="number">0</span>],STDIN_FILENO);</span><br><span class="line">		execlp(<span class="string">"wc"</span>,<span class="string">"wc"</span>,<span class="string">"-l"</span>,<span class="literal">NULL</span>);</span><br><span class="line">		perr_exit(<span class="string">"execlp wc error"</span>);</span><br><span class="line">	&#125;<span class="keyword">else</span> <span class="keyword">if</span>(pid==<span class="number">0</span>)&#123;</span><br><span class="line">        <span class="comment">/*子进程写管道*/</span></span><br><span class="line">		<span class="built_in">close</span>(fd[<span class="number">0</span>]);</span><br><span class="line">		dup2(fd[<span class="number">1</span>],STDOUT_FILENO);</span><br><span class="line">		execlp(<span class="string">"ls"</span>,<span class="string">"ls"</span>,<span class="literal">NULL</span>);</span><br><span class="line">		perr_exit(<span class="string">"execlp ls error"</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>兄弟进程间通信：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> fd[<span class="number">2</span>];</span><br><span class="line">	<span class="keyword">pid_t</span> pid;</span><br><span class="line">	<span class="keyword">int</span> ret=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> i=<span class="number">0</span>;</span><br><span class="line">    </span><br><span class="line">	<span class="comment">/*创建管道*/</span></span><br><span class="line">	ret=pipe(fd);</span><br><span class="line">	<span class="keyword">if</span>(ret==<span class="number">-1</span>)</span><br><span class="line">		perr_exit(<span class="string">"pipe error"</span>);</span><br><span class="line">    </span><br><span class="line">	<span class="comment">/*循环创建2个子进程*/</span></span><br><span class="line">	<span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;<span class="number">2</span>;++i)&#123;</span><br><span class="line">		pid=fork();</span><br><span class="line">		<span class="keyword">if</span>(pid==<span class="number">-1</span>)</span><br><span class="line">			perr_exit(<span class="string">"fork error"</span>);</span><br><span class="line">		<span class="keyword">if</span>(pid==<span class="number">0</span>)</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">	&#125;</span><br><span class="line">    </span><br><span class="line">	<span class="comment">/*父进程关闭管道读写两端*/</span></span><br><span class="line">	<span class="keyword">if</span>(i==<span class="number">2</span>)&#123;</span><br><span class="line">		<span class="built_in">close</span>(fd[<span class="number">0</span>]);</span><br><span class="line">		<span class="built_in">close</span>(fd[<span class="number">1</span>]);</span><br><span class="line">		wait(<span class="literal">NULL</span>);</span><br><span class="line">		wait(<span class="literal">NULL</span>);</span><br><span class="line">	&#125;<span class="keyword">else</span> <span class="keyword">if</span>(i==<span class="number">0</span>)&#123;</span><br><span class="line">        <span class="comment">/*兄进程关闭读端,将STDOUT指向fd[1]*/</span></span><br><span class="line">		<span class="built_in">close</span>(fd[<span class="number">0</span>]);</span><br><span class="line">		dup2(fd[<span class="number">1</span>],STDOUT_FILENO);</span><br><span class="line">		execlp(<span class="string">"ls"</span>,<span class="string">"ls"</span>,<span class="literal">NULL</span>);</span><br><span class="line">		perr_exit(<span class="string">"execlp ls error"</span>);</span><br><span class="line">	&#125;<span class="keyword">else</span> <span class="keyword">if</span>(i==<span class="number">1</span>)&#123;</span><br><span class="line">        <span class="comment">/*弟进程关闭写端,将STDIN指向fd[0]*/</span></span><br><span class="line">		<span class="built_in">close</span>(fd[<span class="number">1</span>]);</span><br><span class="line">		dup2(fd[<span class="number">0</span>],STDIN_FILENO);</span><br><span class="line">		execlp(<span class="string">"wc"</span>,<span class="string">"wc"</span>,<span class="string">"-l"</span>,<span class="literal">NULL</span>);</span><br><span class="line">		perr_exit(<span class="string">"execlp wc error"</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意：管道可以一个读端, 多个写端, 但是不建议这样做。默认管道的大小是4k。</p>
+<h3 id="命名管道FIFO"><a href="#命名管道FIFO" class="headerlink" title="命名管道FIFO"></a>命名管道FIFO</h3><h4 id="基本概念-1"><a href="#基本概念-1" class="headerlink" title="基本概念"></a>基本概念</h4><p>为区分<code>pipe</code>,将<code>FIFO</code>称为命名管道。<code>FIFO</code>可<strong>用于不相关进程间的数据交换</strong>。</p>
+<p><code>FIFO</code>是Linux<strong>基础文件类型中的一种</strong>, 但是<strong><code>FIFO</code>文件在磁盘上没有数据块, 仅仅用来标识内核中的一条通道, 各进程可以打开这个文件进行read/write, 实际上是在读写内核通道, 这样就实现了进程间通信</strong></p>
+<p>创建方式:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">mkfifo</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* pathname,<span class="keyword">mode_t</span> mode)</span></span>;</span><br><span class="line"><span class="comment">//成功返回0, 失败返回-1并设置errno</span></span><br></pre></td></tr></table></figure>
+<p>用FIFO进行通信几乎只有文件读写操作, 比较简单。</p>
+<h3 id="文件通信"><a href="#文件通信" class="headerlink" title="文件通信"></a>文件通信</h3><p>读普通文件不会造成<code>read</code>阻塞, 如果子进程睡1秒再写, 父进程由于刚开始读不到数据<code>read</code>直接返回0。</p>
+<p>没有血缘关系的进程也可以用文件进行进程间通信。</p>
+<h4 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h4><p>写进程：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> fd=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> i=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">char</span> buf[<span class="number">4096</span>];</span><br><span class="line">	<span class="comment">/*靠已经创建好的FIFO,如果命令行参数没给指定,报错*/</span></span><br><span class="line">	<span class="keyword">if</span>(argc&lt;<span class="number">2</span>)&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"Enter like this:./a.out fifoname\n"</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">/*以只写方式打开FIFO文件,拿到fd*/</span></span><br><span class="line">	fd=<span class="built_in">open</span>(argv[<span class="number">1</span>],O_WRONLY);</span><br><span class="line">	<span class="keyword">if</span>(fd==<span class="number">-1</span>)</span><br><span class="line">		perr_exit(<span class="string">"open error"</span>);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">while</span>(<span class="number">1</span>)&#123;</span><br><span class="line">        <span class="comment">/*将数据写到buf中*/</span></span><br><span class="line">		<span class="built_in">sprintf</span>(buf,<span class="string">"love you:%d\n"</span>,i++);</span><br><span class="line">		<span class="built_in">write</span>(fd,buf,<span class="built_in">strlen</span>(buf));</span><br><span class="line">		sleep(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="built_in">close</span>(fd);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>读进程：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> fd=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> i=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> len=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">char</span> buf[<span class="number">4096</span>];</span><br><span class="line">	<span class="comment">/*同样要依靠已经创建好的FIFO,从命令行参数中指定*/</span></span><br><span class="line">	<span class="keyword">if</span>(argc&lt;<span class="number">2</span>)&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"Enter like this:./a.out fifoname\n"</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">/*以只读方式打开FIFO文件,拿到fd*/</span></span><br><span class="line">	fd=<span class="built_in">open</span>(argv[<span class="number">1</span>],O_RDONLY);</span><br><span class="line">	<span class="keyword">if</span>(fd==<span class="number">-1</span>)</span><br><span class="line">		perr_exit(<span class="string">"open error"</span>);</span><br><span class="line">	<span class="comment">/*从fd中读取数据,并写到标准输出上*/</span></span><br><span class="line">	<span class="keyword">while</span>(<span class="number">1</span>)&#123;</span><br><span class="line">		len=<span class="built_in">read</span>(fd,buf,<span class="keyword">sizeof</span>(buf));</span><br><span class="line">		<span class="built_in">write</span>(STDOUT_FILENO,buf,len);</span><br><span class="line">		sleep(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="built_in">close</span>(fd);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="MMAP"><a href="#MMAP" class="headerlink" title="MMAP"></a>MMAP</h3><h4 id="基本概念-2"><a href="#基本概念-2" class="headerlink" title="基本概念"></a>基本概念</h4><p><img src="https://api2.mubu.com/v3/document_image/f56e0e79-6128-4a52-beb4-982703780c5e-11197877.jpg" alt="mmap"></p>
+<p><strong>存储映射I/O使一个磁盘文件与存储空间中的一个缓冲区相映射, 于是当从缓冲区中取数据, 就相当于读文件中的相应字节。</strong>与此类似, <strong>将数据存入缓冲区, 则相应的字节就自动写入文件, 这样就可以在不使用<code>read</code>和<code>write</code>函数的情况下, 使用指针完成<code>I/O</code>操作</strong>。可以借助共享内存和指针来访问磁盘文件。</p>
+<p>使用这种方法, <strong>首先应通知内核, 将一个文件映射到存储区域中</strong>, 这个映射工作可以通过<strong><code>mmap函数</code></strong>来实现。</p>
+<h4 id="基本使用方法"><a href="#基本使用方法" class="headerlink" title="基本使用方法"></a>基本使用方法</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">mmap</span><span class="params">(<span class="keyword">void</span> *addr, <span class="keyword">size_t</span> length, <span class="keyword">int</span> prot, <span class="keyword">int</span> flags, <span class="keyword">int</span> fd, <span class="keyword">off_t</span> offset)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*返回：成功则返回创建的映射区首地址，失败:MAP_FAILED宏((void*)-1), 设置errno;</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">addr:建立映射区的首地址，由linux内核指定，使用的时候直接传递NULL, 表示让系统自动分配;</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">length:创建映射区的大小(&lt;=文件的实际大小);</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">prot: 共享内存映射区的读写属性：PROT_READ, PROT_WRITE, PROT_READ|PROT_WRITE</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">flags: 标志位参数（常用于设定更新物理区域，设置共享，创建匿名映射区）</span></span><br><span class="line"><span class="comment">	MAP_SHARED: 将映射区所做的操作反映到物理设备上（磁盘）</span></span><br><span class="line"><span class="comment">	MAP_PRIVATE：映射区所做的修改不会映射到物理设备</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">fd：用来建立映射区的文件描述符*/</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/mman.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> len, ret;</span><br><span class="line">    <span class="keyword">char</span>* p = <span class="literal">NULL</span>;</span><br><span class="line">    <span class="keyword">int</span> fd = <span class="built_in">open</span>(<span class="string">"mytest.txt"</span>,O_CREAT|O_RDWR,<span class="number">0644</span>);</span><br><span class="line">    <span class="keyword">if</span>(fd &lt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        perror(<span class="string">"open"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    len = ftruncate(fd,<span class="number">4</span>); <span class="comment">//将文件截断为4byte</span></span><br><span class="line">    <span class="keyword">if</span>(len == <span class="number">-1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        perror(<span class="string">"ftruncate"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    p = mmap(<span class="literal">NULL</span>,<span class="number">4</span>,PROT_READ|PROT_WRITE,MAP_SHARED,fd,<span class="number">0</span>);</span><br><span class="line">    <span class="keyword">if</span>(p == MAP_FAILED)</span><br><span class="line">    &#123;</span><br><span class="line">        perror(<span class="string">"mmap"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/*内存的写操作,会被映射到文件的写操作*/</span></span><br><span class="line">    <span class="built_in">strcpy</span>(p,<span class="string">"abc"</span>);<span class="comment">//写数据</span></span><br><span class="line">    <span class="comment">/*与malloc一样,申请的内存要还回去*/</span></span><br><span class="line">    ret = munmap(p,<span class="number">4</span>);</span><br><span class="line">    <span class="keyword">if</span>(ret == <span class="number">-1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        perror(<span class="string">"munmap"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">close</span>(fd);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>od -tcx filename</code>:以16进制查看文件</p>
+<h4 id="MMAP使用注意事项"><a href="#MMAP使用注意事项" class="headerlink" title="MMAP使用注意事项"></a>MMAP使用注意事项</h4><p><strong>创建映射区的权限应该小于等于文件打开的权限，创建映射区的过程隐含一次对文件的读操作。</strong></p>
+<p><strong>段错误：gdb，直接run就可以抓取到段错误的位置。</strong></p>
+<ul>
+<li>可以<code>open</code>的时候<code>O_CREAT</code>一个新文件来创建映射区，但是<strong>要拓展文件大小, 否则会出现总线错误</strong>. 当然 <code>mmap</code>时指定<code>size=0</code>,<code>mmap</code>会报错</li>
+<li>如果<code>open</code>时指定<code>O_RDONLY</code>，<code>mmap</code>时<code>PROT</code>参数指定<code>PROT_READ|PROT_WRITE</code>会报错，无效参数(注意<code>ftruncte()</code>函数需要<strong>写权限, 否则无法拓展文件大小</strong>). <strong>如果都用只读权限, 不会出错. 要创建映射区, 文件必须有读权限</strong></li>
+<li><strong>文件描述符先关闭，对<code>mmap</code>映射没有影响，建立完映射区后<code>fd</code>即可关闭</strong></li>
+<li>如果文件偏移量为1000，<code>mmap</code>会报错，<strong>因为偏移量必须是<code>4K</code>的整数倍(<code>MMU</code>映射的最小单位为<code>4K</code>)</strong></li>
+<li>对<code>mem</code>进行越界操作：小范围的越界问题不大, 但是最好不要这样(操纵不安全的内存, 操作系统不给保障)</li>
+<li>如果<code>mem++</code>,<code>munmap</code>不会成功(与<code>malloc</code>一样, <strong>释放的内存的指针必须是申请得来的初始的指针, 如果要改变指针的值, 拷贝一份用</strong>)</li>
+<li>除了第一个参数, 后面的参数都可能导致失败</li>
+<li>无论<code>mmap</code>多复杂，一定要检查<code>mmap</code>的返回值</li>
+</ul>
+<p>总结：</p>
+<ul>
+<li>创建映射区过程中，隐含一次对映射文件的读操作</li>
+<li>当<code>MAP_SHARED</code>时，<strong>要求映射区的权限应该&lt;=文件打开的权限（出于对映射区的保护）</strong>,而<code>MAP_PRIVATE</code>则无所谓因为<strong><code>mmap</code>中的权限是对内存的限制</strong></li>
+<li>特别注意，<strong>当映射区文件大小为0时，不能创建映射区，所以：用于映射的文件必须要有实际大小！！<code>mmap</code>使用时候经常会出现总线错误，通常是由于共享文件存储空间大小引起的</strong></li>
+<li><code>munmap</code>传入的地址一定是<code>mmap</code>的返回地址，坚决杜绝指针<code>++</code>操作</li>
+<li>文件偏移量必须为<code>4K</code>的整数倍</li>
+<li><code>mma</code>p创建映射区出错概率很高，一定要检查返回值，确保映射区建立成功后再进行后续操作</li>
+</ul>
+<h4 id="mmap优点"><a href="#mmap优点" class="headerlink" title="mmap优点"></a>mmap优点</h4><ul>
+<li><p>对文件的读取操作<strong>跨过了页缓存，减少了数据的拷贝次数，用内存读写取代<code>I/O</code>读写，提高了文件读取效率。</strong></p>
+</li>
+<li><p>实现了用户空间和内核空间的高效交互方式。两空间的各自修改操作可以直接反映在映射的区域内，从而被对方空间及时捕捉。</p>
+</li>
+<li><p><strong>提供进程间共享内存及相互通信的方式</strong>。<strong>不管是父子进程还是无亲缘关系的进程，都可以将自身用户空间映射到同一个文件或匿名映射到同一片区域。从而通过各自对映射区域的改动，达到进程间通信和进程间共享的目的。</strong>同时，<strong>如果进程A和进程B都映射了区域C，当A第一次读取C时通过缺页从磁盘复制文件页到内存中；但当B再读C的相同页面时，虽然也会产生缺页异常，但是不再需要从磁盘中复制文件过来，而可以直接使用已经保存在内存中的文件数据。</strong></p>
+</li>
+<li><p>可用于实现高效的大规模数据传输。内存空间不足，是制约大数据操作的一个方面，解决方案往往是借助硬盘空间协助操作，补充内存的不足。但是进一步会造成大量的文件I/O操作，极大影响效率。这个问题可以通过<code>mmap</code>映射很好的解决。换句话说，<strong>但凡是需要用磁盘空间代替内存的时候，<code>mmap</code>都可以发挥其功效。</strong></p>
+</li>
+</ul>
+<h4 id="mmap父子进程通信"><a href="#mmap父子进程通信" class="headerlink" title="mmap父子进程通信"></a>mmap父子进程通信</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/mman.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/wait.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> var = <span class="number">100</span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span>* p;</span><br><span class="line">    <span class="keyword">pid_t</span> pid;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> fd;</span><br><span class="line">    fd = <span class="built_in">open</span>(<span class="string">"temp"</span>,O_CREAT |O_RDWR|O_TRUNC,<span class="number">0644</span>);</span><br><span class="line">    <span class="keyword">if</span>(fd &lt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        perror(<span class="string">"open error"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    unlink(<span class="string">"temp"</span>); <span class="comment">//删除临时文件目录项，使之具备被释放的条件</span></span><br><span class="line">    ftruncate(fd,<span class="number">4</span>);</span><br><span class="line">    </span><br><span class="line">    p = (<span class="keyword">int</span>*)mmap(<span class="literal">NULL</span>,<span class="number">4</span>,PROT_READ|PROT_WRITE,MAP_SHARED,fd,<span class="number">0</span>); <span class="comment">//共享</span></span><br><span class="line">    <span class="comment">// p = (int*)mmap(NULL,4,PROT_READ|PROT_WRITE,MAP_PRIVATE,fd,0); //进程各自独占</span></span><br><span class="line">    <span class="keyword">if</span>(p == MAP_FAILED) <span class="comment">//注意：不是p==NULL</span></span><br><span class="line">    &#123;</span><br><span class="line">        perror(<span class="string">"mmap error"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">close</span>(fd); <span class="comment">//映射区建立完毕，即可关闭文件</span></span><br><span class="line">    pid = fork();</span><br><span class="line">    <span class="keyword">if</span>(pid == <span class="number">0</span>) <span class="comment">//创建子进程</span></span><br><span class="line">    &#123;</span><br><span class="line">        *p = <span class="number">2000</span>; <span class="comment">//给映射区赋值</span></span><br><span class="line">        var = <span class="number">1000</span>;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"child, *p = %d, var = %d\n"</span>,*p, var);</span><br><span class="line">    &#125; <span class="keyword">else</span>&#123;</span><br><span class="line">        sleep(<span class="number">1</span>);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"parent, *p = %d, var = %d\n"</span>,*p, var);</span><br><span class="line">        wait(<span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> ret = munmap(p,<span class="number">4</span>); <span class="comment">//释放映射区</span></span><br><span class="line">        <span class="keyword">if</span>(ret == <span class="number">-1</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            perror(<span class="string">"munmap error"</span>);</span><br><span class="line">            <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//child, *p = 2000, var = 1000</span></span><br><span class="line"><span class="comment">//parent, *p = 2000, var = 100</span></span><br></pre></td></tr></table></figure>
+<p>父子等有血缘关系的进程直接也可以通过<code>mmap</code>建立的映射区来完成数据通信。但相应的要在创建映射区的时候指定对应的标志位参数<code>flags</code>:</p>
+<ul>
+<li><code>MAP_PRIVATE</code>(私有映射): 父子进程各自独占映射区</li>
+<li><code>MAP_SHARED</code>(共享映射):父子进程共享映射区</li>
+</ul>
+<p>结论：父子进程共享：</p>
+<ul>
+<li>打开的文件</li>
+<li><code>mmap</code>建立的映射区（但必须使用MAP_SHARED）</li>
+</ul>
+<h4 id="匿名映射"><a href="#匿名映射" class="headerlink" title="匿名映射"></a>匿名映射</h4><p>使用映射区来完成文件读写操作十分方便，父子进程间通信也比较容易，但缺陷是：每次创建映射区一定要依赖一个文件才能实现。通常为了建立映射区要<code>open</code>一个<code>temp</code>文件，创建好了再<code>unlink</code>、<code>close</code>,比较麻烦。可以直接使用匿名映射来代替。linux提供了相应的方法，<strong>无需依赖一个文件即可创建映射区，同样需要借助标志位参数<code>flags</code>来指定：</strong></p>
+<p>使用<code>MAP_ANONYMOUS(或MAP_ANON)</code>,如：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span>*p = mmap(<span class="literal">NULL</span>,<span class="number">4</span>,PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANONYMOUS,<span class="number">-1</span>,<span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/mman.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/wait.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> var = <span class="number">100</span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span>* p;</span><br><span class="line">    <span class="keyword">pid_t</span> pid;</span><br><span class="line"></span><br><span class="line">    p = (<span class="keyword">int</span>*)mmap(<span class="literal">NULL</span>,<span class="number">4</span>,PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANON,<span class="number">-1</span>,<span class="number">0</span>); <span class="comment">//共享</span></span><br><span class="line">    <span class="comment">// p = (int*)mmap(NULL,4,PROT_READ|PROT_WRITE,MAP_PRIVATE,fd,0); //进程各自独占</span></span><br><span class="line">    <span class="keyword">if</span>(p == MAP_FAILED) <span class="comment">//注意：不是p==NULL</span></span><br><span class="line">    &#123;</span><br><span class="line">        perror(<span class="string">"mmap error"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    pid = fork();</span><br><span class="line">    <span class="keyword">if</span>(pid == <span class="number">0</span>) <span class="comment">//创建子进程</span></span><br><span class="line">    &#123;</span><br><span class="line">        *p = <span class="number">2000</span>; <span class="comment">//给映射区赋值</span></span><br><span class="line">        var = <span class="number">1000</span>;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"child, *p = %d, var = %d\n"</span>,*p, var);</span><br><span class="line">    &#125; <span class="keyword">else</span>&#123;</span><br><span class="line">        sleep(<span class="number">1</span>);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"parent, *p = %d, var = %d\n"</span>,*p, var);</span><br><span class="line">        wait(<span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> ret = munmap(p,<span class="number">4</span>); <span class="comment">//释放映射区</span></span><br><span class="line">        <span class="keyword">if</span>(ret == <span class="number">-1</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            perror(<span class="string">"munmap error"</span>);</span><br><span class="line">            <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意：<code>MAP_ANONYMOUS</code>和<code>MAP_ANON</code>两个宏是linux操作系统特有的宏。在类Unix系统中如无该宏定义，可使用如下两步来完成匿名映射区的建立：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">fd = <span class="built_in">open</span>(<span class="string">"dev/zero"</span>,O_RDWR);</span><br><span class="line">p = mmap(<span class="literal">NULL</span>, <span class="built_in">size</span>,PROT_READ|PROT_WRITE,MMAP_SHARED,fd,<span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+<p><code>/dev/zero</code>-<strong>文件白洞</strong>, 里面<strong>有无限量的’\0’, 要多少有多少</strong></p>
+<p><code>/dev/null</code>-<strong>文件黑洞</strong>, 可以<strong>写入任意量的数据</strong></p>
+<p>所以在创建映射区时可以用zero文件, 就不用自己创建文件然后拓展大小了</p>
+<h4 id="mmap无血缘关系进程间通信"><a href="#mmap无血缘关系进程间通信" class="headerlink" title="mmap无血缘关系进程间通信"></a>mmap无血缘关系进程间通信</h4><p>实质上<code>mmap</code>是内核借助文件帮助创建的一个映射区，多个进程之间利用该映射区完成数据传递。<strong>由于内核空间多进程共享，因此无血缘关系的进程间也可以使用<code>mmap</code>来完成通信，只要设置相应的标志位参数<code>flags</code>即可。若想实现共享，应该使用<code>MAP_SHARED</code></strong></p>
+<p>要点：<strong>必须是同一个文件</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//mmap_w.c 写进程</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/mman.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">STU</span>&#123;</span></span><br><span class="line">    <span class="keyword">int</span> id;</span><br><span class="line">    <span class="keyword">char</span> name[<span class="number">20</span>];</span><br><span class="line">    <span class="keyword">char</span> sex;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">sys_err</span><span class="params">(<span class="keyword">char</span>* str)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    perror(str);</span><br><span class="line">    <span class="built_in">exit</span>(<span class="number">-1</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>* argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> fd;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">STU</span> <span class="title">student</span> = &#123;</span><span class="number">10</span>,<span class="string">"xiaoming"</span>,<span class="string">'m'</span>&#125;;</span><br><span class="line">    <span class="keyword">char</span>* mm;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(argc &lt; <span class="number">2</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"./a.out file_shared\n"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">-1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">	 <span class="comment">/*打开或创建一个文件*/</span></span><br><span class="line">    fd = <span class="built_in">open</span>(argv[<span class="number">1</span>],O_RDWR|O_CREAT,<span class="number">0644</span>);</span><br><span class="line">    <span class="keyword">if</span>(fd == <span class="number">-1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        sys_err(<span class="string">"open error"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    ftruncate(fd,<span class="keyword">sizeof</span>(student));</span><br><span class="line">	<span class="comment">/*建立内存映射区*/</span></span><br><span class="line">    mm = mmap(<span class="literal">NULL</span>, <span class="keyword">sizeof</span>(student),PROT_READ|PROT_WRITE, MAP_SHARED,fd,<span class="number">0</span>);</span><br><span class="line">    <span class="keyword">if</span>(mm == MAP_FAILED)</span><br><span class="line">    &#123;</span><br><span class="line">        sys_err(<span class="string">"mmap error"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">close</span>(fd);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*循环使用memcpy向内存映射区中写入数据,并修改stu的id值*/</span></span><br><span class="line">    <span class="keyword">while</span>(<span class="number">1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">memcpy</span>(mm,&amp;student,<span class="keyword">sizeof</span>(student));</span><br><span class="line">        student.id ++;</span><br><span class="line">        sleep(<span class="number">2</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/*归还内存映射区给内存池*/</span></span><br><span class="line">    munmap(mm,<span class="keyword">sizeof</span>(student));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//mmap_r.c</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/mman.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">STU</span>&#123;</span></span><br><span class="line">    <span class="keyword">int</span> id;</span><br><span class="line">    <span class="keyword">char</span> name[<span class="number">20</span>];</span><br><span class="line">    <span class="keyword">char</span> sex;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">sys_err</span><span class="params">(<span class="keyword">char</span>* str)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    perror(str);</span><br><span class="line">    <span class="built_in">exit</span>(<span class="number">-1</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>* argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> fd;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">STU</span> <span class="title">student</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">STU</span>* <span class="title">mm</span>;</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(argc &lt; <span class="number">2</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"./a.out file_shared\n"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">-1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">	<span class="comment">/*建立内存映射区*/</span></span><br><span class="line">    fd = <span class="built_in">open</span>(argv[<span class="number">1</span>],O_RDONLY);</span><br><span class="line">    <span class="keyword">if</span>(fd == <span class="number">-1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        sys_err(<span class="string">"open error"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/*循环读出内存映射区中的数据*/</span></span><br><span class="line">    mm = mmap(<span class="literal">NULL</span>, <span class="keyword">sizeof</span>(student),PROT_READ, MAP_SHARED,fd,<span class="number">0</span>);</span><br><span class="line">    <span class="keyword">if</span>(mm == MAP_FAILED)</span><br><span class="line">    &#123;</span><br><span class="line">        sys_err(<span class="string">"mmap error"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">close</span>(fd);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span>(<span class="number">1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"id = %d\tname=%s\t%c\n"</span>,mm-&gt;id,mm-&gt;name,mm-&gt;sex);</span><br><span class="line">        sleep(<span class="number">2</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>无血缘关系进程间通信, 不能用匿名映射</strong></p>
+<p><code>strace</code>: 追踪一个可执行文件在执行过程中所有的系统调用。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/26/linux-%E7%B3%BB%E7%BB%9F-06%E8%BF%9B%E7%A8%8B%E6%8E%A7%E5%88%B6/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1326,7 +1541,7 @@
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
           
-            <a href="/2020/03/26/linux-%E7%B3%BB%E7%BB%9F-06%E8%BF%9B%E7%A8%8B%E6%8E%A7%E5%88%B6/" class="post-title-link" itemprop="url">linux-系统-06进程管理</a>
+            <a href="/2020/03/26/linux-%E7%B3%BB%E7%BB%9F-06%E8%BF%9B%E7%A8%8B%E6%8E%A7%E5%88%B6/" class="post-title-link" itemprop="url">linux系统-进程管理</a>
         </h1>
 
         <div class="post-meta">
@@ -1343,7 +1558,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-23 22:21:32" itemprop="dateModified" datetime="2021-03-23T22:21:32+08:00">2021-03-23</time>
+                <time title="修改时间：2021-03-25 10:13:23" itemprop="dateModified" datetime="2021-03-25T10:13:23+08:00">2021-03-25</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1441,7 +1656,7 @@
 </li>
 </ul>
 <p>事实上，只有<code>execve</code>是真正的系统调用，其他五个函数最终都调用<code>execev</code>,所以<code>execve</code>在man手册第二节，而其他函数在man手册第三节。</p>
-<h3 id="回收子进程"><a href="#回收子进程" class="headerlink" title="回收子进程"></a>回收子进程</h3><h4 id="孤儿进程"><a href="#孤儿进程" class="headerlink" title="孤儿进程"></a>孤儿进程</h4><p><strong>父进程先于子进程结束，则子进程变为孤儿进程，子进程的父进程变为<code>init</code>进程，称为<code>init</code>进程领养孤儿进程。</strong></p>
+<h3 id="回收子进程"><a href="#回收子进程" class="headerlink" title="回收子进程"></a>回收子进程</h3><h4 id="孤儿进程"><a href="#孤儿进程" class="headerlink" title="孤儿进程"></a>孤儿进程</h4><p><strong>父进程先于子进程结束，则子进程变为孤儿进程，子进程的父进程变为<code>init</code>进程，称为<code>init</code>进程领养孤儿进程。该过程主要是为了后期进行回收。</strong></p>
 <h4 id="僵尸进程"><a href="#僵尸进程" class="headerlink" title="僵尸进程"></a>僵尸进程</h4><p><strong>进程终止，父进程尚未回收，子进程残留资源(PCB)存放在内核中，变成僵尸(Zombie)进程。</strong></p>
 <p>特别注意：<strong>僵尸进程不能使用kill命令来清除。因为kill命令只是用来终止进程的，而僵尸进程已经终止。</strong></p>
 <p>进程的运行状态：R 运行， S 后台运行， Z 僵尸进程</p>
@@ -1472,178 +1687,7 @@
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//修改bug后</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> i=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> wpid=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> pid=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> temppid=<span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;<span class="number">5</span>;++i)&#123;</span><br><span class="line">		pid=fork();</span><br><span class="line">		<span class="keyword">if</span>(pid==<span class="number">0</span>)</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		<span class="comment">/*在父进程中,如果i==2,将fork的返回值存入temppid*/</span></span><br><span class="line">		<span class="keyword">if</span>(i==<span class="number">2</span>)</span><br><span class="line">			temppid=pid;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span>(i==<span class="number">5</span>)&#123;</span><br><span class="line">		<span class="comment">//wpid=waitpid(-1,NULL,WNOHANG);		//以非阻塞的方式回收任意子进程</span></span><br><span class="line">		sleep(<span class="number">5</span>);</span><br><span class="line">		wpid=waitpid(temppid,<span class="literal">NULL</span>,WNOHANG);</span><br><span class="line">		<span class="keyword">if</span>(wpid==<span class="number">-1</span>)</span><br><span class="line">			perr_exit(<span class="string">"waitpid error"</span>);</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"I'm parent,wait a child finish:%d\n"</span>,wpid);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span>&#123;</span><br><span class="line">		sleep(i);</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"I'm %dth child,my pid=%d\n"</span>,i+<span class="number">1</span>,getpid());</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	sleep(<span class="number">1</span>);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>回收多个子进程: <strong>用while循环</strong></p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> i=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> wpid=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> pid=<span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;<span class="number">5</span>;++i)&#123;</span><br><span class="line">		pid=fork();</span><br><span class="line">		<span class="keyword">if</span>(pid==<span class="number">0</span>)</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span>(i==<span class="number">5</span>)&#123;</span><br><span class="line">        <span class="comment">/*以非阻塞忙轮询的方式回收子进程*/</span></span><br><span class="line">		<span class="keyword">while</span>((wpid=waitpid(<span class="number">-1</span>,<span class="literal">NULL</span>,WNOHANG))!=<span class="number">-1</span>)&#123;</span><br><span class="line">			<span class="keyword">if</span>(wpid&gt;<span class="number">0</span>)</span><br><span class="line">				<span class="built_in">printf</span>(<span class="string">"wait chile:%d\n"</span>,wpid);</span><br><span class="line">			<span class="keyword">else</span> <span class="keyword">if</span>(wpid==<span class="number">0</span>)</span><br><span class="line">				sleep(<span class="number">1</span>);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">		sleep(i);</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"I'm %dth child,my pid=%d\n"</span>,i+<span class="number">1</span>,getpid());</span><br><span class="line">	&#125;</span><br><span class="line">	sleep(<span class="number">1</span>);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/25/linux-%E7%B3%BB%E7%BB%9F-05%E8%BF%9B%E7%A8%8B/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/03/25/linux-%E7%B3%BB%E7%BB%9F-05%E8%BF%9B%E7%A8%8B/" class="post-title-link" itemprop="url">linux系统编程-进程</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-03-25 16:02:58" itemprop="dateCreated datePublished" datetime="2020-03-25T16:02:58+08:00">2020-03-25</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-23 21:47:57" itemprop="dateModified" datetime="2021-03-23T21:47:57+08:00">2021-03-23</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index">
-                    <span itemprop="name">linux系统编程</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="linux进程"><a href="#linux进程" class="headerlink" title="linux进程"></a>linux进程</h3><h4 id="进程、程序、并发"><a href="#进程、程序、并发" class="headerlink" title="进程、程序、并发"></a>进程、程序、并发</h4><p>程序：编译好的二进制文件。在<strong>磁盘上，不占用系统资源</strong>(cpu、 内存、打开的文件、设备、锁…)</p>
-<p>进程：一个抽象概念，与操作系统原理联系紧密。进程是<strong>活跃的程序，占用系统资源</strong>。在内存中执行(程序运行起来则产生一个进程)</p>
-<p>并发：<strong>操作系统中，一个时间段中有多个进程都处于已启动到运行完毕之间的状态。但一个时刻点上仍只有一个进程在运行（分时复用）。</strong></p>
-<h4 id="cpu和MMU-内存管理单元"><a href="#cpu和MMU-内存管理单元" class="headerlink" title="cpu和MMU(内存管理单元)"></a>cpu和MMU(内存管理单元)</h4><p><img src="https://api2.mubu.com/v3/document_image/e44706d6-6069-4a0e-9c85-6c1c43c3c19f-11197877.jpg" alt="cpu和存储"></p>
-<ul>
-<li><p>存储设备包括寄存器，cache,内存，硬盘，网络等。<strong>与cpu直接打交道的应该是寄存器，多级缓存</strong></p>
-</li>
-<li><p><strong>MMU(内存管理单元), 位于CPU内部</strong></p>
-</li>
-<li>MMU完成<strong>虚拟地址到物理地址的映射</strong>，设置<strong>修改内存访问级别（用户空间，内核空间）。一个page是内存分配的最小单位。</strong></li>
-</ul>
-<ul>
-<li><p>虚拟内存空间产生的时间：进程启动的时候，<strong>进程的所有东西都放在虚拟内存中，并不真实存在</strong>。实际的都放在内存中，虚拟空间如何描述？</p>
-</li>
-<li><p>虚拟地址：可用的地址空间有4G(32位操作系统)</p>
-</li>
-<li><p>如果一个程序跑了两个进程：<strong>两个进程开了两个虚拟空间，两个进程互相独立。两个不同的进程共用一个内存空间</strong>。</p>
-</li>
-</ul>
-<p>虚拟内存和物理内存映射关系：</p>
-<p><img src="https://api2.mubu.com/v3/document_image/06bd754f-dfe9-4081-a742-5f305d537582-11197877.jpg" alt="虚拟内存和物理内存映射关系"></p>
-<ul>
-<li><p>对于一个32位的机器来说, 每个进程都能看到4GB的虚拟地址空间, 且他们的3G~4G的位置都是kernel(<strong>每个进程都有kernel区</strong>)</p>
-</li>
-<li><p>从虚拟内存到物理内存的映射由MMU完成, <strong>不同进程的用户空间被映射到物理内存的不同位置, 而不同进程的kernel空间被映射到物理内存的相同位置</strong>, 对于物理内存来说，<strong>用户空间和内核空间有不同的特权级, 从用户空间到内核空间的转换实质上是特权级的切换。</strong></p>
-</li>
-</ul>
-<h4 id="PCB"><a href="#PCB" class="headerlink" title="PCB"></a>PCB</h4><p><strong>每个进程在内核中都有一个PCB来维护进程相关信息</strong>, Linux内核的进程控制块是task_struct类型的结构体。</p>
-<p>在<code>/usr/src/linux-headers-3.16.0-30/include/linux/sched.h</code>文件中可以查看<code>struct task_struct</code>结构体定义。其内部成员有很多，重点需要掌握部分：</p>
-<ul>
-<li><strong>进程id。系统中每一个进程都有唯一的id,在c语言中用<code>pid_t</code>类型表示，其实就是一个非负整数</strong></li>
-<li><strong>进程的状态，有就绪、运行、挂起、停止等状态</strong></li>
-<li>进程切换时需要保存和恢复的一些CPU寄存器</li>
-<li>描述虚拟地址空间的信息，从虚拟地址映射到物理地址。</li>
-<li>描述控制终端的信息</li>
-<li>当前工作目录：cd 改变当前进程的工作目录，shell也是一个进程。</li>
-<li>umask掩码</li>
-<li><strong>文件描述符表，包含很多指向file结构体的指针</strong></li>
-<li><strong>和信号相关的信息</strong></li>
-<li><strong>用户id和组id</strong></li>
-<li>会话和进程组</li>
-<li>进程可以使用的资源上限：<code>ulimit -a</code></li>
-</ul>
-<p>就绪状态：<strong>等待cpu分配时间片</strong></p>
-<p>挂起状态：<strong>等待除cpu以外的其他资源，主动放弃cpu</strong></p>
-<h4 id="环境变量"><a href="#环境变量" class="headerlink" title="环境变量"></a>环境变量</h4><p>操作系统中用来<strong>指定操作系统运行环境的一些参数</strong>，通常具备以下特征：</p>
-<ul>
-<li><p>字符串（本质）</p>
-</li>
-<li><p>有统一的格式：名=值[:值]</p>
-</li>
-<li><p>值用来描述进程环境信息。</p>
-</li>
-<li><p>存储形式：与命令行参数类似。char* []，数组名 environ, 内部存储字符串，NULL作为哨兵结尾。</p>
-</li>
-<li><p>使用形式：与命令行参数类似</p>
-</li>
-<li><p>加载位置：与命令行参数类似，<strong>位于用户区，高于stack的起始位置</strong></p>
-</li>
-<li><p>引入环境变量表：须声明环境变量。<code>extern char** environ; （extern 声明）</code></p>
-</li>
-</ul>
-<p>常见环境变量：</p>
-<ul>
-<li><p>PATH</p>
-<ul>
-<li>可执行文件的<strong>搜索路径</strong>。<code>ls</code>命令也是一个程序，执行它不需要提供完成的路径名<code>/bin/ls</code>,然而通常执行当前目录下的程序<code>a.out</code>却需要提供完整的路径名<code>./a.out</code>,<strong>这是因为<code>PATH</code>环境变量的值里面包含了ls命令所在的目录/bin，却不包含a.out所在的目录。PATH环境变量的值可以包含多个目录，用:号隔开。在shell中用echo命令可以查看这个环境变量的值。</strong></li>
-<li><p><code>echo $PATH</code></p>
-</li>
-<li><p>使用date 和/bin/date原理是不同的。</p>
-</li>
-<li>shell按照PATH中的目录从前往后查找。</li>
-</ul>
-</li>
-<li><p>SHELL</p>
-<ul>
-<li>当前shell(命令解析器)，值一般是/bin/shell</li>
-</ul>
-</li>
-<li><p>TERM</p>
-<ul>
-<li>当前<strong>终端类型</strong>，在图形界面终端下它的值通常是xterm,终端类型决定了一些程序的输出方式，比如图形界面终端可以显示汉字，而字符终端一般不行。</li>
-</ul>
-</li>
-<li><p>LANG</p>
-<ul>
-<li>语言和locale，决定了字符编码以及时间、货币等信息的显示格式</li>
-</ul>
-</li>
-<li><p>HOME</p>
-<ul>
-<li><strong>当前用户主目录的路径，很多程序需要在主目录下保存配置文件，使得每个用户在运行该程序时都有自己的一套配置。</strong></li>
-</ul>
-</li>
-<li>env:<strong>查看所有环境变量</strong></li>
-</ul>
-<p><code>getenv函数， setenv函数</code></p>
+<p><strong><code>wait/waitpid</code>只能回收子进程, 爷孙的也不行.</strong></p>
 
       
     </div>
@@ -1709,7 +1753,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">45</span>
+          <span class="site-state-item-count">46</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

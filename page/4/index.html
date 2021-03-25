@@ -205,6 +205,178 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/25/linux-%E7%B3%BB%E7%BB%9F-05%E8%BF%9B%E7%A8%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/03/25/linux-%E7%B3%BB%E7%BB%9F-05%E8%BF%9B%E7%A8%8B/" class="post-title-link" itemprop="url">linux系统编程-进程</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-25 16:02:58" itemprop="dateCreated datePublished" datetime="2020-03-25T16:02:58+08:00">2020-03-25</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-23 21:47:57" itemprop="dateModified" datetime="2021-03-23T21:47:57+08:00">2021-03-23</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index">
+                    <span itemprop="name">linux系统编程</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="linux进程"><a href="#linux进程" class="headerlink" title="linux进程"></a>linux进程</h3><h4 id="进程、程序、并发"><a href="#进程、程序、并发" class="headerlink" title="进程、程序、并发"></a>进程、程序、并发</h4><p>程序：编译好的二进制文件。在<strong>磁盘上，不占用系统资源</strong>(cpu、 内存、打开的文件、设备、锁…)</p>
+<p>进程：一个抽象概念，与操作系统原理联系紧密。进程是<strong>活跃的程序，占用系统资源</strong>。在内存中执行(程序运行起来则产生一个进程)</p>
+<p>并发：<strong>操作系统中，一个时间段中有多个进程都处于已启动到运行完毕之间的状态。但一个时刻点上仍只有一个进程在运行（分时复用）。</strong></p>
+<h4 id="cpu和MMU-内存管理单元"><a href="#cpu和MMU-内存管理单元" class="headerlink" title="cpu和MMU(内存管理单元)"></a>cpu和MMU(内存管理单元)</h4><p><img src="https://api2.mubu.com/v3/document_image/e44706d6-6069-4a0e-9c85-6c1c43c3c19f-11197877.jpg" alt="cpu和存储"></p>
+<ul>
+<li><p>存储设备包括寄存器，cache,内存，硬盘，网络等。<strong>与cpu直接打交道的应该是寄存器，多级缓存</strong></p>
+</li>
+<li><p><strong>MMU(内存管理单元), 位于CPU内部</strong></p>
+</li>
+<li>MMU完成<strong>虚拟地址到物理地址的映射</strong>，设置<strong>修改内存访问级别（用户空间，内核空间）。一个page是内存分配的最小单位。</strong></li>
+</ul>
+<ul>
+<li><p>虚拟内存空间产生的时间：进程启动的时候，<strong>进程的所有东西都放在虚拟内存中，并不真实存在</strong>。实际的都放在内存中，虚拟空间如何描述？</p>
+</li>
+<li><p>虚拟地址：可用的地址空间有4G(32位操作系统)</p>
+</li>
+<li><p>如果一个程序跑了两个进程：<strong>两个进程开了两个虚拟空间，两个进程互相独立。两个不同的进程共用一个内存空间</strong>。</p>
+</li>
+</ul>
+<p>虚拟内存和物理内存映射关系：</p>
+<p><img src="https://api2.mubu.com/v3/document_image/06bd754f-dfe9-4081-a742-5f305d537582-11197877.jpg" alt="虚拟内存和物理内存映射关系"></p>
+<ul>
+<li><p>对于一个32位的机器来说, 每个进程都能看到4GB的虚拟地址空间, 且他们的3G~4G的位置都是kernel(<strong>每个进程都有kernel区</strong>)</p>
+</li>
+<li><p>从虚拟内存到物理内存的映射由MMU完成, <strong>不同进程的用户空间被映射到物理内存的不同位置, 而不同进程的kernel空间被映射到物理内存的相同位置</strong>, 对于物理内存来说，<strong>用户空间和内核空间有不同的特权级, 从用户空间到内核空间的转换实质上是特权级的切换。</strong></p>
+</li>
+</ul>
+<h4 id="PCB"><a href="#PCB" class="headerlink" title="PCB"></a>PCB</h4><p><strong>每个进程在内核中都有一个PCB来维护进程相关信息</strong>, Linux内核的进程控制块是task_struct类型的结构体。</p>
+<p>在<code>/usr/src/linux-headers-3.16.0-30/include/linux/sched.h</code>文件中可以查看<code>struct task_struct</code>结构体定义。其内部成员有很多，重点需要掌握部分：</p>
+<ul>
+<li><strong>进程id。系统中每一个进程都有唯一的id,在c语言中用<code>pid_t</code>类型表示，其实就是一个非负整数</strong></li>
+<li><strong>进程的状态，有就绪、运行、挂起、停止等状态</strong></li>
+<li>进程切换时需要保存和恢复的一些CPU寄存器</li>
+<li>描述虚拟地址空间的信息，从虚拟地址映射到物理地址。</li>
+<li>描述控制终端的信息</li>
+<li>当前工作目录：cd 改变当前进程的工作目录，shell也是一个进程。</li>
+<li>umask掩码</li>
+<li><strong>文件描述符表，包含很多指向file结构体的指针</strong></li>
+<li><strong>和信号相关的信息</strong></li>
+<li><strong>用户id和组id</strong></li>
+<li>会话和进程组</li>
+<li>进程可以使用的资源上限：<code>ulimit -a</code></li>
+</ul>
+<p>就绪状态：<strong>等待cpu分配时间片</strong></p>
+<p>挂起状态：<strong>等待除cpu以外的其他资源，主动放弃cpu</strong></p>
+<h4 id="环境变量"><a href="#环境变量" class="headerlink" title="环境变量"></a>环境变量</h4><p>操作系统中用来<strong>指定操作系统运行环境的一些参数</strong>，通常具备以下特征：</p>
+<ul>
+<li><p>字符串（本质）</p>
+</li>
+<li><p>有统一的格式：名=值[:值]</p>
+</li>
+<li><p>值用来描述进程环境信息。</p>
+</li>
+<li><p>存储形式：与命令行参数类似。char* []，数组名 environ, 内部存储字符串，NULL作为哨兵结尾。</p>
+</li>
+<li><p>使用形式：与命令行参数类似</p>
+</li>
+<li><p>加载位置：与命令行参数类似，<strong>位于用户区，高于stack的起始位置</strong></p>
+</li>
+<li><p>引入环境变量表：须声明环境变量。<code>extern char** environ; （extern 声明）</code></p>
+</li>
+</ul>
+<p>常见环境变量：</p>
+<ul>
+<li><p>PATH</p>
+<ul>
+<li>可执行文件的<strong>搜索路径</strong>。<code>ls</code>命令也是一个程序，执行它不需要提供完成的路径名<code>/bin/ls</code>,然而通常执行当前目录下的程序<code>a.out</code>却需要提供完整的路径名<code>./a.out</code>,<strong>这是因为<code>PATH</code>环境变量的值里面包含了ls命令所在的目录/bin，却不包含a.out所在的目录。PATH环境变量的值可以包含多个目录，用:号隔开。在shell中用echo命令可以查看这个环境变量的值。</strong></li>
+<li><p><code>echo $PATH</code></p>
+</li>
+<li><p>使用date 和/bin/date原理是不同的。</p>
+</li>
+<li>shell按照PATH中的目录从前往后查找。</li>
+</ul>
+</li>
+<li><p>SHELL</p>
+<ul>
+<li>当前shell(命令解析器)，值一般是/bin/shell</li>
+</ul>
+</li>
+<li><p>TERM</p>
+<ul>
+<li>当前<strong>终端类型</strong>，在图形界面终端下它的值通常是xterm,终端类型决定了一些程序的输出方式，比如图形界面终端可以显示汉字，而字符终端一般不行。</li>
+</ul>
+</li>
+<li><p>LANG</p>
+<ul>
+<li>语言和locale，决定了字符编码以及时间、货币等信息的显示格式</li>
+</ul>
+</li>
+<li><p>HOME</p>
+<ul>
+<li><strong>当前用户主目录的路径，很多程序需要在主目录下保存配置文件，使得每个用户在运行该程序时都有自己的一套配置。</strong></li>
+</ul>
+</li>
+<li>env:<strong>查看所有环境变量</strong></li>
+</ul>
+<p><code>getenv函数， setenv函数</code></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/23/linux-%E7%B3%BB%E7%BB%9F-04%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95%E6%93%8D%E4%BD%9C/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -3226,107 +3398,6 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/27/c_%E6%9D%A1%E4%BB%B6%E7%BC%96%E8%AF%91/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/12/27/c_%E6%9D%A1%E4%BB%B6%E7%BC%96%E8%AF%91/" class="post-title-link" itemprop="url">C语言条件编译</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-12-27 21:29:16" itemprop="dateCreated datePublished" datetime="2019-12-27T21:29:16+08:00">2019-12-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-21 13:03:48" itemprop="dateModified" datetime="2021-03-21T13:03:48+08:00">2021-03-21</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/C/" itemprop="url" rel="index">
-                    <span itemprop="name">C</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>要开发一个C语言程序，让它输出红色的文字，并且要求跨平台，在 Windows 和 Linux 下都能运行，怎么办呢？</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">if</span> _WIN32</span></span><br><span class="line">        system(<span class="string">"color 0c"</span>);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"xxxxtest1\n"</span>);</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">elif</span> __linux__</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"\033[22;31mxxxtest2m"</span>);</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"xxxxtest3n"</span>);</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>#if、#elif、#else 和 #endif 都是预处理命令，整段代码的意思是：如果宏 <em>WIN32 的值为真，就保留第 4、5  行代码，删除第 7、9 行代码；如果宏 <em>_linux</em></em> 的值为真，就保留第 7 行代码；如果所有的宏都为假，就保留第 9 行代码。</p>
-<p> <strong>这些操作都是在预处理阶段完成的，多余的代码以及所有的宏都不会参与编译，不仅保证了代码的正确性，还减小了编译后文件的体积。</strong></p>
-<p> 这种能够<strong>根据不同情况编译不同代码、产生不同目标文件的机制，称为条件编译。条件编译是预处理程序的功能，不是编译器的功能。</strong></p>
-<h4 id="if用法"><a href="#if用法" class="headerlink" title="#if用法"></a>#if用法</h4><p>#if 用法的一般格式为：<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">\<span class="meta">#<span class="meta-keyword">if</span> 整型常量表达式1</span></span><br><span class="line">  程序段<span class="number">1</span></span><br><span class="line">\<span class="meta">#<span class="meta-keyword">elif</span> 整型常量表达式2</span></span><br><span class="line">  程序段<span class="number">2</span></span><br><span class="line">\<span class="meta">#<span class="meta-keyword">elif</span> 整型常量表达式3</span></span><br><span class="line">  程序段<span class="number">3</span></span><br><span class="line">\<span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line">  程序段<span class="number">4</span></span><br><span class="line">\<span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure></p>
-<p>它的意思是：如常“表达式1”的值为真（非0），就对“程序段1”进行编译，否则就计算“表达式2”，结果为真的话就对“程序段2”进行编译，为假的话就继续往下匹配，直到遇到值为真的表达式，或者遇到 #else。这一点和 if else 非常类似。</p>
-<p>#elif 和 #else 也可以省略，如下所示： </p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">if</span> _WIN32</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"This is Windows!\n"</span>);</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"Unknown platform!\n"</span>);</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">   </span><br><span class="line">    <span class="meta">#<span class="meta-keyword">if</span> __linux__</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"This is Linux!\n"</span>);</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h4 id="ifdef用法"><a href="#ifdef用法" class="headerlink" title="#ifdef用法"></a>#ifdef用法</h4><p>#ifdef 用法的一般格式为： </p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span>  宏名</span></span><br><span class="line">    程序段<span class="number">1</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line">    程序段<span class="number">2</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure>
-<p>它的意思是，如果当前的宏已被定义过，则对“程序段1”进行编译，否则对“程序段2”进行编译。</p>
-<p>也可以省略 #else： </p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span>  宏名</span></span><br><span class="line">    程序段</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure>
-<p>VS/VC 有两种编译模式，Debug 和 Release。在学习过程中，我们通常使用 Debug 模式，这样便于程序的调试；而最终发布的程序，要使用 Release 模式，这样编译器会进行很多优化，提高程序运行效率，删除冗余信息。</p>
-<p>为了能够清楚地看到当前程序的编译模式，我们不妨在程序中增加提示，请看下面的代码： </p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">ifdef</span> _DEBUG</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"正在使用 Debug 模式编译程序...\n"</span>);</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"正在使用 Release 模式编译程序...\n"</span>);</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"></span><br><span class="line">    system(<span class="string">"pause"</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>当以 Debug 模式编译程序时，宏 _DEBUG 会被定义，预处器会保留第 5 行代码，删除第 7 行代码。反之会删除第 5 行，保留第 7 行。</p>
-<h4 id="ifndef-的用法"><a href="#ifndef-的用法" class="headerlink" title="#ifndef 的用法"></a>#ifndef 的用法</h4><p>#ifndef 用法的一般格式为： </p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> 宏名</span></span><br><span class="line">    程序段<span class="number">1</span> </span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span> </span></span><br><span class="line">    程序段<span class="number">2</span> </span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure>
-<p>与 #ifdef 相比，仅仅是将 #ifdef 改为了 #ifndef。它的意思是，如果当前的宏未被定义，则对“程序段1”进行编译，否则对“程序段2”进行编译，这与 #ifdef 的功能正好相反。</p>
-<h4 id="区别与注意"><a href="#区别与注意" class="headerlink" title="区别与注意"></a>区别与注意</h4><p>#if 后面跟的是“整型常量表达式”，而 #ifdef 和 #ifndef 后面跟的只能是一个宏名，不能是其他的。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> NUM 10</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">if</span> NUM == 10 || NUM == 20</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"NUM: %d\n"</span>, NUM);</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"NUM Error\n"</span>);</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>再如，两个宏都存在时编译代码A，否则编译代码B： </p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> NUM1 10</span></span><br><span class="line"><span class="comment">// #define NUM2 20</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">if</span> (defined NUM1 &amp;&amp; defined NUM2)</span></span><br><span class="line">        <span class="comment">//代码A</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"NUM1: %d, NUM2: %d\n"</span>, NUM1, NUM2);</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line">        <span class="comment">//代码B</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"Error\n"</span>);</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> 可以认为是 #<span class="meta-keyword">if</span> defined 的缩写</span></span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
@@ -3377,7 +3448,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">45</span>
+          <span class="site-state-item-count">46</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
