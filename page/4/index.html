@@ -236,7 +236,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-26 15:14:22" itemprop="dateModified" datetime="2021-03-26T15:14:22+08:00">2021-03-26</time>
+                <time title="修改时间：2021-03-26 15:33:59" itemprop="dateModified" datetime="2021-03-26T15:33:59+08:00">2021-03-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -431,7 +431,7 @@
 <p>可以修改<code>sa_flags</code>参数来设置被信号中断后系统调用是否重启。<code>SA_INTERRURT</code>不重启，<code>SA_RESTART</code>重启。</p>
 <p><code>sa_flags</code>还有很多可选参数，适用于不同情况。如：捕捉到信号后，在执行捕捉信号期间，不希望自动阻塞该信号，可将<code>sa_flags</code>设置为<code>SA_NODEFER</code>,除非<code>sa_mask</code>中包含该信号。</p>
 <h3 id="终端"><a href="#终端" class="headerlink" title="终端"></a>终端</h3><p><strong>所有输入输出设备总称。</strong></p>
-<p>终端启动流程：<code>init-&gt;fork-&gt;exec-&gt;getty</code>-&gt;用户输入帐号-&gt;<code>login</code>-&gt;输入密码-&gt;exec-&gt;<code>bash</code></p>
+<p>终端启动流程：<code>init-&gt;fork-&gt;exec-&gt;getty</code>-&gt;用户输入帐号-&gt;<code>login</code>-&gt;输入密码-&gt;<code>exec</code>-&gt;<code>bash</code></p>
 
       
     </div>

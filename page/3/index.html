@@ -1464,7 +1464,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-26 15:14:27" itemprop="dateModified" datetime="2021-03-26T15:14:27+08:00">2021-03-26</time>
+                <time title="修改时间：2021-03-26 16:04:14" itemprop="dateModified" datetime="2021-03-26T16:04:14+08:00">2021-03-26</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1489,7 +1489,39 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          
+          <h3 id="会话"><a href="#会话" class="headerlink" title="会话"></a>会话</h3><p>多个<strong>进程组的集合</strong>。</p>
+<p>创建一个会话需要注意的点：</p>
+<ul>
+<li>调用进程不能是进程组组长，该进程变成会话首进程(<code>session header</code>)「</li>
+<li>该进程成为一个新进程组的组长进程</li>
+<li>需要<code>root</code>权限(ubuntu不需要)</li>
+<li><strong>新会话丢弃原有的控制终端，该会话没有控制终端</strong></li>
+<li>该调用进程是组长进程，则出错返回</li>
+<li>建立新会话时，先调用<code>fork</code>,父进程终止，子进程调用<code>setsid</code></li>
+</ul>
+<p><code>setsid</code>函数:</p>
+<p>创建一个会话, 并以自己的ID设置进程组ID, 同时也是新会话的ID</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pid_t</span> setsid(<span class="keyword">void</span>);</span><br><span class="line"><span class="comment">//成功返回调用进程的会话ID, 失败返回-1并设置errno</span></span><br></pre></td></tr></table></figure>
+<p><strong>调用了<code>setsid</code>函数的进程, 既是新的会长, 也是新的组长</strong></p>
+<h3 id="守护进程"><a href="#守护进程" class="headerlink" title="守护进程"></a>守护进程</h3><p>Daemon(精灵)进程，是Linux中的<strong>后台服务进程</strong>，<strong>通常独立于控制终端并且周期性地执行某种任务或等待处理某些发生的事件</strong>。一般采用d结尾的名字。</p>
+<p>Linux后台的一些系统服务进程，<strong>没有控制终端，不能直接和用户交互。不受用户登录、注销的影响，一直在运行</strong>。这些进程属于守护进程。如：预读入缓输出机制的实现，<code>ftp</code>服务器，<code>nfs</code>服务器等。</p>
+<p>创建守护进程，最关键的步骤：调用<code>setsid</code>函数创建一个新的Session,并成为Session Leader.</p>
+<h4 id="创建守护进程"><a href="#创建守护进程" class="headerlink" title="创建守护进程"></a>创建守护进程</h4><ul>
+<li><p>创建子进程, 父进程退出: 所有工作在子进程中形式上脱离了控制终端</p>
+</li>
+<li><p><strong>在子进程中创建新会话: <code>setsid()</code>函数, 使子进程完全独立出来, 脱离控制</strong></p>
+</li>
+<li><p><strong>改变当前工作目录位置: <code>chdir()</code>函数, 防止占用可卸载的文件系统</strong></p>
+</li>
+<li><p>重设<strong>文件权限掩码</strong>: <code>umask()</code>函数, <strong>防止继承的文件创建屏蔽字拒绝某些权限</strong></p>
+</li>
+<li><p>关闭文件描述符: <strong>继承的打开文件不会用到, 浪费系统资源, 无法卸载</strong></p>
+</li>
+<li><p>开始执行守护进程核心工作</p>
+</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//创建守护进程</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">pid_t</span> pid=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> ret=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> fd=<span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	pid=fork();</span><br><span class="line">	<span class="keyword">if</span>(pid&gt;<span class="number">0</span>)</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">	</span><br><span class="line">	<span class="comment">/*创建新会话*/</span></span><br><span class="line">	pid=setsid();</span><br><span class="line">	<span class="keyword">if</span>(pid==<span class="number">-1</span>)</span><br><span class="line">		perr_exit(<span class="string">"setsid error"</span>);</span><br><span class="line"></span><br><span class="line">	ret=chdir(<span class="string">"/home/dongshifu"</span>);</span><br><span class="line">	<span class="keyword">if</span>(ret==<span class="number">-1</span>)</span><br><span class="line">		perr_exit(<span class="string">"chdir error"</span>);</span><br><span class="line"></span><br><span class="line">	<span class="comment">/*重设文件权限掩码*/</span></span><br><span class="line">	umask(<span class="number">0022</span>);</span><br><span class="line"></span><br><span class="line">	<span class="comment">/*关闭标准输入*/</span></span><br><span class="line">	<span class="built_in">close</span>(STDIN_FILENO);</span><br><span class="line"></span><br><span class="line">	<span class="comment">/*将标准输出和标准出错重定向到文件黑洞*/</span></span><br><span class="line">	fd=<span class="built_in">open</span>(<span class="string">"/dev/null"</span>,O_RDWR);</span><br><span class="line">	<span class="keyword">if</span>(fd==<span class="number">-1</span>)</span><br><span class="line">		perr_exit(<span class="string">"open error"</span>);</span><br><span class="line">	dup2(fd,STDOUT_FILENO);</span><br><span class="line">	dup2(fd,STDERR_FILENO);</span><br><span class="line"></span><br><span class="line">	<span class="comment">/*模拟业务逻辑*/</span></span><br><span class="line">	<span class="keyword">while</span>(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
       
     </div>
 
