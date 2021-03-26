@@ -205,104 +205,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/01/Go%20%E6%8E%A5%E5%8F%A3_1Go%E4%B8%8E%20C++%20%E6%8E%A5%E5%8F%A3%E6%9C%89%E4%BD%95%E5%BC%82%E5%90%8C/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/06/01/Go%20%E6%8E%A5%E5%8F%A3_1Go%E4%B8%8E%20C++%20%E6%8E%A5%E5%8F%A3%E6%9C%89%E4%BD%95%E5%BC%82%E5%90%8C/" class="post-title-link" itemprop="url">Go接口与C++接口的异同</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-06-01 21:29:16" itemprop="dateCreated datePublished" datetime="2020-06-01T21:29:16+08:00">2020-06-01</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-24 14:12:48" itemprop="dateModified" datetime="2021-03-24T14:12:48+08:00">2021-03-24</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Go-interface/" itemprop="url" rel="index">
-                    <span itemprop="name">Go interface</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="接口设计的意义"><a href="#接口设计的意义" class="headerlink" title="接口设计的意义"></a>接口设计的意义</h3><ul>
-<li>泛型编程：使用 interface 可以实现泛型编程</li>
-<li>隐藏具体实现：设计一个函数返回一个 interface，那么<strong>只能通过 interface 里面的方法来做一些操作，但是内部的具体实现是完全不知道的。</strong></li>
-</ul>
-<h3 id="golang中的接口"><a href="#golang中的接口" class="headerlink" title="golang中的接口"></a>golang中的接口</h3><p>接口定义了一种<strong>规范，描述了类的行为和功能，而不做具体实现</strong>。</p>
-<p>Interface定义了一个或一组method(s)，<strong>这些method(s)只有函数签名，没有具体的实现代码</strong>.</p>
-<p>若某个数据类型实现了Interface中定义的那些被称为”methods”的函数，则称这些<strong>数据类型实现（implement）了interface。</strong></p>
-<h3 id="C-中的接口实现方法"><a href="#C-中的接口实现方法" class="headerlink" title="C++中的接口实现方法"></a>C++中的接口实现方法</h3><p>C++ 的接口是使用<strong>抽象类</strong>来实现的，如果类中至少有一个函数被声明为<strong>纯虚函数</strong>，则这个类就是抽象类。<strong>纯虚函数是通过在声明中使用 “= 0” 来指定的</strong>。例如：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Shape</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">   <span class="keyword">public</span>:</span><br><span class="line">      <span class="comment">// 纯虚函数</span></span><br><span class="line">      <span class="function"><span class="keyword">virtual</span> <span class="keyword">double</span> <span class="title">getArea</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">   <span class="keyword">private</span>:</span><br><span class="line">      <span class="built_in">string</span> name;      <span class="comment">// 名称</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>设计抽象类的目的:<strong>为了给其他类提供一个可以继承的适当的基类。抽象类不能被用于实例化对象，它只能作为接口使用。</strong></p>
-<p><strong>派生类需要明确地声明它继承自基类，并且需要实现基类中所有的纯虚函数</strong>。</p>
-<h3 id="golang接口与C-接口区别"><a href="#golang接口与C-接口区别" class="headerlink" title="golang接口与C++接口区别"></a>golang接口与C++接口区别</h3><ul>
-<li><p>C++ 定义接口的方式称为“侵入式”</p>
-</li>
-<li><p>Go 采用的是 “非侵入式”，<strong>不需要显式声明，只需要实现接口定义的函数，编译器自动会识别。</strong></p>
-</li>
-<li><p>底层实现不同</p>
-<ul>
-<li>实现方式：C++ 通过<strong>虚函数表来实现基类调用派生类的函数</strong>；而 Go 通过 <code>itab</code> 中的 <code>fun</code> 字段来实现接口变量调用实体类型的函数。</li>
-<li>编译生成过程：C++ 中的<strong>虚函数表是在编译期生成</strong>的；而 Go 的 <code>itab</code> 中的 <code>fun</code> 字段是在<strong>运行期间动态生成</strong>的。原因在于，<strong>Go 中实体类型可能会无意中实现 N 多接口，很多接口并不是本来需要的，所以不能为类型实现的所有接口都生成一个 <code>itab</code></strong>， 这也是“非侵入式”带来的影响；这在 C++ 中是不存在的，因为派生需要显示声明它继承自哪个基类。</li>
-</ul>
-</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/05/30/Go%20%E6%8E%A5%E5%8F%A3_0Go%E7%94%A8%20interface%20%E5%AE%9E%E7%8E%B0%E5%A4%9A%E6%80%81/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1415,6 +1317,81 @@
 <p>以太网驱动程序首先根据以太网首部中的“上层协议”字段确定该数据帧的有效载荷（<strong>payload，指除去协议首部之外实际传输的数据</strong>）是IP、ARP还是RARP协议的数据报，然后交给相应的协议处理。<strong>假如是IP数据报，IP协议再根据IP首部中的“上层协议”字段确定该数据报的有效载荷是TCP、UDP、ICMP还是IGMP，然后交给相应的协议处理。假如是TCP段或UDP段，TCP或UDP协议再根据TCP首部或UDP首部的“端口号”字段确定应该将应用层数据交给哪个用户进程。IP地址是标识网络中不同主机的地址，而端口号就是同一台主机上标识不同进程的地址，IP地址和端口号合起来标识网络中唯一的进程。</strong></p>
 <p>虽然IP、ARP和RARP数据报都需要以太网驱动程序来封装成帧，但是从功能上划分，ARP和RARP属于链路层，IP属于网络层。虽然ICMP、IGMP、TCP、UDP的数据都需要IP协议来封装成数据报，但是从功能上划分，ICMP、IGMP与IP同属于网络层，TCP和UDP属于传输层。</p>
 
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/04/03/linux-%E7%B3%BB%E7%BB%9F-11%E9%94%81/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/04/03/linux-%E7%B3%BB%E7%BB%9F-11%E9%94%81/" class="post-title-link" itemprop="url">linux-系统-11锁</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-04-03 19:13:29" itemprop="dateCreated datePublished" datetime="2020-04-03T19:13:29+08:00">2020-04-03</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-26 19:14:09" itemprop="dateModified" datetime="2021-03-26T19:14:09+08:00">2021-03-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index">
+                    <span itemprop="name">linux系统编程</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="锁"><a href="#锁" class="headerlink" title="锁"></a>锁</h3>
       
     </div>
 

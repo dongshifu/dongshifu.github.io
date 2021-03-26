@@ -3,18 +3,139 @@
   <entry>
     <title>linux系统-线程</title>
     <url>/2021/04/01/linux-%E7%B3%BB%E7%BB%9F-10%E7%BA%BF%E7%A8%8B/</url>
-    <content><![CDATA[]]></content>
+    <content><![CDATA[<h3 id="线程"><a href="#线程" class="headerlink" title="线程"></a>线程</h3><h4 id="线程概念"><a href="#线程概念" class="headerlink" title="线程概念"></a>线程概念</h4><ul>
+<li><p>LWP： light weight process, 轻量级进程，<strong>本质仍是进程（在linux下)</strong></p>
+</li>
+<li><p>进程：<strong>独立地址空间，拥有PCB</strong></p>
+</li>
+<li><p>线程：<strong>也有PCB，但没有独立的地址空间（共享）</strong></p>
+</li>
+<li><p>区别：在于是否共享地址空间。进程独居，线程合租。</p>
+</li>
+</ul>
+<p>Linux下：</p>
+<ul>
+<li>线程为最小<strong>执行单位（cpu获得效率）</strong></li>
+<li>进程为最小<strong>资源分配单位</strong>，<strong>可看作只有一个线程的进程。</strong></li>
+</ul>
+<p>查看LWP号: <code>ps -Lf pid</code>查看指定线程的lwp号</p>
+<h4 id="linux内核线程实现"><a href="#linux内核线程实现" class="headerlink" title="linux内核线程实现"></a>linux内核线程实现</h4><p>linux中进程和线程关系密切</p>
+<ul>
+<li><p>线程是轻量级进程（light weight process)，<strong>也有PCB,创建线程使用的底层函数和进程一样，都是<code>clone</code></strong></p>
+</li>
+<li><p><strong>从内核里看进程和线程是一样的，都有各自不同的PCB，但PCB中指向的内存资源的三级页表是相同的</strong></p>
+</li>
+<li><p>进程可以蜕变为线程</p>
+</li>
+<li><p><strong>线程可以看作寄存器和栈（主要体现在函数调用,每个线程的stack空间不一样）的集合</strong></p>
+</li>
+<li><p>在linux下，<strong>线程是最小执行单位，进程是最小资源分配单位</strong></p>
+</li>
+</ul>
+<h4 id="三级页表"><a href="#三级页表" class="headerlink" title="三级页表"></a>三级页表</h4><p>PCB中持有<strong>当前进程的页目录表的指针, 页目录表中每一项指向一个个页表, 用页表检索物理内存页面</strong></p>
+<p><img src="https://api2.mubu.com/v3/document_image/a7768bae-b28c-4fe2-98ec-941805f1f5cb-11197877.jpg" alt="三级页表"></p>
+<p><img src="https://api2.mubu.com/v3/document_image/001da9ee-605d-4d7c-a0a7-100200b52c6e-11197877.jpg" alt="程序运行内存情况"></p>
+<h4 id="线程之间共享的资源"><a href="#线程之间共享的资源" class="headerlink" title="线程之间共享的资源"></a>线程之间共享的资源</h4><ul>
+<li><strong>文件描述符表</strong></li>
+<li>每种<strong>信号的处理方式(线程和信号最好不要一起使用)</strong></li>
+<li>当前<strong>工作目录</strong></li>
+<li><strong>用户ID和组ID</strong></li>
+<li><strong>内存地址空间(<code>.text/ .data/ .bss/ heap/共享库</code>)</strong></li>
+</ul>
+<h4 id="线程非共享资源"><a href="#线程非共享资源" class="headerlink" title="线程非共享资源"></a>线程非共享资源</h4><ul>
+<li><strong>线程id</strong></li>
+<li><strong>处理器现场和栈指针(内核栈)</strong></li>
+<li><strong>独立的栈空间（用户空间栈）</strong></li>
+<li>errno变量</li>
+<li><strong>信号屏蔽字</strong></li>
+<li>调度<strong>优先级</strong></li>
+</ul>
+<h4 id="线程优缺点"><a href="#线程优缺点" class="headerlink" title="线程优缺点"></a>线程优缺点</h4><p>优点： <strong>提高程序并发性，开销小，数据通信、共享数据方便</strong></p>
+<p>缺点：库函数不稳定，调试编写困难、gdb不支持，对信号支持不好</p>
+<p>linux下的实现方法使得进程和线程的差别不是很大。但<strong>可以通过在一个进程中开多个线程来达到抢占cpu的目的。</strong></p>
+<h3 id="线程控制原语"><a href="#线程控制原语" class="headerlink" title="线程控制原语"></a>线程控制原语</h3><h4 id="pthread-self函数"><a href="#pthread-self函数" class="headerlink" title="pthread_self函数"></a>pthread_self函数</h4><p><strong>获取线程ID。其作用对应进程中getpid()函数</strong></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">pthread_t</span> pthread_self(<span class="keyword">void</span>);</span><br></pre></td></tr></table></figure>
+<p>线程ID：<strong><code>pthread_t</code>类型，本质：在Linux下为无符号整数(<code>lu%</code>),其他系统中可能是结构体实现</strong></p>
+<p>线程ID是进程内部的识别标志。(<strong>两个进程间的线程ID允许相同</strong>)</p>
+<p>创建线程:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_create</span><span class="params">(<span class="keyword">pthread_t</span>* thread,<span class="keyword">const</span> <span class="keyword">pthread_attr_t</span>* attr,<span class="keyword">void</span>* (*start_routine)(<span class="keyword">void</span>* ),<span class="keyword">void</span>* arg)</span></span>;</span><br><span class="line"><span class="comment">//成功返回0, 失败返回errno;</span></span><br></pre></td></tr></table></figure>
+<p>注意：</p>
+<ul>
+<li><p>不应使用全局变量<code>pthread_t tid</code>, 而应使用<code>pthread_self</code></p>
+</li>
+<li><p><strong>在子线程中通过<code>pthread_create</code>传出参数来获取线程ID</strong></p>
+</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span>* <span class="title">thread_func</span><span class="params">(<span class="keyword">void</span>* arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"thread id is: %lu\n"</span>,pthread_self()); <span class="comment">//线程还没来得及输出进程就结束了</span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;   </span><br><span class="line">    <span class="keyword">pthread_t</span> tid;</span><br><span class="line">    <span class="keyword">int</span> ret;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"in main, thread id = %lu\n"</span>,pthread_self());</span><br><span class="line">    ret = pthread_create(&amp;tid, <span class="literal">NULL</span>,thread_func,<span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">if</span>(ret != <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">"pthred_create error: %s\n"</span>,strerror(ret));</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/*父进程等待1秒,否则父进程一旦退出,地址空间被释放,子线程没机会执行*/</span></span><br><span class="line">    sleep(<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="循环创建线程"><a href="#循环创建线程" class="headerlink" title="循环创建线程"></a>循环创建线程</h5><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span>* <span class="title">thread_func</span><span class="params">(<span class="keyword">void</span>* arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// int i = *(int *)arg; //注意传地址最后取出来的值</span></span><br><span class="line">    <span class="keyword">int</span> i = (<span class="keyword">int</span>)arg;</span><br><span class="line">    sleep(i);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%dth thread id is: %lu\n"</span>,i,pthread_self()); <span class="comment">//线程还没来得及输出进程就结束了</span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;   </span><br><span class="line">    <span class="keyword">pthread_t</span> tid;</span><br><span class="line">    <span class="keyword">int</span> ret, i;</span><br><span class="line">    <span class="comment">// printf("in main, thread id = %lu\n",pthread_self());</span></span><br><span class="line">    <span class="keyword">for</span>(i=<span class="number">0</span>; i&lt;<span class="number">5</span>; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        ret = pthread_create(&amp;tid, <span class="literal">NULL</span>,thread_func,(<span class="keyword">void</span> *)i);</span><br><span class="line">        <span class="keyword">if</span>(ret != <span class="number">0</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">"pthred_create error: %s\n"</span>,strerror(ret));</span><br><span class="line">            <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    sleep(i);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;<span class="comment">//将当强进程退出</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意参数传递方式, <strong>先将int型的i强转成void*传入, 用到时再强转回int型</strong></p>
+<h5 id="线程参数传递"><a href="#线程参数传递" class="headerlink" title="线程参数传递"></a>线程参数传递</h5><p>如果使<code>void*</code>过程中不用强转, 看似规规矩矩的传地址再解引用, 会出现问题。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/*这是一个出错的版本*/</span></span><br><span class="line"><span class="function"><span class="keyword">void</span>* <span class="title">tfn</span><span class="params">(<span class="keyword">void</span>* arg)</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> i=*((<span class="keyword">int</span>*)arg);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"I'm %dth thread,pid=%d,tid=%lu\n"</span>,i+<span class="number">1</span>,getpid(),pthread_self());</span><br><span class="line">	sleep(i);</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> i=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> ret=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">pthread_t</span> tid=<span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;<span class="number">5</span>;++i)&#123;</span><br><span class="line">		ret=pthread_create(&amp;tid,<span class="literal">NULL</span>,tfn,(<span class="keyword">void</span>*)&amp;i);</span><br><span class="line">		<span class="keyword">if</span>(ret!=<span class="number">0</span>)</span><br><span class="line">			perr_exit(<span class="string">"pthread_create error"</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	sleep(i);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="https://api2.mubu.com/v3/document_image/8c997c3d-e2c3-4946-b95c-ce9e924dd04e-11197877.jpg" alt="stack地址"></p>
+<p>错误分析：<strong><code>main</code>中给<code>tfn</code>传入的是它的函数栈帧中局部变量<code>i</code>的地址, 这样<code>tfn</code>能随时访问到i的值, 考虑到线程之间是并发执行的, 每次中<code>main</code>中固定的地址中拿数据, 相当于各个线程共享了这块地址, 由于访问时刻随机, 所以访问到的各个值也是很随机的</strong></p>
+<p><strong>使用强转可以保证变量<code>i</code>的实时性(C语言值传递的特性)</strong></p>
+<h5 id="线程共享"><a href="#线程共享" class="headerlink" title="线程共享"></a>线程共享</h5><p><strong>线程默认共享数据段, 代码段等地址空间, 常用的是全局变量, 而进程不共享全局变量, 只能借助<code>mmap</code></strong></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> var = <span class="number">20</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">fun</span><span class="params">(<span class="keyword">void</span> *arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    var = <span class="number">10</span>;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"thread\n"</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"befor pthread_create, var = %d\n"</span>,var);</span><br><span class="line">    <span class="keyword">pthread_t</span> tid;</span><br><span class="line">    tid = pthread_create(&amp;tid, <span class="literal">NULL</span>,fun, <span class="literal">NULL</span>);</span><br><span class="line">    sleep(<span class="number">1</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"after pthread_create, var = %d\n"</span>,var);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="pthread-exit函数"><a href="#pthread-exit函数" class="headerlink" title="pthread_exit函数"></a>pthread_exit函数</h4><p>将单个线程退出。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">pthread_exit</span><span class="params">(<span class="keyword">void</span>* rerval)</span></span>;<span class="comment">//参数：retval表示线程退出状态，通常传NULL</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><p><code>exit()</code>函数用来<strong>退出当前进程, 不可以用在线程中</strong>, 否则全部退出（<strong>exit退出会使进程退出</strong>）</p>
+</li>
+<li><p><code>pthread_exit()</code>函数才是用来<strong>将单个的线程退出</strong></p>
+</li>
+<li><p><code>pthread_exit</code>或者<code>return</code>返回的指针所指向的内存单元必须是<strong>全局的或者<code>malloc</code>分配的</strong>, <strong>不能在线程函数的栈上分配, 因为其他线程得到这个返回指针时线程函数已经退出了</strong></p>
+</li>
+</ul>
+<p><code>return</code>和<code>exit</code>的区别：</p>
+<ul>
+<li><strong>return是返回到调用者处，exit为退出进程</strong></li>
+</ul>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span>* <span class="title">thread_func</span><span class="params">(<span class="keyword">void</span>* arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"thread id is: %lu\n"</span>,pthread_self()); <span class="comment">//线程还没来得及输出进程就结束了</span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;   </span><br><span class="line">    <span class="keyword">pthread_t</span> tid;</span><br><span class="line">    <span class="keyword">int</span> ret;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"in main, thread id = %lu\n"</span>,pthread_self());</span><br><span class="line">    ret = pthread_create(&amp;tid, <span class="literal">NULL</span>,thread_func,<span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">if</span>(ret != <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">"pthred_create error: %s\n"</span>,strerror(ret));</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// sleep(1);</span></span><br><span class="line">    pthread_exit(<span class="literal">NULL</span>); <span class="comment">//主线程退出</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="pthread-join函数"><a href="#pthread-join函数" class="headerlink" title="pthread_join函数"></a>pthread_join函数</h4><p><strong>阻塞等待线程退出，获取进程退出状态</strong>。其作用对应进程中的<code>waitpid()</code>函数。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_join</span><span class="params">(<span class="keyword">pthread_t</span> thread,<span class="keyword">void</span>** retval)</span></span>;<span class="comment">//成功返回0，失败返回错误号.线程的退出状态是void*, 回收时传的就是void**</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">//回收子线程并获得返回值</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span>&#123;</span></span><br><span class="line">    <span class="keyword">char</span> ch;</span><br><span class="line">    <span class="keyword">int</span> var;</span><br><span class="line">    <span class="keyword">char</span> str[<span class="number">64</span>];</span><br><span class="line">&#125;<span class="keyword">exit_t</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">thred_func</span><span class="params">(<span class="keyword">void</span> *args)</span></span></span><br><span class="line"><span class="function"></span>&#123;   </span><br><span class="line">    <span class="comment">/*在堆区创建一个结构体*/</span></span><br><span class="line">    <span class="keyword">exit_t</span>* retvar = (<span class="keyword">exit_t</span>*)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(<span class="keyword">exit_t</span>));</span><br><span class="line">    retvar-&gt;ch = <span class="string">'m'</span>;</span><br><span class="line">    retvar-&gt;var = <span class="number">10</span>;</span><br><span class="line">    <span class="built_in">strcpy</span>(retvar-&gt;str,<span class="string">"my thread\n"</span>);</span><br><span class="line">    pthread_exit((<span class="keyword">void</span>*)retvar);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">pthread_t</span> tid;</span><br><span class="line">    <span class="keyword">exit_t</span> *val;</span><br><span class="line">    </span><br><span class="line">    pthread_create(&amp;tid,<span class="literal">NULL</span>,thred_func,<span class="literal">NULL</span>);</span><br><span class="line">	<span class="comment">/*pthread_join回收子线程*/</span></span><br><span class="line">    pthread_join(tid,(<span class="keyword">void</span>**)&amp;val);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"ch = %c, var = %d, str = %s\n"</span>,val-&gt;ch,val-&gt;var,val-&gt;str);</span><br><span class="line">    <span class="built_in">free</span>(val);</span><br><span class="line">    pthread_exit((<span class="keyword">void</span>*)<span class="number">1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>错误写法：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span>* <span class="title">tfn</span><span class="params">(<span class="keyword">void</span>* arg)</span></span>&#123;</span><br><span class="line">    <span class="comment">/*在堆区创建一个结构体*/</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">thrd</span> <span class="title">tval</span>;</span></span><br><span class="line">	<span class="comment">/*给结构体赋值*/</span></span><br><span class="line">	tval.var=<span class="number">100</span>;</span><br><span class="line">	<span class="built_in">strcpy</span>(tval.str,<span class="string">"love you"</span>);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> (<span class="keyword">void</span>*)&amp;tval;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>不能将子线程的回调函数的局部变量返回, 由于该函数执行完毕返回后, 其栈帧消失, 栈上的局部变量也就消失, 返回的是无意义的</strong>。<strong>可以在main函数中创建局部变量</strong></p>
+<h4 id="pthread-detach函数"><a href="#pthread-detach函数" class="headerlink" title="pthread_detach函数"></a>pthread_detach函数</h4><p>实现线程分离, <strong>线程终止会自动清理pcb, 无需回收</strong>，子线程分离后不能再调用<code>pthread_join</code>回收了。（<strong><code>detach</code>相当于自动回收, <code>join</code>相当于手动回收</strong>）</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_detach</span><span class="params">(<span class="keyword">pthread_t</span> thread)</span></span>; <span class="comment">//成功返回0，失败返回错误号</span></span><br></pre></td></tr></table></figure>
+<p>线程分离状态：指定该状态，<strong>线程主动与主控线程断开关系</strong>。<strong>线程结束后，其退出状态不由其他线程获取，而是直接自己主动释放。网络、多线程服务器常用。</strong></p>
+<p>进程若有该机制，将不会产生僵尸进程。<strong>僵尸进程的产生主要是由于进程死后，大部分资源被释放，一点残留资源仍然在系统中，导致内核以为该进程仍然存在。</strong></p>
+<p>也可以使用<code>pthread_create</code> 函数的第2个参数来实现：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">tfn</span><span class="params">(<span class="keyword">void</span> *arg)</span></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n =<span class="number">3</span>;</span><br><span class="line">    <span class="keyword">while</span>(n--)&#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"thread count %d\n"</span>,n);</span><br><span class="line">        sleep(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> (<span class="keyword">void</span>*)<span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">pthread_t</span> tid;</span><br><span class="line">    <span class="keyword">void</span> *tret;</span><br><span class="line">    <span class="keyword">int</span> err;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> 1</span></span><br><span class="line">    <span class="keyword">pthread_attr_t</span> attr; <span class="comment">//通过线程属性来设置游离态</span></span><br><span class="line">    pthread_attr_init(&amp;attr);</span><br><span class="line">    pthread_attr_setdetachstate(&amp;attr,PTHREAD_CREATE_DETACHED);</span><br><span class="line">    pthread_create(&amp;tid,&amp;attr, tfn,<span class="literal">NULL</span>);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line">    pthread_create(&amp;tid, <span class="literal">NULL</span>, tfn,<span class="literal">NULL</span>);</span><br><span class="line">    <span class="comment">// pthread_detach(tid); //让线程分离，自动退出，无系统残留资源</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    <span class="keyword">while</span>(<span class="number">1</span>)&#123;</span><br><span class="line">        err = pthread_join(tid, &amp;tret); <span class="comment">//阻塞等待子线程回收</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"--------------err = %d\n"</span>,err);</span><br><span class="line">        <span class="keyword">if</span>(err != <span class="number">0</span>)&#123;</span><br><span class="line">            <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">"thread %s\n"</span>, strerror(err));</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span>&#123;</span><br><span class="line">            <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">"thread exit code %d\n"</span>,(<span class="keyword">int</span>)tret);</span><br><span class="line">        &#125;</span><br><span class="line">        sleep(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>一般情况下，线程终止后，其终止状态一直保留到其他线程调用<code>pthread_join</code>获取其状态为止。但是<strong>线程也可以被设置为<code>detach</code>状态，这样的线程一旦终止就立刻回收它占用的所有资源，而不保留终止状态。</strong></p>
+<h4 id="pthread-cancel函数"><a href="#pthread-cancel函数" class="headerlink" title="pthread_cancel函数"></a>pthread_cancel函数</h4><p><strong>杀死（取消）线程， 作用对应于进程中的<code>kill()</code>函数</strong></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_cancel</span><span class="params">(<span class="keyword">pthread_t</span> thread)</span></span>;<span class="comment">//成功返回0,失败返回错误号</span></span><br></pre></td></tr></table></figure>
+<p>注意：线程的取消并<strong>不是实时的，而是有一定的延时，需要等待线程到达某一个取消点(检查点，进入内核的契机），所以如果一个线程一直使用系统调用(一直不进内核), cancel就无法杀死该线程</strong></p>
+<p>取消点：<strong>线程检查是否被取消，并按请求进行动作的一个位置：通常是一些系统调用</strong><code>create, open , pause, close, read, write...</code>执行命令<code>man 7 pthreads</code>可以查看具备这些取消点的系统调用列表。</p>
+<p>可以粗略认为一个系统调用（进入内核）为一个取消点。<strong>如果线程中没有取消点，可以通过调用<code>pthread_testcancel</code>函数自行设置一个取消点。</strong></p>
+<p>被取消的线程，退出值定义在linux的<code>pthread</code>库中。常数<code>PTHREAD_CANCELED</code>的值是-1,可在头文件pthread.h中找到定义：<code>#define PTHREAD_CANCELED((void*)-1)</code>。因此<strong>当对一个已经被取消的线程使用<code>pthread_join</code>回收时，得到的返回值为-1。</strong></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span>* <span class="title">tfn1</span><span class="params">(<span class="keyword">void</span>* arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"thread 1 returing\n"</span>);</span><br><span class="line">    <span class="keyword">return</span> (<span class="keyword">void</span>*)<span class="number">111</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span>* <span class="title">tfn2</span><span class="params">(<span class="keyword">void</span>* arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"thread 2 exiting\n"</span>);</span><br><span class="line">    pthread_exit((<span class="keyword">void</span>*)<span class="number">222</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span>* <span class="title">tfn3</span><span class="params">(<span class="keyword">void</span>* arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">while</span>(<span class="number">1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// printf("thread 3: I'm going to die in 3 seconds...\n"); //取消点</span></span><br><span class="line">        <span class="comment">// sleep(1);</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> (<span class="keyword">void</span>*)<span class="number">666</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">pthread_t</span> tid;</span><br><span class="line">    <span class="keyword">void</span>* tret = <span class="literal">NULL</span>;</span><br><span class="line">    </span><br><span class="line">    pthread_create(&amp;tid,<span class="literal">NULL</span>,tfn1,<span class="literal">NULL</span>);</span><br><span class="line">    pthread_join(tid, &amp;tret);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"thread 1 exit code = %d\n"</span>,(<span class="keyword">int</span>)tret);</span><br><span class="line"></span><br><span class="line">    pthread_create(&amp;tid, <span class="literal">NULL</span>, tfn2, <span class="literal">NULL</span>);</span><br><span class="line">    pthread_join(tid, &amp;tret);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"thread 2 exit code = %d\n"</span>,(<span class="keyword">int</span>)tret);</span><br><span class="line"></span><br><span class="line">    pthread_create(&amp;tid, <span class="literal">NULL</span>, tfn3, <span class="literal">NULL</span>);</span><br><span class="line">    sleep(<span class="number">3</span>);</span><br><span class="line">    pthread_cancel(tid);</span><br><span class="line">    pthread_join(tid,&amp;tret);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"thread 3 exit code = %d\n"</span>,(<span class="keyword">int</span>)tret);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">thread 1 returing</span></span><br><span class="line"><span class="comment">thread 1 exit code = 111</span></span><br><span class="line"><span class="comment">thread 2 exiting</span></span><br><span class="line"><span class="comment">thread 2 exit code = 222</span></span><br><span class="line"><span class="comment">thread 3: I'm going to die in 3 seconds...</span></span><br><span class="line"><span class="comment">thread 3 exit code = 666*/</span></span><br></pre></td></tr></table></figure>
+<h4 id="pthread-equal"><a href="#pthread-equal" class="headerlink" title="pthread_equal"></a>pthread_equal</h4><p>比较<strong>两个线程ID是否相等</strong></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_eaqul</span><span class="params">(<span class="keyword">pthread_t</span> t1, <span class="keyword">pthread_t</span> t2)</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="线程属性"><a href="#线程属性" class="headerlink" title="线程属性"></a>线程属性</h3><p>linux下<strong>线程的属性可以根据实际项目需求来设置</strong>。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> stuct </span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int</span>     etachstate; <span class="comment">//线程的分离状态</span></span><br><span class="line">    <span class="keyword">int</span>     schedpolicy; <span class="comment">//线程的调度策略</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sched_param</span>  <span class="title">schedparam</span>;</span> <span class="comment">//线程的调度参数</span></span><br><span class="line">    <span class="keyword">int</span>     inheritsched; <span class="comment">//线程的继承性</span></span><br><span class="line">    <span class="keyword">int</span>     scope; <span class="comment">//线程的作用域</span></span><br><span class="line">    <span class="keyword">size_t</span>  guardsize; <span class="comment">//线程末尾的警戒缓冲区大小</span></span><br><span class="line">    <span class="keyword">int</span>     stackaddr_set;<span class="comment">//线程的栈设置</span></span><br><span class="line">    <span class="keyword">void</span>*   stackaddr; <span class="comment">//线程栈的位置</span></span><br><span class="line">    <span class="keyword">size_t</span>  stacksize; <span class="comment">//线程栈的大小</span></span><br><span class="line">&#125;<span class="keyword">pthread_attr_t</span>;</span><br></pre></td></tr></table></figure>
+<p><strong>默认情况为非绑定、非分离、缺省的堆栈、与父进程同样级别的优先级。</strong></p>
+<p>线程<strong>栈大小查看命令</strong>：<code>ulimit -a</code></p>
+<h4 id="线程属性初始化"><a href="#线程属性初始化" class="headerlink" title="线程属性初始化"></a>线程属性初始化</h4><p><strong>应先初始化线程属性，再pthread_create创建线程</strong></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_attr_init</span><span class="params">(<span class="keyword">pthread_attr_t</span> *attr)</span></span>; <span class="comment">//成功返回0,失败返回错误号</span></span><br></pre></td></tr></table></figure>
+<p><strong>销毁线程属性所占用的资源</strong></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_attr_destroy</span><span class="params">(<span class="keyword">pthread_attr_t</span> *attr)</span></span>;<span class="comment">//成功返回0,失败返回错误号</span></span><br></pre></td></tr></table></figure>
+<h4 id="线程的分离状态"><a href="#线程的分离状态" class="headerlink" title="线程的分离状态"></a>线程的分离状态</h4><p>调用<code>pthread_detach()</code>函数或者通过属性设置可以使线程分离。<strong>如果一个线程为分离线程，而这个线程又运行非常之快，它很可能在<code>pthread_create</code>函数返回之前就终止了，它终止以后就可能将线程号和系统资源移交给其他的线程使用，这样调用<code>pthread_create</code>的线程就得到了错误的线程号。要避免这种情况的发生可以采取一定的同步措施，最简单的方法之一是可以在被创建的线程里调用<code>pthread_cond_timewait</code>函数，让这个线程等待一会，留出足够的时间让函数pthread_create返回</strong>。设置一段等待时间，是在多线程中常用的方法。但注意<strong>不要使用<code>wait()</code>之类的函数，它们是使整个进程睡眠，并不能解决线程同步的问题。</strong></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">/*设置线程属性:分离或非分离*/</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_attr_setdetachstate</span><span class="params">(<span class="keyword">pthread_attr_t</span>* attr, <span class="keyword">int</span> detachstate)</span></span>;</span><br><span class="line"><span class="comment">/*获取线程属性*/</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_attr_getdetachstate</span><span class="params">(<span class="keyword">const</span> <span class="keyword">pthread_attr_t</span>* attr, <span class="keyword">int</span>* detachstate)</span></span>;</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">detachstate取值:</span></span><br><span class="line"><span class="comment">PTHREAD_CREATE_DETACHED</span></span><br><span class="line"><span class="comment">PTHREAD_CREATE_JOINABLE	*/</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> ret=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">pthread_t</span> tid=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">pthread_attr_t</span> attr;</span><br><span class="line">	<span class="comment">/*初始化属性结构体*/</span></span><br><span class="line">	ret=pthread_attr_init(&amp;attr);</span><br><span class="line">	<span class="keyword">if</span>(ret!=<span class="number">0</span>)</span><br><span class="line">		perr_exit(<span class="string">"pthread_attr_init error"</span>,ret);</span><br><span class="line">	<span class="comment">/*给属性结构体添加分离属性*/</span></span><br><span class="line">	pthread_attr_setdetachstate(&amp;attr,PTHREAD_CREATE_DETACHED);</span><br><span class="line">	<span class="keyword">if</span>(ret!=<span class="number">0</span>)</span><br><span class="line">		perr_exit(<span class="string">"pthread_attr_setdetachstate error"</span>,ret);</span><br><span class="line"></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"main:pid=%d,tid=%lu\n"</span>,getpid(),pthread_self());</span><br><span class="line">	<span class="comment">/*创建子线程*/</span></span><br><span class="line">	ret=pthread_create(&amp;tid,&amp;attr,tfn,<span class="literal">NULL</span>);</span><br><span class="line">	<span class="keyword">if</span>(ret!=<span class="number">0</span>)</span><br><span class="line">		perr_exit(<span class="string">"pthread_create error"</span>,ret);</span><br><span class="line">	<span class="comment">/*join试一下,由于线程已经分离了,会出错*/</span></span><br><span class="line">	ret=pthread_join(tid,<span class="literal">NULL</span>);</span><br><span class="line">	<span class="keyword">if</span>(ret!=<span class="number">0</span>)</span><br><span class="line">		perr_exit(<span class="string">"pthread_join error"</span>,ret);</span><br><span class="line">	<span class="comment">/*销毁线程属性结构体*/</span></span><br><span class="line">	ret=pthread_attr_destroy(&amp;attr);</span><br><span class="line">	<span class="keyword">if</span>(ret!=<span class="number">0</span>)</span><br><span class="line">		perr_exit(<span class="string">"pthread_attr_destory error"</span>,ret);</span><br><span class="line">	pthread_exit(<span class="literal">NULL</span>);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="线程的栈地址"><a href="#线程的栈地址" class="headerlink" title="线程的栈地址"></a>线程的栈地址</h4><p><strong>当进程栈空间地址不够用时，指定新建线程使用由<code>malloc</code>分配的空间作为自己的栈空间（各个子线程会均分进程的栈空间, 但是线程的栈空间大小是可以调整的）</strong>。通过<code>pthread_attr_setstack</code>和<code>pthread_attr_getstack</code>两个函数分别设置和获取进程的栈地址。</p>
+<h4 id="线程的栈大小"><a href="#线程的栈大小" class="headerlink" title="线程的栈大小"></a>线程的栈大小</h4><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_attr_setstacksize</span><span class="params">(<span class="keyword">pthread_attr_t</span> *attr, <span class="keyword">size_t</span> stacksize)</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_atrt_getstacksize</span><span class="params">(<span class="keyword">pthread_attr_t</span> *attr, <span class="keyword">size_t</span> *stacksize)</span></span></span><br></pre></td></tr></table></figure>
+<h3 id="线程同步"><a href="#线程同步" class="headerlink" title="线程同步"></a>线程同步</h3><h4 id="同步概念"><a href="#同步概念" class="headerlink" title="同步概念"></a>同步概念</h4><p>同步，即同时起步，协调一致。不同的对象，对同步的理解方式不同。例如：设备同步指在两个设备之间规定一个共同的时间参考。 数据库同步指让两个或多个数据库内容保持一致，或者按需要部分保持一致。文件一致指让两个或多个文件夹中的文件保持一致。</p>
+<h4 id="线程同步-1"><a href="#线程同步-1" class="headerlink" title="线程同步"></a>线程同步</h4><p><strong>一个线程发出某一功能调用时，再没有得到结果之前，该调用不返回。同时其他线程为保证数据的一致性，不能调用该功能。</strong></p>
+<p>避免产生<strong>与时间有关的错误</strong>。</p>
+]]></content>
       <categories>
         <category>linux系统编程</category>
       </categories>
       <tags>
         <tag>linux</tag>
       </tags>
-  </entry>
-  <entry>
-    <title>linux-系统-11锁</title>
-    <url>/2021/03/26/linux-%E7%B3%BB%E7%BB%9F-11%E9%94%81/</url>
-    <content><![CDATA[]]></content>
   </entry>
   <entry>
     <title>使用带https访问的慕布托管博客图片</title>
@@ -1736,6 +1857,17 @@
       </tags>
   </entry>
   <entry>
+    <title>linux-系统-11锁</title>
+    <url>/2020/04/03/linux-%E7%B3%BB%E7%BB%9F-11%E9%94%81/</url>
+    <content><![CDATA[<h3 id="锁"><a href="#锁" class="headerlink" title="锁"></a>锁</h3>]]></content>
+      <categories>
+        <category>linux系统编程</category>
+      </categories>
+      <tags>
+        <tag>linux</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>linux系统-会话及守护进程</title>
     <url>/2020/03/31/linux-%E7%B3%BB%E7%BB%9F-09%E4%BC%9A%E8%AF%9D%E5%8F%8A%E5%AE%88%E6%8A%A4%E8%BF%9B%E7%A8%8B/</url>
     <content><![CDATA[<h3 id="会话"><a href="#会话" class="headerlink" title="会话"></a>会话</h3><p>多个<strong>进程组的集合</strong>。</p>
@@ -2614,6 +2746,435 @@
       </tags>
   </entry>
   <entry>
+    <title>Linux常用命令使用-1</title>
+    <url>/2020/03/02/linux-02linux%E5%91%BD%E4%BB%A4%E4%BD%BF%E7%94%A8/</url>
+    <content><![CDATA[<h3 id="Linux终端命令格式"><a href="#Linux终端命令格式" class="headerlink" title="Linux终端命令格式"></a>Linux终端命令格式</h3><h4 id="终端命令格式"><a href="#终端命令格式" class="headerlink" title="终端命令格式"></a>终端命令格式</h4><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">command</span> [-options] [parameter]</span><br></pre></td></tr></table></figure>
+<p>说明：</p>
+<ul>
+<li><code>command</code>：命令名，相应功能的英文单词或单词的缩写</li>
+<li><code>[-options]</code>：选项，可用来对命令进行控制，也可以省略</li>
+<li><code>parameter</code>：传给命令的参数，可以是 <strong>零个</strong>、<strong>一个</strong> 或者 <strong>多个</strong></li>
+<li><code>[]</code> 代表可选 </li>
+</ul>
+<h4 id="查阅命令帮助信息"><a href="#查阅命令帮助信息" class="headerlink" title="查阅命令帮助信息"></a>查阅命令帮助信息</h4><h5 id="help"><a href="#help" class="headerlink" title="help"></a>help</h5><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">command</span> --<span class="built_in">help</span></span><br></pre></td></tr></table></figure>
+<p>说明：</p>
+<ul>
+<li>显示 <code>command</code> 命令的帮助信息</li>
+</ul>
+<h5 id="man"><a href="#man" class="headerlink" title="man"></a>man</h5><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">man <span class="built_in">command</span></span><br></pre></td></tr></table></figure>
+<p>说明：</p>
+<ul>
+<li>查阅 <code>command</code> 命令的使用手册</li>
+</ul>
+<p>man 手册：</p>
+<ul>
+<li>1 可执行程序或shell命令</li>
+<li>2 系统调用（内核提供的函数）</li>
+<li>3 库调用(程序库中的函数)</li>
+</ul>
+<p><code>man</code> 是 <strong>manual</strong> 的缩写，是 Linux 提供的一个 <strong>手册</strong>，包含了绝大部分的命令、函数的详细使用说明</p>
+<p>使用 <code>man</code> 时的操作键：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>操作键</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>空格键</td>
+<td>显示手册页的下一屏</td>
+</tr>
+<tr>
+<td>Enter 键</td>
+<td>一次滚动手册页的一行</td>
+</tr>
+<tr>
+<td>b</td>
+<td>回滚一屏</td>
+</tr>
+<tr>
+<td>f</td>
+<td>前滚一屏</td>
+</tr>
+<tr>
+<td>q</td>
+<td>退出</td>
+</tr>
+<tr>
+<td>/word</td>
+<td>搜索 <strong>word</strong> 字符串</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="常用的Linux命令"><a href="#常用的Linux命令" class="headerlink" title="常用的Linux命令"></a>常用的Linux命令</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>命令</th>
+<th>对应英文</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>01</td>
+<td>ls</td>
+<td>list</td>
+<td>查看当前文件夹下的内容</td>
+</tr>
+<tr>
+<td>02</td>
+<td>pwd</td>
+<td>print wrok directory</td>
+<td>查看当前所在文件夹</td>
+</tr>
+<tr>
+<td>03</td>
+<td>cd [目录名]</td>
+<td>change directory</td>
+<td>切换文件夹</td>
+</tr>
+<tr>
+<td>04</td>
+<td>touch [文件名]</td>
+<td>touch</td>
+<td>如果文件不存在，新建文件</td>
+</tr>
+<tr>
+<td>05</td>
+<td>mkdir [目录名]</td>
+<td>make directory</td>
+<td>创建目录</td>
+</tr>
+<tr>
+<td>06</td>
+<td>rm [文件名]</td>
+<td>remove</td>
+<td>删除指定的文件名</td>
+</tr>
+<tr>
+<td>07</td>
+<td>clear</td>
+<td>clear</td>
+<td>清屏</td>
+</tr>
+</tbody>
+</table>
+</div>
+<blockquote>
+<p>小技巧</p>
+<ul>
+<li><code>ctrl + shift + =</code> <strong>放大</strong>终端窗口的字体显示</li>
+<li><code>ctrl + -</code> <strong>缩小</strong>终端窗口的字体显示</li>
+<li>在敲出 文件 目录 命令 <code>tab</code><ul>
+<li>如果输入的没有歧义，系统会自动补全</li>
+<li>如果还存在其他 <code>文件</code>／<code>目录</code>／<code>命令</code>，再按一下 <code>tab</code> 键，系统会提示可能存在的命令</li>
+</ul>
+</li>
+<li>按 <code>上</code>／<code>下</code> 光标键可以在曾经使用过的命令之间来回切换</li>
+<li>如果想要退出选择，并且不想执行当前选中的命令，可以按 <code>ctrl + c</code></li>
+</ul>
+</blockquote>
+<h3 id="远程管理常用命令"><a href="#远程管理常用命令" class="headerlink" title="远程管理常用命令"></a>远程管理常用命令</h3><h4 id="关机-重启"><a href="#关机-重启" class="headerlink" title="关机/重启"></a>关机/重启</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>命令</th>
+<th>对应英文</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>01</td>
+<td>shutdown 选项 时间</td>
+<td>shutdown</td>
+<td>关机／重新启动</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h4 id="shutdown"><a href="#shutdown" class="headerlink" title="shutdown"></a><code>shutdown</code></h4><ul>
+<li><code>shutdown</code> 命令可以 <strong>安全</strong> <strong>关闭</strong> 或者 <strong>重新启动系统</strong></li>
+</ul>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>-r</td>
+<td>重新启动</td>
+</tr>
+</tbody>
+</table>
+</div>
+<blockquote>
+<p>提示：</p>
+<ul>
+<li><strong>不指定选项和参数</strong>，默认表示 <strong>1 分钟</strong>之后 <strong>关闭电脑</strong></li>
+<li>远程维护服务器时，最好不要关闭系统，而应该重新启动系统</li>
+</ul>
+</blockquote>
+<ul>
+<li>常用命令示例</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 重新启动操作系统，其中 now 表示现在</span></span><br><span class="line">$ shutdown -r now</span><br><span class="line"></span><br><span class="line"><span class="comment"># 立刻关机，其中 now 表示现在</span></span><br><span class="line">$ shutdown now</span><br><span class="line"></span><br><span class="line"><span class="comment"># 系统在今天的 20:25 会关机</span></span><br><span class="line">$ shutdown 20:25</span><br><span class="line"></span><br><span class="line"><span class="comment"># 系统再过十分钟后自动关机</span></span><br><span class="line">$ shutdown +10</span><br><span class="line"></span><br><span class="line"><span class="comment"># 取消之前指定的关机计划</span></span><br><span class="line">$ shutdown -c</span><br></pre></td></tr></table></figure>
+<h4 id="查看或配置网卡信息"><a href="#查看或配置网卡信息" class="headerlink" title="查看或配置网卡信息"></a>查看或配置网卡信息</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>命令</th>
+<th>对应英文</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>01</td>
+<td>ifconfig</td>
+<td>configure a network interface</td>
+<td>查看/配置计算机当前的网卡配置信息</td>
+</tr>
+<tr>
+<td>02</td>
+<td>ping ip地址</td>
+<td>ping</td>
+<td>检测到目标 ip地址 的连接是否正常</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h4 id="网卡-和-IP-地址"><a href="#网卡-和-IP-地址" class="headerlink" title="网卡 和 IP 地址"></a>网卡 和 IP 地址</h4><h5 id="网卡"><a href="#网卡" class="headerlink" title="网卡"></a>网卡</h5><ul>
+<li>网卡是一个专门负责网络通讯的硬件设备</li>
+<li><strong>IP 地址</strong>是设置在网卡上的地址信息</li>
+</ul>
+<blockquote>
+<p>我们可以把 <strong>电脑</strong> 比作 <strong>电话</strong>，<strong>网卡</strong> 相当于 <strong>SIM 卡</strong>，<strong>IP 地址</strong> 相当于 <strong>电话号码</strong></p>
+</blockquote>
+<h5 id="IP-地址"><a href="#IP-地址" class="headerlink" title="IP 地址"></a>IP 地址</h5><ul>
+<li><strong>每台联网的电脑上</strong>都有 <strong>IP 地址</strong>，<strong>是保证电脑之间正常通讯的重要设置</strong></li>
+</ul>
+<blockquote>
+<p>注意：每台电脑的 IP 地址不能相同，否则会出现 IP 地址冲突，并且没有办法正常通讯</p>
+</blockquote>
+<h5 id="ifconfig"><a href="#ifconfig" class="headerlink" title="ifconfig"></a><code>ifconfig</code></h5><ul>
+<li><code>ifconfig</code> 可以查看／配置计算机当前的网卡配置信息</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 查看网卡配置信息</span></span><br><span class="line">$ ifconfig</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看网卡对应的 IP 地址</span></span><br><span class="line">$ ifconfig | grep inet</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>提示：一台计算机中有可能会有一个 <strong>物理网卡</strong> 和 <strong>多个虚拟网卡</strong>，在 Linux 中物理网卡的名字通常以 <code>ensXX</code> 表示</p>
+</blockquote>
+<ul>
+<li><code>127.0.0.1</code> 被称为 <strong>本地回环/环回地址</strong>，一般用来测试本机网卡是否正常</li>
+</ul>
+<h5 id="ping"><a href="#ping" class="headerlink" title="ping"></a><code>ping</code></h5><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 检测到目标主机是否连接正常</span></span><br><span class="line">$ ping IP地址</span><br><span class="line"></span><br><span class="line"><span class="comment"># 检测本地网卡工作正常</span></span><br><span class="line">$ ping 127.0.0.1</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>ping</code> 一般用于检测当前计算机到目标计算机之间的网络 <strong>是否通畅</strong>，<strong>数值越大，速度越慢</strong></li>
+</ul>
+<blockquote>
+<ul>
+<li><code>ping</code> 的工作原理与潜水艇的声纳相似，<code>ping</code> 这个命令就是取自 <strong>声纳的声音</strong> </li>
+<li>网络管理员之间也常将 <code>ping</code> 用作动词 —— <strong>ping 一下计算机X，看他是否开着</strong></li>
+</ul>
+</blockquote>
+<p>原理：网络上的机器都有 <strong>唯一确定的 IP 地址</strong>，我们给<strong>目标 IP 地址</strong>发送一个数据包，对方就要返回一个数据包，根据返回的数据包以及时间，我们可以确定目标主机的存在</p>
+<blockquote>
+<p>提示：在 Linux 中，想要终止一个终端程序的执行，绝大多数都可以使用 <code>CTRL + C</code></p>
+</blockquote>
+<h4 id="远程登录和复制文件"><a href="#远程登录和复制文件" class="headerlink" title="远程登录和复制文件"></a>远程登录和复制文件</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>命令</th>
+<th>对应英文</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>01</td>
+<td>ssh 用户名@ip</td>
+<td>secure shell</td>
+<td>关机／重新启动</td>
+</tr>
+<tr>
+<td>02</td>
+<td>scp 用户名@ip:文件名或路径 用户名@ip:文件名或路径</td>
+<td>secure copy</td>
+<td>远程复制文件</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h4 id="ssh-基础"><a href="#ssh-基础" class="headerlink" title="ssh 基础"></a><code>ssh</code> 基础</h4><p>在 Linux 中 SSH 是 <strong>非常常用</strong> 的工具，通过 <strong>SSH 客户端</strong> 可以连接到运行了 <strong>SSH 服务器</strong> 的远程机器上</p>
+<p><img src="https://api2.mubu.com/v3/document_image/42fbfc2f-408c-4442-80da-087ddbd5b687-11197877.jpg" alt="SSH示意图">￼</p>
+<ul>
+<li><strong>SSH 客户端</strong>是一种使用 <code>Secure Shell（SSH）</code> 协议连接到远程计算机的软件程序</li>
+<li><code>SSH</code> 是目前较可靠，<strong>专为远程登录会话和其他网络服务</strong> 提供安全性的协议<ul>
+<li>利用 <code>SSH 协议</code> 可以有效<strong>防止远程管理过程中的信息泄露</strong></li>
+<li>通过 <code>SSH 协议</code> 可以对所有传输的数据进行<strong>加密</strong>，也能够防止 DNS 欺骗和 IP 欺骗</li>
+</ul>
+</li>
+<li><code>SSH</code> 的另一项优点是传输的数据可以是经过<strong>压缩</strong>的，所以可以加快传输的速度</li>
+</ul>
+<h4 id="域名-和-端口号"><a href="#域名-和-端口号" class="headerlink" title="域名 和 端口号"></a>域名 和 端口号</h4><h5 id="域名"><a href="#域名" class="headerlink" title="域名"></a>域名</h5><ul>
+<li>由一串 <strong>用点分隔</strong> 的名字组成，例如：<code>www.baidu.com</code></li>
+<li>是 <strong>IP 地址</strong> 的别名，方便用户记忆</li>
+</ul>
+<h5 id="端口号"><a href="#端口号" class="headerlink" title="端口号"></a>端口号</h5><ul>
+<li><strong>IP 地址</strong>：通过 <strong>IP 地址</strong> 找到网络上的 <strong>计算机</strong></li>
+<li><strong>端口号</strong>：通过 <strong>端口号</strong> 可以找到 <strong>计算机上运行的应用程序</strong><ul>
+<li><strong>SSH 服务器</strong> 的默认端口号是 <code>22</code>，如果是默认端口号，在连接的时候，可以省略</li>
+</ul>
+</li>
+<li>常见服务端口号列表：</li>
+</ul>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>服务</th>
+<th>端口号</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>01</td>
+<td>SSH 服务器</td>
+<td>22</td>
+</tr>
+<tr>
+<td>02</td>
+<td>Web 服务器</td>
+<td>80</td>
+</tr>
+<tr>
+<td>03</td>
+<td>HTTPS</td>
+<td>443</td>
+</tr>
+<tr>
+<td>04</td>
+<td>FTP 服务器</td>
+<td>21</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h4 id="SSH-客户端的简单使用"><a href="#SSH-客户端的简单使用" class="headerlink" title="SSH 客户端的简单使用"></a>SSH 客户端的简单使用</h4><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">ssh [-p port] user@remote</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>user</code> 是在远程机器上的用户名，如果不指定的话默认为当前用户</li>
+<li><code>remote</code> 是远程机器的地址，可以是 <strong>IP</strong>／<strong>域名</strong>，或者是 <strong>后面会提到的别名</strong></li>
+<li><code>port</code> 是 <strong>SSH Server 监听的端口</strong>，如果不指定，就为默认值 <code>22</code></li>
+</ul>
+<blockquote>
+<p>提示：</p>
+<ul>
+<li>使用 <code>exit</code> 退出当前用户的登录</li>
+</ul>
+<p>注意：</p>
+<ul>
+<li><code>ssh</code> 这个终端命令只能在 <code>Linux</code> 或者 <code>UNIX</code> 系统下使用</li>
+<li>如果在 <code>Windows</code> 系统中，可以安装 <code>PuTTY</code> 或者 <code>XShell</code> 客户端软件即可</li>
+</ul>
+<p>提示：</p>
+<ul>
+<li>在工作中，SSH 服务器的端口号很有可能<strong>不是 22</strong>，如果遇到这种情况就需要使用 <code>-p</code> 选项，指定正确的端口号，否则无法正常连接到服务器</li>
+</ul>
+</blockquote>
+<h4 id="Windows-下-SSH-客户端的安装"><a href="#Windows-下-SSH-客户端的安装" class="headerlink" title="Windows 下 SSH 客户端的安装"></a>Windows 下 SSH 客户端的安装</h4><ul>
+<li><code>Putty</code> <a href="http://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html" target="_blank" rel="noopener">http://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html</a></li>
+<li><code>XShell</code> <a href="http://xshellcn.com" target="_blank" rel="noopener">http://xshellcn.com</a></li>
+</ul>
+<h4 id="scp"><a href="#scp" class="headerlink" title="scp"></a><code>scp</code></h4><ul>
+<li>scp 就是 <code>secure copy</code>，是一个在 Linux 下用来进行 <strong>远程拷贝文件</strong> 的命令</li>
+<li>它的<strong>地址格式与 ssh 基本相同</strong>，<strong>需要注意的是</strong>，在指定<strong>端口时用的是大写的 <code>-P</code> 而不是小写的</strong></li>
+</ul>
+<p><img src="https://api2.mubu.com/v3/document_image/be4dc3b6-1fd2-44b3-8d3a-90afee22e1c8-11197877.jpg" alt="SCP示意图">￼</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 把本地当前目录下的 01.py 文件 复制到 远程 家目录下的 Desktop/01.py</span></span><br><span class="line"><span class="comment"># 注意：`:` 后面的路径如果不是绝对路径，则以用户的家目录作为参照路径</span></span><br><span class="line">scp -P port 01.py user@remote:Desktop/01.py</span><br><span class="line"></span><br><span class="line"><span class="comment"># 把远程 家目录下的 Desktop/01.py 文件 复制到 本地当前目录下的 01.py</span></span><br><span class="line">scp -P port user@remote:Desktop/01.py 01.py</span><br><span class="line"></span><br><span class="line"><span class="comment"># 加上 -r 选项可以传送文件夹</span></span><br><span class="line"><span class="comment"># 把当前目录下的 demo 文件夹 复制到 远程 家目录下的 Desktop</span></span><br><span class="line">scp -r demo user@remote:Desktop</span><br><span class="line"></span><br><span class="line"><span class="comment"># 把远程 家目录下的 Desktop 复制到 当前目录下的 demo 文件夹</span></span><br><span class="line">scp -r user@remote:Desktop demo</span><br></pre></td></tr></table></figure>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>-r</td>
+<td>若给出的源文件是目录文件，则 scp 将递归复制该目录下的所有子目录和文件，目标文件必须为一个目录名</td>
+</tr>
+<tr>
+<td>-P</td>
+<td>若远程 SSH 服务器的端口不是 22，需要使用大写字母 -P 选项指定端口</td>
+</tr>
+</tbody>
+</table>
+</div>
+<blockquote>
+<p>注意：</p>
+<ul>
+<li><code>scp</code> 这个终端命令只能在 <code>Linux</code> 或者 <code>UNIX</code> 系统下使用</li>
+<li>如果在 <code>Windows</code> 系统中，可以安装 <code>PuTTY</code>，使用 <code>pscp</code> 命令行工具或者安装 <code>FileZilla</code> 使用 <code>FTP</code> 进行文件传输</li>
+</ul>
+</blockquote>
+<h4 id="FileZilla"><a href="#FileZilla" class="headerlink" title="FileZilla"></a><code>FileZilla</code></h4><ul>
+<li>官方网站：<a href="https://www.filezilla.cn/download/client" target="_blank" rel="noopener">https://www.filezilla.cn/download/client</a></li>
+<li><code>FileZilla</code> 在传输文件时，使用的是 <code>FTP 服务</code> 而不是 <code>SSH 服务</code>，因此端口号应该设置为 <code>21</code></li>
+</ul>
+<h4 id="SSH-高级"><a href="#SSH-高级" class="headerlink" title="SSH 高级"></a>SSH 高级</h4><ul>
+<li>免密码登录</li>
+<li>配置别名</li>
+</ul>
+<blockquote>
+<p>提示：有关 SSH 配置信息都保存在用户家目录下的 <code>.ssh</code> 目录下</p>
+</blockquote>
+<h5 id="免密码登录"><a href="#免密码登录" class="headerlink" title="免密码登录"></a>免密码登录</h5><h5 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h5><ul>
+<li>配置公钥 <ul>
+<li>执行 <code>ssh-keygen</code> 即可生成 SSH 钥匙，一路回车即可</li>
+</ul>
+</li>
+<li>上传公钥到服务器 <ul>
+<li>执行 <code>ssh-copy-id -p port user@remote</code>，可以让远程服务器记住我们的公钥</li>
+</ul>
+</li>
+</ul>
+<h5 id="示意图"><a href="#示意图" class="headerlink" title="示意图"></a>示意图</h5><p><img src="https://api2.mubu.com/v3/document_image/d2e4130c-8c39-4c4c-99bf-9efde29eb97b-11197877.jpg" alt="SSH 免密码示意图">￼</p>
+<blockquote>
+<p>非对称加密算法</p>
+<ul>
+<li>使用 <strong>公钥</strong> 加密的数据，需要使用 <strong>私钥</strong> 解密</li>
+<li>使用 <strong>私钥</strong> 加密的数据，需要使用 <strong>公钥</strong> 解密</li>
+</ul>
+</blockquote>
+<h5 id="配置别名"><a href="#配置别名" class="headerlink" title="配置别名"></a>配置别名</h5><p>每次都输入 <code>ssh -p port user@remote</code>，时间久了会觉得很麻烦，特别是当 <code>user</code>, <code>remote</code> 和 <code>port</code> 都得输入，而且还不好记忆</p>
+<p>而 <strong>配置别名</strong> 可以让进一步偷懒，譬如用：<code>ssh mac</code> 来替代上面这么一长串，那么就在 <code>~/.ssh/config</code> 里面追加以下内容：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Host mac</span><br><span class="line">    HostName ip地址</span><br><span class="line">    User itheima</span><br><span class="line">    Port 22</span><br></pre></td></tr></table></figure>
+<p><strong>保存之后，即可用 <code>ssh mac</code> 实现远程登录了，<code>scp</code> 同样可以使用</strong></p>
+]]></content>
+      <categories>
+        <category>linux</category>
+      </categories>
+      <tags>
+        <tag>linux</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Linux常用命令使用-2</title>
     <url>/2020/03/02/linux-02linux%E5%91%BD%E4%BB%A4%E4%BD%BF%E7%94%A8%20-1/</url>
     <content><![CDATA[<h3 id="系统相关命令"><a href="#系统相关命令" class="headerlink" title="系统相关命令"></a>系统相关命令</h3><h4 id="时间和日期"><a href="#时间和日期" class="headerlink" title="时间和日期"></a>时间和日期</h4><div class="table-container">
@@ -3227,435 +3788,6 @@
 </blockquote>
 <h5 id="通过deb包安装"><a href="#通过deb包安装" class="headerlink" title="通过deb包安装"></a>通过deb包安装</h5><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">安装deb软件包命令： sudo dpkg -i xxx.deb</span><br><span class="line">删除软件包命令： sudo dpkg -r xxx.deb</span><br><span class="line">连同配置文件一起删除：sudo dpkg -r --purge xxx.deb</span><br><span class="line">查看软件包信息命令：sudo dpkg -info xxx.deb</span><br><span class="line">查看文件拷贝详细命令：sudo dpkg -L xxx.deb</span><br><span class="line">查看系统中已安装软件包信息：sudo dpkg -l</span><br><span class="line">重新配置软件包命令：sudo dpkg -reconfigure xxx</span><br></pre></td></tr></table></figure>
 <h5 id="源码安装"><a href="#源码安装" class="headerlink" title="源码安装"></a>源码安装</h5><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">1.解压缩源代码包</span><br><span class="line">2.cd dir</span><br><span class="line">3. ./configure <span class="comment"># 检测文件是否缺失，创建Makefile, 检查编译环境</span></span><br><span class="line">4. make <span class="comment"># 编译源码，生成库和可执行程序</span></span><br><span class="line">5. sudo make install <span class="comment">#将库和可执行程序，安装到系统路径下</span></span><br><span class="line">6. sudo make distclean <span class="comment"># 删除和卸载软件</span></span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>linux</category>
-      </categories>
-      <tags>
-        <tag>linux</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Linux常用命令使用-1</title>
-    <url>/2020/03/02/linux-02linux%E5%91%BD%E4%BB%A4%E4%BD%BF%E7%94%A8/</url>
-    <content><![CDATA[<h3 id="Linux终端命令格式"><a href="#Linux终端命令格式" class="headerlink" title="Linux终端命令格式"></a>Linux终端命令格式</h3><h4 id="终端命令格式"><a href="#终端命令格式" class="headerlink" title="终端命令格式"></a>终端命令格式</h4><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">command</span> [-options] [parameter]</span><br></pre></td></tr></table></figure>
-<p>说明：</p>
-<ul>
-<li><code>command</code>：命令名，相应功能的英文单词或单词的缩写</li>
-<li><code>[-options]</code>：选项，可用来对命令进行控制，也可以省略</li>
-<li><code>parameter</code>：传给命令的参数，可以是 <strong>零个</strong>、<strong>一个</strong> 或者 <strong>多个</strong></li>
-<li><code>[]</code> 代表可选 </li>
-</ul>
-<h4 id="查阅命令帮助信息"><a href="#查阅命令帮助信息" class="headerlink" title="查阅命令帮助信息"></a>查阅命令帮助信息</h4><h5 id="help"><a href="#help" class="headerlink" title="help"></a>help</h5><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">command</span> --<span class="built_in">help</span></span><br></pre></td></tr></table></figure>
-<p>说明：</p>
-<ul>
-<li>显示 <code>command</code> 命令的帮助信息</li>
-</ul>
-<h5 id="man"><a href="#man" class="headerlink" title="man"></a>man</h5><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">man <span class="built_in">command</span></span><br></pre></td></tr></table></figure>
-<p>说明：</p>
-<ul>
-<li>查阅 <code>command</code> 命令的使用手册</li>
-</ul>
-<p>man 手册：</p>
-<ul>
-<li>1 可执行程序或shell命令</li>
-<li>2 系统调用（内核提供的函数）</li>
-<li>3 库调用(程序库中的函数)</li>
-</ul>
-<p><code>man</code> 是 <strong>manual</strong> 的缩写，是 Linux 提供的一个 <strong>手册</strong>，包含了绝大部分的命令、函数的详细使用说明</p>
-<p>使用 <code>man</code> 时的操作键：</p>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>操作键</th>
-<th>功能</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>空格键</td>
-<td>显示手册页的下一屏</td>
-</tr>
-<tr>
-<td>Enter 键</td>
-<td>一次滚动手册页的一行</td>
-</tr>
-<tr>
-<td>b</td>
-<td>回滚一屏</td>
-</tr>
-<tr>
-<td>f</td>
-<td>前滚一屏</td>
-</tr>
-<tr>
-<td>q</td>
-<td>退出</td>
-</tr>
-<tr>
-<td>/word</td>
-<td>搜索 <strong>word</strong> 字符串</td>
-</tr>
-</tbody>
-</table>
-</div>
-<h3 id="常用的Linux命令"><a href="#常用的Linux命令" class="headerlink" title="常用的Linux命令"></a>常用的Linux命令</h3><div class="table-container">
-<table>
-<thead>
-<tr>
-<th>序号</th>
-<th>命令</th>
-<th>对应英文</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>01</td>
-<td>ls</td>
-<td>list</td>
-<td>查看当前文件夹下的内容</td>
-</tr>
-<tr>
-<td>02</td>
-<td>pwd</td>
-<td>print wrok directory</td>
-<td>查看当前所在文件夹</td>
-</tr>
-<tr>
-<td>03</td>
-<td>cd [目录名]</td>
-<td>change directory</td>
-<td>切换文件夹</td>
-</tr>
-<tr>
-<td>04</td>
-<td>touch [文件名]</td>
-<td>touch</td>
-<td>如果文件不存在，新建文件</td>
-</tr>
-<tr>
-<td>05</td>
-<td>mkdir [目录名]</td>
-<td>make directory</td>
-<td>创建目录</td>
-</tr>
-<tr>
-<td>06</td>
-<td>rm [文件名]</td>
-<td>remove</td>
-<td>删除指定的文件名</td>
-</tr>
-<tr>
-<td>07</td>
-<td>clear</td>
-<td>clear</td>
-<td>清屏</td>
-</tr>
-</tbody>
-</table>
-</div>
-<blockquote>
-<p>小技巧</p>
-<ul>
-<li><code>ctrl + shift + =</code> <strong>放大</strong>终端窗口的字体显示</li>
-<li><code>ctrl + -</code> <strong>缩小</strong>终端窗口的字体显示</li>
-<li>在敲出 文件 目录 命令 <code>tab</code><ul>
-<li>如果输入的没有歧义，系统会自动补全</li>
-<li>如果还存在其他 <code>文件</code>／<code>目录</code>／<code>命令</code>，再按一下 <code>tab</code> 键，系统会提示可能存在的命令</li>
-</ul>
-</li>
-<li>按 <code>上</code>／<code>下</code> 光标键可以在曾经使用过的命令之间来回切换</li>
-<li>如果想要退出选择，并且不想执行当前选中的命令，可以按 <code>ctrl + c</code></li>
-</ul>
-</blockquote>
-<h3 id="远程管理常用命令"><a href="#远程管理常用命令" class="headerlink" title="远程管理常用命令"></a>远程管理常用命令</h3><h4 id="关机-重启"><a href="#关机-重启" class="headerlink" title="关机/重启"></a>关机/重启</h4><div class="table-container">
-<table>
-<thead>
-<tr>
-<th>序号</th>
-<th>命令</th>
-<th>对应英文</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>01</td>
-<td>shutdown 选项 时间</td>
-<td>shutdown</td>
-<td>关机／重新启动</td>
-</tr>
-</tbody>
-</table>
-</div>
-<h4 id="shutdown"><a href="#shutdown" class="headerlink" title="shutdown"></a><code>shutdown</code></h4><ul>
-<li><code>shutdown</code> 命令可以 <strong>安全</strong> <strong>关闭</strong> 或者 <strong>重新启动系统</strong></li>
-</ul>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>选项</th>
-<th>含义</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>-r</td>
-<td>重新启动</td>
-</tr>
-</tbody>
-</table>
-</div>
-<blockquote>
-<p>提示：</p>
-<ul>
-<li><strong>不指定选项和参数</strong>，默认表示 <strong>1 分钟</strong>之后 <strong>关闭电脑</strong></li>
-<li>远程维护服务器时，最好不要关闭系统，而应该重新启动系统</li>
-</ul>
-</blockquote>
-<ul>
-<li>常用命令示例</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 重新启动操作系统，其中 now 表示现在</span></span><br><span class="line">$ shutdown -r now</span><br><span class="line"></span><br><span class="line"><span class="comment"># 立刻关机，其中 now 表示现在</span></span><br><span class="line">$ shutdown now</span><br><span class="line"></span><br><span class="line"><span class="comment"># 系统在今天的 20:25 会关机</span></span><br><span class="line">$ shutdown 20:25</span><br><span class="line"></span><br><span class="line"><span class="comment"># 系统再过十分钟后自动关机</span></span><br><span class="line">$ shutdown +10</span><br><span class="line"></span><br><span class="line"><span class="comment"># 取消之前指定的关机计划</span></span><br><span class="line">$ shutdown -c</span><br></pre></td></tr></table></figure>
-<h4 id="查看或配置网卡信息"><a href="#查看或配置网卡信息" class="headerlink" title="查看或配置网卡信息"></a>查看或配置网卡信息</h4><div class="table-container">
-<table>
-<thead>
-<tr>
-<th>序号</th>
-<th>命令</th>
-<th>对应英文</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>01</td>
-<td>ifconfig</td>
-<td>configure a network interface</td>
-<td>查看/配置计算机当前的网卡配置信息</td>
-</tr>
-<tr>
-<td>02</td>
-<td>ping ip地址</td>
-<td>ping</td>
-<td>检测到目标 ip地址 的连接是否正常</td>
-</tr>
-</tbody>
-</table>
-</div>
-<h4 id="网卡-和-IP-地址"><a href="#网卡-和-IP-地址" class="headerlink" title="网卡 和 IP 地址"></a>网卡 和 IP 地址</h4><h5 id="网卡"><a href="#网卡" class="headerlink" title="网卡"></a>网卡</h5><ul>
-<li>网卡是一个专门负责网络通讯的硬件设备</li>
-<li><strong>IP 地址</strong>是设置在网卡上的地址信息</li>
-</ul>
-<blockquote>
-<p>我们可以把 <strong>电脑</strong> 比作 <strong>电话</strong>，<strong>网卡</strong> 相当于 <strong>SIM 卡</strong>，<strong>IP 地址</strong> 相当于 <strong>电话号码</strong></p>
-</blockquote>
-<h5 id="IP-地址"><a href="#IP-地址" class="headerlink" title="IP 地址"></a>IP 地址</h5><ul>
-<li><strong>每台联网的电脑上</strong>都有 <strong>IP 地址</strong>，<strong>是保证电脑之间正常通讯的重要设置</strong></li>
-</ul>
-<blockquote>
-<p>注意：每台电脑的 IP 地址不能相同，否则会出现 IP 地址冲突，并且没有办法正常通讯</p>
-</blockquote>
-<h5 id="ifconfig"><a href="#ifconfig" class="headerlink" title="ifconfig"></a><code>ifconfig</code></h5><ul>
-<li><code>ifconfig</code> 可以查看／配置计算机当前的网卡配置信息</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 查看网卡配置信息</span></span><br><span class="line">$ ifconfig</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看网卡对应的 IP 地址</span></span><br><span class="line">$ ifconfig | grep inet</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>提示：一台计算机中有可能会有一个 <strong>物理网卡</strong> 和 <strong>多个虚拟网卡</strong>，在 Linux 中物理网卡的名字通常以 <code>ensXX</code> 表示</p>
-</blockquote>
-<ul>
-<li><code>127.0.0.1</code> 被称为 <strong>本地回环/环回地址</strong>，一般用来测试本机网卡是否正常</li>
-</ul>
-<h5 id="ping"><a href="#ping" class="headerlink" title="ping"></a><code>ping</code></h5><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 检测到目标主机是否连接正常</span></span><br><span class="line">$ ping IP地址</span><br><span class="line"></span><br><span class="line"><span class="comment"># 检测本地网卡工作正常</span></span><br><span class="line">$ ping 127.0.0.1</span><br></pre></td></tr></table></figure>
-<ul>
-<li><code>ping</code> 一般用于检测当前计算机到目标计算机之间的网络 <strong>是否通畅</strong>，<strong>数值越大，速度越慢</strong></li>
-</ul>
-<blockquote>
-<ul>
-<li><code>ping</code> 的工作原理与潜水艇的声纳相似，<code>ping</code> 这个命令就是取自 <strong>声纳的声音</strong> </li>
-<li>网络管理员之间也常将 <code>ping</code> 用作动词 —— <strong>ping 一下计算机X，看他是否开着</strong></li>
-</ul>
-</blockquote>
-<p>原理：网络上的机器都有 <strong>唯一确定的 IP 地址</strong>，我们给<strong>目标 IP 地址</strong>发送一个数据包，对方就要返回一个数据包，根据返回的数据包以及时间，我们可以确定目标主机的存在</p>
-<blockquote>
-<p>提示：在 Linux 中，想要终止一个终端程序的执行，绝大多数都可以使用 <code>CTRL + C</code></p>
-</blockquote>
-<h4 id="远程登录和复制文件"><a href="#远程登录和复制文件" class="headerlink" title="远程登录和复制文件"></a>远程登录和复制文件</h4><div class="table-container">
-<table>
-<thead>
-<tr>
-<th>序号</th>
-<th>命令</th>
-<th>对应英文</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>01</td>
-<td>ssh 用户名@ip</td>
-<td>secure shell</td>
-<td>关机／重新启动</td>
-</tr>
-<tr>
-<td>02</td>
-<td>scp 用户名@ip:文件名或路径 用户名@ip:文件名或路径</td>
-<td>secure copy</td>
-<td>远程复制文件</td>
-</tr>
-</tbody>
-</table>
-</div>
-<h4 id="ssh-基础"><a href="#ssh-基础" class="headerlink" title="ssh 基础"></a><code>ssh</code> 基础</h4><p>在 Linux 中 SSH 是 <strong>非常常用</strong> 的工具，通过 <strong>SSH 客户端</strong> 可以连接到运行了 <strong>SSH 服务器</strong> 的远程机器上</p>
-<p><img src="https://api2.mubu.com/v3/document_image/42fbfc2f-408c-4442-80da-087ddbd5b687-11197877.jpg" alt="SSH示意图">￼</p>
-<ul>
-<li><strong>SSH 客户端</strong>是一种使用 <code>Secure Shell（SSH）</code> 协议连接到远程计算机的软件程序</li>
-<li><code>SSH</code> 是目前较可靠，<strong>专为远程登录会话和其他网络服务</strong> 提供安全性的协议<ul>
-<li>利用 <code>SSH 协议</code> 可以有效<strong>防止远程管理过程中的信息泄露</strong></li>
-<li>通过 <code>SSH 协议</code> 可以对所有传输的数据进行<strong>加密</strong>，也能够防止 DNS 欺骗和 IP 欺骗</li>
-</ul>
-</li>
-<li><code>SSH</code> 的另一项优点是传输的数据可以是经过<strong>压缩</strong>的，所以可以加快传输的速度</li>
-</ul>
-<h4 id="域名-和-端口号"><a href="#域名-和-端口号" class="headerlink" title="域名 和 端口号"></a>域名 和 端口号</h4><h5 id="域名"><a href="#域名" class="headerlink" title="域名"></a>域名</h5><ul>
-<li>由一串 <strong>用点分隔</strong> 的名字组成，例如：<code>www.baidu.com</code></li>
-<li>是 <strong>IP 地址</strong> 的别名，方便用户记忆</li>
-</ul>
-<h5 id="端口号"><a href="#端口号" class="headerlink" title="端口号"></a>端口号</h5><ul>
-<li><strong>IP 地址</strong>：通过 <strong>IP 地址</strong> 找到网络上的 <strong>计算机</strong></li>
-<li><strong>端口号</strong>：通过 <strong>端口号</strong> 可以找到 <strong>计算机上运行的应用程序</strong><ul>
-<li><strong>SSH 服务器</strong> 的默认端口号是 <code>22</code>，如果是默认端口号，在连接的时候，可以省略</li>
-</ul>
-</li>
-<li>常见服务端口号列表：</li>
-</ul>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>序号</th>
-<th>服务</th>
-<th>端口号</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>01</td>
-<td>SSH 服务器</td>
-<td>22</td>
-</tr>
-<tr>
-<td>02</td>
-<td>Web 服务器</td>
-<td>80</td>
-</tr>
-<tr>
-<td>03</td>
-<td>HTTPS</td>
-<td>443</td>
-</tr>
-<tr>
-<td>04</td>
-<td>FTP 服务器</td>
-<td>21</td>
-</tr>
-</tbody>
-</table>
-</div>
-<h4 id="SSH-客户端的简单使用"><a href="#SSH-客户端的简单使用" class="headerlink" title="SSH 客户端的简单使用"></a>SSH 客户端的简单使用</h4><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">ssh [-p port] user@remote</span><br></pre></td></tr></table></figure>
-<ul>
-<li><code>user</code> 是在远程机器上的用户名，如果不指定的话默认为当前用户</li>
-<li><code>remote</code> 是远程机器的地址，可以是 <strong>IP</strong>／<strong>域名</strong>，或者是 <strong>后面会提到的别名</strong></li>
-<li><code>port</code> 是 <strong>SSH Server 监听的端口</strong>，如果不指定，就为默认值 <code>22</code></li>
-</ul>
-<blockquote>
-<p>提示：</p>
-<ul>
-<li>使用 <code>exit</code> 退出当前用户的登录</li>
-</ul>
-<p>注意：</p>
-<ul>
-<li><code>ssh</code> 这个终端命令只能在 <code>Linux</code> 或者 <code>UNIX</code> 系统下使用</li>
-<li>如果在 <code>Windows</code> 系统中，可以安装 <code>PuTTY</code> 或者 <code>XShell</code> 客户端软件即可</li>
-</ul>
-<p>提示：</p>
-<ul>
-<li>在工作中，SSH 服务器的端口号很有可能<strong>不是 22</strong>，如果遇到这种情况就需要使用 <code>-p</code> 选项，指定正确的端口号，否则无法正常连接到服务器</li>
-</ul>
-</blockquote>
-<h4 id="Windows-下-SSH-客户端的安装"><a href="#Windows-下-SSH-客户端的安装" class="headerlink" title="Windows 下 SSH 客户端的安装"></a>Windows 下 SSH 客户端的安装</h4><ul>
-<li><code>Putty</code> <a href="http://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html" target="_blank" rel="noopener">http://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html</a></li>
-<li><code>XShell</code> <a href="http://xshellcn.com" target="_blank" rel="noopener">http://xshellcn.com</a></li>
-</ul>
-<h4 id="scp"><a href="#scp" class="headerlink" title="scp"></a><code>scp</code></h4><ul>
-<li>scp 就是 <code>secure copy</code>，是一个在 Linux 下用来进行 <strong>远程拷贝文件</strong> 的命令</li>
-<li>它的<strong>地址格式与 ssh 基本相同</strong>，<strong>需要注意的是</strong>，在指定<strong>端口时用的是大写的 <code>-P</code> 而不是小写的</strong></li>
-</ul>
-<p><img src="https://api2.mubu.com/v3/document_image/be4dc3b6-1fd2-44b3-8d3a-90afee22e1c8-11197877.jpg" alt="SCP示意图">￼</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 把本地当前目录下的 01.py 文件 复制到 远程 家目录下的 Desktop/01.py</span></span><br><span class="line"><span class="comment"># 注意：`:` 后面的路径如果不是绝对路径，则以用户的家目录作为参照路径</span></span><br><span class="line">scp -P port 01.py user@remote:Desktop/01.py</span><br><span class="line"></span><br><span class="line"><span class="comment"># 把远程 家目录下的 Desktop/01.py 文件 复制到 本地当前目录下的 01.py</span></span><br><span class="line">scp -P port user@remote:Desktop/01.py 01.py</span><br><span class="line"></span><br><span class="line"><span class="comment"># 加上 -r 选项可以传送文件夹</span></span><br><span class="line"><span class="comment"># 把当前目录下的 demo 文件夹 复制到 远程 家目录下的 Desktop</span></span><br><span class="line">scp -r demo user@remote:Desktop</span><br><span class="line"></span><br><span class="line"><span class="comment"># 把远程 家目录下的 Desktop 复制到 当前目录下的 demo 文件夹</span></span><br><span class="line">scp -r user@remote:Desktop demo</span><br></pre></td></tr></table></figure>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>选项</th>
-<th>含义</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>-r</td>
-<td>若给出的源文件是目录文件，则 scp 将递归复制该目录下的所有子目录和文件，目标文件必须为一个目录名</td>
-</tr>
-<tr>
-<td>-P</td>
-<td>若远程 SSH 服务器的端口不是 22，需要使用大写字母 -P 选项指定端口</td>
-</tr>
-</tbody>
-</table>
-</div>
-<blockquote>
-<p>注意：</p>
-<ul>
-<li><code>scp</code> 这个终端命令只能在 <code>Linux</code> 或者 <code>UNIX</code> 系统下使用</li>
-<li>如果在 <code>Windows</code> 系统中，可以安装 <code>PuTTY</code>，使用 <code>pscp</code> 命令行工具或者安装 <code>FileZilla</code> 使用 <code>FTP</code> 进行文件传输</li>
-</ul>
-</blockquote>
-<h4 id="FileZilla"><a href="#FileZilla" class="headerlink" title="FileZilla"></a><code>FileZilla</code></h4><ul>
-<li>官方网站：<a href="https://www.filezilla.cn/download/client" target="_blank" rel="noopener">https://www.filezilla.cn/download/client</a></li>
-<li><code>FileZilla</code> 在传输文件时，使用的是 <code>FTP 服务</code> 而不是 <code>SSH 服务</code>，因此端口号应该设置为 <code>21</code></li>
-</ul>
-<h4 id="SSH-高级"><a href="#SSH-高级" class="headerlink" title="SSH 高级"></a>SSH 高级</h4><ul>
-<li>免密码登录</li>
-<li>配置别名</li>
-</ul>
-<blockquote>
-<p>提示：有关 SSH 配置信息都保存在用户家目录下的 <code>.ssh</code> 目录下</p>
-</blockquote>
-<h5 id="免密码登录"><a href="#免密码登录" class="headerlink" title="免密码登录"></a>免密码登录</h5><h5 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h5><ul>
-<li>配置公钥 <ul>
-<li>执行 <code>ssh-keygen</code> 即可生成 SSH 钥匙，一路回车即可</li>
-</ul>
-</li>
-<li>上传公钥到服务器 <ul>
-<li>执行 <code>ssh-copy-id -p port user@remote</code>，可以让远程服务器记住我们的公钥</li>
-</ul>
-</li>
-</ul>
-<h5 id="示意图"><a href="#示意图" class="headerlink" title="示意图"></a>示意图</h5><p><img src="https://api2.mubu.com/v3/document_image/d2e4130c-8c39-4c4c-99bf-9efde29eb97b-11197877.jpg" alt="SSH 免密码示意图">￼</p>
-<blockquote>
-<p>非对称加密算法</p>
-<ul>
-<li>使用 <strong>公钥</strong> 加密的数据，需要使用 <strong>私钥</strong> 解密</li>
-<li>使用 <strong>私钥</strong> 加密的数据，需要使用 <strong>公钥</strong> 解密</li>
-</ul>
-</blockquote>
-<h5 id="配置别名"><a href="#配置别名" class="headerlink" title="配置别名"></a>配置别名</h5><p>每次都输入 <code>ssh -p port user@remote</code>，时间久了会觉得很麻烦，特别是当 <code>user</code>, <code>remote</code> 和 <code>port</code> 都得输入，而且还不好记忆</p>
-<p>而 <strong>配置别名</strong> 可以让进一步偷懒，譬如用：<code>ssh mac</code> 来替代上面这么一长串，那么就在 <code>~/.ssh/config</code> 里面追加以下内容：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Host mac</span><br><span class="line">    HostName ip地址</span><br><span class="line">    User itheima</span><br><span class="line">    Port 22</span><br></pre></td></tr></table></figure>
-<p><strong>保存之后，即可用 <code>ssh mac</code> 实现远程登录了，<code>scp</code> 同样可以使用</strong></p>
 ]]></content>
       <categories>
         <category>linux</category>
