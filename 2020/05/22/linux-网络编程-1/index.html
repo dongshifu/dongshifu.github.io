@@ -50,14 +50,14 @@
   <meta name="description" content="套接字在Linux环境下，socket用于表示进程间网络通信的特殊文件类型。本质为内核借助缓冲区形成的伪文件。 既然是文件，那么理所当然的可以使用文件描述符引用套接字。与管道类似，Linux系统将其封装成文件的目的是为了统一接口，使得读写套接字和读写文件的操作一致。区别是管道主要应用于本地进程间通信，而套接字多应用于网络进程间数据的传递。 在TCP&#x2F;IP协议中，IP地址+TCP或UDP端口号唯一标">
 <meta name="keywords" content="linux,网络">
 <meta property="og:type" content="article">
-<meta property="og:title" content="linux网络编程-1">
+<meta property="og:title" content="linux网络编程-套接字">
 <meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;05&#x2F;22&#x2F;linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-1&#x2F;index.html">
 <meta property="og:site_name" content="ShifuDong">
 <meta property="og:description" content="套接字在Linux环境下，socket用于表示进程间网络通信的特殊文件类型。本质为内核借助缓冲区形成的伪文件。 既然是文件，那么理所当然的可以使用文件描述符引用套接字。与管道类似，Linux系统将其封装成文件的目的是为了统一接口，使得读写套接字和读写文件的操作一致。区别是管道主要应用于本地进程间通信，而套接字多应用于网络进程间数据的传递。 在TCP&#x2F;IP协议中，IP地址+TCP或UDP端口号唯一标">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;8ba13ca0-290a-4d32-a14d-0f7dcb64b166-11197877.jpg">
 <meta property="og:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;83a529a8-cf4f-4c1d-9d00-d0d8862c2964-11197877.jpg">
-<meta property="og:updated_time" content="2021-03-23T08:05:52.433Z">
+<meta property="og:updated_time" content="2021-03-31T12:00:04.139Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;8ba13ca0-290a-4d32-a14d-0f7dcb64b166-11197877.jpg">
 
@@ -75,7 +75,7 @@
   };
 </script>
 
-  <title>linux网络编程-1 | ShifuDong</title>
+  <title>linux网络编程-套接字 | ShifuDong</title>
   
 
 
@@ -220,7 +220,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          linux网络编程-1
+          linux网络编程-套接字
         </h1>
 
         <div class="post-meta">
@@ -237,7 +237,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-23 16:05:52" itemprop="dateModified" datetime="2021-03-23T16:05:52+08:00">2021-03-23</time>
+                <time title="修改时间：2021-03-31 20:00:04" itemprop="dateModified" datetime="2021-03-31T20:00:04+08:00">2021-03-31</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
