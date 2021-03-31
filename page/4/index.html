@@ -217,7 +217,7 @@
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
           
-            <a href="/2020/05/06/linux_%E7%BD%91%E7%BB%9C02%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80-1/" class="post-title-link" itemprop="url">网络基础-2</a>
+            <a href="/2020/05/06/linux_%E7%BD%91%E7%BB%9C02%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80-1/" class="post-title-link" itemprop="url">网络基础-协议格式及TCP协议详解</a>
         </h1>
 
         <div class="post-meta">
@@ -234,7 +234,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-23 16:05:35" itemprop="dateModified" datetime="2021-03-23T16:05:35+08:00">2021-03-23</time>
+                <time title="修改时间：2021-03-31 19:56:37" itemprop="dateModified" datetime="2021-03-31T19:56:37+08:00">2021-03-31</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -542,7 +542,7 @@
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
           
-            <a href="/2020/05/06/linux_%E7%BD%91%E7%BB%9C01%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80/" class="post-title-link" itemprop="url">网络基础-1</a>
+            <a href="/2020/05/06/linux_%E7%BD%91%E7%BB%9C01%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80/" class="post-title-link" itemprop="url">网络基础-协议及分层模型</a>
         </h1>
 
         <div class="post-meta">
@@ -559,7 +559,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-23 16:05:27" itemprop="dateModified" datetime="2021-03-23T16:05:27+08:00">2021-03-23</time>
+                <time title="修改时间：2021-03-31 19:49:22" itemprop="dateModified" datetime="2021-03-31T19:49:22+08:00">2021-03-31</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -676,6 +676,212 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/04/05/os-1%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/04/05/os-1%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" class="post-title-link" itemprop="url">操作系统内存管理</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-04-05 19:29:16" itemprop="dateCreated datePublished" datetime="2020-04-05T19:29:16+08:00">2020-04-05</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-31 19:48:24" itemprop="dateModified" datetime="2021-03-31T19:48:24+08:00">2021-03-31</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/OS/" itemprop="url" rel="index">
+                    <span itemprop="name">OS</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="虚拟内存"><a href="#虚拟内存" class="headerlink" title="虚拟内存"></a>虚拟内存</h3><h4 id="使用虚拟地址的原因"><a href="#使用虚拟地址的原因" class="headerlink" title="使用虚拟地址的原因"></a>使用虚拟地址的原因</h4><p><strong>单片机的 CPU 是直接操作内存的物理地址</strong>。在这种情况下，<strong>要想在内存中同时运行两个程序是不可能的</strong>。如果<strong>第一个程序在 1000 的位置写入一个新的值，将会擦掉第二个程序存放在相同位置上的所有内容</strong>，所以同时运行两个程序是根本行不通的，这两个程序会立刻崩溃。</p>
+<p>无法同时运行两个程序的原因在于：<strong>两个程序都引用了绝对物理地址</strong>。</p>
+<p>可以把进程所使用的地址隔」开来，即让操作系统为每个进程分配独立的一套<strong>虚拟地址</strong>，每个进程再自己的地址操作即可，互不干涉。但是有个前提<strong>每个进程都不能访问物理地址，至于虚拟地址最终怎么落到物理内存里，对进程来说是透明的，操作系统已经把这些都安排的明明白白了。</strong></p>
+<h4 id="虚拟地址和物理地址的映射"><a href="#虚拟地址和物理地址的映射" class="headerlink" title="虚拟地址和物理地址的映射"></a>虚拟地址和物理地址的映射</h4><p>引出了两种地址的概念：</p>
+<ul>
+<li>程序所使用的内存地址叫做<strong>虚拟内存地址</strong>（<em>Virtual Memory Address</em>）</li>
+<li>实际存在硬件里面的空间地址叫<strong>物理内存地址</strong>（<em>Physical Memory Address</em>）。</li>
+</ul>
+<p>操作系统引入了虚拟内存，<strong>进程持有的虚拟地址会通过 CPU 芯片中的内存管理单元（MMU）的映射关系，来转换变成物理地址，然后再通过物理地址访问内存</strong></p>
+<h3 id="内存分段与内存分页"><a href="#内存分段与内存分页" class="headerlink" title="内存分段与内存分页"></a>内存分段与内存分页</h3><p>操作系统管理虚拟地址和物理地址时主要使用内存分段和内存分页。</p>
+<h4 id="内存分段"><a href="#内存分段" class="headerlink" title="内存分段"></a>内存分段</h4><p>程序是由若干个逻辑分段组成的，如可由代码分段、数据分段、栈段、堆段组成。<strong>不同的段是有不同的属性的，所以就用分段（Segmentation）的形式把这些段分离出来。</strong></p>
+<p>分段机制下的虚拟地址由两部分组成，<strong>段选择因子（重要部分：段号 ） </strong>和<strong>段内偏移量</strong>。</p>
+<p><img src="https://api2.mubu.com/v3/document_image/7ac53b48-2633-4b21-91c7-52a885bf759a-11197877.jpg" alt="内存分段"></p>
+<ul>
+<li><strong>段选择子</strong>保存在段寄存器里面。段选择子里面最重要的是<strong>段号</strong>，用作<strong>段表的索引</strong>。<strong>段表</strong>里面保存的是这个<strong>段的基地址、段的界限和特权等级</strong>等。</li>
+<li>虚拟地址中的<strong>段内偏移量</strong>应该位于 <strong>0 和段界限之间</strong>，如果段内偏移量是合法的，就将段基地址加上段内偏移量得到物理内存地址。</li>
+</ul>
+<p>分段机制会把程序的虚拟地址分成 4 个段，每个段在段表中有一个项，在这一项找到段的基地址，再加上偏移量，于是就能找到物理内存中的地址，如下图：</p>
+<p><img src="https://api2.mubu.com/v3/document_image/78c1831a-ad8b-42e2-b227-5eded146e5b0-11197877.jpg" alt="内存分段-虚拟地址和物理地址"></p>
+<p>如果要访问段 3 中偏移量 500 的虚拟地址，可以计算出物理地址为，段 3 基地址 7000 + 偏移量 500 = 7500。</p>
+<p>分段的办法很好，解决了程序本身不需要关心具体的物理内存地址的问题，但它也有一些不足之处：</p>
+<ul>
+<li>第一个就是<strong>内存碎片</strong>的问题。</li>
+<li>第二个就是<strong>内存交换的效率低</strong>的问题。</li>
+</ul>
+<h5 id="内存碎片问题"><a href="#内存碎片问题" class="headerlink" title="内存碎片问题"></a>内存碎片问题</h5><p>看一个具体的例子。假设有 1G 的物理内存，用户执行了多个程序，其中：</p>
+<ul>
+<li>游戏占用了 512MB 内存</li>
+<li>浏览器占用了 128MB 内存</li>
+<li>音乐占用了 256 MB 内存。</li>
+</ul>
+<p>这个时候，如果关闭了浏览器，则空闲内存还有 1024 - 512 - 256 = 256MB。</p>
+<p>如果这个 256MB 不是连续的，被分成了两段 128 MB 内存，这就会导致没有空间再打开一个 200MB 的程序。</p>
+<p><img src="https://api2.mubu.com/v3/document_image/1f03017b-bace-432c-99a7-e4c3988b5021-11197877.jpg" alt="内存碎片问题"></p>
+<p>内存碎片的问题共有两处地方：</p>
+<ul>
+<li>外部内存碎片，也就是<strong>产生了多个不连续的小物理内存，导致新的程序无法被装载；</strong></li>
+<li>内部内存碎片，程序<strong>所有的内存都被装载到了物理内存，但是这个程序有部分的内存可能并不是很常使用</strong>，这也会导致内存的浪费；</li>
+</ul>
+<p>解决外部内存碎片的问题就是<strong>内存交换</strong>。</p>
+<p>可以把音乐程序（暂不使用）占用的那 256MB <strong>内存写到硬盘上，然后再从硬盘上读回来到内存里。不过再读回的时候，我们不能装载回原来的位置，而是紧紧跟着那已经被占用了的 512MB 内存后面。</strong>这样就能空缺出连续的 256MB 空间，于是新的 200MB 程序就可以装载进来。</p>
+<p>这个内存交换空间，<strong>在 Linux 系统里，也就是我们常看到的 Swap 空间，这块空间是从硬盘划分出来的，用于内存与硬盘的空间交换。</strong></p>
+<h5 id="内存交换效率低问题"><a href="#内存交换效率低问题" class="headerlink" title="内存交换效率低问题"></a>内存交换效率低问题</h5><p>对于<strong>多进程的系统</strong>来说，用分段的方式，内存碎片是很容易产生的，<strong>产生了内存碎片，那不得不重新 <code>Swap</code> 内存区域，这个过程会产生性能瓶颈。</strong>因为<strong>硬盘的访问速度要比内存慢太多了，每一次内存交换，都需要把一大段连续的内存数据写到硬盘上。</strong>所以，<strong>如果内存交换的时候，交换的是一个占内存空间很大的程序，这样整个机器都会显得卡顿。</strong></p>
+<h4 id="内存分页"><a href="#内存分页" class="headerlink" title="内存分页"></a>内存分页</h4><p>分段的好处就是能产生连续的内存空间，但是会出现内存碎片和内存交换的空间太大的问题。为了解决内存分段的内存碎片和内存交换效率低的问题，就出现了内存分页。</p>
+<p>要解决这些问题，那么就要想出能少出现一些内存碎片的办法。另外，<strong>当需要进行内存交换的时候，让需要交换写入或者从磁盘装载的数据更少一点，这样就可以解决问题</strong>了。这个办法，也就是<strong>内存分页</strong>（<em>Paging</em>）。</p>
+<p><strong>分页是把整个虚拟和物理内存空间切成一段段固定尺寸的大小</strong>。这样<strong>一个连续并且尺寸固定的内存空间，我们叫页（<em>Page</em>）。在 Linux 下，每一页的大小为 <code>4KB</code>。</strong></p>
+<p>虚拟地址与物理地址之间通过<strong>页表</strong>来映射，如下图：</p>
+<p><img src="https://api2.mubu.com/v3/document_image/f9578597-00c6-4942-b2c9-f277646c4b97-11197877.jpg" alt="内存映射"></p>
+<p>页表实际上存储在 CPU 的<strong>内存管理单元</strong> （<em>MMU</em>） 中，于是 <strong>CPU 就可以直接通过 MMU，找出要实际要访问的物理内存地址。</strong>而当进程访问的虚拟地址在页表中查不到时，系统会产生一个<strong>缺页异常</strong>，<strong>进入系统内核空间分配物理内存、更新进程页表，最后再返回用户空间，恢复进程的运行。</strong></p>
+<h5 id="分页解决分段的内存碎片及内存交换效率低问题"><a href="#分页解决分段的内存碎片及内存交换效率低问题" class="headerlink" title="分页解决分段的内存碎片及内存交换效率低问题"></a>分页解决分段的内存碎片及内存交换效率低问题</h5><p>由于内存空间都是预先划分好的，也就不会像分段会产生间隙非常小的内存，这正是分段会产生内存碎片的原因。而<strong>采用了分页，那么释放的内存都是以页为单位释放的，也就不会产生无法给进程使用的小内存。</strong></p>
+<p><strong>如果内存空间不够，操作系统会把其他正在运行的进程中的最近没被使用的内存页面给释放掉，也就是暂时写在硬盘上</strong>，称为<strong>换出</strong>（<em>Swap Out</em>）。一旦需要的时候，再加载进来，称为<strong>换入</strong>（<em>Swap In</em>）。所以，一次性写入磁盘的也只有少数的一个页或者几个页，不会花太多时间，<strong>内存交换的效率就相对比较高。</strong></p>
+<p><img src="https://api2.mubu.com/v3/document_image/8d9acd7d-a322-4467-adc9-2f642be20a9f-11197877.jpg" alt="分页-换入换出"></p>
+<p>分页的方式使得<strong>在加载程序的时候，不再需要一次性都把程序加载到物理内存中</strong>。完全可以在进行虚拟内存和物理内存的页之间的映射之后，并不真的把页加载到物理内存里，而是<strong>只有在程序运行中，需要用到对应虚拟内存页里面的指令和数据时，再加载到物理内存里面去。</strong></p>
+<h4 id="分页机制下，虚拟地址和物理地址的映射"><a href="#分页机制下，虚拟地址和物理地址的映射" class="headerlink" title="分页机制下，虚拟地址和物理地址的映射"></a>分页机制下，虚拟地址和物理地址的映射</h4><p>在分页机制下，虚拟地址分为两部分，<strong>页号</strong>和<strong>页内偏移</strong>。<strong>页号作为页表的索引</strong>，<strong>页表</strong>包含物理页每页所在<strong>物理内存的基地址</strong>，这个基地址与页内偏移的组合就形成了物理内存地址，见下图：</p>
+<p><img src="https://api2.mubu.com/v3/document_image/87e6c72d-6190-429a-af93-794684259841-11197877.jpg" alt="内存分页寻址"></p>
+<p>总结一下，对于一个内存地址转换，其实就是这样三个步骤：</p>
+<ul>
+<li><strong>把虚拟内存地址，切分成页号和偏移量</strong>；</li>
+<li>根据<strong>页号，从页表里面，查询对应的物理页号</strong>；</li>
+<li>直接<strong>拿物理页号，加上前面的偏移量，就得到了物理内存地址</strong>。</li>
+</ul>
+<h4 id="简单分页的缺陷"><a href="#简单分页的缺陷" class="headerlink" title="简单分页的缺陷"></a>简单分页的缺陷</h4><p>有空间上的缺陷。因为操作系统是可以同时运行非常多的进程的，那这就意味着<strong>页表会非常的庞大。在 32 位的环境下，虚拟地址空间共有 4GB，假设一个页的大小是 4KB（2^12），那么就需要大约 100 万 （2^20） 个页，每个页表项需要 4 个字节大小来存储，那么整个 4GB 空间的映射就需要有<code>4MB</code> 的内存来存储页表。</strong>这 4MB 大小的页表，看起来也不是很大。但是要知道每个进程都是有自己的虚拟地址空间的，也就说都有自己的页表。那么，<code>100</code> 个进程的话，就需要 <code>400MB</code> 的内存来存储页表，这是非常大的内存了，更别说 64 位的环境了。</p>
+<h4 id="多级页表"><a href="#多级页表" class="headerlink" title="多级页表"></a>多级页表</h4><p>对于单页表的实现方式，在 32 位和页大小 <code>4KB</code>的环境下，一个进程的页表需要装下 100 多万个页表项，并且每个页表项是占用 4 字节大小的，于是相当于每个页表需占用 4MB 大小的空间。把这个 100 多万个页表项的单级页表再分页，将<strong>页表（一级页表）分为 <code>1024</code> 个页表（二级页表），每个表（二级页表）中包含<code>1024</code> 个页表项</strong>，形成<strong>二级分页</strong>。如下图所示：</p>
+<p><img src="https://api2.mubu.com/v3/document_image/b6e8d43f-0635-487e-a49e-bfae31655cff-11197877.jpg" alt="多级页表"></p>
+<p>分了二级表，映射 4GB 地址空间就需要 4KB（一级页表）+ 4MB（二级页表）的内存，这样占用空间不是更大了吗？如果 4GB 的虚拟地址全部都映射到了物理内上的，二级分页占用空间确实是更大了，但是，我们往往不会为一个进程分配那么多内存。程序中会用到<strong>局部性原理</strong>。</p>
+<p>每个进程都有 4GB 的虚拟地址空间，而显然对于大多数程序来说，其使用到的空间远未达到 4GB，因为<strong>会存在部分对应的页表项都是空的，根本没有分配，对于已分配的页表项，如果存在最近一定时间未访问的页表，在物理内存紧张的情况下，操作系统会将页面换出到硬盘，也就是说不会占用物理内存。</strong></p>
+<p>如果使用了二级分页，一级页表就可以覆盖整个 4GB 虚拟地址空间，但<strong>如果某个一级页表的页表项没有被用到，也就不需要创建这个页表项对应的二级页表了，即可以在需要时才创建二级页表</strong>。做个简单的计算，假设只有 20% 的一级页表项被用到了，那么页表占用的内存空间就只有 4KB（一级页表） + 20% * 4MB（二级页表）= <code>0.804MB</code><br>，这对比单级页表的 <code>4MB</code> 是一个巨大的节约。</p>
+<p>那么为什么不分级的页表就做不到这样节约内存呢？从页表的性质来看，<strong>保存在内存中的页表承担的职责是将虚拟地址翻译成物理地址</strong>。假如虚拟地址在页表中找不到对应的页表项，计算机系统就不能工作了。所以<strong>页表一定要覆盖全部虚拟地址空间，不分级的页表就需要有 100 多万个页表项来映射，而二级分页则只需要 1024 个页表项</strong>（此时一级页表覆盖到了全部虚拟地址空间，二级页表在需要时创建）。</p>
+<p>把二级分页再推广到多级页表，就会发现页表占用的内存空间更少了，这一切都要归功于对局部性原理的充分应用。对于 64 位的系统，两级分页肯定不够了，就变成了四级目录，分别是：</p>
+<ul>
+<li>全局页目录项 PGD（<em>Page Global Directory</em>）</li>
+<li>上层页目录项 PUD（<em>Page Upper Directory</em>）</li>
+<li>中间页目录项 PMD（<em>Page Middle Directory</em>）</li>
+<li>页表项 PTE（<em>Page Table Entry</em>）。</li>
+</ul>
+<h4 id="TLB"><a href="#TLB" class="headerlink" title="TLB"></a>TLB</h4><p>多级页表虽然解决了空间上的问题，但是虚拟地址到物理地址的转换就多了几道转换的工序，这显然就<strong>降低了这俩地址转换的速度，也就是带来了时间上的开销</strong>。<strong>程序是有局部性的，即在一段时间内，整个程序的执行仅限于程序中的某一部分。相应地，执行所访问的存储空间也局限于某个内存区域。</strong>可以利用这一特性，把最常访问的几个页表项存储到访问速度更快的硬件，于是计算机科学家们，就在 CPU 芯片中，加入了一个专门存放程序最常访问的<strong>页表项的 Cache，这个 Cache 就是 TLB（<em>Translation Lookaside Buffer</em>） ，通常称为页表缓存、转址旁路缓存、快表等。</strong></p>
+<p><img src="https://api2.mubu.com/v3/document_image/5cee2e43-bed8-4f41-90de-20dd24ea6a58-11197877.jpg" alt="TLB"></p>
+<p>在 CPU 芯片里面，封装了内存管理单元（<em>Memory Management Unit</em>）芯片，它用来完成地址转换和 TLB 的访问与交互。有了 TLB 后，那么 CPU 在寻址时，会先查 TLB，如果没找到，才会继续查常规的页表。TLB 的命中率其实是很高的，因为程序最常访问的页就那么几个。</p>
+<h4 id="段页式内存管理"><a href="#段页式内存管理" class="headerlink" title="段页式内存管理"></a>段页式内存管理</h4><p>内存分段和内存分页并不是对立的，它们是可以组合起来在同一个系统中使用的，那么组合起来后，通常称为<strong>段页式内存管理</strong>。</p>
+<p>段页式内存管理实现的方式：</p>
+<ul>
+<li>先将程序划<strong>分为多个有逻辑意义的段</strong>，也就是前面提到的分段机制；</li>
+<li>接着再<strong>把每个段划分为多个页，也就是对分段划分出来的连续空间，再划分固定大小的页；</strong></li>
+</ul>
+<p>这样，地址结构就由<strong>段号、段内页号和页内位移</strong>三部分组成。</p>
+<p>用于段页式地址变换的数据结构是每一个程序一张段表，每个段又建立一张页表，段表中的地址是页表的起始地址，而页表中的地址则为某页的物理页号，如图所示：</p>
+<p><img src="https://api2.mubu.com/v3/document_image/9fa91ffc-d687-4daf-9dc5-6fc82603de70-11197877.jpg" alt="段页式地址变换"></p>
+<p>段页式地址变换中要得到物理地址须经过三次内存访问：</p>
+<ul>
+<li><strong>第一次访问段表，得到页表起始地址；</strong></li>
+<li><strong>第二次访问页表，得到物理页号；</strong></li>
+<li><strong>第三次将物理页号与页内位移组合，得到物理地址。</strong></li>
+</ul>
+<p>可用软、硬件相结合的方法实现段页式地址变换，这样虽然增加了硬件成本和系统开销，但提高了内存的利用率。</p>
+<h3 id="linux内存管理"><a href="#linux内存管理" class="headerlink" title="linux内存管理"></a>linux内存管理</h3><p>早期 Intel 的处理器从 80286 开始使用的是段式内存管理。但是很快发现，光有段式内存管理而没有页式内存管理是不够的，这会使它的 X86 系列会失去市场的竞争力。因此，在不久以后的 80386 中就实现了对页式内存管理。也就是说，80386 除了完成并完善从 80286 开始的段式内存管理的同时还实现了页式内存管理。</p>
+<p>但是这个 80386 的页式内存管理设计时，没有绕开段式内存管理，而是建立在段式内存管理的基础上，这就意味着，<strong>页式内存管理的作用是在由段式内存管理所映射而成的的地址上再加上一层地址映射。</strong></p>
+<p>由于此时段式内存管理映射而成的地址不再是“物理地址”了，Intel 就称之为“线性地址”（也称虚拟地址）。于是，段式内存管理先将逻辑地址映射成线性地址，然后再由页式内存管理将线性地址映射成物理地址。</p>
+<p>逻辑地址和线性地址：</p>
+<ul>
+<li><strong>程序所使用的地址，通常是没被段式内存管理映射的地址，称为逻辑地址</strong>；</li>
+<li>通过段式内存管理映射的地址，称为线性地址，也叫<strong>虚拟地址</strong>；</li>
+</ul>
+<p>逻辑地址是段式内存管理转换前的地址，线性地址则是页式内存管理转换前的地址。</p>
+<p><strong>Linux 内存主要采用的是页式内存管理，但同时也不可避免地涉及了段机制</strong>。</p>
+<p>这主要是上面 Intel 处理器发展历史导致的，因为 <strong>Intel X86 CPU 一律对程序中使用的地址先进行段式映射，然后才能进行页式映射。既然 CPU 的硬件结构是这样，Linux 内核也只好服从 Intel 的选择。</strong></p>
+<p>但是事实上，Linux 内核所采取的办法是使段式映射的过程实际上不起什么作用。也就是说，“上有政策，下有对策”，若惹不起就躲着走。</p>
+<p><strong>Linux 系统中的每个段都是从 0 地址开始的整个 4GB 虚拟空间（32 位环境下），也就是所有的段的起始地址都是一样的。这意味着，Linux 系统中的代码，包括操作系统本身的代码和应用程序代码，所面对的地址空间都是线性地址空间（虚拟地址），这种做法相当于屏蔽了处理器中的逻辑地址概念，段只被用于访问控制和内存保护。</strong></p>
+<p>Linux 的虚拟地址空间是如何分布的？</p>
+<p>在 Linux 操作系统中，虚拟地址空间的内部又被分为<strong>内核空间和用户空间</strong>两部分，不同位数的系统，地址空间的范围也不同。比如最常见的 32 位和 64 位系统：</p>
+<p><img src="https://api2.mubu.com/v3/document_image/9fa7b8fb-653c-4d3c-b37f-f9f933815fd8-11197877.jpg" alt="用户空间和内存空间"></p>
+<p>通过这里可以看出：</p>
+<ul>
+<li><code>32</code> 位系统的内核空间占用 <code>1G</code>，位于最高处，剩下的 <code>3G</code> 是用户空间；</li>
+<li><code>64</code> 位系统的内核空间和用户空间都是 <code>128T</code>，分别占据整个内存空间的最高和最低处，剩下的中间部分是未定义的。</li>
+</ul>
+<p>再来说说，内核空间与用户空间的区别：</p>
+<ul>
+<li>进程在用户态时，只能访问用户空间内存；</li>
+<li>只有进入内核态后，才可以访问内核空间的内存；</li>
+</ul>
+<p>虽然每个进程都各自有独立的虚拟内存，但是<strong>每个虚拟内存中的内核地址，其实关联的都是相同的物理内存</strong>。这样，<strong>进程切换到内核态后，就可以很方便地访问内核空间内存。</strong></p>
+<p><img src="https://api2.mubu.com/v3/document_image/939f7f05-a117-4078-ac4c-4763f8e7fd27-11197877.jpg" alt="进程内核空间一致"></p>
+<p>每个进程的内核空间都是一致的，这样其实方便了进程间的通信以及父子进程的创建。具体可参考<a href="https://dongshifu.github.io/2020/03/27/linux-%E7%B3%BB%E7%BB%9F-07%E8%BF%9B%E7%A8%8B%E9%97%B4%E9%80%9A%E4%BF%A1/" target="_blank" rel="noopener">linux系统-进程间通信</a>和<a href="https://dongshifu.github.io/2020/03/26/linux-%E7%B3%BB%E7%BB%9F-06%E8%BF%9B%E7%A8%8B%E6%8E%A7%E5%88%B6/" target="_blank" rel="noopener">linux系统-进程管理</a>。</p>
+<h3 id="调用malloc进行内存申请的过程"><a href="#调用malloc进行内存申请的过程" class="headerlink" title="调用malloc进行内存申请的过程"></a>调用malloc进行内存申请的过程</h3><ol>
+<li>malloc开始<strong>搜索空闲内存块</strong>，如果能找到一块大小合适的就分配出去</li>
+<li>如果malloc找不到一块合适的空闲内存，<strong>那么调用brk等系统调用扩大堆区从而获得更多的空闲内存</strong></li>
+<li>malloc<strong>调用brk后开始转入内核态，此时操作系统中的虚拟内存系统开始工作，扩大进程的堆区，注意额外扩大的这一部分内存仅仅是虚拟内存，操作系统并没有为此分配真正的物理内存</strong></li>
+<li>brk执行结束后返回到malloc，<strong>从内核态切换到用户态</strong>，malloc找到一块合适的空闲内存后返回</li>
+<li>程序员拿到新申请的内存，程序继续</li>
+<li>当<strong>有代码读写新申请的内存时系统内部出现缺页中断，此时再次由用户态切换到内核态，操作系统此时真正的分配物理内存，之后再次由内核态切换回用户态，程序继续。</strong></li>
+</ol>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/04/03/linux-%E7%B3%BB%E7%BB%9F-11%E9%94%81/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -690,7 +896,7 @@
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
           
-            <a href="/2020/04/03/linux-%E7%B3%BB%E7%BB%9F-11%E9%94%81/" class="post-title-link" itemprop="url">linux系统-11锁</a>
+            <a href="/2020/04/03/linux-%E7%B3%BB%E7%BB%9F-11%E9%94%81/" class="post-title-link" itemprop="url">linux系统-锁</a>
         </h1>
 
         <div class="post-meta">
@@ -707,7 +913,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-30 14:33:17" itemprop="dateModified" datetime="2021-03-30T14:33:17+08:00">2021-03-30</time>
+                <time title="修改时间：2021-03-31 19:57:17" itemprop="dateModified" datetime="2021-03-31T19:57:17+08:00">2021-03-31</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -1874,244 +2080,6 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/23/linux-%E7%B3%BB%E7%BB%9F-04%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95%E6%93%8D%E4%BD%9C/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/03/23/linux-%E7%B3%BB%E7%BB%9F-04%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95%E6%93%8D%E4%BD%9C/" class="post-title-link" itemprop="url">linux系统下文件和目录操作</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-03-23 10:50:49" itemprop="dateCreated datePublished" datetime="2020-03-23T10:50:49+08:00">2020-03-23</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-23 16:00:25" itemprop="dateModified" datetime="2021-03-23T16:00:25+08:00">2021-03-23</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index">
-                    <span itemprop="name">linux系统编程</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="系统调用说明"><a href="#系统调用说明" class="headerlink" title="系统调用说明"></a>系统调用说明</h3><p>系统调用: <strong>内核提供的函数</strong>，由操作系统实现并提供给外部应用程序的编程接口, 是应用程序同操作系统之间交互数据的桥梁</p>
-<p>为了保证系统的安全性, <strong>manPage中的系统调用都是对系统调用的一次浅封装</strong>, 比如open对应的是sys_open…</p>
-<h4 id="系统调用和库函数的比较：预读入和缓输出"><a href="#系统调用和库函数的比较：预读入和缓输出" class="headerlink" title="系统调用和库函数的比较：预读入和缓输出"></a>系统调用和库函数的比较：预读入和缓输出</h4><p>使用<code>strace</code>工具可以跟踪一个程序执行时所需的<strong>系统调用</strong>。</p>
-<p>如果规定逐字节的进行拷贝, 用库函数会比用系统调用快很多, 因为<strong>有预读入和缓输出机制:</strong></p>
-<p><img src="https://api2.mubu.com/v3/document_image/ca853e5c-878b-4feb-80a4-2d4205eb88e3-11197877.jpg" alt="预读入和缓输出机制"></p>
-<p>操作系统不会让用户逐字节的向磁盘上写数据, 实际上它<strong>维护了一个系统级缓冲</strong>, <strong>只有当从用户空间过来的数据在该缓冲上写满时, 才会一次性将数据冲刷到Disk上</strong></p>
-<p><strong>当使用系统调用的方法时, 要不断的在用户空间和内核空间进行来回切换, 这会消耗大量时间</strong></p>
-<p>而使用fputc(库函数)时, <strong>在设计之初自己在用户空间维护了一个缓冲, 这样在用户空间把自己的缓冲写满, 再一次性写入内核缓冲(写入了内核缓冲就认为写到了磁盘上), 可见这样大大减少了在用户空间和内核空间来回切换的次数</strong></p>
-<p><strong>read和write函数常被称为UnbufferedIO, 指无用户级缓冲区, 但不保证不使用内核缓冲区</strong></p>
-<h3 id="文件及相关操作"><a href="#文件及相关操作" class="headerlink" title="文件及相关操作"></a>文件及相关操作</h3><h4 id="文件描述符"><a href="#文件描述符" class="headerlink" title="文件描述符"></a>文件描述符</h4><p><img src="https://api2.mubu.com/v3/document_image/1148cba1-a13e-4a4f-a00d-e12aafbae072-11197877.jpg" alt="文件描述符"></p>
-<ul>
-<li>PCB中有一个指针, <strong>指向了该进程的文件描述符表, 每个表项都是一个键值对, 其中的value是指向文件结构体的指针, 其中的索引是fd,</strong> <strong>操作系统暴露给用户的唯一操作文件的依据</strong></li>
-<li>新打开的文件描述符一定是所有文件描述符表中<strong>可用的, 最小的</strong>那个文件描述符</li>
-<li>文件描述符最大1023, 说明<strong>一个进程最多能打开1024个文件</strong></li>
-</ul>
-<h4 id="open"><a href="#open" class="headerlink" title="open"></a>open</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">open</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* pathname, <span class="keyword">int</span> flags)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">open</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* pathname, <span class="keyword">int</span> flags, <span class="keyword">mode_t</span> mode)</span></span>;	<span class="comment">//mode_t是一个8进制整型,指定文件权限,只有当参2指定了CREAT才有用</span></span><br></pre></td></tr></table></figure>
-<p>flag的参数:</p>
-<ul>
-<li>O_RDONLY</li>
-<li>O_WRONLY</li>
-<li>O_RDWR</li>
-<li>O_APPEND</li>
-<li>O_CREATE</li>
-<li>O_EXCL</li>
-<li>O_TRUNC</li>
-<li>O_NONBLOCK</li>
-</ul>
-<p>成功返回<strong>文件描述符</strong>, 失败返回-1并设置errno;</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> fd1=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> fd2=<span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	fd1=<span class="built_in">open</span>(<span class="string">"./dirt.txt"</span>,O_RDONLY|O_CREAT|O_TRUNC,<span class="number">0644</span>);</span><br><span class="line">    <span class="comment">/*打开的文件不存在*/</span></span><br><span class="line">	fd2=<span class="built_in">open</span>(<span class="string">"./dirt2.txt"</span>,O_RDONLY);</span><br><span class="line"></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"fd1=%d\n"</span>,fd1);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"fd2=%d,errno=%d:%s\n"</span>,fd2,errno,strerror(errno));</span><br><span class="line">	<span class="built_in">close</span>(fd1);</span><br><span class="line">	<span class="built_in">close</span>(fd2);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><strong>创建文件权限时, 指定文件访问权限, 权限同时受umask影响:<code>文件权限=mode&amp;(~umask)</code></strong></p>
-<h4 id="read和write"><a href="#read和write" class="headerlink" title="read和write"></a>read和write</h4><ul>
-<li>read:从<strong>文件中读数据到缓冲区</strong></li>
-</ul>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="keyword">ssize_t</span> <span class="built_in">read</span>(<span class="keyword">int</span> fd, <span class="keyword">void</span>* buf, <span class="keyword">size_t</span> count);<span class="comment">//count是缓冲区的大小;</span></span><br></pre></td></tr></table></figure>
-<p><strong>成功返回实际读到的字节数, 返回0时意味着读到了文件末尾, 失败返回-1并设置errno</strong></p>
-<ul>
-<li>wirte:从<strong>缓冲区中读数据到文件</strong></li>
-</ul>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="keyword">ssize_t</span> <span class="built_in">write</span>(<span class="keyword">int</span> fd, <span class="keyword">const</span> <span class="keyword">void</span>* buf, <span class="keyword">size_t</span> count); <span class="comment">//count是数据的大小(字节数);</span></span><br></pre></td></tr></table></figure>
-<p><strong>成功返回实际写入的字节数, 失败返回-1, 并设置errno</strong></p>
-<h4 id="read和write实现文件拷贝"><a href="#read和write实现文件拷贝" class="headerlink" title="read和write实现文件拷贝"></a>read和write实现文件拷贝</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">char</span> buf[<span class="number">1024</span>];</span><br><span class="line">	<span class="keyword">int</span> n=<span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">int</span> fd1=<span class="built_in">open</span>(argv[<span class="number">1</span>],O_RDONLY);</span><br><span class="line">	<span class="keyword">if</span>(fd1==<span class="number">-1</span>)&#123;</span><br><span class="line">		perror(<span class="string">"open argv1 error"</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line">    </span><br><span class="line">	<span class="keyword">int</span> fd2=<span class="built_in">open</span>(argv[<span class="number">2</span>],O_RDWR|O_CREAT|O_TRUNC,<span class="number">0644</span>);</span><br><span class="line">	<span class="keyword">if</span>(fd2==<span class="number">-1</span>)&#123;</span><br><span class="line">		perror(<span class="string">"open argv2 error"</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">while</span>((n=<span class="built_in">read</span>(fd1,buf,<span class="keyword">sizeof</span>(buf)))!=<span class="number">0</span>)&#123;</span><br><span class="line">		<span class="keyword">if</span>(n&lt;<span class="number">0</span>)&#123;</span><br><span class="line">			perror(<span class="string">"open argv2 error"</span>);</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="built_in">write</span>(fd2,buf,n);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="built_in">close</span>(fd1);</span><br><span class="line">	<span class="built_in">close</span>(fd2);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
-<h4 id="阻塞和非阻塞"><a href="#阻塞和非阻塞" class="headerlink" title="阻塞和非阻塞"></a>阻塞和非阻塞</h4><p>阻塞：<strong>当进程调用一个阻塞的系统调用时，该进程被置于睡眠状态，这时内核调度其他进程运行，直到该进程等待的事件发生了（比如网络上接收到数据包或者调用sleep指定的睡眠时间到了）它才可能继续运行</strong>。与睡眠状态相对的是运行状态。</p>
-<p>正在被调度执行的进程：cpu处于该进程的上下文环境中，程序计数器中保存着该进程的指令地址，通用寄存器中保存着进程运算过程中的中间结果，正在执行该进程的指令，正在读写该进程的地址空间。</p>
-<p>常规读文件是不会阻塞的，不论读多少字节，read一定会在有限时间内返回。<strong>从终端或网络读则不一定，如果从终端输入的数据没有换行符，调用read读终端设备就会阻塞</strong>。<strong>如果网络上没有接收到数据包，调用read从网络读就会阻塞，至于阻塞多长时间也是不确定的，如果一直没有数据到达就会一直阻塞。同样，写常规文件也是不会阻塞的，而向终端设备或网络写则不一定。</strong></p>
-<h5 id="echo程序"><a href="#echo程序" class="headerlink" title="echo程序"></a>echo程序</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> n=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">char</span> buf[<span class="number">10</span>];</span><br><span class="line"></span><br><span class="line">	n=<span class="built_in">read</span>(STDIN_FILENO,buf,<span class="keyword">sizeof</span>(buf));</span><br><span class="line">	<span class="keyword">if</span>(n==<span class="number">-1</span>)&#123;</span><br><span class="line">		perror(<span class="string">"read error"</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="built_in">write</span>(STDOUT_FILENO,buf,n);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>当不敲入换行符时, read会一直阻塞等待用户输入</p>
-<p>阻塞是<strong>设备文件, 网络文件</strong>的属性</p>
-<h5 id="非阻塞方式从tty中读数据"><a href="#非阻塞方式从tty中读数据" class="headerlink" title="非阻塞方式从tty中读数据"></a>非阻塞方式从tty中读数据</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> fd=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">char</span> buf[<span class="number">10</span>];</span><br><span class="line">	<span class="keyword">int</span> n=<span class="number">0</span>;</span><br><span class="line">    </span><br><span class="line">	<span class="comment">/*以非阻塞方式打开终端文件*/</span></span><br><span class="line">	fd=<span class="built_in">open</span>(<span class="string">"/dev/tty"</span>,O_RDONLY|O_NONBLOCK);</span><br><span class="line">	<span class="keyword">if</span>(fd&lt;<span class="number">0</span>)&#123;</span><br><span class="line">		perror(<span class="string">"open /dev/tty error"</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">tryagain: </span><br><span class="line">	n=<span class="built_in">read</span>(fd,buf,<span class="keyword">sizeof</span>(buf));</span><br><span class="line">    <span class="comment">/*当read的返回值小于0*/</span></span><br><span class="line">	<span class="keyword">if</span>(n&lt;<span class="number">0</span>)&#123;</span><br><span class="line">        <span class="comment">/*errno不是EWOULDBLOCK,说明出现了其他问题*/</span></span><br><span class="line">		<span class="keyword">if</span>(errno!=EWOULDBLOCK)&#123;</span><br><span class="line">			perror(<span class="string">"read /dev/tty error"</span>);</span><br><span class="line">			<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">		&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">            <span class="comment">/*errno是EWOULDBLOCK,说明读到为空,则打印提示信息,并再次尝试*/</span></span><br><span class="line">			<span class="built_in">write</span>(STDOUT_FILENO,<span class="string">"try again\n"</span>,<span class="built_in">strlen</span>(<span class="string">"try again\n"</span>));</span><br><span class="line">			sleep(<span class="number">2</span>);</span><br><span class="line">			<span class="keyword">goto</span> tryagain;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">    </span><br><span class="line">	<span class="comment">/*当read的返回值大于0,说明读到了数据,写到标准输出上*/</span></span><br><span class="line">	<span class="built_in">write</span>(STDOUT_FILENO,buf,n);</span><br><span class="line">	<span class="built_in">close</span>(fd);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
-<p>当<code>read</code>函数返回-1, 并且<code>errno=EAGAIN或EWOULDBLOCK</code>, 说明不是<code>read</code>失败, 而是read在以非阻塞方式读一个<strong>设备文件</strong>或<strong>网络文件</strong>, 而文件中无数据。</p>
-<p>阻塞方式存在的问题也正是网络IO中<code>select, poll和epoll</code>函数存在的原因。</p>
-<h4 id="fcntl修改文件的属性"><a href="#fcntl修改文件的属性" class="headerlink" title="fcntl修改文件的属性"></a>fcntl修改文件的属性</h4><p>改变一个<strong>已经打开的</strong>文件的访问控制属性。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fcntl</span><span class="params">(<span class="keyword">int</span> fd, <span class="keyword">int</span> cmd, ... <span class="comment">/* arg */</span> )</span></span>;</span><br></pre></td></tr></table></figure>
-<p>用fcntl改写上面的程序, <strong>不用重新打开文件:</strong></p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> fd=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">char</span> buf[<span class="number">10</span>];</span><br><span class="line">	<span class="keyword">int</span> n=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> ret=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> flags=<span class="number">0</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/*获取原来的flags*/</span></span><br><span class="line">	flags=fcntl(STDIN_FILENO,F_GETFL);</span><br><span class="line">	<span class="keyword">if</span>(flags==<span class="number">-1</span>)&#123;</span><br><span class="line">		perror(<span class="string">"fcntl error"</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/*位或上新的属性*/</span></span><br><span class="line">	flags|=O_NONBLOCK;</span><br><span class="line">    <span class="comment">/*将新的flags设置回去*/</span></span><br><span class="line">	ret=fcntl(STDIN_FILENO,F_SETFL,flags);</span><br><span class="line">	<span class="keyword">if</span>(ret==<span class="number">-1</span>)&#123;</span><br><span class="line">		perror(<span class="string">"fcntl error"</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line">    </span><br><span class="line"><span class="comment">/*与上面的相同*/</span></span><br><span class="line">tryagain:</span><br><span class="line">	n=<span class="built_in">read</span>(STDIN_FILENO,buf,<span class="keyword">sizeof</span>(buf));</span><br><span class="line">	<span class="keyword">if</span>(n&lt;<span class="number">0</span>)&#123;</span><br><span class="line">		<span class="keyword">if</span>(errno!=EWOULDBLOCK)&#123;</span><br><span class="line">			perror(<span class="string">"read /dev/tty error"</span>);</span><br><span class="line">			<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">		&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">			<span class="built_in">write</span>(STDOUT_FILENO,<span class="string">"try again\n"</span>,<span class="built_in">strlen</span>(<span class="string">"try again\n"</span>));</span><br><span class="line">			sleep(<span class="number">2</span>);</span><br><span class="line">			<span class="keyword">goto</span> tryagain;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="built_in">write</span>(STDOUT_FILENO,buf,n);</span><br><span class="line">	<span class="built_in">close</span>(fd);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><strong>文件的flags是一个位图, 每一位代表不同属性的真假值</strong></p>
-<h4 id="lseek函数"><a href="#lseek函数" class="headerlink" title="lseek函数"></a>lseek函数</h4><p><strong>文件偏移：每个打开的文件都记录着当前读写位置，打开文件时候写位置是0,表示文件开头，通常读写多少个字节就会将读写位置往后移动多少个字节。例外：如果以<code>O_APPEND</code>方式打开，每次写操作都会在文件末尾追加数据，然后将读写位置移动到新的文件末尾</strong>。<code>lseek</code>和标准<code>I/O</code>库的<code>fseek</code>函数类似，可以移动当前读写位置(或偏移量)。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fseek</span><span class="params">(FILE *stream, <span class="keyword">long</span> offset, <span class="keyword">int</span> whence)</span></span>; <span class="comment">//成功返回0,失败返回-1.特别：超出文件末尾位置返回0,往回超出文件头位置，返回-1</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">off_t</span> lseek(<span class="keyword">int</span> fd, <span class="keyword">off_t</span> offset, <span class="keyword">int</span> whence); <span class="comment">//失败返回-1,成功：返回的值是较文件起始位置向后的偏移量</span></span><br><span class="line"><span class="comment">//特别：lseek允许超过文件结尾设置偏移量，未见会因此被拓展。</span></span><br></pre></td></tr></table></figure>
-<p>例子：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> fd=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> n=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">char</span> msg[]=<span class="string">"It's a lseek test\n"</span>;</span><br><span class="line">	<span class="keyword">char</span> c;</span><br><span class="line"></span><br><span class="line">	fd=<span class="built_in">open</span>(<span class="string">"./lseek.txt"</span>,O_CREAT|O_RDWR,<span class="number">0644</span>);</span><br><span class="line">	<span class="keyword">if</span>(fd==<span class="number">-1</span>)&#123;</span><br><span class="line">		perror(<span class="string">"open error"</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="built_in">write</span>(fd,msg,<span class="built_in">strlen</span>(msg));</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/*如果这里不进行lseek,由于读写共用同一个偏移位置,下面的读会从文件末尾开始读,读不到任何数据*/</span></span><br><span class="line">	lseek(fd,<span class="number">0</span>,SEEK_SET);</span><br><span class="line">    </span><br><span class="line">	<span class="keyword">while</span>((n=<span class="built_in">read</span>(fd,&amp;c,<span class="number">1</span>)))&#123;</span><br><span class="line">		<span class="keyword">if</span>(n==<span class="number">-1</span>)&#123;</span><br><span class="line">			perror(<span class="string">"read error"</span>);</span><br><span class="line">			<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="built_in">write</span>(STDOUT_FILENO,&amp;c,n);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="built_in">close</span>(fd);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>用lseek获取文件大小:</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> fd=<span class="built_in">open</span>(argv[<span class="number">1</span>],O_RDWR);</span><br><span class="line">	<span class="keyword">if</span>(fd==<span class="number">-1</span>)&#123;</span><br><span class="line">		perror(<span class="string">"open error"</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">/*从0开始向后偏移到结尾,返回值表示偏移量,即为文件大小*/</span></span><br><span class="line">	<span class="keyword">int</span> <span class="built_in">size</span>=lseek(fd,<span class="number">0</span>,SEEK_END);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"The file's size:%d\n"</span>,<span class="built_in">size</span>);</span><br><span class="line"></span><br><span class="line">	<span class="built_in">close</span>(fd);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>使用lseek拓展文件大小: <strong>要想使文件大小真正拓展, 必须引起IO操作</strong></p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> fd=<span class="built_in">open</span>(argv[<span class="number">1</span>],O_RDWR);</span><br><span class="line">	<span class="keyword">if</span>(fd==<span class="number">-1</span>)&#123;</span><br><span class="line">		perror(<span class="string">"open error"</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">/*从文件的结束位置开始,向后偏移110，被填入的是文件空洞*/</span></span><br><span class="line">	<span class="keyword">int</span> <span class="built_in">size</span>=lseek(fd,<span class="number">110</span>,SEEK_END);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"The file's size:%d\n"</span>,<span class="built_in">size</span>);</span><br><span class="line">	<span class="comment">/*然后写入一个空字符*/</span></span><br><span class="line">	<span class="built_in">write</span>(fd,<span class="string">"\0"</span>,<span class="number">1</span>);</span><br><span class="line">	<span class="built_in">close</span>(fd);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>以HEX查看文件:<code>od -tcx filename</code>。</p>
-<p>也可以使用truncate拓展文件大小:</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> ret=truncate(<span class="string">"dict.cp"</span>,<span class="number">250</span>);</span><br></pre></td></tr></table></figure>
-<h3 id="目录操作"><a href="#目录操作" class="headerlink" title="目录操作"></a>目录操作</h3><h4 id="目录项和inode"><a href="#目录项和inode" class="headerlink" title="目录项和inode"></a>目录项和inode</h4><p>文件存储的关键点：inode, denty,数据存储，文件系统。</p>
-<p>inode: <strong>本质为结构体，存储文件的属性信息。如：权限、大小、时间、用户、盘块位置…也叫做文件属性管理结构，大多数的inode都存储在磁盘上。</strong></p>
-<p><strong>可以用stat命令，查看某个文件的inode信息：</strong><br><code>stat example.txt</code></p>
-<p>inode的大小：<br>inode会消耗硬盘空间，所以<strong>硬盘格式化的时候，操作系统自动将硬盘分成两个区域。一个是数据区，存放文件数据；另一个是inode区（inode table），存放inode所包含的信息。</strong><br>查看每个硬盘分区的inode总数和已经使用的数量，可以使用df命令：</p>
-<p><code>df -i</code></p>
-<p>denty: 目录项，<strong>本质依然是结构体</strong>，重要成员变量:文件名，inode。文<strong>件内容(data)保存在磁盘块中。</strong></p>
-<p><strong>增加文件的硬链接只是增加dentry, 指向相同的inode</strong></p>
-<p>同样, <strong>删除硬链接也只是删除dentry, 要注意删除文件并不会让数据在磁盘消失, 只是OS丢失了inode, 磁盘只能覆盖, 不能擦除</strong>。</p>
-<h4 id="stat函数"><a href="#stat函数" class="headerlink" title="stat函数"></a>stat函数</h4><p>stat函数作用:<strong>获取文件属性(从inode中获取)</strong></p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">stat</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* pathname, struct stat* statbuf)</span></span>;</span><br><span class="line"><span class="comment">//参数:</span></span><br><span class="line"><span class="comment">//path:文件路径;</span></span><br><span class="line"><span class="comment">//buf(传出参数)存放文件属性;</span></span><br><span class="line"><span class="comment">//返回值: 成功返回0, 失败返回-1并设置errno;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/*结构体信息*/</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">stat</span> &#123;</span></span><br><span class="line">	<span class="keyword">dev_t</span>     st_dev;         <span class="comment">/* ID of device containing file */</span></span><br><span class="line">	<span class="keyword">ino_t</span>     st_ino;         <span class="comment">/* Inode number */</span></span><br><span class="line">	<span class="keyword">mode_t</span>    st_mode;        <span class="comment">/* File type and mode */</span></span><br><span class="line">	<span class="keyword">nlink_t</span>   st_nlink;       <span class="comment">/* Number of hard links */</span></span><br><span class="line">	<span class="keyword">uid_t</span>     st_uid;         <span class="comment">/* User ID of owner */</span></span><br><span class="line">	<span class="keyword">gid_t</span>     st_gid;         <span class="comment">/* Group ID of owner */</span></span><br><span class="line">	<span class="keyword">dev_t</span>     st_rdev;        <span class="comment">/* Device ID (if special file) */</span></span><br><span class="line">	<span class="keyword">off_t</span>     st_size;        <span class="comment">/* Total size, in bytes */</span></span><br><span class="line">	<span class="keyword">blksize_t</span> st_blksize;     <span class="comment">/* Block size for filesystem I/O */</span></span><br><span class="line">	<span class="keyword">blkcnt_t</span>  st_blocks;      <span class="comment">/* Number of 512B blocks allocated */</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* Since Linux 2.6, the kernel supports nanosecond precision for the following timestamp fields.For the details before Linux 2.6, see NOTES. */</span></span><br><span class="line"></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">timespec</span> <span class="title">st_atim</span>;</span>  <span class="comment">/* Time of last access */</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">timespec</span> <span class="title">st_mtim</span>;</span>  <span class="comment">/* Time of last modification */</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">timespec</span> <span class="title">st_ctim</span>;</span>  <span class="comment">/* Time of last status change */</span></span><br><span class="line"></span><br><span class="line">	<span class="meta">#<span class="meta-keyword">define</span> st_atime st_atim.tv_sec      <span class="comment">/* Backward compatibility */</span></span></span><br><span class="line">	<span class="meta">#<span class="meta-keyword">define</span> st_mtime st_mtim.tv_sec</span></span><br><span class="line">	<span class="meta">#<span class="meta-keyword">define</span> st_ctime st_ctim.tv_sec</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>利用stat获取文件大小:</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">stat</span> <span class="title">sbuf</span>;</span></span><br><span class="line">	<span class="keyword">int</span> ret=<span class="number">0</span>;</span><br><span class="line">	ret=stat(argv[<span class="number">1</span>],&amp;sbuf);</span><br><span class="line">	<span class="keyword">if</span>(ret==<span class="number">-1</span>)&#123;</span><br><span class="line">		perror(<span class="string">"stat error"</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"file size:%ld\n"</span>,sbuf.st_size);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>使用宏函数获取文件属性:</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">stat</span> <span class="title">sbuf</span>;</span></span><br><span class="line">	<span class="keyword">int</span> ret=<span class="number">0</span>;</span><br><span class="line">	ret=stat(argv[<span class="number">1</span>],&amp;sbuf);</span><br><span class="line">	<span class="keyword">if</span>(ret==<span class="number">-1</span>)&#123;</span><br><span class="line">		perror(<span class="string">"stat error"</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line">    <span class="comment">/*宏函数一般返回布尔值*/</span></span><br><span class="line">	<span class="keyword">if</span>(S_ISREG(sbuf.st_mode))</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"It's a regular\n"</span>);</span><br><span class="line">	<span class="keyword">else</span> <span class="keyword">if</span>(S_ISDIR(sbuf.st_mode))</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"It's a dir\n"</span>);</span><br><span class="line">	<span class="keyword">else</span> <span class="keyword">if</span>(S_ISFIFO(sbuf.st_mode))</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"It's a pipe\n"</span>);</span><br><span class="line">	<span class="keyword">else</span> <span class="keyword">if</span>(S_ISLNK(sbuf.st_mode))</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"It's a symbol"</span>);</span><br><span class="line">	<span class="comment">/*and so on...*/</span></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h4 id="lstat"><a href="#lstat" class="headerlink" title="lstat"></a>lstat</h4><p><code>ln -s makefile makefile.soft</code>:创建软连接</p>
-<p><code>mkfifo f1</code>:创建管道文件</p>
-<p><strong>stat穿透: 当用stat获取软连接的文件属性时, 会穿透符号连接直接返回软连接指向的本尊的文件属性</strong>(vim,cat命令也有穿透作用)</p>
-<p>解决方法: 换lstat函数</p>
-<p>S_IFMT是一个文件类型掩码(文件类型那四位全1), st_mode与它位与后就可以提取出文件类型(后面的权限位被归零)</p>
-<h4 id="link和unlink"><a href="#link和unlink" class="headerlink" title="link和unlink"></a>link和unlink</h4><p>特殊权限位：包含三个二进制位。依次是：设置组ID位：setGID; 设置用户ID位setID; 黏住位sticky</p>
-<p>黏住位： 早期计算机内存紧张<strong>，只有精要的常用的程序可以常驻物理内存，剩下的要暂存在磁盘中。**</strong>当内存不够的时候会将该部分程序存回磁盘，腾出内存空间。若文件设置了黏住位，即使在内存比较吃紧的情况下也不会将该文件回存到磁盘上。**现阶段操作系统的虚拟内存管理分页算法比较完善，该功能已经被废弃。</p>
-<p>仍然可以<strong>对目录设置黏住位。</strong>被设置了该位的目录，其内部文件只有：</p>
-<ul>
-<li>超级管理员</li>
-<li>该目录所有者</li>
-<li>改文件的所有者</li>
-</ul>
-<p>这三种用户有权限做删除、修改操作。其他用户可以读、创建，但不能随意删除。</p>
-<p>link函数</p>
-<p><strong>可以为已经存在的文件创建目录项(硬链接)</strong></p>
-<p><code>ln makefile makefile.hard</code>:为makefile创建硬连接</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">link</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *oldpath, <span class="keyword">const</span> <span class="keyword">char</span> *newpath)</span></span>;</span><br></pre></td></tr></table></figure>
-<p>使用link和unlink函数实现mv命令:</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> ret=<span class="number">0</span>;</span><br><span class="line">	ret=link(argv[<span class="number">1</span>],argv[<span class="number">2</span>]);</span><br><span class="line">	<span class="keyword">if</span>(ret==<span class="number">-1</span>)&#123;</span><br><span class="line">		perror(<span class="string">"link error"</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	ret=unlink(argv[<span class="number">1</span>]);</span><br><span class="line">	<span class="keyword">if</span>(ret==<span class="number">-1</span>)&#123;</span><br><span class="line">		perror(<span class="string">"unlink error"</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><strong>Linux下的文件删除机制: 不断的将文件的st_nlink-1, 直到减到0为止. 无目录项对应的文件, 会被操作系统择机释放</strong>。因此删除文件, 从某种意义上来说只是让文件具备了被删除的条件</p>
-<p>unlink函数的特征:<strong>清除文件时, 如果文件的硬连接计数减到了0, 没有dentry与之对应, 但该文件仍不会马上被释放掉. 要等到所有打开该文件的进程关闭该文件, 系统才会择机将文件释放。</strong></p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> fd=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> ret=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">char</span>* p=<span class="string">"test of unlink\n"</span>;</span><br><span class="line">	<span class="keyword">char</span>* p2=<span class="string">"after write something\n"</span>;</span><br><span class="line"></span><br><span class="line">	fd=<span class="built_in">open</span>(<span class="string">"temp.txt"</span>,O_RDWR|O_TRUNC|O_CREAT,<span class="number">0644</span>);</span><br><span class="line">	<span class="keyword">if</span>(fd&lt;<span class="number">0</span>)</span><br><span class="line">		perr_exit(<span class="string">"open file error"</span>);</span><br><span class="line"></span><br><span class="line">	ret=<span class="built_in">write</span>(fd,p,<span class="built_in">strlen</span>(p));</span><br><span class="line">	<span class="keyword">if</span>(ret==<span class="number">-1</span>)</span><br><span class="line">		perr_exit(<span class="string">"write error"</span>);</span><br><span class="line"></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"hello,I'm printf\n"</span>);</span><br><span class="line">	ret=<span class="built_in">write</span>(fd,p2,<span class="built_in">strlen</span>(p2));</span><br><span class="line">	<span class="keyword">if</span>(ret==<span class="number">-1</span>)</span><br><span class="line">		perr_exit(<span class="string">"write error"</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"Entry key to continue\n"</span>);</span><br><span class="line">    <span class="comment">/*程序在此阻塞等待用户输入*/</span></span><br><span class="line">	getchar();</span><br><span class="line">	<span class="built_in">close</span>(fd);</span><br><span class="line">	<span class="comment">/*删除该文件*/</span></span><br><span class="line">	ret=unlink(<span class="string">"temp.txt"</span>);</span><br><span class="line">	<span class="keyword">if</span>(ret==<span class="number">-1</span>)</span><br><span class="line">		perr_exit(<span class="string">"unlink error"</span>);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><strong>如果在unlink之前诱发段错误, 程序崩溃, temp.txt就会存活下来. 所以将unlink这一步放到打开文件之后紧接着就unlink掉</strong></p>
-<p><strong>虽然文件被unlink掉了, 用户用cat查看不到磁盘上的对应文件, 但是write函数拿到fd写文件是向内核的buffer中写, 仍可正常写入</strong></p>
-<p>隐式回收:</p>
-<p>当<strong>进程运行结束时, 所有该进程打开的文件会被关闭, 申请的内存空间会被释放</strong>, 系统的这一特性称为<strong>隐式回收系统资源</strong></p>
-<h4 id="文件目录权限"><a href="#文件目录权限" class="headerlink" title="文件目录权限"></a>文件目录权限</h4><p><code>readlink m1.soft</code>:查看软连接的内容</p>
-<p>Linux下所见皆文件, 如果用vim打开一个目录，目录也是”文件”。文件内容是该目录下所有子文件的目录项dentry。</p>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th></th>
-<th>r</th>
-<th>w</th>
-<th>x</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>文件</td>
-<td>文件内容可以被查看，cat、more、less…</td>
-<td>内容可以被修改vi…</td>
-<td>运行产生一个进程 ./文件名</td>
-</tr>
-<tr>
-<td>目录</td>
-<td>目录可以被浏览</td>
-<td>创建、删除、修改文件mv, touch, mkdir…</td>
-<td>可以被打开、进入 cd</td>
-</tr>
-</tbody>
-</table>
-</div>
-<h4 id="目录操作函数"><a href="#目录操作函数" class="headerlink" title="目录操作函数"></a>目录操作函数</h4><p>文件名不能超过255个字符, 引文dirent中的d_name长度为256, 再算上\0, 有255个字符可用。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;dirent.h&gt;</span></span></span><br><span class="line"><span class="function">DIR* <span class="title">opendir</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* name)</span></span>;	<span class="comment">/*返回的是一个目录结构体指针*/</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">closedir</span><span class="params">(DIR* dirp)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function">struct dirent* <span class="title">readdir</span><span class="params">(DIR* dirp)</span></span>;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">dirent</span> &#123;</span></span><br><span class="line">	<span class="keyword">ino_t</span>          d_ino;       <span class="comment">/* Inode number */</span></span><br><span class="line">	<span class="keyword">off_t</span>          d_off;       <span class="comment">/* Not an offset; see below */</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">short</span> d_reclen;    <span class="comment">/* Length of this record */</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span>  d_type;      <span class="comment">/* Type of file; not supported by all filesystem types */</span></span><br><span class="line">	<span class="keyword">char</span>           d_name[<span class="number">256</span>]; <span class="comment">/* Null-terminated filename */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>用目录操作函数实现ls的功能:</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	DIR* dp;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">dirent</span>* <span class="title">sdp</span>;</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">/*根据输入的内容打开一个目录文件,拿到一个类似文件描述符的东西dp*/</span></span><br><span class="line">	dp=opendir(argv[<span class="number">1</span>]);</span><br><span class="line">	<span class="keyword">if</span>(dp==<span class="literal">NULL</span>)</span><br><span class="line">		perr_exit(<span class="string">"opendir error"</span>);</span><br><span class="line">    </span><br><span class="line">	<span class="comment">/*循环从dirent流中读取数据*/</span></span><br><span class="line">	<span class="keyword">while</span>((sdp=readdir(dp))!=<span class="literal">NULL</span>)&#123;</span><br><span class="line">        <span class="comment">/*跳过当前目录和上一级目录*/</span></span><br><span class="line">		<span class="keyword">if</span>(!<span class="built_in">strcmp</span>(sdp-&gt;d_name,<span class="string">"."</span>))</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line">		<span class="keyword">if</span>(!<span class="built_in">strcmp</span>(sdp-&gt;d_name,<span class="string">".."</span>))</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line">        <span class="comment">/*打印文件名*/</span></span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"%s\n"</span>,sdp-&gt;d_name);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"\n"</span>);</span><br><span class="line">    </span><br><span class="line">	<span class="comment">/*关闭文件*/</span></span><br><span class="line">	closedir(dp);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h4 id="递归遍历目录"><a href="#递归遍历目录" class="headerlink" title="递归遍历目录"></a>递归遍历目录</h4><p>思路：</p>
-<ul>
-<li><p>判断命令行参数, 获取用户要查询的目录名-argv[1]</p>
-<ul>
-<li>注意如果argc==1, 说明要查询的是当前目录./</li>
-</ul>
-</li>
-<li><p>判断用户指定的是否是目录: stat S_ISDIR()-&gt;封装函数isFile()</p>
-</li>
-<li>读目录:</li>
-</ul>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">opendir(dir);	</span><br><span class="line"><span class="keyword">while</span>(readdir())&#123;</span><br><span class="line">	普通文件:直接打印;</span><br><span class="line">	目录文件:拼接目录访问绝对路径:<span class="built_in">sprintf</span>(path,<span class="string">"%s%s"</span>,dir,d_name);</span><br><span class="line">	递归调用自己:opendir(path), readdir, closedir;</span><br><span class="line">&#125;</span><br><span class="line">closedir();</span><br></pre></td></tr></table></figure>
-<p>实现：<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*参2是回调函数名*/</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">fetchdir</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* dir,<span class="keyword">void</span>(*fcn)(<span class="keyword">char</span>*))</span></span>&#123;</span><br><span class="line">	<span class="keyword">char</span> name[PATH_LEN];</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">dirent</span>* <span class="title">sdp</span>;</span></span><br><span class="line">	DIR* dp;</span><br><span class="line">	<span class="comment">/*打开目录失败*/</span></span><br><span class="line">	<span class="keyword">if</span>((dp=opendir(dir))==<span class="literal">NULL</span>)&#123;</span><br><span class="line">		<span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">"fetchdir:can't open %s\n"</span>,dir);</span><br><span class="line">		<span class="keyword">return</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">/*循环读取内容*/</span></span><br><span class="line">	<span class="keyword">while</span>((sdp=readdir(dp))!=<span class="literal">NULL</span>)&#123;</span><br><span class="line">        <span class="comment">/*遇到当前目录和上一级目录,跳过,否则会陷入死循环*/</span></span><br><span class="line">		<span class="keyword">if</span>((<span class="built_in">strcmp</span>(sdp-&gt;d_name,<span class="string">"."</span>)==<span class="number">0</span>)||(<span class="built_in">strcmp</span>(sdp-&gt;d_name,<span class="string">".."</span>)==<span class="number">0</span>))</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line">		<span class="comment">/*路径名是否越界*/</span></span><br><span class="line">		<span class="keyword">if</span>(<span class="built_in">strlen</span>(dir)+<span class="built_in">strlen</span>(sdp-&gt;d_name)+<span class="number">2</span>&gt;<span class="keyword">sizeof</span>(name))&#123;</span><br><span class="line">			<span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">"fetchdir:name %s %s is too long\n"</span>,dir,sdp-&gt;d_name);</span><br><span class="line">		&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">            <span class="comment">/*拼接为一个路径,传给isFile函数*/</span></span><br><span class="line">			<span class="built_in">sprintf</span>(name,<span class="string">"%s/%s"</span>,dir,sdp-&gt;d_name);</span><br><span class="line">			(*fcn)(name);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	closedir(dp);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">isFile</span><span class="params">(<span class="keyword">char</span>* name)</span></span>&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">stat</span> <span class="title">sbuf</span>;</span></span><br><span class="line">    <span class="comment">/*获取文件属性失败*/</span></span><br><span class="line">	<span class="keyword">if</span>(stat(name,&amp;sbuf)==<span class="number">-1</span>)&#123;</span><br><span class="line">		<span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">"isFile:can't access %s\n"</span>,name);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line">    <span class="comment">/*这是一个目录文件:调用函数fetchdir*/</span></span><br><span class="line">	<span class="keyword">if</span>((sbuf.st_mode&amp;S_IFMT)==S_IFDIR)&#123;</span><br><span class="line">		fetchdir(name,isFile);</span><br><span class="line">	&#125;</span><br><span class="line">    <span class="comment">/*不是目录文件:是一个普通文件,打印文件信息*/</span></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"%ld\t\t%s\n"</span>,sbuf.st_size,name);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="comment">/*不指定命令行参数*/</span></span><br><span class="line">	<span class="keyword">if</span>(argc==<span class="number">1</span>)</span><br><span class="line">		isFile(<span class="string">"."</span>);</span><br><span class="line">	<span class="keyword">else</span>&#123;</span><br><span class="line">		<span class="keyword">while</span>(--argc&gt;<span class="number">0</span>)</span><br><span class="line">			isFile(*++argv);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h4 id="dup和dup2"><a href="#dup和dup2" class="headerlink" title="dup和dup2"></a>dup和dup2</h4><p><code>cat makefile &gt; m1</code>:将cat的结果重定向到m1(此时m1与makefile内容相同)</p>
-<p><code>cat makefile &gt;&gt; m1</code>:将cat的结果重定向并追加到m1后面(此时m1是双份的makefile)</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">dup</span><span class="params">(<span class="keyword">int</span> oldfd)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">dup2</span><span class="params">(<span class="keyword">int</span> oldfd, <span class="keyword">int</span> newfd)</span></span>;</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>The dup() system call creates a copy of the file descriptor oldfd, using the lowest-numbered unused file descriptor for the new descriptor.</p>
-</blockquote>
-<p>传入已有的文件描述符, 返回一个新的文件描述符:</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">    <span class="comment">/*open或创建一个文件,拿到文件描述符fd1*/</span></span><br><span class="line">        <span class="keyword">int</span> fd1=<span class="built_in">open</span>(argv[<span class="number">1</span>],O_RDWR|O_CREAT|O_TRUNC,<span class="number">0644</span>);</span><br><span class="line">        <span class="keyword">if</span>(fd1==<span class="number">-1</span>)&#123;</span><br><span class="line">                perror(<span class="string">"open error"</span>);</span><br><span class="line">                <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">/*fd2作为fd1的副本,拿着fd2也可以向被open的文件写入*/</span></span><br><span class="line">        <span class="keyword">int</span> fd2=dup(fd1);</span><br><span class="line">        <span class="keyword">if</span>(fd2==<span class="number">-1</span>)&#123;</span><br><span class="line">                perror(<span class="string">"dup error"</span>);</span><br><span class="line">                <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"fd1=%d  fd2=%d\n"</span>,fd1,fd2);</span><br><span class="line">        <span class="comment">/*向fd2(fd1)中写入一句话*/</span></span><br><span class="line">        <span class="built_in">write</span>(fd2,<span class="string">"love you\n"</span>,<span class="number">8</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><strong>dup的返回值fd2相当于fd1的副本, 拿着它也可以操作fd1</strong></p>
-<p>dup2<strong>:后面的指向前面的。</strong></p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> fd1=<span class="built_in">open</span>(argv[<span class="number">1</span>],O_RDWR|O_CREAT|O_TRUNC,<span class="number">0644</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> fd2=<span class="built_in">open</span>(argv[<span class="number">2</span>],O_RDWR|O_CREAT|O_TRUNC,<span class="number">0644</span>);</span><br><span class="line">        <span class="comment">/*dup2后fd2也指向了fd1的文件*/</span></span><br><span class="line">        <span class="keyword">int</span> fdret=dup2(fd1,fd2);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"fdret=%d\n"</span>,fdret);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> ret=<span class="built_in">write</span>(fd2,<span class="string">"love you\n"</span>,<span class="number">9</span>);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"ret=%d\n"</span>,ret);</span><br><span class="line">        <span class="comment">/*现在标准输出也指向了fd1*/</span></span><br><span class="line">        dup2(fd1,STDOUT_FILENO);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"--------love you--------\n"</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h4 id="fcntl实现dup描述符"><a href="#fcntl实现dup描述符" class="headerlink" title="fcntl实现dup描述符"></a>fcntl实现dup描述符</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> fd1=<span class="built_in">open</span>(argv[<span class="number">1</span>],O_RDWR|O_CREAT,<span class="number">0644</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"fd1=%d\n"</span>,fd1);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> newfd1=fcntl(fd1,F_DUPFD,<span class="number">0</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"newfd1=%d\n"</span>,newfd1);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">int</span> newfd2=fcntl(fd1,F_DUPFD,<span class="number">8</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"newfd2=%d\n"</span>,newfd2);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">int</span> ret=<span class="built_in">write</span>(newfd2,<span class="string">"fuckyou\n"</span>,<span class="number">8</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"ret=%d\n"</span>,ret);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//fcntl 参3传0, 则从0开始向下寻找可用的文件描述符返回给newfd1</span></span><br><span class="line"><span class="comment">//fcntl 参3传8, 则从8开始向下寻找可用的文件描述符返回给newfd2</span></span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
@@ -2162,20 +2130,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">54</span>
+          <span class="site-state-item-count">55</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-count">12</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">21</span>
+        <span class="site-state-item-count">22</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
