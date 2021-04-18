@@ -343,7 +343,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-29 08:27:03" itemprop="dateModified" datetime="2021-03-29T08:27:03+08:00">2021-03-29</time>
+                <time title="修改时间：2021-04-15 13:35:29" itemprop="dateModified" datetime="2021-04-15T13:35:29+08:00">2021-04-15</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -545,15 +545,20 @@
 </li>
 <li><p>程序中使用 <code>SO_LINGER</code> ，应用强制使用 <code>RST</code> 关闭</p>
 <ul>
-<li><p>可以通过设置 socket 选项，来设置调用 close 关闭连接行为。</p>
-</li>
-<li><p>```c<br>struct linger so_linger;<br>so_linger.l_onoff = 1;<br>so_linger.l_linger = 0;<br>setsockopt(s, SOL_SOCKET, SO_LINGER, &amp;so_linger,sizeof(so_linger));</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">  - 如果`l_onoff`为非 0， 且`l_linger`值为 0，那么调用`close`后，会立该发送一个`RST`标志给对端，**该 TCP 连接将跳过四次挥手，也就跳过了`TIME_WAIT`状态，直接关闭。**但这为跨越`TIME_WAIT`状态提供了一个可能，不过是一个非常危险的行为。</span><br><span class="line"></span><br><span class="line">#### 如果已经建立了连接，但是客户端突然出现故障了怎么办</span><br><span class="line"></span><br><span class="line">TCP 有一个机制是**保活机制**。该机制的原理为：</span><br><span class="line"></span><br><span class="line">定义一个时间段，**在这个时间段内，如果没有任何连接相关的活动，TCP 保活机制会开始作用，每隔一个时间间隔，发送一个探测报文，该探测报文包含的数据非常少，如果连续几个探测报文都没有得到响应，则认为当前的 TCP 连接已经死亡**，系统内核将错误信息通知给上层应用程序。</span><br><span class="line"></span><br><span class="line">在 Linux 内核可以有对应的参数可以设置保活时间、保活探测的次数、保活探测的时间间隔，以下都为默认值：</span><br><span class="line"></span><br><span class="line">```bash</span><br><span class="line">net.ipv4.tcp_keepalive_time=7200</span><br><span class="line">net.ipv4.tcp_keepalive_intvl=75  </span><br><span class="line">net.ipv4.tcp_keepalive_probes=9</span><br></pre></td></tr></table></figure>
-</li>
+<li>可以通过设置 socket 选项，来设置调用 close 关闭连接行为。</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">linger</span> <span class="title">so_linger</span>;</span></span><br><span class="line">so_linger.l_onoff = <span class="number">1</span>;</span><br><span class="line">so_linger.l_linger = <span class="number">0</span>;</span><br><span class="line">setsockopt(s, SOL_SOCKET, SO_LINGER, &amp;so_linger,<span class="keyword">sizeof</span>(so_linger));</span><br></pre></td></tr></table></figure>
+<ul>
+<li>如果<code>l_onoff</code>为非 0， 且<code>l_linger</code>值为 0，那么调用<code>close</code>后，会立该发送一个<code>RST</code>标志给对端，<strong>该 TCP 连接将跳过四次挥手，也就跳过了<code>TIME_WAIT</code>状态，直接关闭。</strong>但这为跨越<code>TIME_WAIT</code>状态提供了一个可能，不过是一个非常危险的行为。</li>
 </ul>
 </li>
-<li><p><code>tcp_keepalive_time=7200</code>：表示保活时间是 7200 秒（2小时），也就 2 小时内如果没有任何连接相关的活动，则会启动保活机制</p>
-</li>
+</ul>
+<h4 id="如果已经建立了连接，但是客户端突然出现故障了怎么办"><a href="#如果已经建立了连接，但是客户端突然出现故障了怎么办" class="headerlink" title="如果已经建立了连接，但是客户端突然出现故障了怎么办"></a>如果已经建立了连接，但是客户端突然出现故障了怎么办</h4><p>TCP 有一个机制是<strong>保活机制</strong>。该机制的原理为：</p>
+<p>定义一个时间段，<strong>在这个时间段内，如果没有任何连接相关的活动，TCP 保活机制会开始作用，每隔一个时间间隔，发送一个探测报文，该探测报文包含的数据非常少，如果连续几个探测报文都没有得到响应，则认为当前的 TCP 连接已经死亡</strong>，系统内核将错误信息通知给上层应用程序。</p>
+<p>在 Linux 内核可以有对应的参数可以设置保活时间、保活探测的次数、保活探测的时间间隔，以下都为默认值：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">net.ipv4.tcp_keepalive_time=7200</span><br><span class="line">net.ipv4.tcp_keepalive_intvl=75  </span><br><span class="line">net.ipv4.tcp_keepalive_probes=9</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>tcp_keepalive_time=7200</code>：表示保活时间是 7200 秒（2小时），也就 2 小时内如果没有任何连接相关的活动，则会启动保活机制</li>
 <li><code>tcp_keepalive_intvl=75</code>：表示每次检测间隔 75 秒；</li>
 <li><code>tcp_keepalive_probes=9</code>：表示检测 9 次无响应，认为对方是不可达的，从而中断本次的连接。</li>
 </ul>
@@ -1145,7 +1150,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-23 16:06:47" itemprop="dateModified" datetime="2021-03-23T16:06:47+08:00">2021-03-23</time>
+                <time title="修改时间：2021-04-09 09:29:14" itemprop="dateModified" datetime="2021-04-09T09:29:14+08:00">2021-04-09</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
