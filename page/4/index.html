@@ -203,6 +203,154 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/05/20/linux-%E7%BD%91%E7%BB%9C03%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/05/20/linux-%E7%BD%91%E7%BB%9C03%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80-2/" class="post-title-link" itemprop="url">网络基础-网络名词术语</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-05-20 18:36:05" itemprop="dateCreated datePublished" datetime="2020-05-20T18:36:05+08:00">2020-05-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-31 19:57:01" itemprop="dateModified" datetime="2021-03-31T19:57:01+08:00">2021-03-31</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index">
+                    <span itemprop="name">网络</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="网络名词术语解析"><a href="#网络名词术语解析" class="headerlink" title="网络名词术语解析"></a>网络名词术语解析</h3><h4 id="路由-route"><a href="#路由-route" class="headerlink" title="路由(route)"></a>路由(route)</h4><ul>
+<li><p>路由（名词）</p>
+<ul>
+<li>数据包从源地址到目的地址所经过的<strong>路径</strong>，由一系列路由节点组成。</li>
+</ul>
+</li>
+<li><p>路由（动词）</p>
+<ul>
+<li>某个路由节点为数据包选择投递方向的<strong>选路过程</strong>。</li>
+</ul>
+</li>
+</ul>
+<h4 id="路由器工作原理"><a href="#路由器工作原理" class="headerlink" title="路由器工作原理"></a>路由器工作原理</h4><p>路由器（Router）是连接因特网中各局域网、广域网的设备，它会<strong>根据信道的情况自动选择和设定路由</strong>，以<strong>最佳路径</strong>，按<strong>前后顺序</strong>发送信号的设备。</p>
+<p>传统地，路由器工作于OSI七层协议中的第三层，其<strong>主要任务是接收来自一个网络接口的数据包，根据其中所含的目的地址，决定转发到下一个目的地址</strong>。因此，路由器<strong>首先得在转发路由表中查找它的目的地址，若找到了目的地址，就在数据包的帧格前添加下一个MAC地址，同时IP数据包头的TTL（Time To Live）域也开始减数， 并重新计算校验和。当数据包被送到输出端口时，它需要按顺序等待，以便被传送到输出链路上。</strong></p>
+<p>路由器在工作时能够按照某种路由通信<strong>协议</strong>查找设备中的路由表。如果到某一特定节点有一条以上的路径，则基本预先确定的路由准则是选择最优（或最经济）的传输路径。由于各种网络段和其相互连接情况可能会因环境变化而变化，因此<strong>路由情况的信息一般也按所使用的路由信息协议的规定而定时更新</strong>。</p>
+<p>网络中，每个路由器的基本功能都是按照一定的<strong>规则</strong>来动态地更新它所保持的路由表，以便保持路由信息的有效性。为了便于在网络间传送报文<strong>，路由器总是先按照预定的规则把较大的数据分解成适当大小的数据包，再将这些数据包分别通过相同或不同路径发送出去</strong>。当这些数据包按先后秩序到达目的地后，再把分解的数据包按照一定顺序包装成原有的报文形式。路由器的<strong>分层寻址功能</strong>是路由器的重要功能之一，该功能可以帮助具有很多节点站的网络来存储寻址信息，同时还能在网络间截获发送到远地网段的报文，起<strong>转发</strong>作用；选择最合理的路由，引导通信也是路由器基本功能；多协议路由器还可以连接使用不同通信协议的网络段，成为不同通信协议网络段之间的通信平台。</p>
+<p>路由和交换之间的主要区别就是<strong>交换发生在OSI参考模型第二层（数据链路层），而路由发生在第三层，即网络层。这一区别决定了路由和交换在移动信息的过程 中需使用不同的控制信息</strong>，所以两者实现各自功能的方式是不同的。</p>
+<h4 id="路由表-Routing-Table"><a href="#路由表-Routing-Table" class="headerlink" title="路由表(Routing Table)"></a>路由表(Routing Table)</h4><p>在计算机网络中，路由表或称路由择域信息库（RIB）是一个存储在路由器或者联网计算机中的<strong>电子表格（文件）或类数据库。路由表存储着指向特定网络地址的路径。</strong></p>
+<h4 id="路由条目"><a href="#路由条目" class="headerlink" title="路由条目"></a>路由条目</h4><p>路由表中的<strong>一行，每个条目主要由目的网络地址、子网掩码、下一跳地址、发送接口四部分组成</strong>，如果要发送的数据包的目的网络地址<strong>匹配</strong>路由表中的某一行，<strong>就按规定的接口发送到下一跳地址。</strong></p>
+<h4 id="缺省路由条目"><a href="#缺省路由条目" class="headerlink" title="缺省路由条目"></a>缺省路由条目</h4><p>路由表中的<strong>最后一行，主要由下一跳地址和发送接口两部分组成，当目的地址与路由表中其它行都不匹配时，就按缺省路由条目规定的接口发送到下一跳地址</strong>。</p>
+<h4 id="路由节点"><a href="#路由节点" class="headerlink" title="路由节点"></a>路由节点</h4><p>一个具有路由能力的主机或路由器，它维护一张路由表，通过查询路由表来决定向哪个接口发送数据包。</p>
+<h4 id="以太网交换机工作原理"><a href="#以太网交换机工作原理" class="headerlink" title="以太网交换机工作原理"></a>以太网交换机工作原理</h4><p>以太网交换机是基于以太网传输数据的交换机，<strong>以太网采用共享总线型传输媒体方式的局域网</strong>。以太网交换机的结构是<strong>每个端口都直接与主机相连，并且一般都工作在全双工方式。交换机能同时连通许多对端口，使每一对相互通信的主机都能像独占通信媒体那样，进行无冲突地传输数据</strong>。</p>
+<p>以太网交换机工作于OSI网络参考模型的第二层（即数据链路层），是一种基于MAC（Media Access Control，介质访问控制）地址识别、完成以太网数据帧转发的网络设备。</p>
+<h4 id="hub工作原理"><a href="#hub工作原理" class="headerlink" title="hub工作原理"></a>hub工作原理</h4><p>集线器实际上就是中继器的一种，其区别仅在于集线器能够提供更多的端口服务，所以集线器又叫多口中继器。</p>
+<p>集线器功能是随机选出某一端口的设备，并让它独占全部带宽，与集线器的上联设备（交换机、路由器或服务器等）进行通信。从Hub的工作方式可以看出，它<strong>在网络中只起到信号放大和重发作用，其目的是扩大网络的传输范围，而不具备信号的定向传送能力，是—个标准的共享式设备。</strong>其次是<strong>Hub只与它的上联设备(如上层Hub、交换机或服务器)进行通信，同层的各端口之间不会直接进行通信，而是通过上联设备再将信息广播到所有端口上。</strong> 由此可见，即使是在同一Hub的不同两个端口之间进行通信，都必须要经过两步操作：</p>
+<ul>
+<li><p>第一步是将信息上传到上联设备；</p>
+</li>
+<li><p>第二步是上联设备再将该信息广播到所有端口上。</p>
+</li>
+</ul>
+<h4 id="半双工-全双工"><a href="#半双工-全双工" class="headerlink" title="半双工/全双工"></a>半双工/全双工</h4><p>Full-duplex（全双工）全双工是在通道中同时<strong>双向数据传输</strong>的能力。</p>
+<p>Half-duplex（半双工）在通道中同时<strong>只能沿着一个方向传输数据</strong>。</p>
+<h4 id="DNS服务器"><a href="#DNS服务器" class="headerlink" title="DNS服务器"></a>DNS服务器</h4><p>DNS 是域名系统 (Domain Name System) 的缩写，是因特网的一项核心服务，它作为可以<strong>将域名和IP地址相互映射的一个分布式数据库，能够使人更方便的访问互联网，而不用去记住能够被机器直接读取的IP地址串。</strong></p>
+<p>它是由<strong>解析器以及域名服务器组成</strong>的。<strong>域名服务器是指保存有该网络中所有主机的域名和对应IP地址，并具有将域名转换为IP地址功能的服务器。</strong></p>
+<h4 id="局域网-LAN"><a href="#局域网-LAN" class="headerlink" title="局域网(LAN)"></a>局域网(LAN)</h4><p>local area network，一种覆盖一座或几座大楼、一个校园或者一个厂区等地理区域的<strong>小范围的计算机网。</strong></p>
+<ul>
+<li><p>覆盖的地理范围较小，只在一个相对独立的局部范围内联，如一座或集中的建筑群内。</p>
+</li>
+<li><p>使用专门铺设的传输介质进行联网，数据传输速率高（10Mb/s～10Gb/s）</p>
+</li>
+<li><p>通信延迟时间短，可靠性较高</p>
+</li>
+<li><p>局域网可以支持多种传输介质</p>
+</li>
+</ul>
+<h4 id="广域网-WAN"><a href="#广域网-WAN" class="headerlink" title="广域网(WAN)"></a>广域网(WAN)</h4><p>wide area network，一种用来实现<strong>不同地区的局域网或城域网的互连</strong>，可提供不同地区、城市和国家之间的计算机通信的远程计算机网。</p>
+<p>覆盖的范围比局域网（LAN）和城域网（MAN）都广。<strong>广域网的通信子网主要使用分组交换技术。</strong></p>
+<p>广域网的通信子网可以利用公用分组交换网、卫星通信网和无线分组交换网，它将分布在不同地区的局域网或计算机系统互连起来，达到资源共享的目的。如互联网是世界范围内最大的广域网。</p>
+<ul>
+<li><p>适应大容量与突发性通信的要求；</p>
+</li>
+<li><p>适应综合业务服务的要求；</p>
+</li>
+<li><p>开放的设备接口与规范化的协议；</p>
+</li>
+<li><p>完善的通信服务与网络管理。</p>
+</li>
+</ul>
+<h4 id="端口"><a href="#端口" class="headerlink" title="端口"></a>端口</h4><p>逻辑意义上的端口，<strong>一般是指TCP/IP协议中的端口，端口号的范围从0到65535</strong>，比如用于浏览网页服务的80端口，用于FTP服务的21端口等等。</p>
+<ul>
+<li><p>端口号小于256的定义为<strong>常用端口</strong>，服务器一般都是通过常用端口号来识别的。</p>
+</li>
+<li><p><strong>客户端只需保证该端口号在本机上是惟一的就可以了。客户端口号因存在时间很短暂又称临时端口号；</strong></p>
+</li>
+<li><p><strong>大多数TCP/IP实现给临时端口号分配1024—5000之间的端口号。大于5000的端口号是为其他服务器预留的。</strong></p>
+</li>
+<li><p>在自定义端口时，避免使用well-known的端口。如：80、21等等。</p>
+</li>
+</ul>
+<h4 id="MTU"><a href="#MTU" class="headerlink" title="MTU"></a>MTU</h4><p>MTU:通信术语 最大传输单元（Maximum Transmission Unit，MTU）</p>
+<p>是指<strong>一种通信协议的某一层上面所能通过的最大数据包大小（以字节为单位）</strong>。最大传输单元这个参数通常与通信接口有关（网络接口卡、串口等）。</p>
+<p>eg: 以太网（Ethernet）协议的MTU为1500字节</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/05/06/linux_%E7%BD%91%E7%BB%9C02%E7%BD%91%E7%BB%9C%E5%9F%BA%E7%A1%80-1/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1893,178 +2041,6 @@
 <p>回收多个子进程: <strong>用while循环</strong></p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> i=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> wpid=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> pid=<span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;<span class="number">5</span>;++i)&#123;</span><br><span class="line">		pid=fork();</span><br><span class="line">		<span class="keyword">if</span>(pid==<span class="number">0</span>)</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span>(i==<span class="number">5</span>)&#123;</span><br><span class="line">        <span class="comment">/*以非阻塞忙轮询的方式回收子进程*/</span></span><br><span class="line">		<span class="keyword">while</span>((wpid=waitpid(<span class="number">-1</span>,<span class="literal">NULL</span>,WNOHANG))!=<span class="number">-1</span>)&#123;</span><br><span class="line">			<span class="keyword">if</span>(wpid&gt;<span class="number">0</span>)</span><br><span class="line">				<span class="built_in">printf</span>(<span class="string">"wait chile:%d\n"</span>,wpid);</span><br><span class="line">			<span class="keyword">else</span> <span class="keyword">if</span>(wpid==<span class="number">0</span>)</span><br><span class="line">				sleep(<span class="number">1</span>);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">		sleep(i);</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"I'm %dth child,my pid=%d\n"</span>,i+<span class="number">1</span>,getpid());</span><br><span class="line">	&#125;</span><br><span class="line">	sleep(<span class="number">1</span>);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p><strong><code>wait/waitpid</code>只能回收子进程, 爷孙的也不行.</strong></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/25/linux-%E7%B3%BB%E7%BB%9F-05%E8%BF%9B%E7%A8%8B/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/03/25/linux-%E7%B3%BB%E7%BB%9F-05%E8%BF%9B%E7%A8%8B/" class="post-title-link" itemprop="url">linux系统编程-进程</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-03-25 16:02:58" itemprop="dateCreated datePublished" datetime="2020-03-25T16:02:58+08:00">2020-03-25</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-23 21:47:57" itemprop="dateModified" datetime="2021-03-23T21:47:57+08:00">2021-03-23</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index">
-                    <span itemprop="name">linux系统编程</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="linux进程"><a href="#linux进程" class="headerlink" title="linux进程"></a>linux进程</h3><h4 id="进程、程序、并发"><a href="#进程、程序、并发" class="headerlink" title="进程、程序、并发"></a>进程、程序、并发</h4><p>程序：编译好的二进制文件。在<strong>磁盘上，不占用系统资源</strong>(cpu、 内存、打开的文件、设备、锁…)</p>
-<p>进程：一个抽象概念，与操作系统原理联系紧密。进程是<strong>活跃的程序，占用系统资源</strong>。在内存中执行(程序运行起来则产生一个进程)</p>
-<p>并发：<strong>操作系统中，一个时间段中有多个进程都处于已启动到运行完毕之间的状态。但一个时刻点上仍只有一个进程在运行（分时复用）。</strong></p>
-<h4 id="cpu和MMU-内存管理单元"><a href="#cpu和MMU-内存管理单元" class="headerlink" title="cpu和MMU(内存管理单元)"></a>cpu和MMU(内存管理单元)</h4><p><img src="https://api2.mubu.com/v3/document_image/e44706d6-6069-4a0e-9c85-6c1c43c3c19f-11197877.jpg" alt="cpu和存储"></p>
-<ul>
-<li><p>存储设备包括寄存器，cache,内存，硬盘，网络等。<strong>与cpu直接打交道的应该是寄存器，多级缓存</strong></p>
-</li>
-<li><p><strong>MMU(内存管理单元), 位于CPU内部</strong></p>
-</li>
-<li>MMU完成<strong>虚拟地址到物理地址的映射</strong>，设置<strong>修改内存访问级别（用户空间，内核空间）。一个page是内存分配的最小单位。</strong></li>
-</ul>
-<ul>
-<li><p>虚拟内存空间产生的时间：进程启动的时候，<strong>进程的所有东西都放在虚拟内存中，并不真实存在</strong>。实际的都放在内存中，虚拟空间如何描述？</p>
-</li>
-<li><p>虚拟地址：可用的地址空间有4G(32位操作系统)</p>
-</li>
-<li><p>如果一个程序跑了两个进程：<strong>两个进程开了两个虚拟空间，两个进程互相独立。两个不同的进程共用一个内存空间</strong>。</p>
-</li>
-</ul>
-<p>虚拟内存和物理内存映射关系：</p>
-<p><img src="https://api2.mubu.com/v3/document_image/06bd754f-dfe9-4081-a742-5f305d537582-11197877.jpg" alt="虚拟内存和物理内存映射关系"></p>
-<ul>
-<li><p>对于一个32位的机器来说, 每个进程都能看到4GB的虚拟地址空间, 且他们的3G~4G的位置都是kernel(<strong>每个进程都有kernel区</strong>)</p>
-</li>
-<li><p>从虚拟内存到物理内存的映射由MMU完成, <strong>不同进程的用户空间被映射到物理内存的不同位置, 而不同进程的kernel空间被映射到物理内存的相同位置</strong>, 对于物理内存来说，<strong>用户空间和内核空间有不同的特权级, 从用户空间到内核空间的转换实质上是特权级的切换。</strong></p>
-</li>
-</ul>
-<h4 id="PCB"><a href="#PCB" class="headerlink" title="PCB"></a>PCB</h4><p><strong>每个进程在内核中都有一个PCB来维护进程相关信息</strong>, Linux内核的进程控制块是task_struct类型的结构体。</p>
-<p>在<code>/usr/src/linux-headers-3.16.0-30/include/linux/sched.h</code>文件中可以查看<code>struct task_struct</code>结构体定义。其内部成员有很多，重点需要掌握部分：</p>
-<ul>
-<li><strong>进程id。系统中每一个进程都有唯一的id,在c语言中用<code>pid_t</code>类型表示，其实就是一个非负整数</strong></li>
-<li><strong>进程的状态，有就绪、运行、挂起、停止等状态</strong></li>
-<li>进程切换时需要保存和恢复的一些CPU寄存器</li>
-<li>描述虚拟地址空间的信息，从虚拟地址映射到物理地址。</li>
-<li>描述控制终端的信息</li>
-<li>当前工作目录：cd 改变当前进程的工作目录，shell也是一个进程。</li>
-<li>umask掩码</li>
-<li><strong>文件描述符表，包含很多指向file结构体的指针</strong></li>
-<li><strong>和信号相关的信息</strong></li>
-<li><strong>用户id和组id</strong></li>
-<li>会话和进程组</li>
-<li>进程可以使用的资源上限：<code>ulimit -a</code></li>
-</ul>
-<p>就绪状态：<strong>等待cpu分配时间片</strong></p>
-<p>挂起状态：<strong>等待除cpu以外的其他资源，主动放弃cpu</strong></p>
-<h4 id="环境变量"><a href="#环境变量" class="headerlink" title="环境变量"></a>环境变量</h4><p>操作系统中用来<strong>指定操作系统运行环境的一些参数</strong>，通常具备以下特征：</p>
-<ul>
-<li><p>字符串（本质）</p>
-</li>
-<li><p>有统一的格式：名=值[:值]</p>
-</li>
-<li><p>值用来描述进程环境信息。</p>
-</li>
-<li><p>存储形式：与命令行参数类似。char* []，数组名 environ, 内部存储字符串，NULL作为哨兵结尾。</p>
-</li>
-<li><p>使用形式：与命令行参数类似</p>
-</li>
-<li><p>加载位置：与命令行参数类似，<strong>位于用户区，高于stack的起始位置</strong></p>
-</li>
-<li><p>引入环境变量表：须声明环境变量。<code>extern char** environ; （extern 声明）</code></p>
-</li>
-</ul>
-<p>常见环境变量：</p>
-<ul>
-<li><p>PATH</p>
-<ul>
-<li>可执行文件的<strong>搜索路径</strong>。<code>ls</code>命令也是一个程序，执行它不需要提供完成的路径名<code>/bin/ls</code>,然而通常执行当前目录下的程序<code>a.out</code>却需要提供完整的路径名<code>./a.out</code>,<strong>这是因为<code>PATH</code>环境变量的值里面包含了ls命令所在的目录/bin，却不包含a.out所在的目录。PATH环境变量的值可以包含多个目录，用:号隔开。在shell中用echo命令可以查看这个环境变量的值。</strong></li>
-<li><p><code>echo $PATH</code></p>
-</li>
-<li><p>使用date 和/bin/date原理是不同的。</p>
-</li>
-<li>shell按照PATH中的目录从前往后查找。</li>
-</ul>
-</li>
-<li><p>SHELL</p>
-<ul>
-<li>当前shell(命令解析器)，值一般是/bin/shell</li>
-</ul>
-</li>
-<li><p>TERM</p>
-<ul>
-<li>当前<strong>终端类型</strong>，在图形界面终端下它的值通常是xterm,终端类型决定了一些程序的输出方式，比如图形界面终端可以显示汉字，而字符终端一般不行。</li>
-</ul>
-</li>
-<li><p>LANG</p>
-<ul>
-<li>语言和locale，决定了字符编码以及时间、货币等信息的显示格式</li>
-</ul>
-</li>
-<li><p>HOME</p>
-<ul>
-<li><strong>当前用户主目录的路径，很多程序需要在主目录下保存配置文件，使得每个用户在运行该程序时都有自己的一套配置。</strong></li>
-</ul>
-</li>
-<li>env:<strong>查看所有环境变量</strong></li>
-</ul>
-<p><code>getenv函数， setenv函数</code></p>
 
       
     </div>
