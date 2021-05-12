@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="alternate" href="/atom.xml" title="ShifuDong" type="application/atom+xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.5.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":"flat"},
+    back2top: {"enable":true,"sidebar":true,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":5,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="断点续传使用断点续传的原因理想环境里网络永远通畅，对象存储系统并不需要断点续传这个功能。但在现实世界，对象存储服务在数据中心运行，而客户端在客户本地机器上运行，它们之间通过互联网连接。互联网的连接速度慢且不稳定，有可能由于网络故障导致断开连接。在客户端上传或下载一个大对象时，因网络断开导致上传下载失败的概率就会变得不可忽视。为了解决这个问题，对象存储服务必须提供断点续传功能，允许客户端从某个检查点">
+<meta name="keywords" content="分布式,go">
+<meta property="og:type" content="article">
+<meta property="og:title" content="断点续传">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2021&#x2F;04&#x2F;10&#x2F;%E5%88%86%E5%B8%83%E5%BC%8F%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8-6%E6%96%AD%E7%82%B9%E7%BB%AD%E4%BC%A0&#x2F;index.html">
+<meta property="og:site_name" content="ShifuDong">
+<meta property="og:description" content="断点续传使用断点续传的原因理想环境里网络永远通畅，对象存储系统并不需要断点续传这个功能。但在现实世界，对象存储服务在数据中心运行，而客户端在客户本地机器上运行，它们之间通过互联网连接。互联网的连接速度慢且不稳定，有可能由于网络故障导致断开连接。在客户端上传或下载一个大对象时，因网络断开导致上传下载失败的概率就会变得不可忽视。为了解决这个问题，对象存储服务必须提供断点续传功能，允许客户端从某个检查点">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;eef9037a-601c-44ee-81c7-6378221c91e4-11197877.jpg">
+<meta property="og:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;4dbc5e64-f124-4e18-98ff-823ccb2fd9b7-11197877.jpg">
+<meta property="og:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;139805bc-c8ca-462d-ae3c-d4f52324f898-11197877.jpg">
+<meta property="og:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;691ef834-9522-4f39-ab0b-9d153d87a42f-11197877.jpg">
+<meta property="og:updated_time" content="2021-05-12T02:03:59.499Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;eef9037a-601c-44ee-81c7-6378221c91e4-11197877.jpg">
+
+<link rel="canonical" href="http://yoursite.com/2021/04/10/%E5%88%86%E5%B8%83%E5%BC%8F%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8-6%E6%96%AD%E7%82%B9%E7%BB%AD%E4%BC%A0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>断点续传 | ShifuDong</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ShifuDong</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">Knowledge Sharing</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/04/10/%E5%88%86%E5%B8%83%E5%BC%8F%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8-6%E6%96%AD%E7%82%B9%E7%BB%AD%E4%BC%A0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          断点续传
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-04-10 15:03:58" itemprop="dateCreated datePublished" datetime="2021-04-10T15:03:58+08:00">2021-04-10</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-05-12 10:03:59" itemprop="dateModified" datetime="2021-05-12T10:03:59+08:00">2021-05-12</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8/" itemprop="url" rel="index">
+                    <span itemprop="name">分布式对象存储</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="断点续传"><a href="#断点续传" class="headerlink" title="断点续传"></a>断点续传</h3><h4 id="使用断点续传的原因"><a href="#使用断点续传的原因" class="headerlink" title="使用断点续传的原因"></a>使用断点续传的原因</h4><p>理想环境里网络永远通畅，对象存储系统并不需要断点续传这个功能。但在现实世界，对象存储服务在数据中心运行，而客户端在客户本地机器上运行，它们之间通过互联网连接。互联网的连接速度慢且不稳定，有可能由于<strong>网络故障导致断开连接</strong>。在客户端上传或下载一个大对象时，因网络断开导致上传下载失败的概率就会变得不可忽视。为了解决这个问题，对象存储服务必须提供断点续传功能，<strong>允许客户端从某个检查点而不是从头开始上传或下载对象</strong>。</p>
+<h5 id="断点下载"><a href="#断点下载" class="headerlink" title="断点下载"></a>断点下载</h5><p>断点下载的实现比较简单，<strong>客户端在GET对象请求时通过设置Range头部来告诉接口服务需要从什么位置开始输出对象的数据</strong>。</p>
+<p>接口服务的处理流程在生成对象流之前和上一版本没有任何区别，但是在成功打开了对象数据流之后，接口服务会额外调用<code>rs.RSGetStream.Seek</code>方法<strong>跳至客户端请求的位置，然后才开始输出数据。</strong></p>
+<p><img src="https://api2.mubu.com/v3/document_image/eef9037a-601c-44ee-81c7-6378221c91e4-11197877.jpg" alt="断点下载流程"></p>
+<h5 id="断点上传流程"><a href="#断点上传流程" class="headerlink" title="断点上传流程"></a>断点上传流程</h5><p>断点上传的流程则要比断点下载复杂得多，这是由 HTTP服务的特性导致的。<strong>客户端在下载时并不在乎数据的完整性，一旦发生网络故障，数据下到哪算哪，下次继续从最后下载的数据位置开始续传就可以了</strong>。</p>
+<p>但是对于上传来说，<strong>接口服务会对数据进行散列值校验，当发生网络故障时，如果上传的数据跟期望的不一致，那么整个上传的数据都会被丢弃。所以断点上传在一开始就需要客户端和接口服务做好约定，使用特定的接口进行上传</strong>。</p>
+<p><img src="https://api2.mubu.com/v3/document_image/4dbc5e64-f124-4e18-98ff-823ccb2fd9b7-11197877.jpg" alt="对象POST接口"></p>
+<p><strong>客户端在知道自己要上传大对象时就主动改用对象POST接口,提供对象的散列值和大小</strong>。接口服务的处理流程和上一版本处理对象PUT一样，搜索6个数据服务并分别POST临时对象接口。<strong>数据服务的地址以及返回的uuid 会被记录在一个token里返回给客户端。</strong></p>
+<p><strong>客户端POST对象后会得到一个token。对token进行PUT可以上传数据。在上传时客户端需要指定range头部来告诉接口服务上传数据的范围。接口服务对token进行解码，获取6个分片所在的数据服务地址以及uuid，分别调用PATCH将数据写入6个临时对象。</strong></p>
+<p><img src="https://api2.mubu.com/v3/document_image/139805bc-c8ca-462d-ae3c-d4f52324f898-11197877.jpg" alt="用PUT方法访问token上传数据"></p>
+<p>通过PUT上传的数据并不一定会被接口服务完全接收。在上一版本已经知道，<strong>经过RS分片的数据是以块的形式分批写入4个数据片的，每个数据片一次写入8000字节，4个数据片一共写入 32 000字节。所以除非是最后一批数据，否则接口服务只接收32000字节的整数倍进行写入。这是一个服务端的行为逻辑，不能要求客户端知道接口服务背后的逻辑，所以接口服务必须提供token 的 HEAD操作，让客户端知道服务端上该token目前的写入进度。</strong></p>
+<p><img src="https://api2.mubu.com/v3/document_image/691ef834-9522-4f39-ab0b-9d153d87a42f-11197877.jpg" alt="用HEAD方法访问token获取当前已经上传了多少数据"></p>
+<p>客户端每次用PUT方法访问token之前都需要先用HEAD方法获取当前已上传了多少数据。接口服务对token进行解码，获取6个分片所在的数据服务地址以及uuid,仅对第一个分片调用HEAD获取该分片当前长度，将这个数字乘以4，作为Content-Length响应头部返回给客户端。</p>
+<h5 id="接口服务的REST接口"><a href="#接口服务的REST接口" class="headerlink" title="接口服务的REST接口"></a>接口服务的REST接口</h5><p>接口服务的objects接口GET 方法新增了Range 请求头部，用于告诉接口服务需要的对象数据范围。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">GET /objects/&lt;object_name&gt;</span><br><span class="line">请求头部:</span><br><span class="line">Range:bytes=&lt;first&gt;- </span><br><span class="line">响应头部:</span><br><span class="line"><span class="attribute">Content-Range</span>: bytes&lt;first&gt;-&lt;size&gt;/&lt;size&gt;</span><br><span class="line">响应正文:</span><br><span class="line">从first开始的对象内容</span><br></pre></td></tr></table></figure>
+<p>Range 请求头部是HTTP/1.1协议的一部分。<strong>给GET请求加上 Range头部意味着这个请求期望的只是全体数据的一个或多个子集。Range 请求主要支持以字节为单位的byte Range</strong>（虽然协议本身也支持其他自定义的Range单位，但是如果实现者没有在 IANA申请注册这个自定义的单位，那么就只有自己写的客户端和服务端之间可以互相理解)，<strong>byte range的格式是固定字符串”bytes=”开头，后面跟上一个或多个数字的范围，由逗号分隔</strong>。假设整体数据是10000字节，那么合法的byte range格式可以有以下几个例子:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">请求最后500个字节(9500~9999):</span><br><span class="line">bytes=-500 或 bytes=9500-</span><br><span class="line"></span><br><span class="line">请求第一个和最后一个字节(字节О和9999):</span><br><span class="line">bytes=0-0,—1</span><br><span class="line"></span><br><span class="line">其他几个合法但不常见的请求第500~999个字节的格式:</span><br><span class="line">bytes=500-600,601-999</span><br><span class="line">bytes=500-700,601-999</span><br></pre></td></tr></table></figure>
+<p>本项目的对象存储系统实现的格式是<code>bytes=&lt;first&gt;-</code>。<strong>客户端通过指定first 的值告诉接口服务下载对象的数据范围，接口服务返回的数据从first开始，first之前的对象数据会在服务端被丢弃。</strong>根据Range请求的协议规范，接口服务需要返回HTTP错误代码 206 Partial Content，并设置 Content-Range响应头部告知返回数据的范围<code>&lt;first&gt;-&lt;size&gt;/&lt;size&gt;</code>，其中<code>&lt;first&gt;</code>是客户端要求的起始位置，<code>&lt;size&gt;</code>是对象的大小。</p>
+<p>objects接口还新增了POST方法,用于创建token。</p>
+<figure class="highlight tex"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">POST /objects/&lt;object_name&gt;</span><br><span class="line">请求头部:</span><br><span class="line">Digest:SHA-256=&lt;对象散列值的Base64编码&gt;</span><br><span class="line">Size:&lt;对象内容的长度&gt;</span><br><span class="line">响应头部:</span><br><span class="line">Location:&lt;访问/temp/token的URI&gt;</span><br><span class="line">token被放在Location头部返回给客户端。客户端拿到后可以直接访问该URI.</span><br><span class="line"></span><br><span class="line">除了objects接口发生的改变以外，接口服务还新增temp接口:</span><br><span class="line">HEAD /temp/&lt;token&gt;</span><br><span class="line">响应头部:</span><br><span class="line">Content-Length:&lt;token当前的上传字节数&gt;</span><br><span class="line"></span><br><span class="line">PUT /temp/&lt;token&gt;</span><br><span class="line">请求头部:</span><br><span class="line">Range:bytes=&lt;first&gt;-&lt;last&gt;</span><br><span class="line">请求正文:</span><br><span class="line">对象的内容，字节范围为first~last</span><br></pre></td></tr></table></figure>
+<p>客户端通过Range头部指定上传的范围，first必须跟token当前的上传字节数一致,否则接口服务会返回416 Range Not Satisfiable。如果上传的是最后一段数据，<code>&lt;last&gt;</code>为空。</p>
+<h5 id="数据服务的REST接口"><a href="#数据服务的REST接口" class="headerlink" title="数据服务的REST接口"></a>数据服务的REST接口</h5><p>数据服务的temp接口新增了HEAD和GET两个方法，HEAD方法用于获取某个分片临时对象当前的大小;而GET方法则用于获取临时对象的数据。</p>
+<figure class="highlight tex"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">HEAD /temp/&lt;uuid&gt;</span><br><span class="line">响应头部:</span><br><span class="line">Content-Length:&lt;临时对象当前的上传字节数&gt;</span><br><span class="line"></span><br><span class="line">GET /temp/&lt;uuid&gt;</span><br><span class="line">响应正文:</span><br><span class="line">临时对象的内容</span><br></pre></td></tr></table></figure>
+<p>客户端将对象所有的数据上传完毕之后，接口服务需要调用这个方法从数据服务读取各分片临时对象的内容并进行数据校验，只有在验证了对象的散列值符合预期的情况下，服务端才认为该对象的上传是成功的，进而将临时对象转正。</p>
+<h4 id="具体实现"><a href="#具体实现" class="headerlink" title="具体实现"></a>具体实现</h4><h5 id="接口服务"><a href="#接口服务" class="headerlink" title="接口服务"></a>接口服务</h5><p>接口服务的main函数以及objects包发生了变化，且新增加了temp包。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">go</span> heartbeat.ListenHeartbeat()</span><br><span class="line">	http.HandleFunc(<span class="string">"/objects/"</span>, objects.Handler)</span><br><span class="line">	<span class="comment">// 增加temp.Handler函数用于处理对/temp的请求</span></span><br><span class="line">	http.HandleFunc(<span class="string">"/temp/"</span>, temp.Handler)</span><br><span class="line">	http.HandleFunc(<span class="string">"/locate/"</span>, locate.Handler)</span><br><span class="line">	http.HandleFunc(<span class="string">"/versions/"</span>, versions.Handler)</span><br><span class="line">	log.Fatal(http.ListenAndServe(os.Getenv(<span class="string">"LISTEN_ADDRESS"</span>), <span class="literal">nil</span>))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h6 id="接口服务的objects包"><a href="#接口服务的objects包" class="headerlink" title="接口服务的objects包"></a>接口服务的objects包</h6><p>objects.Handler函数：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Handler</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">	m := r.Method</span><br><span class="line">	<span class="comment">// 增加POST方法的处理函数post</span></span><br><span class="line">	<span class="keyword">if</span> m == http.MethodPost &#123;</span><br><span class="line">		post(w, r)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> m == http.MethodPut &#123;</span><br><span class="line">		put(w, r)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> m == http.MethodGet &#123;</span><br><span class="line">		get(w, r)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> m == http.MethodDelete &#123;</span><br><span class="line">		del(w, r)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	w.WriteHeader(http.StatusMethodNotAllowed)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>objects.post相关函数：</p>
+<p>前半段处理流程与put函数类似</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">post</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">	<span class="comment">// 从请求的URL中获得对象的名字</span></span><br><span class="line">	name := strings.Split(r.URL.EscapedPath(), <span class="string">"/"</span>)[<span class="number">2</span>]</span><br><span class="line">	<span class="comment">// 从请求的相应头部获得对象的大小</span></span><br><span class="line">	size, e := strconv.ParseInt(r.Header.Get(<span class="string">"size"</span>), <span class="number">0</span>, <span class="number">64</span>)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(e)</span><br><span class="line">		w.WriteHeader(http.StatusForbidden)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 从请求的相应头部获得对象的散列值</span></span><br><span class="line">	hash := utils.GetHashFromHeader(r.Header)</span><br><span class="line">	<span class="keyword">if</span> hash == <span class="string">""</span> &#123;</span><br><span class="line">		log.Println(<span class="string">"missing object hash in digest header"</span>)</span><br><span class="line">		w.WriteHeader(http.StatusBadRequest)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 如果散列值已经存在，可以直接往元数据服务添加新版本并返回200OK</span></span><br><span class="line">	<span class="keyword">if</span> locate.Exist(url.PathEscape(hash)) &#123;</span><br><span class="line">		e = es.AddVersion(name, hash, size)</span><br><span class="line">		<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">			log.Println(e)</span><br><span class="line">			w.WriteHeader(http.StatusInternalServerError)</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			w.WriteHeader(http.StatusOK)</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 散列值不存在，随机选出6个数据节点</span></span><br><span class="line">	ds := heartbeat.ChooseRandomDataServers(rs.ALL_SHARDS, <span class="literal">nil</span>)</span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">len</span>(ds) != rs.ALL_SHARDS &#123;</span><br><span class="line">		log.Println(<span class="string">"cannot find enough dataServer"</span>)</span><br><span class="line">		w.WriteHeader(http.StatusServiceUnavailable)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 调用rs.NewRSResumablePutStream生成数据流stream</span></span><br><span class="line">	stream, e := rs.NewRSResumablePutStream(ds, name, url.PathEscape(hash), size)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(e)</span><br><span class="line">		w.WriteHeader(http.StatusInternalServerError)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 调用ToToken方法生成一个字符串token,放入Location响应头部</span></span><br><span class="line">	w.Header().Set(<span class="string">"location"</span>, <span class="string">"/temp/"</span>+url.PathEscape(stream.ToToken()))</span><br><span class="line">	<span class="comment">// 返回HTTP代码201 Created</span></span><br><span class="line">	w.WriteHeader(http.StatusCreated)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 保存对象的名字、大小、散列值以及6个分片所在数据服务节点的地址和uuid</span></span><br><span class="line"><span class="keyword">type</span> resumableToken <span class="keyword">struct</span> &#123;</span><br><span class="line">	Name    <span class="keyword">string</span></span><br><span class="line">	Size    <span class="keyword">int64</span></span><br><span class="line">	Hash    <span class="keyword">string</span></span><br><span class="line">	Servers []<span class="keyword">string</span></span><br><span class="line">	Uuids   []<span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> RSResumablePutStream <span class="keyword">struct</span> &#123;</span><br><span class="line">	*RSPutStream</span><br><span class="line">	*resumableToken</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 传入保存数据服务节点地址的dataServers数组，对象的名字name，散列值以及大小</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewRSResumablePutStream</span><span class="params">(dataServers []<span class="keyword">string</span>, name, hash <span class="keyword">string</span>, size <span class="keyword">int64</span>)</span> <span class="params">(*RSResumablePutStream, error)</span></span> &#123;</span><br><span class="line">	<span class="comment">// 调用NewRSPutStream创建一个类型为RSPutStream的变量putStream</span></span><br><span class="line">	putStream, e := NewRSPutStream(dataServers, hash, size)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, e</span><br><span class="line">	&#125;</span><br><span class="line">	uuids := <span class="built_in">make</span>([]<span class="keyword">string</span>, ALL_SHARDS)</span><br><span class="line">	<span class="comment">// 从putStream的成员writers数组中获取6个分片的uuid，保存到uuid数组</span></span><br><span class="line">	<span class="keyword">for</span> i := <span class="keyword">range</span> uuids &#123;</span><br><span class="line">		uuids[i] = putStream.writers[i].(*objectstream.TempPutStream).Uuid</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 创建resumableToken结构体token</span></span><br><span class="line">	token := &amp;resumableToken&#123;name, size, hash, dataServers, uuids&#125;</span><br><span class="line">	<span class="keyword">return</span> &amp;RSResumablePutStream&#123;putStream, token&#125;, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 将自身数据以JSON格式编入，然后返回结果Base64编码后的字符串</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *RSResumablePutStream)</span> <span class="title">ToToken</span><span class="params">()</span> <span class="title">string</span></span> &#123;</span><br><span class="line">	b, _ := json.Marshal(s)</span><br><span class="line">	<span class="keyword">return</span> base64.StdEncoding.EncodeToString(b)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>objects包修改了get函数，相关函数修改如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">get</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">	name := strings.Split(r.URL.EscapedPath(), <span class="string">"/"</span>)[<span class="number">2</span>]</span><br><span class="line">	versionId := r.URL.Query()[<span class="string">"version"</span>]</span><br><span class="line">	version := <span class="number">0</span></span><br><span class="line">	<span class="keyword">var</span> e error</span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">len</span>(versionId) != <span class="number">0</span> &#123;</span><br><span class="line">		version, e = strconv.Atoi(versionId[<span class="number">0</span>])</span><br><span class="line">		<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">			log.Println(e)</span><br><span class="line">			w.WriteHeader(http.StatusBadRequest)</span><br><span class="line">			<span class="keyword">return</span></span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	meta, e := es.GetMetadata(name, version)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(e)</span><br><span class="line">		w.WriteHeader(http.StatusInternalServerError)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> meta.Hash == <span class="string">""</span> &#123;</span><br><span class="line">		w.WriteHeader(http.StatusNotFound)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	hash := url.PathEscape(meta.Hash)</span><br><span class="line">	stream, e := GetStream(hash, meta.Size)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(e)</span><br><span class="line">		w.WriteHeader(http.StatusNotFound)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 调用utils.GetOffsetFromHeader函数获取HTTP的Range头部</span></span><br><span class="line">	offset := utils.GetOffsetFromHeader(r.Header)</span><br><span class="line">	<span class="keyword">if</span> offset != <span class="number">0</span> &#123;</span><br><span class="line">		<span class="comment">// offset不为0，调用stream的Seek方法跳到offset位置</span></span><br><span class="line">		stream.Seek(offset, io.SeekCurrent)</span><br><span class="line">		<span class="comment">// 设置Content-Range响应头部以及HTTP代码206 Partial Content</span></span><br><span class="line">		w.Header().Set(<span class="string">"content-range"</span>, fmt.Sprintf(<span class="string">"bytes %d-%d/%d"</span>, offset, meta.Size<span class="number">-1</span>, meta.Size))</span><br><span class="line">		w.WriteHeader(http.StatusPartialContent)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 通过io.Copy输出数据</span></span><br><span class="line">	io.Copy(w, stream)</span><br><span class="line">	stream.Close()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Range的头部格式必须为bytes=&lt;first&gt;- 开头</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">GetOffsetFromHeader</span><span class="params">(h http.Header)</span> <span class="title">int64</span></span> &#123;</span><br><span class="line">	byteRange := h.Get(<span class="string">"range"</span>)</span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">len</span>(byteRange) &lt; <span class="number">7</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> byteRange[:<span class="number">6</span>] != <span class="string">"bytes="</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 调用strings.Split将&lt;first&gt;部分切取出来</span></span><br><span class="line">	bytePos := strings.Split(byteRange[<span class="number">6</span>:], <span class="string">"-"</span>)</span><br><span class="line">	<span class="comment">// 调用strconv.ParseInt将字符串转换为int64返回</span></span><br><span class="line">	offset, _ := strconv.ParseInt(bytePos[<span class="number">0</span>], <span class="number">0</span>, <span class="number">64</span>)</span><br><span class="line">	<span class="keyword">return</span> offset</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// offset表示需要跳过的字节数，whence表示起跳点</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *RSGetStream)</span> <span class="title">Seek</span><span class="params">(offset <span class="keyword">int64</span>, whence <span class="keyword">int</span>)</span> <span class="params">(<span class="keyword">int64</span>, error)</span></span> &#123;</span><br><span class="line">	<span class="comment">// 方法只支持从当前位置io.SeekCurrent起跳</span></span><br><span class="line">	<span class="keyword">if</span> whence != io.SeekCurrent &#123;</span><br><span class="line">		<span class="built_in">panic</span>(<span class="string">"only support SeekCurrent"</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 跳过的字节数不能为负</span></span><br><span class="line">	<span class="keyword">if</span> offset &lt; <span class="number">0</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(<span class="string">"only support forward seek"</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// for循环中每次读取32000字节并丢弃，直到读到offset位置为止</span></span><br><span class="line">	<span class="keyword">for</span> offset != <span class="number">0</span> &#123;</span><br><span class="line">		length := <span class="keyword">int64</span>(BLOCK_SIZE)</span><br><span class="line">		<span class="keyword">if</span> offset &lt; length &#123;</span><br><span class="line">			length = offset</span><br><span class="line">		&#125;</span><br><span class="line">		buf := <span class="built_in">make</span>([]<span class="keyword">byte</span>, length)</span><br><span class="line">		io.ReadFull(s, buf)</span><br><span class="line">		offset -= length</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> offset, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h6 id="接口服务的temp包"><a href="#接口服务的temp包" class="headerlink" title="接口服务的temp包"></a>接口服务的temp包</h6><p>temp.Handler函数</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 检查访问方式并调用相应的函数</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Handler</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">	m := r.Method</span><br><span class="line">	<span class="keyword">if</span> m == http.MethodHead &#123;</span><br><span class="line">		head(w, r)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> m == http.MethodPut &#123;</span><br><span class="line">		put(w, r)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	w.WriteHeader(http.StatusMethodNotAllowed)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>temp.put相关函数：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">put</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">	token := strings.Split(r.URL.EscapedPath(), <span class="string">"/"</span>)[<span class="number">2</span>]</span><br><span class="line">	stream, e := rs.NewRSResumablePutStreamFromToken(token)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(e)</span><br><span class="line">		w.WriteHeader(http.StatusForbidden)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 调用CurrentSize获取token当前大小</span></span><br><span class="line">	current := stream.CurrentSize()</span><br><span class="line">	<span class="keyword">if</span> current == <span class="number">-1</span> &#123;</span><br><span class="line">		w.WriteHeader(http.StatusNotFound)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 从Range头部获得offset</span></span><br><span class="line">	offset := utils.GetOffsetFromHeader(r.Header)</span><br><span class="line">	<span class="comment">// 如果offset和当前的大小不一致，接口服务返回416Range Not Satisfiable</span></span><br><span class="line">	<span class="keyword">if</span> current != offset &#123;</span><br><span class="line">		w.WriteHeader(http.StatusRequestedRangeNotSatisfiable)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	bytes := <span class="built_in">make</span>([]<span class="keyword">byte</span>, rs.BLOCK_SIZE)</span><br><span class="line">	<span class="comment">// 在for循环中以32000字节为长度读取HTTP请求的正文并写入stream</span></span><br><span class="line">	<span class="keyword">for</span> &#123;</span><br><span class="line">		n, e := io.ReadFull(r.Body, bytes)</span><br><span class="line">		<span class="keyword">if</span> e != <span class="literal">nil</span> &amp;&amp; e != io.EOF &amp;&amp; e != io.ErrUnexpectedEOF &#123;</span><br><span class="line">			log.Println(e)</span><br><span class="line">			w.WriteHeader(http.StatusInternalServerError)</span><br><span class="line">			<span class="keyword">return</span></span><br><span class="line">		&#125;</span><br><span class="line">		current += <span class="keyword">int64</span>(n)</span><br><span class="line">		<span class="comment">// 如果读到的总长度超出了对象的大小，说明客户端上传的数据有误</span></span><br><span class="line">		<span class="comment">// 接口服务删除临时对象并返回403 Forbidden</span></span><br><span class="line">		<span class="keyword">if</span> current &gt; stream.Size &#123;</span><br><span class="line">			stream.Commit(<span class="literal">false</span>)</span><br><span class="line">			log.Println(<span class="string">"resumable put exceed size"</span>)</span><br><span class="line">			w.WriteHeader(http.StatusForbidden)</span><br><span class="line">			<span class="keyword">return</span></span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> n != rs.BLOCK_SIZE &amp;&amp; current != stream.Size &#123;</span><br><span class="line">			<span class="keyword">return</span></span><br><span class="line">		&#125;</span><br><span class="line">		stream.Write(bytes[:n])</span><br><span class="line">		<span class="comment">// 读到的总长度等于对象的大小，说明客户端上传了对象的全部数据</span></span><br><span class="line">		<span class="keyword">if</span> current == stream.Size &#123;</span><br><span class="line">			<span class="comment">// 调用Flush方法将剩余数据写入临时对象</span></span><br><span class="line">			stream.Flush()</span><br><span class="line">			<span class="comment">// 调用NewRSResumableGetStream生成一个临时对象读取流getStream</span></span><br><span class="line">			getStream, e := rs.NewRSResumableGetStream(stream.Servers, stream.Uuids, stream.Size)</span><br><span class="line">			<span class="comment">// 读取getStream中的数据并计算散列值</span></span><br><span class="line">			hash := url.PathEscape(utils.CalculateHash(getStream))</span><br><span class="line">			<span class="comment">// 散列值不一致，客户端上传数据有错误</span></span><br><span class="line">			<span class="keyword">if</span> hash != stream.Hash &#123;</span><br><span class="line">				<span class="comment">// 接口服务删除临时对象</span></span><br><span class="line">				stream.Commit(<span class="literal">false</span>)</span><br><span class="line">				log.Println(<span class="string">"resumable put done but hash mismatch"</span>)</span><br><span class="line">				<span class="comment">// 返回403 Forbidden</span></span><br><span class="line">				w.WriteHeader(http.StatusForbidden)</span><br><span class="line">				<span class="keyword">return</span></span><br><span class="line">			&#125;</span><br><span class="line">			<span class="comment">// 检查该散列值是否已经存在</span></span><br><span class="line">			<span class="keyword">if</span> locate.Exist(url.PathEscape(hash)) &#123;</span><br><span class="line">				<span class="comment">// 存在则删除临时对象</span></span><br><span class="line">				stream.Commit(<span class="literal">false</span>)</span><br><span class="line">			&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">				<span class="comment">// 否则将对象转正</span></span><br><span class="line">				stream.Commit(<span class="literal">true</span>)</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="comment">// 调用es.AddVersion添加新版本</span></span><br><span class="line">			e = es.AddVersion(stream.Name, stream.Hash, stream.Size)</span><br><span class="line">			<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">				log.Println(e)</span><br><span class="line">				w.WriteHeader(http.StatusInternalServerError)</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">return</span></span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewRSResumablePutStreamFromToken</span><span class="params">(token <span class="keyword">string</span>)</span> <span class="params">(*RSResumablePutStream, error)</span></span> &#123;</span><br><span class="line">	<span class="comment">// 对token进行Base64解码</span></span><br><span class="line">	b, e := base64.StdEncoding.DecodeString(token)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, e</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">var</span> t resumableToken</span><br><span class="line">	<span class="comment">// 将JSON数据编出形成resumableToken结构体t</span></span><br><span class="line">	e = json.Unmarshal(b, &amp;t)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, e</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	writers := <span class="built_in">make</span>([]io.Writer, ALL_SHARDS)</span><br><span class="line">	<span class="comment">// t的Servers和uuid数组中保存了当初创建的6个分片临时对象所在的数据服务节点地址和uuid</span></span><br><span class="line">	<span class="keyword">for</span> i := <span class="keyword">range</span> writers &#123;</span><br><span class="line">		<span class="comment">// 保存到writers数组中</span></span><br><span class="line">		writers[i] = &amp;objectstream.TempPutStream&#123;t.Servers[i], t.Uuids[i]&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 以writers数组为参数创建encoder结构体enc</span></span><br><span class="line">	enc := NewEncoder(writers)</span><br><span class="line">	<span class="comment">// 以enc为内嵌结构体创建RSPutStream</span></span><br><span class="line">	<span class="comment">// 最终以RSPutStream和t为内嵌结构体创建RSResumablePutStream返回</span></span><br><span class="line">	<span class="keyword">return</span> &amp;RSResumablePutStream&#123;&amp;RSPutStream&#123;enc&#125;, &amp;t&#125;, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 以HEAD方法获取第一个分片临时对象的大小并乘4作为size返回</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *RSResumablePutStream)</span> <span class="title">CurrentSize</span><span class="params">()</span> <span class="title">int64</span></span> &#123;</span><br><span class="line">	r, e := http.Head(fmt.Sprintf(<span class="string">"http://%s/temp/%s"</span>, s.Servers[<span class="number">0</span>], s.Uuids[<span class="number">0</span>]))</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(e)</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> r.StatusCode != http.StatusOK &#123;</span><br><span class="line">		log.Println(r.StatusCode)</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span></span><br><span class="line">	&#125;</span><br><span class="line">	size := utils.GetSizeFromHeader(r.Header) * DATA_SHARDS</span><br><span class="line">	<span class="comment">// 如果size超出对象的大小，返回对象大小</span></span><br><span class="line">	<span class="keyword">if</span> size &gt; s.Size &#123;</span><br><span class="line">		size = s.Size</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> size</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>temp.head相关函数</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 根据token恢复出stream后调用CurrentSize获取当前大小并方在Content-Length头部返回</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">head</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">	token := strings.Split(r.URL.EscapedPath(), <span class="string">"/"</span>)[<span class="number">2</span>]</span><br><span class="line">	stream, e := rs.NewRSResumablePutStreamFromToken(token)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(e)</span><br><span class="line">		w.WriteHeader(http.StatusForbidden)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	current := stream.CurrentSize()</span><br><span class="line">	<span class="keyword">if</span> current == <span class="number">-1</span> &#123;</span><br><span class="line">		w.WriteHeader(http.StatusNotFound)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	w.Header().Set(<span class="string">"content-length"</span>, fmt.Sprintf(<span class="string">"%d"</span>, current))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="数据服务"><a href="#数据服务" class="headerlink" title="数据服务"></a>数据服务</h5><p>数据服务的temp包发生改动，新增get和head方法。</p>
+<p>Handler函数相比上一版本多了对 HEAD/PUT 方法的处理。如果接口服务以HEAD方式访问数据服务的temp接口，Handler 会调用head;如果接口服务以GET方式访问数据服务的temp接口，则Handler会调用get。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 打开$STORAGE_ROOT/temp/&lt;uuid&gt;.dat文件并将其内容作为HTTP的响应正文输出</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">get</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">	uuid := strings.Split(r.URL.EscapedPath(), <span class="string">"/"</span>)[<span class="number">2</span>]</span><br><span class="line">	f, e := os.Open(os.Getenv(<span class="string">"STORAGE_ROOT"</span>) + <span class="string">"/temp/"</span> + uuid + <span class="string">".dat"</span>)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(e)</span><br><span class="line">		w.WriteHeader(http.StatusNotFound)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">defer</span> f.Close()</span><br><span class="line">	io.Copy(w, f)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 将$STORAGE_ROOT/temp/&lt;uuid&gt;.dat文件的大小放在Content-Length响应头部返回</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">head</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">	uuid := strings.Split(r.URL.EscapedPath(), <span class="string">"/"</span>)[<span class="number">2</span>]</span><br><span class="line">	f, e := os.Open(os.Getenv(<span class="string">"STORAGE_ROOT"</span>) + <span class="string">"/temp/"</span> + uuid + <span class="string">".dat"</span>)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(e)</span><br><span class="line">		w.WriteHeader(http.StatusNotFound)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">defer</span> f.Close()</span><br><span class="line">	info, e := f.Stat()</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(e)</span><br><span class="line">		w.WriteHeader(http.StatusInternalServerError)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	w.Header().Set(<span class="string">"content-length"</span>, fmt.Sprintf(<span class="string">"%d"</span>, info.Size()))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h4><p>本版本所有代码及测试用例可见<a href="https://github.com/dongshifu/distributed_object_storage_dong/tree/main/v5" target="_blank" rel="noopener">增加断点续传功能版本代码</a></p>
+<h4 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h4><p>《分布式对象存储—原理、架构及Go语言实现》</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" rel="tag"># 分布式</a>
+              <a href="/tags/go/" rel="tag"># go</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/03/31/%E5%88%86%E5%B8%83%E5%BC%8F%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8-5%E6%95%B0%E6%8D%AE%E5%86%97%E4%BD%99%E5%92%8C%E5%8D%B3%E6%97%B6%E4%BF%AE%E5%A4%8D/" rel="prev" title="数据冗余和即时修复">
+      <i class="fa fa-chevron-left"></i> 数据冗余和即时修复
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/04/20/%E5%88%86%E5%B8%83%E5%BC%8F%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8-7%E5%8E%8B%E7%BC%A9/" rel="next" title="数据压缩">
+      数据压缩 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+      <div class="tabs tabs-comment">
+        <ul class="nav-tabs">
+            <li class="tab"><a href="#comment-gitalk">gitalk</a></li>
+            <li class="tab"><a href="#comment-livere">livere</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane gitalk" id="comment-gitalk">
+              <div class="comments" id="gitalk-container"></div>
+            </div>
+            <div class="tab-pane livere" id="comment-livere">
+              
+  <div class="comments" id="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81MjkwMy8yOTM4MA=="></div>
+  </div>
+  
+            </div>
+        </div>
+      </div>
+      <script>
+        window.addEventListener('tabs:register', () => {
+          let activeClass = 'gitalk';
+            activeClass = localStorage.getItem('comments_active') || activeClass;
+          if (activeClass) {
+            let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+            if (activeTab) {
+              activeTab.click();
+            }
+          }
+        });
+        window.addEventListener('tabs:click', event => {
+          let commentClass = event.target.classList[1];
+          localStorage.setItem('comments_active', commentClass);
+        });
+      </script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#断点续传"><span class="nav-number">1.</span> <span class="nav-text">断点续传</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#使用断点续传的原因"><span class="nav-number">1.1.</span> <span class="nav-text">使用断点续传的原因</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#断点下载"><span class="nav-number">1.1.1.</span> <span class="nav-text">断点下载</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#断点上传流程"><span class="nav-number">1.1.2.</span> <span class="nav-text">断点上传流程</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#接口服务的REST接口"><span class="nav-number">1.1.3.</span> <span class="nav-text">接口服务的REST接口</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#数据服务的REST接口"><span class="nav-number">1.1.4.</span> <span class="nav-text">数据服务的REST接口</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#具体实现"><span class="nav-number">1.2.</span> <span class="nav-text">具体实现</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#接口服务"><span class="nav-number">1.2.1.</span> <span class="nav-text">接口服务</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#接口服务的objects包"><span class="nav-number">1.2.1.1.</span> <span class="nav-text">接口服务的objects包</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#接口服务的temp包"><span class="nav-number">1.2.1.2.</span> <span class="nav-text">接口服务的temp包</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#数据服务"><span class="nav-number">1.2.2.</span> <span class="nav-text">数据服务</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#测试"><span class="nav-number">1.3.</span> <span class="nav-text">测试</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考"><span class="nav-number">1.4.</span> <span class="nav-text">参考</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ShifuDong"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">ShifuDong</p>
+  <div class="site-description" itemprop="description">记录生活， 记录学习， 分享知识</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">65</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/mailto:sfd_w@foxmail.com" title="E-Mail → mailto:sfd_w@foxmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ShifuDong</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.0.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.5.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.getAttribute('pjax') !== null) {
+      element.setAttribute('pjax', '');
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'a6ee5b68c97a3db64850',
+      clientSecret: '1dfa06f32032431e4af79b80f9ddf9dfd13dbda2',
+      repo: 'dongshifu.github.io',
+      owner: 'dongshifu',
+      admin: ['dongshifu'],
+      id: 'e56f19c22000b71c581b1f51fe8905a6',
+        language: 'zh-CN',
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script>
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+</script>
+
+    </div>
+</body>
+</html>

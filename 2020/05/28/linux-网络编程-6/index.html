@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="alternate" href="/atom.xml" title="ShifuDong" type="application/atom+xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.5.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":"flat"},
+    back2top: {"enable":true,"sidebar":true,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":5,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="poll为拓展监听的上限，可以使用poll poll函数原型1234567891011121314151617181920212223242526272829#include &amp;lt;poll.h&amp;gt;int poll(struct pollfd *fds, nfds_t nfds, int timeout);&#x2F;*fds				监听的文件描述符数组nfds 			监控数组中有多少文件描述符需要被">
+<meta name="keywords" content="linux,网络">
+<meta property="og:type" content="article">
+<meta property="og:title" content="linux网络编程-多路I&#x2F;O转接服务器:poll">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;05&#x2F;28&#x2F;linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-6&#x2F;index.html">
+<meta property="og:site_name" content="ShifuDong">
+<meta property="og:description" content="poll为拓展监听的上限，可以使用poll poll函数原型1234567891011121314151617181920212223242526272829#include &amp;lt;poll.h&amp;gt;int poll(struct pollfd *fds, nfds_t nfds, int timeout);&#x2F;*fds				监听的文件描述符数组nfds 			监控数组中有多少文件描述符需要被">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-04-29T07:09:54.890Z">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2020/05/28/linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-6/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>linux网络编程-多路I/O转接服务器:poll | ShifuDong</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ShifuDong</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">Knowledge Sharing</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/05/28/linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          linux网络编程-多路I/O转接服务器:poll
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-05-28 15:45:00" itemprop="dateCreated datePublished" datetime="2020-05-28T15:45:00+08:00">2020-05-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-04-29 15:09:54" itemprop="dateModified" datetime="2021-04-29T15:09:54+08:00">2021-04-29</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index">
+                    <span itemprop="name">linux网络编程</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="poll"><a href="#poll" class="headerlink" title="poll"></a>poll</h3><p>为拓展监听的上限，可以使用poll</p>
+<h4 id="poll函数原型"><a href="#poll函数原型" class="headerlink" title="poll函数原型"></a>poll函数原型</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;poll.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">poll</span><span class="params">(struct pollfd *fds, <span class="keyword">nfds_t</span> nfds, <span class="keyword">int</span> timeout)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">fds				监听的文件描述符数组</span></span><br><span class="line"><span class="comment">nfds 			监控数组中有多少文件描述符需要被监控    </span></span><br><span class="line"><span class="comment">timeout 		毫秒级等待</span></span><br><span class="line"><span class="comment">    -1：阻塞等，#define INFTIM -1 		Linux中没有定义此宏</span></span><br><span class="line"><span class="comment">    0：立即返回，不阻塞进程</span></span><br><span class="line"><span class="comment">    &gt;0：等待指定毫秒数，如当前系统时间精度不够毫秒，向上取值</span></span><br><span class="line"><span class="comment">返回值:返回满足对应监听事件的文件描述符总个数;</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">pollfd</span> &#123;</span></span><br><span class="line">    <span class="keyword">int</span> fd; <span class="comment">/* 待监听的文件描述符 */</span></span><br><span class="line">    <span class="keyword">short</span> events; <span class="comment">/*待监听的文件描述符对应的监听事件-&gt;POLLIN,POLLOUT,POLLERR*/</span></span><br><span class="line">    <span class="keyword">short</span> revents; <span class="comment">/*returned events:传入时给0,如果满足对应事件的话被置为非零-&gt;POLLIN,POLLOUT,POLLERR*/</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">POLLIN			普通或带外优先数据可读,即POLLRDNORM | POLLRDBAND</span><br><span class="line">POLLRDNORM		数据可读</span><br><span class="line">POLLRDBAND		优先级带数据可读</span><br><span class="line">POLLPRI 		高优先级可读数据</span><br><span class="line">POLLOUT			普通或带外数据可写</span><br><span class="line">POLLWRNORM		数据可写</span><br><span class="line">POLLWRBAND		优先级带数据可写</span><br><span class="line">POLLERR 		发生错误</span><br><span class="line">POLLHUP 		发生挂起</span><br><span class="line">POLLNVAL 		描述字不是一个打开的文件</span><br></pre></td></tr></table></figure>
+<p>如果<strong>不再监控某个文件描述符时，可以把pollfd中，fd设置为-1，poll不再监控此pollfd，下次返回时，把revents设置为0。</strong></p>
+<h4 id="poll实现服务器"><a href="#poll实现服务器" class="headerlink" title="poll实现服务器"></a>poll实现服务器</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* server.c */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;netinet/in.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;arpa/inet.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;poll.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;errno.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"wrap.h"</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MAXLINE 80</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SERV_PORT 9527</span></span><br><span class="line"><span class="comment">//可以突破select监听的1024限制</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> OPEN_MAX 1024 </span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> i, j, maxi, listenfd, connfd, sockfd;</span><br><span class="line">    <span class="comment">/*poll函数返回值*/</span></span><br><span class="line">	<span class="keyword">int</span> nready;</span><br><span class="line">	<span class="keyword">ssize_t</span> n;</span><br><span class="line">	<span class="keyword">char</span> buf[MAXLINE], str[INET_ADDRSTRLEN];</span><br><span class="line">	<span class="keyword">socklen_t</span> clilen;</span><br><span class="line">    <span class="comment">/*创建结构体数组*/</span>	</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">pollfd</span> <span class="title">client</span>[<span class="title">OPEN_MAX</span>];</span> </span><br><span class="line">    <span class="comment">/*创建客户端地址结构和服务器地址结构*/</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">cliaddr</span>, <span class="title">servaddr</span>;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/*得到监听套接字listenFd*/</span></span><br><span class="line">	listenfd = Socket(AF_INET, SOCK_STREAM, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*向服务器地址结构填入内容*/</span></span><br><span class="line">	bzero(&amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line">	servaddr.sin_family = AF_INET;</span><br><span class="line">	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);</span><br><span class="line">	servaddr.sin_port = htons(SERV_PORT);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*绑定服务器地址结构到监听套接字,并设置监听上限*/</span></span><br><span class="line">	Bind(listenfd, (struct sockaddr *)&amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line">	Listen(listenfd, <span class="number">20</span>);</span><br><span class="line"></span><br><span class="line">	<span class="comment">/*初始化第一个pollfd为监听套接字*/</span></span><br><span class="line">	client[<span class="number">0</span>].fd = listenfd;</span><br><span class="line">	client[<span class="number">0</span>].events = POLLRDNORM; 					<span class="comment">/* listenfd监听普通读事件 */</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; OPEN_MAX; i++)</span><br><span class="line">		client[i].fd = <span class="number">-1</span>; 							<span class="comment">/* 用-1初始化client[]里剩下元素 */</span></span><br><span class="line">	maxi = <span class="number">0</span>; 										<span class="comment">/* client[]数组有效元素中最大元素下标 */</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> ( ; ; ) &#123;</span><br><span class="line">        <span class="comment">/*nready是有多少套接字有POLLIN请求*/</span></span><br><span class="line">		nready = poll(client, maxi+<span class="number">1</span>, <span class="number">-1</span>); 			<span class="comment">/* 阻塞 */</span></span><br><span class="line">        <span class="comment">/*如果listenFd的revents有POLLIN请求,则调用Accept函数得到connectFd*/</span></span><br><span class="line">		<span class="keyword">if</span> (client[<span class="number">0</span>].revents &amp; POLLRDNORM) &#123; 		<span class="comment">/* 有客户端连接请求 */</span></span><br><span class="line">			clilen = <span class="keyword">sizeof</span>(cliaddr);</span><br><span class="line">			connfd = Accept(listenfd, (struct sockaddr *)&amp;cliaddr, &amp;clilen);</span><br><span class="line">			<span class="built_in">printf</span>(<span class="string">"received from %s at PORT %d\n"</span>,</span><br><span class="line">					inet_ntop(AF_INET, &amp;cliaddr.sin_addr, str, <span class="keyword">sizeof</span>(str)),</span><br><span class="line">					ntohs(cliaddr.sin_port));</span><br><span class="line">			<span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; OPEN_MAX; i++) &#123;</span><br><span class="line">				<span class="keyword">if</span> (client[i].fd &lt; <span class="number">0</span>) &#123;</span><br><span class="line">					client[i].fd = connfd; 	<span class="comment">/* 找到client[]中空闲的位置，存放accept返回的connfd */</span></span><br><span class="line">					<span class="keyword">break</span>;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">if</span> (i == OPEN_MAX)</span><br><span class="line">				perr_exit(<span class="string">"too many clients"</span>);</span><br><span class="line"></span><br><span class="line">			client[i].events = POLLRDNORM; 		<span class="comment">/* 设置刚刚返回的connfd，监控读事件 */</span></span><br><span class="line">			<span class="keyword">if</span> (i &gt; maxi)</span><br><span class="line">				maxi = i; 						<span class="comment">/* 更新client[]中最大元素下标 */</span></span><br><span class="line">			<span class="keyword">if</span> (--nready &lt;= <span class="number">0</span>)</span><br><span class="line">				<span class="keyword">continue</span>; 						<span class="comment">/* 没有更多就绪事件时,继续回到poll阻塞 */</span></span><br><span class="line">		&#125;</span><br><span class="line">        <span class="comment">/*开始从1遍历pollfd数组*/</span></span><br><span class="line">		<span class="keyword">for</span> (i = <span class="number">1</span>; i &lt;= maxi; i++) &#123; 			<span class="comment">/* 检测client[] */</span></span><br><span class="line">            <span class="comment">/*到结尾了或者有异常*/</span></span><br><span class="line">			<span class="keyword">if</span> ((sockfd = client[i].fd) &lt; <span class="number">0</span>)</span><br><span class="line">				<span class="keyword">continue</span>;</span><br><span class="line">            <span class="comment">/*第i个客户端有连接请求,进行处理*/</span></span><br><span class="line">			<span class="keyword">if</span> (client[i].revents &amp; (POLLRDNORM | POLLERR)) &#123;</span><br><span class="line">				<span class="keyword">if</span> ((n = Read(sockfd, buf, MAXLINE)) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">                    <span class="comment">/*出错时进一步判断errno*/</span></span><br><span class="line">					<span class="keyword">if</span> (errno == ECONNRESET) &#123; <span class="comment">/* 当收到 RST标志时 */</span></span><br><span class="line">						<span class="comment">/* connection reset by client */</span></span><br><span class="line">						<span class="built_in">printf</span>(<span class="string">"client[%d] aborted connection\n"</span>, i);</span><br><span class="line">						Close(sockfd);</span><br><span class="line">						client[i].fd = <span class="number">-1</span>;</span><br><span class="line">					&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">						perr_exit(<span class="string">"read error"</span>);</span><br><span class="line">					&#125;</span><br><span class="line">				&#125; <span class="keyword">else</span> <span class="keyword">if</span> (n == <span class="number">0</span>) &#123;</span><br><span class="line">                    <span class="comment">/*read返回0,说明读到了结尾,关闭连接*/</span></span><br><span class="line">					<span class="comment">/* connection closed by client */</span></span><br><span class="line">					<span class="built_in">printf</span>(<span class="string">"client[%d] closed connection\n"</span>, i);</span><br><span class="line">					Close(sockfd);</span><br><span class="line">					client[i].fd = <span class="number">-1</span>;</span><br><span class="line">				&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="comment">/*数据处理*/</span></span><br><span class="line">					<span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; n; j++)</span><br><span class="line">						buf[j] = <span class="built_in">toupper</span>(buf[j]);</span><br><span class="line">						Writen(sockfd, buf, n);</span><br><span class="line">				&#125;</span><br><span class="line">				<span class="keyword">if</span> (--nready &lt;= <span class="number">0</span>)</span><br><span class="line">					<span class="keyword">break</span>; 				<span class="comment">/* no more readable descriptors */</span></span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="poll总结"><a href="#poll总结" class="headerlink" title="poll总结"></a>poll总结</h4><p>优点:</p>
+<ul>
+<li>自带数组结构, 可以<strong>将监听事件集合和返回事件集合分开</strong></li>
+<li>可以<strong>拓展监听上限, 超出1024的限制</strong></li>
+</ul>
+<p>缺点:</p>
+<ul>
+<li>不能跨平台, 只适合于Linux系统</li>
+<li>无法直接定位到满足监听事件的文件描述符, 编码难度较大</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/linux/" rel="tag"># linux</a>
+              <a href="/tags/%E7%BD%91%E7%BB%9C/" rel="tag"># 网络</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/05/27/linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-5/" rel="prev" title="linux网络编程-多路I/O转接服务器：select">
+      <i class="fa fa-chevron-left"></i> linux网络编程-多路I/O转接服务器：select
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/05/29/linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-7/" rel="next" title="linux网络编程-多路I/O转接服务器:epoll基础">
+      linux网络编程-多路I/O转接服务器:epoll基础 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+      <div class="tabs tabs-comment">
+        <ul class="nav-tabs">
+            <li class="tab"><a href="#comment-gitalk">gitalk</a></li>
+            <li class="tab"><a href="#comment-livere">livere</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane gitalk" id="comment-gitalk">
+              <div class="comments" id="gitalk-container"></div>
+            </div>
+            <div class="tab-pane livere" id="comment-livere">
+              
+  <div class="comments" id="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81MjkwMy8yOTM4MA=="></div>
+  </div>
+  
+            </div>
+        </div>
+      </div>
+      <script>
+        window.addEventListener('tabs:register', () => {
+          let activeClass = 'gitalk';
+            activeClass = localStorage.getItem('comments_active') || activeClass;
+          if (activeClass) {
+            let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+            if (activeTab) {
+              activeTab.click();
+            }
+          }
+        });
+        window.addEventListener('tabs:click', event => {
+          let commentClass = event.target.classList[1];
+          localStorage.setItem('comments_active', commentClass);
+        });
+      </script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#poll"><span class="nav-number">1.</span> <span class="nav-text">poll</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#poll函数原型"><span class="nav-number">1.1.</span> <span class="nav-text">poll函数原型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#poll实现服务器"><span class="nav-number">1.2.</span> <span class="nav-text">poll实现服务器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#poll总结"><span class="nav-number">1.3.</span> <span class="nav-text">poll总结</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ShifuDong"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">ShifuDong</p>
+  <div class="site-description" itemprop="description">记录生活， 记录学习， 分享知识</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">65</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/mailto:sfd_w@foxmail.com" title="E-Mail → mailto:sfd_w@foxmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ShifuDong</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.0.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.5.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.getAttribute('pjax') !== null) {
+      element.setAttribute('pjax', '');
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'a6ee5b68c97a3db64850',
+      clientSecret: '1dfa06f32032431e4af79b80f9ddf9dfd13dbda2',
+      repo: 'dongshifu.github.io',
+      owner: 'dongshifu',
+      admin: ['dongshifu'],
+      id: 'a22c58f0a168bd0dd95d1fb65f299f0d',
+        language: 'zh-CN',
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script>
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+</script>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="alternate" href="/atom.xml" title="ShifuDong" type="application/atom+xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.5.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":"flat"},
+    back2top: {"enable":true,"sidebar":true,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":5,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="epoll事件模型POLL事件有两种模型：  Edge Triggered (ET) 边缘触发只有数据到来才触发，不管缓存区中是否还有数据。  Level Triggered (LT) 水平触发只要有数据都会触发。   思考如下步骤：  假定已经把一个用来从管道中读取数据的文件描述符(RFD)添加到epoll描述符。  管道的另一端写入了2KB的数据  调用epoll_wait，并且它会返回RFD">
+<meta name="keywords" content="linux,网络">
+<meta property="og:type" content="article">
+<meta property="og:title" content="linux网络编程-多路I&#x2F;O转接服务器:epoll边缘触发和水平触发">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;06&#x2F;01&#x2F;linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-8&#x2F;index.html">
+<meta property="og:site_name" content="ShifuDong">
+<meta property="og:description" content="epoll事件模型POLL事件有两种模型：  Edge Triggered (ET) 边缘触发只有数据到来才触发，不管缓存区中是否还有数据。  Level Triggered (LT) 水平触发只要有数据都会触发。   思考如下步骤：  假定已经把一个用来从管道中读取数据的文件描述符(RFD)添加到epoll描述符。  管道的另一端写入了2KB的数据  调用epoll_wait，并且它会返回RFD">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-05-06T00:21:39.224Z">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2020/06/01/linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-8/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>linux网络编程-多路I/O转接服务器:epoll边缘触发和水平触发 | ShifuDong</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ShifuDong</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">Knowledge Sharing</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/01/linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          linux网络编程-多路I/O转接服务器:epoll边缘触发和水平触发
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-06-01 15:45:00" itemprop="dateCreated datePublished" datetime="2020-06-01T15:45:00+08:00">2020-06-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-05-06 08:21:39" itemprop="dateModified" datetime="2021-05-06T08:21:39+08:00">2021-05-06</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index">
+                    <span itemprop="name">linux网络编程</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="epoll事件模型"><a href="#epoll事件模型" class="headerlink" title="epoll事件模型"></a>epoll事件模型</h3><p>POLL事件有两种模型：</p>
+<ul>
+<li><p>Edge Triggered (ET) 边缘触发<strong>只有数据到来才触发，不管缓存区中是否还有数据</strong>。</p>
+</li>
+<li><p>Level Triggered (LT) 水平触发<strong>只要有数据都会触发</strong>。</p>
+</li>
+</ul>
+<p>思考如下步骤：</p>
+<ol>
+<li><p>假定已经把一个用来从管道中读取数据的文件描述符(RFD)添加到epoll描述符。</p>
+</li>
+<li><p>管道的另一端写入了2KB的数据</p>
+</li>
+<li><p>调用epoll_wait，并且它会返回RFD，说明它已经准备好读取操作</p>
+</li>
+<li><p>读取1KB的数据</p>
+</li>
+<li><p>调用epoll_wait……</p>
+</li>
+</ol>
+<p>在这个过程中，有两种工作模式：</p>
+<h4 id="ET模式"><a href="#ET模式" class="headerlink" title="ET模式"></a>ET模式</h4><p>ET模式即Edge Triggered工作模式。</p>
+<p>如果在第1步将RFD添加到epoll描述符的时候使用了EPOLLET标志，那么在第5步调用epoll_wait之后将有可能会<strong>挂起</strong>，因为<strong>剩余的数据还存在于文件的输入缓冲区内，而且数据发出端还在等待一个针对已经发出数据的反馈信息。只有在监视的文件句柄上发生了某个事件的时候 ET 工作模式才会汇报事件。因此在第5步的时候，调用者可能会放弃等待仍在存在于文件输入缓冲区内的剩余数据。epoll工作在ET模式的时候，必须使用非阻塞套接口，以避免由于一个文件句柄的阻塞读/阻塞写操作把处理多个文件描述符的任务饿死</strong>。最好以下面的方式调用ET模式的epoll接口:</p>
+<ul>
+<li><p>基于<strong>非阻塞文件句柄</strong></p>
+</li>
+<li><p><strong>只有当read或者write返回EAGAIN(非阻塞读，暂时无数据)时才需要挂起、等待</strong>。但这并不是说每次read时都需要循环读，直到读到产生一个EAGAIN才认为此次事件处理完成，<strong>当read返回的读到的数据长度小于请求的数据长度时，就可以确定此时缓冲中已没有数据了，也就可以认为此事读事件已处理完成。</strong></p>
+</li>
+</ul>
+<h4 id="LT模式"><a href="#LT模式" class="headerlink" title="LT模式"></a>LT模式</h4><p>LT模式即Level Triggered工作模式。</p>
+<p>与ET模式不同的是，<strong>以LT方式调用epoll接口的时候，它就相当于一个速度比较快的poll，无论后面的数据是否被使用。</strong></p>
+<p>LT(level triggered)：LT是缺省的工作方式，并且同时支持block和no-block socket。在这种做法中<strong>，内核告诉一个文件描述符是否就绪了，然后可以对这个就绪的fd进行IO操作。如果不作任何操作，内核还是会继续通知，所以，这种模式编程出错误可能性要小一点。传统的select/poll都是这种模型的代表。</strong></p>
+<p>ET(edge-triggered)：<strong>ET是高速工作方式，只支持no-block socket。在这种模式下，当描述符从未就绪变为就绪时，内核通过epoll告诉。然后它会假设知道文件描述符已经就绪，并且不会再为那个文件描述符发送更多的就绪通知。请注意，如果一直不对这个fd作IO操作(从而导致它再次变成未就绪)，内核不会发送更多的通知(only once).</strong></p>
+<h4 id="基于管道的epoll-ET触发模式"><a href="#基于管道的epoll-ET触发模式" class="headerlink" title="基于管道的epoll ET触发模式"></a>基于管道的epoll ET触发模式</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/epoll.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;errno.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MAXLINE 10</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> efd, i;</span><br><span class="line">	<span class="keyword">int</span> pfd[<span class="number">2</span>];</span><br><span class="line">	<span class="keyword">pid_t</span> pid;</span><br><span class="line">	<span class="keyword">char</span> buf[MAXLINE], ch = <span class="string">'a'</span>;</span><br><span class="line"></span><br><span class="line">	pipe(pfd);</span><br><span class="line">	pid = fork();</span><br><span class="line">    <span class="comment">/*子进程每次向管道的写端写入10个字节:aaaa\nbbbb...\n*/</span></span><br><span class="line">	<span class="keyword">if</span> (pid == <span class="number">0</span>) &#123;</span><br><span class="line">		<span class="built_in">close</span>(pfd[<span class="number">0</span>]); <span class="comment">//子进程写</span></span><br><span class="line">		<span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line">			<span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; MAXLINE/<span class="number">2</span>; i++)</span><br><span class="line">				buf[i] = ch;</span><br><span class="line">			buf[i<span class="number">-1</span>] = <span class="string">'\n'</span>;</span><br><span class="line">			ch++;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">for</span> (; i &lt; MAXLINE; i++)</span><br><span class="line">				buf[i] = ch;</span><br><span class="line">			buf[i<span class="number">-1</span>] = <span class="string">'\n'</span>;</span><br><span class="line">			ch++;</span><br><span class="line"></span><br><span class="line">			<span class="built_in">write</span>(pfd[<span class="number">1</span>], buf, <span class="keyword">sizeof</span>(buf));</span><br><span class="line">			sleep(<span class="number">2</span>);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="built_in">close</span>(pfd[<span class="number">1</span>]);</span><br><span class="line">	&#125; <span class="keyword">else</span> <span class="keyword">if</span> (pid &gt; <span class="number">0</span>) &#123;</span><br><span class="line">		struct epoll_event event;</span><br><span class="line">		<span class="class"><span class="keyword">struct</span> <span class="title">epoll_event</span> <span class="title">resevent</span>[10];</span></span><br><span class="line">		<span class="keyword">int</span> res, len;</span><br><span class="line">		<span class="built_in">close</span>(pfd[<span class="number">1</span>]);</span><br><span class="line"></span><br><span class="line">		efd = epoll_create(<span class="number">10</span>);</span><br><span class="line">		event.events = EPOLLIN | EPOLLET;		<span class="comment">/* ET 边沿触发 ，默认是水平触发 */</span></span><br><span class="line">        <span class="comment">// event.events=EPOLLIN; // 水平触发</span></span><br><span class="line">		event.data.fd = pfd[<span class="number">0</span>];</span><br><span class="line">	    epoll_ctl(efd, EPOLL_CTL_ADD, pfd[<span class="number">0</span>], &amp;event);</span><br><span class="line"></span><br><span class="line">        <span class="comment">/*父进程死循环阻塞监听,每次读取一半*/</span></span><br><span class="line">		<span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line">			res = epoll_wait(efd, resevent, <span class="number">10</span>, <span class="number">-1</span>);</span><br><span class="line">			<span class="built_in">printf</span>(<span class="string">"res %d\n"</span>, res);</span><br><span class="line">			<span class="keyword">if</span> (resevent[<span class="number">0</span>].data.fd == pfd[<span class="number">0</span>]) &#123;</span><br><span class="line">				len = <span class="built_in">read</span>(pfd[<span class="number">0</span>], buf, MAXLINE/<span class="number">2</span>);</span><br><span class="line">				<span class="built_in">write</span>(STDOUT_FILENO, buf, len);</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="built_in">close</span>(pfd[<span class="number">0</span>]);</span><br><span class="line">		<span class="built_in">close</span>(efd);</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		perror(<span class="string">"fork"</span>);</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">-1</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>现象:</p>
+<ul>
+<li><p>当设置<strong>水平触发时, 只要管道中有数据, epoll_wait就会返回, 触发父进程读取数据, 所以虽然父进程每次只读取一半的数据, 但读完一半后剩下的一半又会触发父进程读取, 所以10个字节的数据都会显示出来</strong></p>
+</li>
+<li><p>当设置<strong>边缘触发时, 父进程阻塞读取, 而只有当子进程向管道中进行一次写入时才会触发父进程进行读取, 所以每次只会打印一半的数据</strong></p>
+</li>
+</ul>
+<p>总结:</p>
+<ul>
+<li>边缘触发: 缓冲区未读尽的数据不会导致epoll_wait返回, <strong>新的数据写入才会触发</strong></li>
+<li>水平触发: 缓冲区<strong>未读尽的数据会导致epoll_wait返回</strong></li>
+</ul>
+<h4 id="基于网络C-S模型的epoll-ET触发模式"><a href="#基于网络C-S模型的epoll-ET触发模式" class="headerlink" title="基于网络C/S模型的epoll ET触发模式"></a>基于网络C/S模型的epoll ET触发模式</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* server.c */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;netinet/in.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;arpa/inet.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;signal.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/wait.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/epoll.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MAXLINE 10</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SERV_PORT 9527</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">servaddr</span>, <span class="title">cliaddr</span>;</span></span><br><span class="line">	<span class="keyword">socklen_t</span> cliaddr_len;</span><br><span class="line">	<span class="keyword">int</span> listenfd, connfd;</span><br><span class="line">	<span class="keyword">char</span> buf[MAXLINE];</span><br><span class="line">	<span class="keyword">char</span> str[INET_ADDRSTRLEN];</span><br><span class="line">	<span class="keyword">int</span> i, efd;</span><br><span class="line"></span><br><span class="line">	listenfd = socket(AF_INET, SOCK_STREAM, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">	bzero(&amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line">	servaddr.sin_family = AF_INET;</span><br><span class="line">	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);</span><br><span class="line">	servaddr.sin_port = htons(SERV_PORT);</span><br><span class="line"></span><br><span class="line">	bind(listenfd, (struct sockaddr *)&amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line"></span><br><span class="line">	<span class="built_in">listen</span>(listenfd, <span class="number">20</span>);</span><br><span class="line"></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">epoll_event</span> <span class="title">event</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">epoll_event</span> <span class="title">resevent</span>[10];</span></span><br><span class="line">	<span class="keyword">int</span> res, len;</span><br><span class="line">	efd = epoll_create(<span class="number">10</span>);</span><br><span class="line">	event.events = EPOLLIN | EPOLLET;		<span class="comment">/* ET 边沿触发 ，默认是水平触发 */</span></span><br><span class="line"></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"Accepting connections ...\n"</span>);</span><br><span class="line">	cliaddr_len = <span class="keyword">sizeof</span>(cliaddr);</span><br><span class="line">	connfd = accept(listenfd, (struct sockaddr *)&amp;cliaddr, &amp;cliaddr_len);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"received from %s at PORT %d\n"</span>,</span><br><span class="line">			inet_ntop(AF_INET, &amp;cliaddr.sin_addr, str, <span class="keyword">sizeof</span>(str)),</span><br><span class="line">			ntohs(cliaddr.sin_port));</span><br><span class="line"></span><br><span class="line">	event.data.fd = connfd;</span><br><span class="line">	epoll_ctl(efd, EPOLL_CTL_ADD, connfd, &amp;event);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line">		res = epoll_wait(efd, resevent, <span class="number">10</span>, <span class="number">-1</span>);</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"res %d\n"</span>, res);</span><br><span class="line">		<span class="keyword">if</span> (resevent[<span class="number">0</span>].data.fd == connfd) &#123;</span><br><span class="line">			len = <span class="built_in">read</span>(connfd, buf, MAXLINE/<span class="number">2</span>);</span><br><span class="line">			<span class="built_in">write</span>(STDOUT_FILENO, buf, len);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/linux/" rel="tag"># linux</a>
+              <a href="/tags/%E7%BD%91%E7%BB%9C/" rel="tag"># 网络</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/05/31/linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-9/" rel="prev" title="linux网络编程-多路I/O转接服务器:event">
+      <i class="fa fa-chevron-left"></i> linux网络编程-多路I/O转接服务器:event
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/06/01/Go%20%E6%8E%A5%E5%8F%A3_1Go%E4%B8%8E%20C++%20%E6%8E%A5%E5%8F%A3%E6%9C%89%E4%BD%95%E5%BC%82%E5%90%8C/" rel="next" title="Go接口与C++接口的异同">
+      Go接口与C++接口的异同 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+      <div class="tabs tabs-comment">
+        <ul class="nav-tabs">
+            <li class="tab"><a href="#comment-gitalk">gitalk</a></li>
+            <li class="tab"><a href="#comment-livere">livere</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane gitalk" id="comment-gitalk">
+              <div class="comments" id="gitalk-container"></div>
+            </div>
+            <div class="tab-pane livere" id="comment-livere">
+              
+  <div class="comments" id="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81MjkwMy8yOTM4MA=="></div>
+  </div>
+  
+            </div>
+        </div>
+      </div>
+      <script>
+        window.addEventListener('tabs:register', () => {
+          let activeClass = 'gitalk';
+            activeClass = localStorage.getItem('comments_active') || activeClass;
+          if (activeClass) {
+            let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+            if (activeTab) {
+              activeTab.click();
+            }
+          }
+        });
+        window.addEventListener('tabs:click', event => {
+          let commentClass = event.target.classList[1];
+          localStorage.setItem('comments_active', commentClass);
+        });
+      </script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#epoll事件模型"><span class="nav-number">1.</span> <span class="nav-text">epoll事件模型</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#ET模式"><span class="nav-number">1.1.</span> <span class="nav-text">ET模式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#LT模式"><span class="nav-number">1.2.</span> <span class="nav-text">LT模式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#基于管道的epoll-ET触发模式"><span class="nav-number">1.3.</span> <span class="nav-text">基于管道的epoll ET触发模式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#基于网络C-S模型的epoll-ET触发模式"><span class="nav-number">1.4.</span> <span class="nav-text">基于网络C/S模型的epoll ET触发模式</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ShifuDong"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">ShifuDong</p>
+  <div class="site-description" itemprop="description">记录生活， 记录学习， 分享知识</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">65</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/mailto:sfd_w@foxmail.com" title="E-Mail → mailto:sfd_w@foxmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ShifuDong</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.0.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.5.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.getAttribute('pjax') !== null) {
+      element.setAttribute('pjax', '');
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'a6ee5b68c97a3db64850',
+      clientSecret: '1dfa06f32032431e4af79b80f9ddf9dfd13dbda2',
+      repo: 'dongshifu.github.io',
+      owner: 'dongshifu',
+      admin: ['dongshifu'],
+      id: '8b41e4367aeefe58a3cb956c21fa5003',
+        language: 'zh-CN',
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script>
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+</script>
+
+    </div>
+</body>
+</html>

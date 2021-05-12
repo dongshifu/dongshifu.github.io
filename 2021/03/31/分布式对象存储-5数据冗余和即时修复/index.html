@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="alternate" href="/atom.xml" title="ShifuDong" type="application/atom+xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.5.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":"flat"},
+    back2top: {"enable":true,"sidebar":true,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":5,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="数据冗余和即时修复数据冗余上一版本的去重主要是用于避免同一个对象在系统中各处都被保存一份副本。本版本的冗余是在受到版本控制的情况下增加对象数据的稳定性。 数据丢失和数据不可用数据丢失是指信息在存储、传输或处理的过程中由于错误或遗漏而发生损失。 数据在传输过程中的丢失通常是由于网络不稳定导致的，对数据进行校验可以有效检测出传输过程中发生的数据丢失，然后服务端就可以拒绝接收有损的数据。 数据处理过程中">
+<meta name="keywords" content="分布式,go">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据冗余和即时修复">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2021&#x2F;03&#x2F;31&#x2F;%E5%88%86%E5%B8%83%E5%BC%8F%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8-5%E6%95%B0%E6%8D%AE%E5%86%97%E4%BD%99%E5%92%8C%E5%8D%B3%E6%97%B6%E4%BF%AE%E5%A4%8D&#x2F;index.html">
+<meta property="og:site_name" content="ShifuDong">
+<meta property="og:description" content="数据冗余和即时修复数据冗余上一版本的去重主要是用于避免同一个对象在系统中各处都被保存一份副本。本版本的冗余是在受到版本控制的情况下增加对象数据的稳定性。 数据丢失和数据不可用数据丢失是指信息在存储、传输或处理的过程中由于错误或遗漏而发生损失。 数据在传输过程中的丢失通常是由于网络不稳定导致的，对数据进行校验可以有效检测出传输过程中发生的数据丢失，然后服务端就可以拒绝接收有损的数据。 数据处理过程中">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;ce6f85fc-6278-47f0-be7f-e64d510542f9-11197877.jpg">
+<meta property="og:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;bff8fab5-9193-4795-872d-b8166c41dac3-11197877.jpg">
+<meta property="og:updated_time" content="2021-05-12T00:36:26.679Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;ce6f85fc-6278-47f0-be7f-e64d510542f9-11197877.jpg">
+
+<link rel="canonical" href="http://yoursite.com/2021/03/31/%E5%88%86%E5%B8%83%E5%BC%8F%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8-5%E6%95%B0%E6%8D%AE%E5%86%97%E4%BD%99%E5%92%8C%E5%8D%B3%E6%97%B6%E4%BF%AE%E5%A4%8D/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>数据冗余和即时修复 | ShifuDong</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ShifuDong</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">Knowledge Sharing</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/03/31/%E5%88%86%E5%B8%83%E5%BC%8F%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8-5%E6%95%B0%E6%8D%AE%E5%86%97%E4%BD%99%E5%92%8C%E5%8D%B3%E6%97%B6%E4%BF%AE%E5%A4%8D/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          数据冗余和即时修复
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-03-31 15:03:58" itemprop="dateCreated datePublished" datetime="2021-03-31T15:03:58+08:00">2021-03-31</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-05-12 08:36:26" itemprop="dateModified" datetime="2021-05-12T08:36:26+08:00">2021-05-12</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8/" itemprop="url" rel="index">
+                    <span itemprop="name">分布式对象存储</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="数据冗余和即时修复"><a href="#数据冗余和即时修复" class="headerlink" title="数据冗余和即时修复"></a>数据冗余和即时修复</h3><h4 id="数据冗余"><a href="#数据冗余" class="headerlink" title="数据冗余"></a>数据冗余</h4><p>上一版本的去重主要是用于避免同一个对象在系统中各处都被保存一份副本。本版本的冗余是在受到版本控制的情况下增加对象数据的稳定性。</p>
+<h5 id="数据丢失和数据不可用"><a href="#数据丢失和数据不可用" class="headerlink" title="数据丢失和数据不可用"></a>数据丢失和数据不可用</h5><p>数据丢失是指信息在存储、传输或处理的过程中由于错误或遗漏而发生损失。</p>
+<p>数据在<strong>传输过程中的丢失通常是由于网络不稳定导致的</strong>，对数据进行<strong>校验</strong>可以有效检测出传输过程中发生的数据丢失，然后服务端就可以拒绝接收有损的数据。</p>
+<p>数据<strong>处理过程中的丢失则可能是由于软件或人为的错误而造成的</strong>。对于软件错误,需要对其进行修复并重新部署;对于人为错误，需要制定严格的操作规范。</p>
+<p>重点是：<strong>已经丢失的数据无法恢复</strong>。</p>
+<p>存储硬件损坏是数据在存储过程中丢失的最常见的原因，可能发生的硬件损坏从某个硬盘出现坏道到整个数据中心受灾等不一而足，使用数据备份以及灾难恢复可以在一定程度上弥补损失，但是这通常都会造成几小时到几天不等的停机时间，而且系统最后一次备份点之后加入的数据也依然是无法恢复的。</p>
+<p><strong>服务器的维护可能导致数据暂时的不可用</strong>，比如预先安排的服务器重启等。和永久性的数据丢失不同，<strong>数据不可用是暂时性的，当服务器重启完成后，数据就会恢复可用的状态。但是在服务器重启过程中如果恰好有用户需要对其上的对象进行访问，那么同样会表现成数据丢失。</strong></p>
+<p>除了硬件损坏和服务器维护以外，还有数据降解也会造成数据丢失。<strong>数据降解是由数据存储设备的非关键故障累积导致的数据逐渐损坏，即使在没有发生任何软件错误或硬件损坏的情况下，存储介质上的数据依然有可能随时间的推移而丢失。</strong>比如说，固态硬盘会由于存在缺陷的绝缘封装工艺而导致其中保存的电荷慢慢流失:磁盘上保存的比特会随时间的推移而消磁:潮湿温暖的空气会加速磁性材质的降解等。</p>
+<p>单个数据的损坏和丢失是不可避免的。为了保护用户的数据，在计算机存储领域，<strong>依靠数据冗余来对抗数据丢失</strong>。<strong>数据冗余不仅可以在一定程度上克服数据丢失，而且在发生数据丢失的时候还可以帮助对其进行修复。</strong></p>
+<h5 id="数据冗余-1"><a href="#数据冗余-1" class="headerlink" title="数据冗余"></a>数据冗余</h5><p>在计算机领域，<strong>数据冗余是指在存储和传输的过程中，除了实际需要的数据，还存在一些额外数据用来纠正错误。这些额外的数据可以是一份简单的原始数据的复制，也可以是一些经过精心选择的校验数据，允许在一定程度上检测并修复损坏的数据。</strong></p>
+<p>比如，ECC (Error-correcting memory)内存在其每一个存储字中会额外包含存储数据的校验和，可以检测并修正一个比特的错误;RAID 1使用两个硬盘组成单个逻辑存储单元，在任何一个硬盘发生故障的情况下依然可以有效运行:Btrfs和ZFS这样的文件系统通过结合使用校验和以及数据复制这两种方式来检测并修正硬盘上的数据降解等。<br>在对象存储领域,我们也有很多数据冗余的策略。</p>
+<h5 id="对象存储系统的数据冗余策略"><a href="#对象存储系统的数据冗余策略" class="headerlink" title="对象存储系统的数据冗余策略"></a>对象存储系统的数据冗余策略</h5><p>最显而易见的冗余策略是每个对象都保留两个或更多副本，由接口服务负责将其存储在不同的数据服务节点上。跟去重之前完全无控制的状况不同，多副本冗余是受接口服务控制的有限副本冗余，副本对象的数量有限，而不是散落在每一个数据服务节点上。多副本冗余的概念很简单，实现也很方便，任何一台数据服务节点停机都不会影响数据的可用性，因为在另外一台数据服务节点上还存在一个副本。</p>
+<p>多副本冗余的策略胜在实现简单，但是代价也比较高，本项目将要介绍和实现的冗余策略比多副本冗余复杂，叫作 Reed Solomon 纠删码。在编码理论学中，RS 纠删码属于非二进制循环码，它的实现基于有限域上的一元多项式，并被广泛应用于CD、DVD、蓝光、QR码等消费品技术，DSL、WiMAX等数据传输技术，DVB、ATSC等广播技术以及卫星通信技术等。</p>
+<p><strong>RS纠删码允许选择数据片和校验片的数量，本项目选择4个数据片加两个校验片，也就是说会把一个完整的对象平均分成6个分片对象，其中包括4个数据片对象，每个对象的大小是原始对象大小的25%，另外还有两个校验片，其大小和数据片一样。这6个分片对象被接口服务存储在6个不同的数据服务节点上，只需要其中任意4个就可以恢复出完整的对象。</strong></p>
+<p>要在对象存储系统中评价一个冗余策略的好坏，主要是<strong>衡量该策略对存储空间的要求和其抗数据损坏的能力</strong>。对<strong>存储空间的要求是指采用的冗余策略相比不使用冗余要额外支付的存储空间，以百分比表示。抗数据损坏的能力以允许损坏或丢失的对象数量来衡量。</strong></p>
+<p>比如说，在没有任何冗余策略的情况下，对象占用存储空间的大小就是它本身的大小，而一旦该对象损坏，就丢失了这个对象，那么它对存储空间的要求是100%，而抵御能力则是0。如果采用双副本冗余策略，当任何一个副本损坏或丢失时，都可以通过另外一个副本将其恢复出来。也就是说，这个冗余策略对存储空间要求是200%，抵御数据损坏的能力是1(可以丢失两个副本中的任意1个)，而使用4+2的RS码的策略，存储空间要求是150%，抵御能力是2(可以丢失6个分片对象中的任意两个)。总的来说，对于一个M+N的RS码(M个数据片加N个校验片)，其对存储空间的要求是(M+N）/M*100%，抵御能力是N。</p>
+<p>可以看到,<strong>RS码冗余策略对存储空间的要求更低，而抵御数据损坏的能力却更强。选择RS码还有一个好处，就是它会将一个大对象拆分成多个分片对象分别存储,有助于数据服务层的负载均衡。</strong></p>
+<p><strong>使用了RS 码冗余策略之后，对象存储系统单个节点的维护就不会导致整个系统的停机。只要每次维护的节点数小于N，那么任意对象的分片数依然大于M,对象就可以正确恢复。</strong></p>
+<h4 id="数据冗余的实现"><a href="#数据冗余的实现" class="headerlink" title="数据冗余的实现"></a>数据冗余的实现</h4><p>由于底层使用的数据冗余策略对上层的接口不产生任何影响。REST接口不发生变化。</p>
+<h5 id="对象PUT流程"><a href="#对象PUT流程" class="headerlink" title="对象PUT流程"></a>对象PUT流程</h5><p><img src="https://api2.mubu.com/v3/document_image/ce6f85fc-6278-47f0-be7f-e64d510542f9-11197877.jpg" alt="使用RS纠删码实现冗余策略的对象PUT流程"></p>
+<p>接口服务会将客户端PUT上来的数据流切成4+2的分片，然后向6个数据服务节点上传临时对象<code>&lt;hash&gt;.X</code>，同时计算对象散列值。如果散列值一致，6个临时对象会被转成正式的分片对象<code>&lt;hash&gt;.X</code>，其内容被保存在<code>$STORAGE_ROOT/objects/&lt;hash&gt;.X.&lt;hash of shard X&gt;</code>文件中。其中, X的取值范围为<code>0~5</code>的整数，表示该分片的id,<code>0~3</code>是数据片，4和5则是校验片<strong>。<code>&lt;hash of shard X&gt;</code>是该分片的散列值，在转正时通过计算临时对象的内容得到。</strong></p>
+<h5 id="对象GET流程"><a href="#对象GET流程" class="headerlink" title="对象GET流程"></a>对象GET流程</h5><p><img src="https://api2.mubu.com/v3/document_image/bff8fab5-9193-4795-872d-b8166c41dac3-11197877.jpg" alt="使用RS冗余编码的对象GET流程"></p>
+<p><strong>接口服务发送针对对象散列值<code>&lt;hash&gt;</code>的定位信息，含有该对象分片的数据服务共有6个，它们都会发送反馈的消息。接口服务在收到所有反馈消息后向响应的数据服务分别GET分片对象<code>&lt;hash&gt;.X</code>。数据服务读取分片X的内容，并响应接口服务的请求。然后接口服务将数据片0到3的内容组合成对象来响应客户端的请求。</strong></p>
+<p>接口服务在进行定位时的超时和之前一样是1s，<strong>如果在1s内收到所有6个定位反馈则定位成功:如果在1s超时后收到的定位反馈大于等于4，那么依然可以恢复出完整的对象:如果定位反馈小于等于3，则定位失败。</strong></p>
+<p>当数据服务的接口收到的请求对象是<code>&lt;hash&gt;.X</code>，数据服务需要自己去<code>$STORAGE_ROOT/objects</code>目录下寻找<code>&lt;hash&gt;.X</code>开头的文件<code>&lt;hash&gt;.X.&lt;hash of shard X&gt;</code>，<strong>然后在返回该文件内容时还需要进行数据校验，确保其内容的散列值和<code>&lt;hash of shard X&gt;</code>一致。如果不一致，则需要删除该分片对象并返回404 Not Found。这是为了防止该分片对象被数据降解破坏。</strong></p>
+<p><strong>接口服务可能由于分片定位失败或分片散列值不一致等原因无法获取某个分片的数据。如果失败的分片数小于等于2，接口服务会根据成功获取的分片重塑数据，并将新的分片写入随机的数据服务;如果失败的分片数大于等于3，对这样的数据丢失无能为力，只能向客户端返回404 Not Found。</strong></p>
+<h4 id="具体实现"><a href="#具体实现" class="headerlink" title="具体实现"></a>具体实现</h4><p>为实现RS码，接口服务的locate、heartbeat和objects包需要做相应变化。</p>
+<h5 id="接口服务的locate包"><a href="#接口服务的locate包" class="headerlink" title="接口服务的locate包"></a>接口服务的locate包</h5><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Locate</span><span class="params">(name <span class="keyword">string</span>)</span> <span class="params">(locateInfo <span class="keyword">map</span>[<span class="keyword">int</span>]<span class="keyword">string</span>)</span></span> &#123;</span><br><span class="line">	q := rabbitmq.New(os.Getenv(<span class="string">"RABBITMQ_SERVER"</span>))</span><br><span class="line">	q.Publish(<span class="string">"dataServers"</span>, name)</span><br><span class="line">	c := q.Consume()</span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		<span class="comment">// 设置1秒超时，无论当前收到多少条反馈消息都会立即返回</span></span><br><span class="line">		time.Sleep(time.Second)</span><br><span class="line">		q.Close()</span><br><span class="line">	&#125;()</span><br><span class="line">	locateInfo = <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="keyword">int</span>]<span class="keyword">string</span>)</span><br><span class="line">	<span class="comment">// 使用for循环获取6条消息，每条消息包含拥有某个分片的数据服务节点的地址和分片的id</span></span><br><span class="line">	<span class="comment">// rs.ALL_SHARDS为rs包中的常数6,代表一共有4+2个分片</span></span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; rs.ALL_SHARDS; i++ &#123;</span><br><span class="line">		msg := &lt;-c</span><br><span class="line">		<span class="keyword">if</span> <span class="built_in">len</span>(msg.Body) == <span class="number">0</span> &#123;</span><br><span class="line">			<span class="keyword">return</span></span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">var</span> info types.LocateMessage</span><br><span class="line">		json.Unmarshal(msg.Body, &amp;info)</span><br><span class="line">		<span class="comment">// 获取到的分片信息放到输出参数locateInfo中</span></span><br><span class="line">		locateInfo[info.Id] = info.Addr</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 判断收到的反馈消息数量是否大于等于4</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Exist</span><span class="params">(name <span class="keyword">string</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">	<span class="comment">// 大于等于4则说明对象存在，否则说明对象不存在(或者存在也无法读取)</span></span><br><span class="line">	<span class="keyword">return</span> <span class="built_in">len</span>(Locate(name)) &gt;= rs.DATA_SHARDS</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="接口服务的heartbeat包"><a href="#接口服务的heartbeat包" class="headerlink" title="接口服务的heartbeat包"></a>接口服务的heartbeat包</h5><p>接口服务的heartbeat包也需要进行改动，将原来的返回一个随机数据服务节点的<code>ChooseRandomDataServer</code>函数改为<strong>能够返回多个随机数据服务节点</strong>的<code>ChooseRandomDataServers</code>函数。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 用于获取上传复原分片的随机数据服务节点。目前已有的分片所在的数据服务节点需要被排除</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">ChooseRandomDataServers</span><span class="params">(n <span class="keyword">int</span>, exclude <span class="keyword">map</span>[<span class="keyword">int</span>]<span class="keyword">string</span>)</span> <span class="params">(ds []<span class="keyword">string</span>)</span></span> &#123;</span><br><span class="line">	<span class="comment">// 输入参数n表示需要多少个随机数服务节点</span></span><br><span class="line">	<span class="comment">// 输入参数exclude表明要求返回的数据服务节点不能包含哪些节点。</span></span><br><span class="line">	<span class="comment">// 当定位完成后，实际收到的反馈消息可能不足6个，此时需要进行数据恢复，即根据目前已有的分片将丢失的分片复原出来并再次上传到数据服务</span></span><br><span class="line">	candidates := <span class="built_in">make</span>([]<span class="keyword">string</span>, <span class="number">0</span>)</span><br><span class="line">	reverseExcludeMap := <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="keyword">string</span>]<span class="keyword">int</span>)</span><br><span class="line">	<span class="keyword">for</span> id, addr := <span class="keyword">range</span> exclude &#123;</span><br><span class="line">		reverseExcludeMap[addr] = id</span><br><span class="line">	&#125;</span><br><span class="line">	servers := GetDataServers()</span><br><span class="line">	<span class="keyword">for</span> i := <span class="keyword">range</span> servers &#123;</span><br><span class="line">		s := servers[i]</span><br><span class="line">		_, excluded := reverseExcludeMap[s]</span><br><span class="line">		<span class="keyword">if</span> !excluded &#123;</span><br><span class="line">			<span class="comment">// 不需要被排除的加入到condaidate数组</span></span><br><span class="line">			candidates = <span class="built_in">append</span>(candidates, s)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	length := <span class="built_in">len</span>(candidates)</span><br><span class="line">	<span class="keyword">if</span> length &lt; n &#123;</span><br><span class="line">		<span class="comment">// 无法满足要求的n个数据服务节点，返回一个空数组</span></span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 将0-length-1的所有整数乱序排列返回一个数组</span></span><br><span class="line">	p := rand.Perm(length)</span><br><span class="line">	<span class="comment">// 取前n个作为candicate数组的下标取数据节点地址返回</span></span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; n; i++ &#123;</span><br><span class="line">		ds = <span class="built_in">append</span>(ds, candidates[p[i]])</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="接口服务的objects包"><a href="#接口服务的objects包" class="headerlink" title="接口服务的objects包"></a>接口服务的objects包</h5><h6 id="PUT相关函数"><a href="#PUT相关函数" class="headerlink" title="PUT相关函数"></a>PUT相关函数</h6><p>PUT对象时需要用到的putStream函数，调用新的<code>heartbeat.ChooseRandomDataServers</code>函数获取随机数据服务节点地址并调用<code>rs.NewRSPutStream</code>来生成一个数据流：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">putStream</span><span class="params">(hash <span class="keyword">string</span>, size <span class="keyword">int64</span>)</span> <span class="params">(*rs.RSPutStream, error)</span></span> &#123;</span><br><span class="line">	servers := heartbeat.ChooseRandomDataServers(rs.ALL_SHARDS, <span class="literal">nil</span>)</span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">len</span>(servers) != rs.ALL_SHARDS &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, fmt.Errorf(<span class="string">"cannot find enough dataServer"</span>)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 返回一个指向rs.RSPutStream结构体的指针</span></span><br><span class="line">	<span class="keyword">return</span> rs.NewRSPutStream(servrs, hash, size)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>创建rs.RSPutStream：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> (</span><br><span class="line">	DATA_SHARDS     = <span class="number">4</span></span><br><span class="line">	PARITY_SHARDS   = <span class="number">2</span></span><br><span class="line">	ALL_SHARDS      = DATA_SHARDS + PARITY_SHARDS</span><br><span class="line">	BLOCK_PER_SHARD = <span class="number">8000</span></span><br><span class="line">	BLOCK_SIZE      = BLOCK_PER_SHARD * DATA_SHARDS</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 内嵌一个encoder结构体，RPutStream的使用者可以像访问RPutStream的方法或成员一样访问*encoder的方法或成员</span></span><br><span class="line"><span class="keyword">type</span> RSPutStream <span class="keyword">struct</span> &#123;</span><br><span class="line">	*encoder</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewRSPutStream</span><span class="params">(dataServers []<span class="keyword">string</span>, hash <span class="keyword">string</span>, size <span class="keyword">int64</span>)</span> <span class="params">(*RSPutStream, error)</span></span> &#123;</span><br><span class="line">	<span class="comment">// dataServers长度不为6,返回错误</span></span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">len</span>(dataServers) != ALL_SHARDS &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, fmt.Errorf(<span class="string">"dataServers number mismatch"</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 根据size计算出每个分片的大小perShard,也就是size/4再向上取整</span></span><br><span class="line">	perShard := (size + DATA_SHARDS - <span class="number">1</span>) / DATA_SHARDS</span><br><span class="line">	<span class="comment">// 创建长度为6的io.Writers数组</span></span><br><span class="line">	writers := <span class="built_in">make</span>([]io.Writer, ALL_SHARDS)</span><br><span class="line">	<span class="keyword">var</span> e error</span><br><span class="line">	<span class="keyword">for</span> i := <span class="keyword">range</span> writers &#123;</span><br><span class="line">		<span class="comment">// writers数组中的每个元素都是一个objectstream.TempPutSterm,用于上传一个分片对象</span></span><br><span class="line">		writers[i], e = objectstream.NewTempPutStream(dataServers[i],</span><br><span class="line">			fmt.Sprintf(<span class="string">"%s.%d"</span>, hash, i), perShard)</span><br><span class="line">		<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="keyword">return</span> <span class="literal">nil</span>, e</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 调用NewEncoder函数创建一个encoder结构体指针enc</span></span><br><span class="line">	enc := NewEncoder(writers)</span><br><span class="line">	<span class="comment">// 将enc作为RSPutSterm的内嵌结构体返回</span></span><br><span class="line">	<span class="keyword">return</span> &amp;RSPutStream&#123;enc&#125;, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> encoder <span class="keyword">struct</span> &#123;</span><br><span class="line">	writers []io.Writer</span><br><span class="line">	enc     reedsolomon.Encoder <span class="comment">// reedsolomon.Encoder接口</span></span><br><span class="line">	cache   []<span class="keyword">byte</span>              <span class="comment">//用于做输入数据缓存的字节数组</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 调用reeddolomon.New生成具有4个数据片加两个校验片的RS码编码器enc</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewEncoder</span><span class="params">(writers []io.Writer)</span> *<span class="title">encoder</span></span> &#123;</span><br><span class="line">	enc, _ := reedsolomon.New(DATA_SHARDS, PARITY_SHARDS)</span><br><span class="line">	<span class="comment">// 将输入参数writers和enc作为生成的encoder结构体的成员返回</span></span><br><span class="line">	<span class="keyword">return</span> &amp;encoder&#123;writers, enc, <span class="literal">nil</span>&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>reedsolomon包是一个RS编解码的开源库，需要用以下命令下载该包:<br><code>go get github.com/klauspost/reedsolomon</code></p>
+<p>在对象PUT过程中，写入对象数据的流调用的是rs.RSPutStream，实际背后调用的Write方法也不一样：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// RSPutStream本身没有实现Write方法，实现的时候函数会直接调用其内嵌结构体encoder的Write方法</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(e *encoder)</span> <span class="title">Write</span><span class="params">(p []<span class="keyword">byte</span>)</span> <span class="params">(n <span class="keyword">int</span>, err error)</span></span> &#123;</span><br><span class="line">	length := <span class="built_in">len</span>(p)</span><br><span class="line">	current := <span class="number">0</span></span><br><span class="line">	<span class="comment">// 将p中待写入的数据以块的形式放入缓存</span></span><br><span class="line">	<span class="keyword">for</span> length != <span class="number">0</span> &#123;</span><br><span class="line">		next := BLOCK_SIZE - <span class="built_in">len</span>(e.cache)</span><br><span class="line">		<span class="keyword">if</span> next &gt; length &#123;</span><br><span class="line">			next = length</span><br><span class="line">		&#125;</span><br><span class="line">		e.cache = <span class="built_in">append</span>(e.cache, p[current:current+next]...)</span><br><span class="line">		<span class="comment">// 如果缓存已满，调用Flush方法将缓存实际写入writers</span></span><br><span class="line">		<span class="comment">// 缓存的上限是每个数据片8000字节，4个数据片共32000字节。</span></span><br><span class="line">		<span class="comment">// 如果缓存里剩余的数据不满32000字节就暂不刷新，等待Write方法下一次调用</span></span><br><span class="line">		<span class="keyword">if</span> <span class="built_in">len</span>(e.cache) == BLOCK_SIZE &#123;</span><br><span class="line">			e.Flush()</span><br><span class="line">		&#125;</span><br><span class="line">		current += next</span><br><span class="line">		length -= next</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="built_in">len</span>(p), <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(e *encoder)</span> <span class="title">Flush</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">len</span>(e.cache) == <span class="number">0</span> &#123;</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 调用Split方法将缓存的数据切成4个数据片</span></span><br><span class="line">	shards, _ := e.enc.Split(e.cache)</span><br><span class="line">	<span class="comment">// 调用Encode方法生成两个校验片</span></span><br><span class="line">	e.enc.Encode(shards)</span><br><span class="line">	<span class="comment">// 循环将6个片的数据依次写入wtiters并清空缓存</span></span><br><span class="line">	<span class="keyword">for</span> i := <span class="keyword">range</span> shards &#123;</span><br><span class="line">		e.writers[i].Write(shards[i])</span><br><span class="line">	&#125;</span><br><span class="line">	e.cache = []<span class="keyword">byte</span>&#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>用户上传的对象数据经过散列值校验后，RSPutStrem需要一个Commit方法用来将临时对象转正或删除。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(s *RSPutStream)</span> <span class="title">Commit</span><span class="params">(success <span class="keyword">bool</span>)</span></span> &#123;</span><br><span class="line">	<span class="comment">// 调用RSPutStream的内嵌结构体encoder的Flush方法将缓存中最后的数据写入</span></span><br><span class="line">	s.Flush()</span><br><span class="line">	<span class="comment">// 对调用encoder的成员数组writers中的元素调用Commit方法将6个临时对象依次转正或删除</span></span><br><span class="line">	<span class="keyword">for</span> i := <span class="keyword">range</span> s.writers &#123;</span><br><span class="line">		s.writers[i].(*objectstream.TempPutStream).Commit(success)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h6 id="GET相关函数"><a href="#GET相关函数" class="headerlink" title="GET相关函数"></a>GET相关函数</h6><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">get</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">	name := strings.Split(r.URL.EscapedPath(), <span class="string">"/"</span>)[<span class="number">2</span>]</span><br><span class="line">	versionId := r.URL.Query()[<span class="string">"version"</span>]</span><br><span class="line">	version := <span class="number">0</span></span><br><span class="line">	<span class="keyword">var</span> e error</span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">len</span>(versionId) != <span class="number">0</span> &#123;</span><br><span class="line">		version, e = strconv.Atoi(versionId[<span class="number">0</span>])</span><br><span class="line">		<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">			log.Println(e)</span><br><span class="line">			w.WriteHeader(http.StatusBadRequest)</span><br><span class="line">			<span class="keyword">return</span></span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	meta, e := es.GetMetadata(name, version)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(e)</span><br><span class="line">		w.WriteHeader(http.StatusInternalServerError)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> meta.Hash == <span class="string">""</span> &#123;</span><br><span class="line">		w.WriteHeader(http.StatusNotFound)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	hash := url.PathEscape(meta.Hash)</span><br><span class="line"></span><br><span class="line">	stream, e := GetStream(hash, meta.Size)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(e)</span><br><span class="line">		w.WriteHeader(http.StatusNotFound)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 调用io.Copy将对象数据流写入HTTP响应</span></span><br><span class="line">	_, e = io.Copy(w, stream)</span><br><span class="line">	<span class="comment">// 如果有错误，说明对象数据在RS解码过程中发生了错误，意味着该对象已经无法被读取</span></span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(e)</span><br><span class="line">		w.WriteHeader(http.StatusNotFound)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	stream.Close()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 提供给外部包使用。增加size参数是由于RS码的实现要求每一个数据片的长度完全一样</span></span><br><span class="line"><span class="comment">// 在编码如果对象长度不能被4整除，函数会队最后一个数片进行填充。</span></span><br><span class="line"><span class="comment">// 解码时必须提供对象的准确长度，防止填充数据被当成元数对象数据返回。</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">GetStream</span><span class="params">(hash <span class="keyword">string</span>, size <span class="keyword">int64</span>)</span> <span class="params">(*rs.RSGetStream, error)</span></span> &#123;</span><br><span class="line">	<span class="comment">// 根据对象散列值hash定位对象</span></span><br><span class="line">	locateInfo := locate.Locate(hash)</span><br><span class="line">	<span class="comment">// 反馈的定位结果数组长度小于4，返回错误</span></span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">len</span>(locateInfo) &lt; rs.DATA_SHARDS &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, fmt.Errorf(<span class="string">"object %s locate fail, result %v"</span>, hash, locateInfo)</span><br><span class="line">	&#125;</span><br><span class="line">	dataServers := <span class="built_in">make</span>([]<span class="keyword">string</span>, <span class="number">0</span>)</span><br><span class="line">	<span class="comment">// 长度不为6，说明对象有部分分片丢失</span></span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">len</span>(locateInfo) != rs.ALL_SHARDS &#123;</span><br><span class="line">		<span class="comment">// 调用heartbeat.ChooseRandomDataServers随机选择用于接收恢复分片的数据服务节点</span></span><br><span class="line">		dataServers = heartbeat.ChooseRandomDataServers(rs.ALL_SHARDS-<span class="built_in">len</span>(locateInfo), locateInfo)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 调用rs.NewRSGetStream函数创建rs.RSGetStream</span></span><br><span class="line">	<span class="keyword">return</span> rs.NewRSGetStream(locateInfo, dataServers, hash, size)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>创建Re.RSGetStream:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewRSGetStream</span><span class="params">(locateInfo <span class="keyword">map</span>[<span class="keyword">int</span>]<span class="keyword">string</span>, dataServers []<span class="keyword">string</span>, hash <span class="keyword">string</span>, size <span class="keyword">int64</span>)</span> <span class="params">(*RSGetStream, error)</span></span> &#123;</span><br><span class="line">	<span class="comment">// 检查是否满足4+2 的RS码需求</span></span><br><span class="line">	<span class="comment">// 不满足，返回错误</span></span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">len</span>(locateInfo)+<span class="built_in">len</span>(dataServers) != ALL_SHARDS &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, fmt.Errorf(<span class="string">"dataServers number mismatch"</span>)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 创建长度为6的io.Reader数组readers，用于读取6个分片的数据</span></span><br><span class="line">	readers := <span class="built_in">make</span>([]io.Reader, ALL_SHARDS)</span><br><span class="line">	<span class="comment">// 遍历6个分片的id</span></span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; ALL_SHARDS; i++ &#123;</span><br><span class="line">		<span class="comment">// 在locateinfo中查找分片所在的数据服务节点地址</span></span><br><span class="line">		server := locateInfo[i]</span><br><span class="line">		<span class="comment">// 如果某个分片id相对的数据服务节点地址为空，说明该分片丢失</span></span><br><span class="line">		<span class="comment">// 取一个随机数据服务节点补上</span></span><br><span class="line">		<span class="keyword">if</span> server == <span class="string">""</span> &#123;</span><br><span class="line">			locateInfo[i] = dataServers[<span class="number">0</span>]</span><br><span class="line">			dataServers = dataServers[<span class="number">1</span>:]</span><br><span class="line">			<span class="keyword">continue</span></span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">// 数据服务节点存在，调用objectstream.NewGetStream打开一个对象读取流用于读取该分片数据</span></span><br><span class="line">		reader, e := objectstream.NewGetStream(server, fmt.Sprintf(<span class="string">"%s.%d"</span>, hash, i))</span><br><span class="line">		<span class="comment">// 打开的流保存在readers数组相应的元素中</span></span><br><span class="line">		<span class="keyword">if</span> e == <span class="literal">nil</span> &#123;</span><br><span class="line">			readers[i] = reader</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	writers := <span class="built_in">make</span>([]io.Writer, ALL_SHARDS)</span><br><span class="line">	perShard := (size + DATA_SHARDS - <span class="number">1</span>) / DATA_SHARDS</span><br><span class="line">	<span class="keyword">var</span> e error</span><br><span class="line">	<span class="comment">// 遍历readers</span></span><br><span class="line">	<span class="keyword">for</span> i := <span class="keyword">range</span> readers &#123;</span><br><span class="line">		<span class="comment">// 第一个次遍历出现nil的情况</span></span><br><span class="line">		<span class="comment">// 1.该分片数据服务节点地址为空</span></span><br><span class="line">		<span class="comment">// 2.数据服务节点存在但打开流失败</span></span><br><span class="line">		<span class="keyword">if</span> readers[i] == <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="comment">// 某个元素为nil,调用NewTempPutStream创建相应的临时对象写入流用于恢复分片</span></span><br><span class="line">			<span class="comment">// 打开的流保存到writers数组相应元素中</span></span><br><span class="line">			writers[i], e = objectstream.NewTempPutStream(locateInfo[i], fmt.Sprintf(<span class="string">"%s.%d"</span>, hash, i), perShard)</span><br><span class="line">			<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">				<span class="keyword">return</span> <span class="literal">nil</span>, e</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 处理完成，readers和writers数组形成互补关系</span></span><br><span class="line">	<span class="comment">// 对于某个分片id，要么在readers中存在相应的读取流，要么在writers中存在相应的写入流</span></span><br><span class="line">	<span class="comment">// 将两个数组以及对象的大小size作为参数调用NewDecoder生成decoder结构体的指针dec</span></span><br><span class="line">	dec := NewDecoder(readers, writers, size)</span><br><span class="line">	<span class="comment">// 将dec作为RSGetStream的内嵌结构体返回</span></span><br><span class="line">	<span class="keyword">return</span> &amp;RSGetStream&#123;dec&#125;, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> decoder <span class="keyword">struct</span> &#123;</span><br><span class="line">	readers   []io.Reader</span><br><span class="line">	writers   []io.Writer</span><br><span class="line">	enc       reedsolomon.Encoder <span class="comment">// 接口，用于RS解码</span></span><br><span class="line">	size      <span class="keyword">int64</span>               <span class="comment">// 对象的大小</span></span><br><span class="line">	cache     []<span class="keyword">byte</span>              <span class="comment">// cache用于缓存读取的数据</span></span><br><span class="line">	cacheSize <span class="keyword">int</span>                 <span class="comment">// cachSize</span></span><br><span class="line">	total     <span class="keyword">int64</span>               <span class="comment">// 当前读了多少字节</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewDecoder</span><span class="params">(readers []io.Reader, writers []io.Writer, size <span class="keyword">int64</span>)</span> *<span class="title">decoder</span></span> &#123;</span><br><span class="line">	<span class="comment">// 调用reedsolomon.New创建4+2 RS码的解码器enc</span></span><br><span class="line">	enc, _ := reedsolomon.New(DATA_SHARDS, PARITY_SHARDS)</span><br><span class="line">	<span class="comment">// 设置decoder结构体中相应属性后返回</span></span><br><span class="line">	<span class="keyword">return</span> &amp;decoder&#123;readers, writers, enc, size, <span class="literal">nil</span>, <span class="number">0</span>, <span class="number">0</span>&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对象GET过程中读取对象数据的流调用的是rs.RSGetStream，实际调用的Read方法也发生了变化：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(d *decoder)</span> <span class="title">Read</span><span class="params">(p []<span class="keyword">byte</span>)</span> <span class="params">(n <span class="keyword">int</span>, err error)</span></span> &#123;</span><br><span class="line">	<span class="comment">// 当cache中没有更多数据时会调用getData方法获取数据</span></span><br><span class="line">	<span class="keyword">if</span> d.cacheSize == <span class="number">0</span> &#123;</span><br><span class="line">		<span class="comment">// getData返回的e不为nil，说明没能获取更多数据</span></span><br><span class="line">		e := d.getData()</span><br><span class="line">		<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="comment">// 返回0和e通知调用方</span></span><br><span class="line">			<span class="keyword">return</span> <span class="number">0</span>, e</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 函数参数p的数组长度</span></span><br><span class="line">	length := <span class="built_in">len</span>(p)</span><br><span class="line">	<span class="keyword">if</span> d.cacheSize &lt; length &#123;</span><br><span class="line">		<span class="comment">// length超出当前缓冲区的数据大小，令length等于缓存的数据大小</span></span><br><span class="line">		length = d.cacheSize</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 将缓存中length长度的数据复制给输入参数p，然后调整缓存，仅保留剩下的部分</span></span><br><span class="line">	d.cacheSize -= length</span><br><span class="line">	<span class="built_in">copy</span>(p, d.cache[:length])</span><br><span class="line">	d.cache = d.cache[length:]</span><br><span class="line">	<span class="comment">// 返回length,通知调用方本次读取一共有多少数据被复制到p中</span></span><br><span class="line">	<span class="keyword">return</span> length, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(d *decoder)</span> <span class="title">getData</span><span class="params">()</span> <span class="title">error</span></span> &#123;</span><br><span class="line">	<span class="comment">// 先判断当前解码的数据大小是否等于对象原始大小</span></span><br><span class="line">	<span class="comment">// 如果已经相等，说明所有数都已经被读取，返回io.EOF</span></span><br><span class="line">	<span class="keyword">if</span> d.total == d.size &#123;</span><br><span class="line">		<span class="keyword">return</span> io.EOF</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 如果还有数需要读取，创建一个长度为6的数组</span></span><br><span class="line">	<span class="comment">// 每个元素都是一个字节数组，用于保存相应分片中读取的数据</span></span><br><span class="line">	shards := <span class="built_in">make</span>([][]<span class="keyword">byte</span>, ALL_SHARDS)</span><br><span class="line">	repairIds := <span class="built_in">make</span>([]<span class="keyword">int</span>, <span class="number">0</span>)</span><br><span class="line">	<span class="comment">// 遍历6个shards</span></span><br><span class="line">	<span class="keyword">for</span> i := <span class="keyword">range</span> shards &#123;</span><br><span class="line">		<span class="comment">// 若某个分片对应的reader为nil，说明该分片已经丢失</span></span><br><span class="line">		<span class="keyword">if</span> d.readers[i] == <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="comment">// 在repairIds中添加该分片的id</span></span><br><span class="line">			repairIds = <span class="built_in">append</span>(repairIds, i)</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			<span class="comment">// 对应的reader不为nil，那么对应的shards需要被初始化为一个长度为8000的字节数组</span></span><br><span class="line">			shards[i] = <span class="built_in">make</span>([]<span class="keyword">byte</span>, BLOCK_PER_SHARD)</span><br><span class="line">			<span class="comment">// 调用io.ReadFull从reader中完整读取8000字节的数据保存在shards中。</span></span><br><span class="line">			n, e := io.ReadFull(d.readers[i], shards[i])</span><br><span class="line">			<span class="comment">// 如果发生了非EOF失败，该shards被置为nil</span></span><br><span class="line">			<span class="keyword">if</span> e != <span class="literal">nil</span> &amp;&amp; e != io.EOF &amp;&amp; e != io.ErrUnexpectedEOF &#123;</span><br><span class="line">				shards[i] = <span class="literal">nil</span></span><br><span class="line">				<span class="comment">// 读取数据长度n不到8000字节，将shards实际的长度缩减为n</span></span><br><span class="line">			&#125; <span class="keyword">else</span> <span class="keyword">if</span> n != BLOCK_PER_SHARD &#123;</span><br><span class="line">				shards[i] = shards[i][:n]</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 调用成员enc的Reconstruct方法尝试将被置为nil的shards恢复出来</span></span><br><span class="line">	e := d.enc.Reconstruct(shards)</span><br><span class="line">	<span class="comment">// 若发生错误，说明对象遭到不可恢复的破坏，返回错误给上层</span></span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> e</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 恢复成功，6个shards中都保存了对应分片的正确数据</span></span><br><span class="line">	<span class="comment">// 遍历repairIds，将需要恢复的分片数据写入到相应的writer</span></span><br><span class="line">	<span class="keyword">for</span> i := <span class="keyword">range</span> repairIds &#123;</span><br><span class="line">		id := repairIds[i]</span><br><span class="line">		d.writers[id].Write(shards[id])</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 遍历4个数据分片</span></span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; DATA_SHARDS; i++ &#123;</span><br><span class="line">		shardSize := <span class="keyword">int64</span>(<span class="built_in">len</span>(shards[i]))</span><br><span class="line">		<span class="keyword">if</span> d.total+shardSize &gt; d.size &#123;</span><br><span class="line">			shardSize -= d.total + shardSize - d.size</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">// 将每个分片中的数据添加到缓存cache中</span></span><br><span class="line">		d.cache = <span class="built_in">append</span>(d.cache, shards[i][:shardSize]...)</span><br><span class="line">		<span class="comment">// 修改缓存当前的大小cacheSize</span></span><br><span class="line">		d.cacheSize += <span class="keyword">int</span>(shardSize)</span><br><span class="line">		<span class="comment">// 修改当前已经读取的全部数据的大小total</span></span><br><span class="line">		d.total += shardSize</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="数据服务"><a href="#数据服务" class="headerlink" title="数据服务"></a>数据服务</h5><p>数据服务的locate包：由于在磁盘上保存的对象文件名格式发生了变化，locate的实现也有相应变化：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> objects = <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="keyword">string</span>]<span class="keyword">int</span>)</span><br><span class="line"><span class="keyword">var</span> mutex sync.Mutex</span><br><span class="line"></span><br><span class="line"><span class="comment">// 告知某个对象是否存在，同时告知本节点保存的是该对象哪个分片</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Locate</span><span class="params">(hash <span class="keyword">string</span>)</span> <span class="title">int</span></span> &#123;</span><br><span class="line">	mutex.Lock()</span><br><span class="line">	id, ok := objects[hash]</span><br><span class="line">	mutex.Unlock()</span><br><span class="line">	<span class="keyword">if</span> !ok &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> id</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 将对象及其分片id加入缓存</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Add</span><span class="params">(hash <span class="keyword">string</span>, id <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">	mutex.Lock()</span><br><span class="line">	objects[hash] = id</span><br><span class="line">	mutex.Unlock()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Del</span><span class="params">(hash <span class="keyword">string</span>)</span></span> &#123;</span><br><span class="line">	mutex.Lock()</span><br><span class="line">	<span class="built_in">delete</span>(objects, hash)</span><br><span class="line">	mutex.Unlock()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">StartLocate</span><span class="params">()</span></span> &#123;</span><br><span class="line">	q := rabbitmq.New(os.Getenv(<span class="string">"RABBITMQ_SERVER"</span>))</span><br><span class="line">	<span class="keyword">defer</span> q.Close()</span><br><span class="line">	q.Bind(<span class="string">"dataServers"</span>)</span><br><span class="line">	c := q.Consume()</span><br><span class="line">	<span class="keyword">for</span> msg := <span class="keyword">range</span> c &#123;</span><br><span class="line">		<span class="comment">// 读取来自接口服务需要定位的对象散列值hash</span></span><br><span class="line">		hash, e := strconv.Unquote(<span class="keyword">string</span>(msg.Body))</span><br><span class="line">		<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="built_in">panic</span>(e)</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">// 调用Locate获得分片id</span></span><br><span class="line">		id := Locate(hash)</span><br><span class="line">		<span class="keyword">if</span> id != <span class="number">-1</span> &#123;</span><br><span class="line">			<span class="comment">// id不为-1,将自身的节点监听地址和id打包成一个types.Locate Message结构体作为反馈消息发送</span></span><br><span class="line">			q.Send(msg.ReplyTo, types.LocateMessage&#123;Addr: os.Getenv(<span class="string">"LISTEN_ADDRESS"</span>), Id: id&#125;)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">CollectObjects</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="comment">// 获取存储目录下的所有文件</span></span><br><span class="line">	files, _ := filepath.Glob(os.Getenv(<span class="string">"STORAGE_ROOT"</span>) + <span class="string">"/objects/*"</span>)</span><br><span class="line">	<span class="keyword">for</span> i := <span class="keyword">range</span> files &#123;</span><br><span class="line">		<span class="comment">// 以'.'分割其基本文件名，获得对象的散列值hash以及分片id</span></span><br><span class="line">		file := strings.Split(filepath.Base(files[i]), <span class="string">"."</span>)</span><br><span class="line">		<span class="keyword">if</span> <span class="built_in">len</span>(file) != <span class="number">3</span> &#123;</span><br><span class="line">			<span class="built_in">panic</span>(files[i])</span><br><span class="line">		&#125;</span><br><span class="line">		hash := file[<span class="number">0</span>]</span><br><span class="line">		id, e := strconv.Atoi(file[<span class="number">1</span>])</span><br><span class="line">		<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="built_in">panic</span>(e)</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">// 将对象的散列值hash以及分片id加入定位缓存</span></span><br><span class="line">		objects[hash] = id</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>数据服务的temp包：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(t *tempInfo)</span> <span class="title">hash</span><span class="params">()</span> <span class="title">string</span></span> &#123;</span><br><span class="line">	s := strings.Split(t.Name, <span class="string">"."</span>)</span><br><span class="line">	<span class="keyword">return</span> s[<span class="number">0</span>]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(t *tempInfo)</span> <span class="title">id</span><span class="params">()</span> <span class="title">int</span></span> &#123;</span><br><span class="line">	s := strings.Split(t.Name, <span class="string">"."</span>)</span><br><span class="line">	id, _ := strconv.Atoi(s[<span class="number">1</span>])</span><br><span class="line">	<span class="keyword">return</span> id</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">commitTempObject</span><span class="params">(datFile <span class="keyword">string</span>, tempinfo *tempInfo)</span></span> &#123;</span><br><span class="line">	<span class="comment">// 读取临时对象的数据并计算散列值&lt;hash of shard X&gt;</span></span><br><span class="line">	f, _ := os.Open(datFile)</span><br><span class="line">	d := url.PathEscape(utils.CalculateHash(f))</span><br><span class="line">	f.Close()</span><br><span class="line">	os.Rename(datFile, os.Getenv(<span class="string">"STORAGE_ROOT"</span>)+<span class="string">"/objects/"</span>+tempinfo.Name+<span class="string">"."</span>+d)</span><br><span class="line">	<span class="comment">// 调用locate.Add,以&lt;hash&gt;为键，分片的id为值添加进定位缓存</span></span><br><span class="line">	locate.Add(tempinfo.hash(), tempinfo.id())</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>数据服务的objects包：</p>
+<p>getFile函数发生改变：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">getFile</span><span class="params">(name <span class="keyword">string</span>)</span> <span class="title">string</span></span> &#123;</span><br><span class="line">	<span class="comment">// 在$STORAGE_ROOT/objects/目录下查找所有以&lt;hash&gt;.X开头的文件</span></span><br><span class="line">	files, _ := filepath.Glob(os.Getenv(<span class="string">"STORAGE_ROOT"</span>) + <span class="string">"/objects/"</span> + name + <span class="string">".*"</span>)</span><br><span class="line">	<span class="comment">// 找不到，返回空字符串</span></span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">len</span>(files) != <span class="number">1</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="string">""</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 找到之后计算散列值</span></span><br><span class="line">	file := files[<span class="number">0</span>]</span><br><span class="line">	h := sha256.New()</span><br><span class="line">	sendFile(h, file)</span><br><span class="line">	d := url.PathEscape(base64.StdEncoding.EncodeToString(h.Sum(<span class="literal">nil</span>)))</span><br><span class="line">	hash := strings.Split(file, <span class="string">"."</span>)[<span class="number">2</span>]</span><br><span class="line">	<span class="comment">// 如果与&lt;hash of shard X&gt;的值不匹配则删除该对象并返回空字符串</span></span><br><span class="line">	<span class="keyword">if</span> d != hash &#123;</span><br><span class="line">		log.Println(<span class="string">"object hash mismatch, remove"</span>, file)</span><br><span class="line">		locate.Del(hash)</span><br><span class="line">		os.Remove(file)</span><br><span class="line">		<span class="keyword">return</span> <span class="string">""</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 否则返回对象的文件名</span></span><br><span class="line">	<span class="keyword">return</span> file</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h4><p>本版本所有代码及测试用例可见<a href="https://github.com/dongshifu/distributed_object_storage_dong/tree/main/v4" target="_blank" rel="noopener">添加数据冗余和修复的分布式对象存储系统</a></p>
+<h4 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h4><p>《分布式对象存储—原理、架构及Go语言实现》</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" rel="tag"># 分布式</a>
+              <a href="/tags/go/" rel="tag"># go</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/03/21/http-1/" rel="prev" title="HTTP需要注意的知识点">
+      <i class="fa fa-chevron-left"></i> HTTP需要注意的知识点
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/04/10/%E5%88%86%E5%B8%83%E5%BC%8F%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8-6%E6%96%AD%E7%82%B9%E7%BB%AD%E4%BC%A0/" rel="next" title="断点续传">
+      断点续传 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+      <div class="tabs tabs-comment">
+        <ul class="nav-tabs">
+            <li class="tab"><a href="#comment-gitalk">gitalk</a></li>
+            <li class="tab"><a href="#comment-livere">livere</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane gitalk" id="comment-gitalk">
+              <div class="comments" id="gitalk-container"></div>
+            </div>
+            <div class="tab-pane livere" id="comment-livere">
+              
+  <div class="comments" id="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81MjkwMy8yOTM4MA=="></div>
+  </div>
+  
+            </div>
+        </div>
+      </div>
+      <script>
+        window.addEventListener('tabs:register', () => {
+          let activeClass = 'gitalk';
+            activeClass = localStorage.getItem('comments_active') || activeClass;
+          if (activeClass) {
+            let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+            if (activeTab) {
+              activeTab.click();
+            }
+          }
+        });
+        window.addEventListener('tabs:click', event => {
+          let commentClass = event.target.classList[1];
+          localStorage.setItem('comments_active', commentClass);
+        });
+      </script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#数据冗余和即时修复"><span class="nav-number">1.</span> <span class="nav-text">数据冗余和即时修复</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#数据冗余"><span class="nav-number">1.1.</span> <span class="nav-text">数据冗余</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#数据丢失和数据不可用"><span class="nav-number">1.1.1.</span> <span class="nav-text">数据丢失和数据不可用</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#数据冗余-1"><span class="nav-number">1.1.2.</span> <span class="nav-text">数据冗余</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#对象存储系统的数据冗余策略"><span class="nav-number">1.1.3.</span> <span class="nav-text">对象存储系统的数据冗余策略</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#数据冗余的实现"><span class="nav-number">1.2.</span> <span class="nav-text">数据冗余的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#对象PUT流程"><span class="nav-number">1.2.1.</span> <span class="nav-text">对象PUT流程</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#对象GET流程"><span class="nav-number">1.2.2.</span> <span class="nav-text">对象GET流程</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#具体实现"><span class="nav-number">1.3.</span> <span class="nav-text">具体实现</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#接口服务的locate包"><span class="nav-number">1.3.1.</span> <span class="nav-text">接口服务的locate包</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#接口服务的heartbeat包"><span class="nav-number">1.3.2.</span> <span class="nav-text">接口服务的heartbeat包</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#接口服务的objects包"><span class="nav-number">1.3.3.</span> <span class="nav-text">接口服务的objects包</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#PUT相关函数"><span class="nav-number">1.3.3.1.</span> <span class="nav-text">PUT相关函数</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#GET相关函数"><span class="nav-number">1.3.3.2.</span> <span class="nav-text">GET相关函数</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#数据服务"><span class="nav-number">1.3.4.</span> <span class="nav-text">数据服务</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#测试"><span class="nav-number">1.4.</span> <span class="nav-text">测试</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考"><span class="nav-number">1.5.</span> <span class="nav-text">参考</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ShifuDong"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">ShifuDong</p>
+  <div class="site-description" itemprop="description">记录生活， 记录学习， 分享知识</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">65</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/mailto:sfd_w@foxmail.com" title="E-Mail → mailto:sfd_w@foxmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ShifuDong</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.0.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.5.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.getAttribute('pjax') !== null) {
+      element.setAttribute('pjax', '');
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'a6ee5b68c97a3db64850',
+      clientSecret: '1dfa06f32032431e4af79b80f9ddf9dfd13dbda2',
+      repo: 'dongshifu.github.io',
+      owner: 'dongshifu',
+      admin: ['dongshifu'],
+      id: 'ab30aaf6694c5b4983f4a11dd38777e4',
+        language: 'zh-CN',
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script>
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+</script>
+
+    </div>
+</body>
+</html>
