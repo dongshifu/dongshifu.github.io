@@ -203,6 +203,211 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/02/Go%20%E6%8E%A5%E5%8F%A3_2Go%E8%AF%AD%E8%A8%80%E4%B8%8E%E9%B8%AD%E5%AD%90%E7%B1%BB%E5%9E%8B%E7%9A%84%E5%85%B3%E7%B3%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/06/02/Go%20%E6%8E%A5%E5%8F%A3_2Go%E8%AF%AD%E8%A8%80%E4%B8%8E%E9%B8%AD%E5%AD%90%E7%B1%BB%E5%9E%8B%E7%9A%84%E5%85%B3%E7%B3%BB/" class="post-title-link" itemprop="url">Go鸭子类型</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-06-02 21:30:16" itemprop="dateCreated datePublished" datetime="2020-06-02T21:30:16+08:00">2020-06-02</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-04-08 10:58:44" itemprop="dateModified" datetime="2021-04-08T10:58:44+08:00">2021-04-08</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Go/" itemprop="url" rel="index">
+                    <span itemprop="name">Go</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="鸭子类型"><a href="#鸭子类型" class="headerlink" title="鸭子类型"></a>鸭子类型</h3><p>维基百科: 如果某个东西长得像鸭子，像鸭子一样游泳，像鸭子一样嘎嘎叫，那它就可以被看成是一只鸭子。</p>
+<ul>
+<li><p><code>Duck Typing</code>，鸭子类型，是<strong>动态编程语言的一种对象推断策略，它更关注对象能如何被使用，而不是对象的类型本身</strong>。</p>
+</li>
+<li><p>Go 语言作为一门静态语言，它通过<strong>通过接口的方式完美支持鸭子类型</strong>。</p>
+</li>
+</ul>
+<h3 id="动态语言实现"><a href="#动态语言实现" class="headerlink" title="动态语言实现"></a>动态语言实现</h3><p>动态语言的特点：</p>
+<blockquote>
+<p>变量绑定的类型是不确定的，在运行期间才能确定<br>函数和方法可以接收任何类型的参数，且调用时不检查参数类型<br>不需要实现接口</p>
+</blockquote>
+<p>在动态语言 python 中，定义一个这样的函数：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">hello_world</span><span class="params">(coder)</span>:</span></span><br><span class="line">    coder.say_hello()</span><br></pre></td></tr></table></figure>
+<p>当调用此函数的时候，可以传入任意类型，只要它实现了 <code>say_hello()</code> 函数就可以。如果没有实现，<strong>运行过程</strong>中会出现错误。</p>
+<h3 id="静态语言实现"><a href="#静态语言实现" class="headerlink" title="静态语言实现"></a>静态语言实现</h3><p>而在静态语言如 Java, C++ 中，必须要<strong>显示地声明实现了某个接后，才能用在任何需要这个接口的地方。</strong> <strong>如果你在程序中调用 <code>hello_world</code> 函数，却传入了一个根本就没有实现 <code>say_hello()</code> 的类型，那在编译阶段就不会通过。</strong>这也是静态语言比动态语言更安全的原因。</p>
+<p>动态语言和静态语言的差别在此就有所体现。<strong>静态语言在编译期间就能发现类型不匹配的错误，不像动态语言，必须要运行到那一行代码才会报错。</strong></p>
+<p>静态语言要求程序员在编码阶段就要按照规定来编写程序，为每个变量规定数据类型，这在某种程度上，加大了工作量，也加长了代码量。动态语言则没有这些要求，可以让人更专注在业务上，代码也更短，写起来更快，这一点，eg. python 。</p>
+<h3 id="Go鸭子类型实现"><a href="#Go鸭子类型实现" class="headerlink" title="Go鸭子类型实现"></a>Go鸭子类型实现</h3><p>Go 语言作为一门现代静态语言，是有后发优势的。它<strong>引入了动态语言的便利，同时又会进行静态语言的类型检查</strong>，写起来是非常高效的。</p>
+<p>Go 采用了折中的做法：<strong>不要求类型显示地声明实现了某个接口，只要实现了相关的方法即可，编译器就能检测到。</strong></p>
+<p>例子：</p>
+<p>定义一个接口，和使用此接口作为参数的函数：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> IGreeting <span class="keyword">interface</span> &#123;</span><br><span class="line">	sayHello()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">sayHello</span><span class="params">(i IGreeting)</span></span> &#123;</span><br><span class="line">	i.sayHello()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>定义两个结构体：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Go <span class="keyword">struct</span> &#123;&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(g Go)</span> <span class="title">sayHello</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Println(<span class="string">"Hi, I am GO!"</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> PHP <span class="keyword">struct</span> &#123;&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p PHP)</span> <span class="title">sayHello</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Println(<span class="string">"Hi, I am PHP!"</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最后，在 main 函数里调用 sayHello() 函数：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	golang := Go&#123;&#125;</span><br><span class="line">	php := PHP&#123;&#125;</span><br><span class="line"></span><br><span class="line">	sayHello(golang)</span><br><span class="line">	sayHello(php)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>程序输出：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Hi, I am GO!</span><br><span class="line">Hi, I am PHP!</span><br></pre></td></tr></table></figure>
+<p><strong>在 main 函数中，调用 sayHello() 函数时，传入了 <code>golang, php</code> 对象，它们并没有显式地声明实现了 IGreeting 类型，只是实现了接口所规定的 sayHello() 函数。实际上，编译器在调用 sayHello() 函数时，会隐式地将 <code>golang, php</code> 对象转换成 IGreeting 类型，这也是静态语言的类型检查功能。</strong></p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>鸭子类型是一种动态语言的风格，在这种风格中，<strong>一个对象有效的语义，不是由继承自特定的类或实现特定的接口，而是由它”当前方法和属性的集合”决定。Go 作为一种静态语言，通过接口实现了 <code>鸭子类型</code>，实际上是 Go 的编译器在其中作了隐匿的转换工作。</strong></p>
+<h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><p>【Golang 与鸭子类型，讲得比较好】<a href="https://blog.csdn.net/cszhouwei/article/details/33741731" target="_blank" rel="noopener">https://blog.csdn.net/cszhouwei/article/details/33741731</a></p>
+<p>【各种面向对象的名词】<a href="https://cyent.github.io/golang/other/oo/" target="_blank" rel="noopener">https://cyent.github.io/golang/other/oo/</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/01/Go%20%E6%8E%A5%E5%8F%A3_1Go%E4%B8%8E%20C++%20%E6%8E%A5%E5%8F%A3%E6%9C%89%E4%BD%95%E5%BC%82%E5%90%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/06/01/Go%20%E6%8E%A5%E5%8F%A3_1Go%E4%B8%8E%20C++%20%E6%8E%A5%E5%8F%A3%E6%9C%89%E4%BD%95%E5%BC%82%E5%90%8C/" class="post-title-link" itemprop="url">Go接口与C++接口的异同</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-06-01 21:29:16" itemprop="dateCreated datePublished" datetime="2020-06-01T21:29:16+08:00">2020-06-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-04-08 10:58:26" itemprop="dateModified" datetime="2021-04-08T10:58:26+08:00">2021-04-08</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Go/" itemprop="url" rel="index">
+                    <span itemprop="name">Go</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="接口设计的意义"><a href="#接口设计的意义" class="headerlink" title="接口设计的意义"></a>接口设计的意义</h3><ul>
+<li>泛型编程：使用 interface 可以实现泛型编程</li>
+<li>隐藏具体实现：设计一个函数返回一个 interface，那么<strong>只能通过 interface 里面的方法来做一些操作，但是内部的具体实现是完全不知道的。</strong></li>
+</ul>
+<h3 id="golang中的接口"><a href="#golang中的接口" class="headerlink" title="golang中的接口"></a>golang中的接口</h3><p>接口定义了一种<strong>规范，描述了类的行为和功能，而不做具体实现</strong>。</p>
+<p>Interface定义了一个或一组method(s)，<strong>这些method(s)只有函数签名，没有具体的实现代码</strong>.</p>
+<p>若某个数据类型实现了Interface中定义的那些被称为”methods”的函数，则称这些<strong>数据类型实现（implement）了interface。</strong></p>
+<h3 id="C-中的接口实现方法"><a href="#C-中的接口实现方法" class="headerlink" title="C++中的接口实现方法"></a>C++中的接口实现方法</h3><p>C++ 的接口是使用<strong>抽象类</strong>来实现的，如果类中至少有一个函数被声明为<strong>纯虚函数</strong>，则这个类就是抽象类。<strong>纯虚函数是通过在声明中使用 “= 0” 来指定的</strong>。例如：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Shape</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">   <span class="keyword">public</span>:</span><br><span class="line">      <span class="comment">// 纯虚函数</span></span><br><span class="line">      <span class="function"><span class="keyword">virtual</span> <span class="keyword">double</span> <span class="title">getArea</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">   <span class="keyword">private</span>:</span><br><span class="line">      <span class="built_in">string</span> name;      <span class="comment">// 名称</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>设计抽象类的目的:<strong>为了给其他类提供一个可以继承的适当的基类。抽象类不能被用于实例化对象，它只能作为接口使用。</strong></p>
+<p><strong>派生类需要明确地声明它继承自基类，并且需要实现基类中所有的纯虚函数</strong>。</p>
+<h3 id="golang接口与C-接口区别"><a href="#golang接口与C-接口区别" class="headerlink" title="golang接口与C++接口区别"></a>golang接口与C++接口区别</h3><ul>
+<li><p>C++ 定义接口的方式称为“侵入式”</p>
+</li>
+<li><p>Go 采用的是 “非侵入式”，<strong>不需要显式声明，只需要实现接口定义的函数，编译器自动会识别。</strong></p>
+</li>
+<li><p>底层实现不同</p>
+<ul>
+<li>实现方式：C++ 通过<strong>虚函数表来实现基类调用派生类的函数</strong>；而 Go 通过 <code>itab</code> 中的 <code>fun</code> 字段来实现接口变量调用实体类型的函数。</li>
+<li>编译生成过程：C++ 中的<strong>虚函数表是在编译期生成</strong>的；而 Go 的 <code>itab</code> 中的 <code>fun</code> 字段是在<strong>运行期间动态生成</strong>的。原因在于，<strong>Go 中实体类型可能会无意中实现 N 多接口，很多接口并不是本来需要的，所以不能为类型实现的所有接口都生成一个 <code>itab</code></strong>， 这也是“非侵入式”带来的影响；这在 C++ 中是不存在的，因为派生需要显示声明它继承自哪个基类。</li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/01/linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-8/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -987,213 +1192,6 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/05/23/linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-2/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/05/23/linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-2/" class="post-title-link" itemprop="url">linux网络编程-socket模型创建</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-05-23 10:04:33" itemprop="dateCreated datePublished" datetime="2020-05-23T10:04:33+08:00">2020-05-23</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-04-09 09:29:14" itemprop="dateModified" datetime="2021-04-09T09:29:14+08:00">2021-04-09</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/linux%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index">
-                    <span itemprop="name">linux网络编程</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="socket模型创建"><a href="#socket模型创建" class="headerlink" title="socket模型创建"></a>socket模型创建</h3><p><img src="https://api2.mubu.com/v3/document_image/adf756a3-757c-4204-a5d5-4484f2bd1600-11197877.jpg" alt="socket模型创建"></p>
-<ul>
-<li><p>socket()—创建一个套接字, 用fd或文件句柄索引</p>
-</li>
-<li><p>bind()—绑定IP和port</p>
-</li>
-<li><p>listen()—设置<strong>监听上限</strong>(同时与Server建立连接数)</p>
-</li>
-<li><p>accpet()—<strong>阻塞监听</strong>客户端连接(传入一个上面创建的套接字, 传出一个连接的套接字)</p>
-</li>
-<li><p>在客户端中的connect()中绑定IP和port, 并建立连接</p>
-</li>
-</ul>
-<h4 id="socket函数"><a href="#socket函数" class="headerlink" title="socket函数"></a>socket函数</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt; /* See NOTES */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">socket</span><span class="params">(<span class="keyword">int</span> domain, <span class="keyword">int</span> type, <span class="keyword">int</span> protocol)</span></span>;</span><br><span class="line">参数详解：</span><br><span class="line">domain:</span><br><span class="line">	AF_INET 大多数用来产生socket的协议，使用TCP或UDP来传输，用IPv4的地址</span><br><span class="line">	AF_INET6 与上面类似，不过是来用IPv6的地址</span><br><span class="line">	AF_UNIX 本地协议，使用在Unix和Linux系统上，一般都是当客户端和服务器在同一台及其上的时候使用</span><br><span class="line">        </span><br><span class="line">type:</span><br><span class="line">	SOCK_STREAM 这个协议是按照顺序的、可靠的、数据完整的基于字节流的连接。这是一个使用最多的socket类型，这个socket是使用TCP来进行传输。</span><br><span class="line">	SOCK_DGRAM 这个协议是无连接的、固定长度的传输调用。该协议是不可靠的，使用UDP来进行它的连接。</span><br><span class="line">    SOCK_SEQPACKET该协议是双线路的、可靠的连接，发送固定长度的数据包进行传输。必须把这个包完整的接受才能进行读取。</span><br><span class="line">	SOCK_RAW socket类型提供单一的网络访问，这个socket类型使用ICMP公共协议。（ping、traceroute使用该协议）</span><br><span class="line">	SOCK_RDM 这个类型是很少使用的，在大部分的操作系统上没有实现，它是提供给数据链路层使用，不保证数据包的顺序</span><br><span class="line">        </span><br><span class="line">protocol:</span><br><span class="line">	传<span class="number">0</span> 表示使用默认协议。</span><br><span class="line">        </span><br><span class="line">返回值：</span><br><span class="line">	成功：返回指向新创建的socket的文件描述符，失败：返回<span class="number">-1</span>，设置errno</span><br></pre></td></tr></table></figure>
-<p><code>socket()</code>打开一个网络通讯端口，如果成功的话，就像<code>open()</code>一样返回一个文件描述符，<strong>应用程序可以像读写文件一样用<code>read/write</code>在网络上收发数据，如果<code>socket()</code>调用出错则返回-1 </strong> <strong>对于IPv4，domain参数指定为AF_INET。对于TCP协议，type参数指定为SOCK_STREAM，表示面向流的传输协议。如果是UDP协议，则type参数指定为SOCK_DGRAM，表示面向数据报的传输协议</strong>。protocol指定为0即可。</p>
-<h4 id="bind函数"><a href="#bind函数" class="headerlink" title="bind函数"></a>bind函数</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt; /* See NOTES */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">bind</span><span class="params">(<span class="keyword">int</span> sockfd, <span class="keyword">const</span> struct sockaddr *addr, <span class="keyword">socklen_t</span> addrlen)</span></span>;</span><br><span class="line"></span><br><span class="line">sockfd：</span><br><span class="line">	socket文件描述符</span><br><span class="line">    </span><br><span class="line">addr: </span><br><span class="line">	构造出IP地址加端口号</span><br><span class="line">        </span><br><span class="line">addrlen:</span><br><span class="line">	<span class="keyword">sizeof</span>(addr)长度</span><br><span class="line">        </span><br><span class="line">返回值：</span><br><span class="line">	成功返回<span class="number">0</span>，失败返回<span class="number">-1</span>, 设置errno</span><br></pre></td></tr></table></figure>
-<p><strong>服务器程序所监听的网络地址和端口号通常是固定不变的，客户端程序得知服务器程序的地址和端口号后就可以向服务器发起连接，因此服务器需要调用bind绑定一个固定的网络地址和端口号。</strong></p>
-<p><code>bind()</code>的作用是将参数sockfd和addr绑定在一起，<strong>使sockfd这个用于网络通讯的文件描述符监听addr所描述的地址和端口号</strong>。<code>struct sockaddr *</code>是一个通用指针类型，<strong><code>addr</code>参数实际上可以接受多种协议的<code>sockaddr</code>结构体，而它们的长度各不相同，所以需要第三个参数addrlen指定结构体的长度</strong>。如：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">servaddr</span>;</span></span><br><span class="line">bzero(&amp;servaddr, <span class="keyword">sizeof</span>(servaddr));</span><br><span class="line">servaddr.sin_family = AF_INET; <span class="comment">//addr.family应该与sofkfd的domain保持一致;</span></span><br><span class="line">servaddr.sin_addr.s_addr = htonl(INADDR_ANY);</span><br><span class="line">servaddr.sin_port = htons(<span class="number">6666</span>); <span class="comment">//端口号为short类型(16bit)</span></span><br></pre></td></tr></table></figure>
-<p>首先将整个结构体清零，然后设置地址类型为AF_INET，<strong>网络地址为INADDR_ANY，这个宏表示本地的任意IP地址</strong>，因为服务器可能有多个网卡，<strong>每个网卡也可能绑定多个IP地址，这样设置可以在所有的IP地址上监听，直到与某个客户端建立了连接时才确定下来到底用哪个IP地址</strong>，端口号为6666。</p>
-<h4 id="listen函数"><a href="#listen函数" class="headerlink" title="listen函数"></a>listen函数</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt; /* See NOTES */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">listen</span><span class="params">(<span class="keyword">int</span> sockfd, <span class="keyword">int</span> backlog)</span></span>;</span><br><span class="line">sockfd:</span><br><span class="line">	socket文件描述符</span><br><span class="line">backlog:</span><br><span class="line">	排队建立<span class="number">3</span>次握手队列和刚刚建立<span class="number">3</span>次握手队列的链接数和</span><br></pre></td></tr></table></figure>
-<p>查看系统默认backlog：<code>cat /proc/sys/net/ipv4/tcp_max_syn_backlog</code></p>
-<p>典型的服务器程序可以同时服务于多个客户端，当有客户端发起连接时，服务器调用的<code>accept()</code>返回并接受这个连接，<strong>如果有大量的客户端发起连接而服务器来不及处理，尚未accept的客户端就处于连接等待状态，listen()声明sockfd处于监听状态，并且最多允许有backlog个客户端处于连接待状态，如果接收到更多的连接请求就忽略。listen()成功返回0，失败返回-1。</strong></p>
-<h4 id="connect函数"><a href="#connect函数" class="headerlink" title="connect函数"></a>connect函数</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt; 					</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">connect</span><span class="params">(<span class="keyword">int</span> sockfd, <span class="keyword">const</span> struct sockaddr *addr, <span class="keyword">socklen_t</span> addrlen)</span></span>;</span><br><span class="line">sockdf:</span><br><span class="line">	socket文件描述符</span><br><span class="line">        </span><br><span class="line">addr:</span><br><span class="line">	传入参数，指定服务器端地址信息，含IP地址和端口号</span><br><span class="line">        </span><br><span class="line">addrlen:</span><br><span class="line">	传入参数,传入<span class="keyword">sizeof</span>(addr)大小</span><br><span class="line">        </span><br><span class="line">返回值：</span><br><span class="line">	成功返回<span class="number">0</span>，失败返回<span class="number">-1</span>，设置errno</span><br></pre></td></tr></table></figure>
-<p>客户端需要调用<code>connect()</code>连接服务器，<strong>connect和bind的参数形式一致，区别在于bind的参数是自己的地址，而connect的参数是对方的地址。connect()成功返回0，出错返回-1。</strong></p>
-<h4 id="accept函数"><a href="#accept函数" class="headerlink" title="accept函数"></a>accept函数</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt; 		</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">accept</span><span class="params">(<span class="keyword">int</span> sockfd, struct sockaddr *addr, <span class="keyword">socklen_t</span> *addrlen)</span></span>;</span><br><span class="line">sockdf:</span><br><span class="line">	socket文件描述符</span><br><span class="line">        </span><br><span class="line">addr:</span><br><span class="line">	传出参数，返回链接客户端地址信息，含IP地址和端口号</span><br><span class="line">        </span><br><span class="line">addrlen:</span><br><span class="line">	传入传出参数（值-结果）,传入<span class="keyword">sizeof</span>(addr)大小，函数返回时返回真正接收到地址结构体的大小</span><br><span class="line">        </span><br><span class="line">返回值：</span><br><span class="line">	成功返回一个新的socket文件描述符，用于和客户端通信，失败返回<span class="number">-1</span>，设置errno</span><br></pre></td></tr></table></figure>
-<p><strong>三次握手完成后，服务器调用accept()接受连接，如果服务器调用accept()时还没有客户端的连接请求，就阻塞等待直到有客户端连接上来。</strong> <strong>addr是一个传出参数，accept()返回时传出客户端的地址和端口号。addrlen参数是一个传入传出参数（value-result argument），传入的是调用者提供的缓冲区addr的长度以避免缓冲区溢出问题，传出的是客户端地址结构体的实际长度（有可能没有占满调用者提供的缓冲区）。如果给addr参数传NULL，表示不关心客户端的地址。</strong></p>
-<p>服务器的结构一般如下：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line">	cliaddr_len = <span class="keyword">sizeof</span>(cliaddr);</span><br><span class="line">	connfd = accept(listenfd, (struct sockaddr *)&amp;cliaddr, &amp;cliaddr_len);</span><br><span class="line">	n = <span class="built_in">read</span>(connfd, buf, MAXLINE);</span><br><span class="line">	......</span><br><span class="line">	<span class="built_in">close</span>(connfd);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>整个是一个<code>while</code>死循环，每次循环处理一个客户端连接。由于<code>cliaddr_len</code>是传入传出参数，每次调用accept()之前应该重新赋初值。<strong><code>accept()</code>的参数<code>listenfd</code>是先前的监听文件描述符，而<code>accept()</code>的返回值是另外一个文件描述符<code>connfd</code>，之后与客户端之间就通过这个<code>connfd</code>通讯，最后关闭<code>connfd</code>断开连接，而不关闭<code>listenfd</code>，再次回到循环开头<code>listenfd</code>仍然用作<code>accept</code>的参数。<code>accept()</code>成功返回一个文件描述符，出错返回-1。</strong></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/05/22/linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-1/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/05/22/linux-%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-1/" class="post-title-link" itemprop="url">linux网络编程-套接字</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-05-22 14:58:18" itemprop="dateCreated datePublished" datetime="2020-05-22T14:58:18+08:00">2020-05-22</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-31 20:00:04" itemprop="dateModified" datetime="2021-03-31T20:00:04+08:00">2021-03-31</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/linux%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index">
-                    <span itemprop="name">linux网络编程</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="套接字"><a href="#套接字" class="headerlink" title="套接字"></a>套接字</h3><p>在Linux环境下，socket用于表示<strong>进程间网络通信的特殊文件类型</strong>。<strong>本质为内核借助缓冲区形成的伪文件。</strong></p>
-<p>既然是文件，那么理所当然的可以<strong>使用文件描述符引用套接字</strong>。与管道类似，Linux系统将其封装成文件的目的是为了统一接口，使得读写套接字和读写文件的操作一致。<strong>区别是管道主要应用于本地进程间通信，而套接字多应用于网络进程间数据的传递。</strong></p>
-<p>在TCP/IP协议中，<strong><code>IP地址+TCP或UDP端口号</code>唯一标识网络通讯中的一个进程。<code>IP地址+端口号</code>就对应一个socket。欲建立连接的两个进程各自有一个socket来标识，那么这两个socket组成的socket pair就唯一标识一个连接。因此可以用Socket来描述网络连接的一对一关系。</strong></p>
-<p>套接字通信原理如下图所示：</p>
-<p><img src="https://api2.mubu.com/v3/document_image/8ba13ca0-290a-4d32-a14d-0f7dcb64b166-11197877.jpg" alt="套接字通信原理"><strong>在网络通信中，套接字一定是成对出现的。</strong> <strong>一端的发送缓冲区对应对端的接收缓冲区</strong>。使用同一个文件描述符绑定发送缓冲区和接收缓冲区。</p>
-<p>一个文件描述符指向一个套接字(该套接字内部由内核借助<strong>两个缓冲区</strong>实现)。</p>
-<h3 id="网络字节序"><a href="#网络字节序" class="headerlink" title="网络字节序"></a>网络字节序</h3><p>内存中的多字节数据相对于内存地址有大端和小端之分，磁盘文件中的多字节数据相对于文件中的偏移地址也有大端小端之分。网络数据流同样有大端小端之分，定义网络数据流的地址过程：<strong>发送主机通常将发送缓冲区中的数据按内存地址从低到高的顺序发出，接收主机把从网络上接到的字节依次保存在接收缓冲区中，也是按内存地址从低到高的顺序保存，因此，网络数据流的地址规定为：先发出的数据是低地址，后发出的数据是高地址。</strong></p>
-<ul>
-<li><p>小端法: 高位存在高地址, 低位存在低地址(计算机本地采用)</p>
-</li>
-<li><p>大端法: 高位存在低地址, 低位存在高地址(网络通信采用)</p>
-</li>
-</ul>
-<p>TCP/IP协议规定，<strong>网络数据流应采用大端字节序，即低地址高字节</strong>。例如，在UDP段格式，地址0-1是16位的源端口号，如果这个端口号是1000（0x3e8），则地址0是0x03，地址1是0xe8，也就是先发0x03，再发0xe8，这16位在发送主机的缓冲区中也应该是低地址存0x03，高地址存0xe8。但是，如果发送主机是小端字节序的，这16位被解释成0xe803，而不是1000。因此，发送主机把1000填到发送缓冲区之前需要做字节序的转换。</p>
-<p>为使网络程序具有可移植性，使同样的C代码在大端和小端计算机上编译后都能正常运行，可以调用以下库函数做<strong>网络字节序和主机字节序的转换</strong>：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;arpa/inet.h&gt;</span></span></span><br><span class="line"><span class="comment">//h表示host，n表示network，l表示32位长整数，s表示16位短整数。</span></span><br><span class="line"><span class="keyword">uint32_t</span> htonl(<span class="keyword">uint32_t</span> hostlong);	<span class="comment">//主要针对IP(host to network)</span></span><br><span class="line"><span class="keyword">uint16_t</span> htons(<span class="keyword">uint16_t</span> hostshort);	<span class="comment">//主要针对port</span></span><br><span class="line"><span class="keyword">uint32_t</span> ntohl(<span class="keyword">uint32_t</span> netlong);</span><br><span class="line"><span class="keyword">uint16_t</span> ntohs(<span class="keyword">uint16_t</span> netshort);</span><br></pre></td></tr></table></figure>
-<p>如果主机是小端字节序，这些函数将参数做相应的大小端转换然后返回，如果主机是大端字节序，这些函数不做转换，将参数原封不动地返回。</p>
-<h3 id="IP地址转换函数"><a href="#IP地址转换函数" class="headerlink" title="IP地址转换函数"></a>IP地址转换函数</h3><p>由于如<code>192.168.45.2</code>的IP地址为<strong>点分十进制表示</strong>, 需要转化为<code>uint32_t</code>型, 有现成的函数(IPv4和IPv6都可以转换，函数接口是void *addrptr):</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">inet_pton</span><span class="params">(<span class="keyword">int</span> af,<span class="keyword">const</span> <span class="keyword">char</span>* src,<span class="keyword">void</span>* dst)</span></span>;<span class="comment">//p表示点分十进制的ip,n为网络上的二进制ip</span></span><br><span class="line"><span class="comment">//参数 af: AF_INET/AF_INET6</span></span><br><span class="line"><span class="comment">//src:传入参数, 待转换的点分十进制的IP地址</span></span><br><span class="line"><span class="comment">//dst:传出参数, 转换后符合网络字节序的IP地址</span></span><br><span class="line"><span class="comment">//返回值：成功返回1，若参2无效返回0(异常)，失败返回-1</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">const</span> <span class="keyword">char</span>* <span class="title">inet_ntop</span><span class="params">(<span class="keyword">int</span> af,<span class="keyword">const</span> <span class="keyword">char</span>* src,<span class="keyword">char</span>* dst,<span class="keyword">socklen_t</span> <span class="built_in">size</span>)</span></span>;</span><br><span class="line"><span class="comment">//src:传入参数, 待转换的网络字节序的IP地址</span></span><br><span class="line"><span class="comment">//dst:传出参数, 转换后的点分十进制IP地址, 是一块缓冲区</span></span><br><span class="line"><span class="comment">//size指定了缓冲区的大小</span></span><br><span class="line"><span class="comment">//返回值：成功返回dst指针，失败返回NULL指针, 设置errorno</span></span><br></pre></td></tr></table></figure>
-<h3 id="sockaddr地址结构"><a href="#sockaddr地址结构" class="headerlink" title="sockaddr地址结构"></a>sockaddr地址结构</h3><p>Pv4和IPv6的地址格式定义在<code>netinet/in.h</code>中，IPv4地址用<code>sockaddr_in</code>结构体表示，包括16位端口号和32位IP地址，IPv6地址用<code>sockaddr_in6</code>结构体表示，包括16位端口号、128位IP地址和一些控制字段。UNIX Domain Socket的地址格式定义在<code>sys/un.h</code>中，用<code>sock-addr_un</code>结构体表示。</p>
-<p><img src="https://api2.mubu.com/v3/document_image/83a529a8-cf4f-4c1d-9d00-d0d8862c2964-11197877.jpg" alt="sockaddr地址结构"></p>
-<p>bind函数原型：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">bind</span><span class="params">(<span class="keyword">int</span> sockfd,<span class="keyword">const</span> struct sockaddr* addr,<span class="keyword">socklen_t</span> addrlen)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*struct sockaddr是早已废弃的数据结构,已不再使用,用新的需要强转*/</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">addr</span>;</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">bind</span><span class="params">(<span class="keyword">int</span> sockfd,(struct sockaddr*)&amp;addr,<span class="built_in">size</span>)</span></span>;</span><br></pre></td></tr></table></figure>
-<p><code>sockaddr_in</code>相关定义：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*相关结构体定义,在man 7 ip*/</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span>&#123;</span></span><br><span class="line">	<span class="keyword">sa_family_t</span>		sin_family;</span><br><span class="line">	<span class="keyword">in_port_t</span>		sin_port;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">in_addr</span>	<span class="title">sin_addr</span>;</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">in_addr</span>&#123;</span></span><br><span class="line">    <span class="keyword">uint32_t</span> s_addr;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>初始化方法:</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">addr.sin_family=AF_INET/AF_INET6;</span><br><span class="line">addr.sin_port=htons(<span class="number">9527</span>);					<span class="comment">//端口号为short类型(16bit)</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> dst;</span><br><span class="line">inet_pton(AF_INET,<span class="string">"192.168.10.2"</span>,(<span class="keyword">void</span>*)&amp;dst);</span><br><span class="line">addr.sin_addr.s_addr=dst;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*或者采取下面的方法*/</span></span><br><span class="line">addr.sin_addr.s_addr=htonl(INADDR_ANY)		<span class="comment">//取出系统中任意有效的IP地址</span></span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
@@ -1244,7 +1242,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">65</span>
+          <span class="site-state-item-count">67</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

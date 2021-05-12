@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="alternate" href="/atom.xml" title="ShifuDong" type="application/atom+xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.5.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":"flat"},
+    back2top: {"enable":true,"sidebar":true,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":5,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="数据维护对象存储系统的长期运行离不开对系统的维护，系统维护包括3个方面:硬件、软件和数据维护。硬件维护包括现有硬件的维修、更换和升级以及新硬件的添加等;软件维护包括错误原因的调查和修复，软件的升级、回滚和全新的安装部署等;数据维护则包括数据的修复、过期数据的删除等。 硬件和软件方面的维护通常有一整套处理流程，手动或自动分批执行，确保整个系统在部分维护的情况下的可用性。 数据维护主要通过软件执行预先">
+<meta name="keywords" content="分布式,go">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据维护">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2021&#x2F;05&#x2F;02&#x2F;%E5%88%86%E5%B8%83%E5%BC%8F%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8-8%E6%95%B0%E6%8D%AE%E7%BB%B4%E6%8A%A4&#x2F;index.html">
+<meta property="og:site_name" content="ShifuDong">
+<meta property="og:description" content="数据维护对象存储系统的长期运行离不开对系统的维护，系统维护包括3个方面:硬件、软件和数据维护。硬件维护包括现有硬件的维修、更换和升级以及新硬件的添加等;软件维护包括错误原因的调查和修复，软件的升级、回滚和全新的安装部署等;数据维护则包括数据的修复、过期数据的删除等。 硬件和软件方面的维护通常有一整套处理流程，手动或自动分批执行，确保整个系统在部分维护的情况下的可用性。 数据维护主要通过软件执行预先">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-05-12T02:08:24.305Z">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2021/05/02/%E5%88%86%E5%B8%83%E5%BC%8F%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8-8%E6%95%B0%E6%8D%AE%E7%BB%B4%E6%8A%A4/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>数据维护 | ShifuDong</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ShifuDong</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">Knowledge Sharing</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/05/02/%E5%88%86%E5%B8%83%E5%BC%8F%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8-8%E6%95%B0%E6%8D%AE%E7%BB%B4%E6%8A%A4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          数据维护
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-05-02 15:03:58" itemprop="dateCreated datePublished" datetime="2021-05-02T15:03:58+08:00">2021-05-02</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-05-12 10:08:24" itemprop="dateModified" datetime="2021-05-12T10:08:24+08:00">2021-05-12</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8/" itemprop="url" rel="index">
+                    <span itemprop="name">分布式对象存储</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="数据维护"><a href="#数据维护" class="headerlink" title="数据维护"></a>数据维护</h3><p>对象存储系统的长期运行离不开对系统的维护，系统维护包括3个方面:硬件、软件和数据维护。<strong>硬件维护包括现有硬件的维修、更换和升级以及新硬件的添加等</strong>;<strong>软件维护包括错误原因的调查和修复，软件的升级、回滚和全新的安装部署等</strong>;<strong>数据维护则包括数据的修复、过期数据的删除等。</strong></p>
+<p>硬件和软件方面的维护通常有一整套处理流程，手动或自动分批执行，确保整个系统在部分维护的情况下的可用性。</p>
+<p>数据维护主要通过软件执行预先设定的维护工作。</p>
+<h4 id="对象存储系统的数据维护工作"><a href="#对象存储系统的数据维护工作" class="headerlink" title="对象存储系统的数据维护工作"></a>对象存储系统的数据维护工作</h4><h5 id="对象版本留存"><a href="#对象版本留存" class="headerlink" title="对象版本留存"></a>对象版本留存</h5><p>存储空间不可能无限制增长，而用户的对象却是每天都会有新版本添加进来。这些数据很快就会变得过时，被更新的对象所替代。而用户通常也不需要长期保留所有的版本。所以需要提供一种<strong>留存策略，在保留用户更关注的版本的情况下清理一些不必要的版本。</strong></p>
+<p>版本留存策略就是一套<strong>决定哪些版本需要被保留</strong>的决策依据。<strong>数量限定策略会保留每个对象最后的若干个版本而将其余的删除;时间限定策略会将版本保留一段固定的时间</strong>，比如3个月或半年等，超过这个阈值的版本将被删除;除了数量限定和时间限定这两类策略以外，当然还有很多更复杂更精妙的策略。</p>
+<p>本项目实现最简单的数量限定策略，对于每个对象仅保留最后5个版本。</p>
+<p>维护软件除了需要在元数据服务中删除对象旧版本的元数据以外，对于已经没有任何元数据引用的对象数据也需要进行清除。此处存在一个竞争条件的步骤序列：</p>
+<ol>
+<li>维护软件检查某个对象散列值，没有任何元数据引用它</li>
+<li>有用户需要上传一个相同散列值的对象，由于SIS检查该散列值存在，跳过了上传步骤</li>
+<li>维护软件删除了该对象散列值</li>
+<li>用户添加了新的版本引用这个散列值</li>
+</ol>
+<p>这样的步骤序列一旦发生，意味着用户的对下数据丢失。<strong>为避免这种情况，在删除对象散列值时并没有彻底删除文件，只是将对象文件移动到另一个grabage目录。隔一段时间后再去真正删除。</strong></p>
+<h5 id="数据服务的REST接口"><a href="#数据服务的REST接口" class="headerlink" title="数据服务的REST接口"></a>数据服务的REST接口</h5><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DELETE /objects/&lt;hash&gt;</span><br></pre></td></tr></table></figure>
+<p>删除对象散列值需要数据服务提供对象的DELETE 操作，该接口不仅将对象文件移动至垃圾目录，且从数据服务的定位对象缓存中删除散列值。</p>
+<h4 id="具体实现"><a href="#具体实现" class="headerlink" title="具体实现"></a>具体实现</h4><h5 id="删除过期元数据"><a href="#删除过期元数据" class="headerlink" title="删除过期元数据"></a>删除过期元数据</h5><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> MIN_VERSION_COUNT = <span class="number">5</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="comment">// 调用es.SearchVersionStatus将元数据服务中所有版本数量大于等于6的对象搜索出来保存到Bucket结构体的数组buckets中</span></span><br><span class="line">	buckets, e := es.SearchVersionStatus(MIN_VERSION_COUNT + <span class="number">1</span>)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(e)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 遍历buckets</span></span><br><span class="line">	<span class="keyword">for</span> i := <span class="keyword">range</span> buckets &#123;</span><br><span class="line">		bucket := buckets[i]</span><br><span class="line">		<span class="comment">// 在for循环中调用es.DelMetadata,从该对象当前最小的版本号开始一一删除</span></span><br><span class="line">		<span class="comment">// 直到最后剩下5个</span></span><br><span class="line">		<span class="keyword">for</span> v := <span class="number">0</span>; v &lt; bucket.Doc_count-MIN_VERSION_COUNT; v++ &#123;</span><br><span class="line">			es.DelMetadata(bucket.Key, v+<span class="keyword">int</span>(bucket.Min_version.Value))</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 输入min_doc_count用于指示需要搜索对象最小版本数量</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">SearchVersionStatus</span><span class="params">(min_doc_count <span class="keyword">int</span>)</span> <span class="params">([]Bucket, error)</span></span> &#123;</span><br><span class="line">	client := http.Client&#123;&#125;</span><br><span class="line">	url := fmt.Sprintf(<span class="string">"http://%s/metadata/_search"</span>, os.Getenv(<span class="string">"ES_SERVER"</span>))</span><br><span class="line">	<span class="comment">// 使用ElasticSearch的aggregation search API搜索元数据</span></span><br><span class="line">	<span class="comment">// 以对象的名字分组，搜索版本数量大于等于min_doc_count的对象并返回</span></span><br><span class="line">	body := fmt.Sprintf(<span class="string">`</span></span><br><span class="line"><span class="string">        &#123;</span></span><br><span class="line"><span class="string">          "size": 0,</span></span><br><span class="line"><span class="string">          "aggs": &#123;</span></span><br><span class="line"><span class="string">            "group_by_name": &#123;</span></span><br><span class="line"><span class="string">              "terms": &#123;</span></span><br><span class="line"><span class="string">                "field": "name",</span></span><br><span class="line"><span class="string">                "min_doc_count": %d</span></span><br><span class="line"><span class="string">              &#125;,</span></span><br><span class="line"><span class="string">              "aggs": &#123;</span></span><br><span class="line"><span class="string">                "min_version": &#123;</span></span><br><span class="line"><span class="string">                  "min": &#123;</span></span><br><span class="line"><span class="string">                    "field": "version"</span></span><br><span class="line"><span class="string">                  &#125;</span></span><br><span class="line"><span class="string">                &#125;</span></span><br><span class="line"><span class="string">              &#125;</span></span><br><span class="line"><span class="string">            &#125;</span></span><br><span class="line"><span class="string">          &#125;</span></span><br><span class="line"><span class="string">        &#125;`</span>, min_doc_count)</span><br><span class="line">	request, _ := http.NewRequest(<span class="string">"GET"</span>, url, strings.NewReader(body))</span><br><span class="line">	r, e := client.Do(request)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, e</span><br><span class="line">	&#125;</span><br><span class="line">	b, _ := ioutil.ReadAll(r.Body)</span><br><span class="line">	<span class="keyword">var</span> ar aggregateResult</span><br><span class="line">	json.Unmarshal(b, &amp;ar)</span><br><span class="line">	<span class="keyword">return</span> ar.Aggregations.Group_by_name.Buckets, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 根据对象的名字name和版本号version删除相应的对象元数据</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">DelMetadata</span><span class="params">(name <span class="keyword">string</span>, version <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">	client := http.Client&#123;&#125;</span><br><span class="line">	url := fmt.Sprintf(<span class="string">"http://%s/metadata/objects/%s_%d"</span>,</span><br><span class="line">		os.Getenv(<span class="string">"ES_SERVER"</span>), name, version)</span><br><span class="line">	request, _ := http.NewRequest(<span class="string">"DELETE"</span>, url, <span class="literal">nil</span>)</span><br><span class="line">	client.Do(request)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="删除没有元数据引用的对象数据"><a href="#删除没有元数据引用的对象数据" class="headerlink" title="删除没有元数据引用的对象数据"></a>删除没有元数据引用的对象数据</h5><p>deleteOrphanObject相关函数</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="comment">// 需要在每个数据节点上定期运行</span></span><br><span class="line">	<span class="comment">// 调用filepath.Global获取$STORAGE_ROOT/objects/目录下的所有文件</span></span><br><span class="line">	files, _ := filepath.Glob(os.Getenv(<span class="string">"STORAGE_ROOT"</span>) + <span class="string">"/objects/*"</span>)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// for循环中遍历访问文件</span></span><br><span class="line">	<span class="keyword">for</span> i := <span class="keyword">range</span> files &#123;</span><br><span class="line">		<span class="comment">// 从文件中获得对象的散列值</span></span><br><span class="line">		hash := strings.Split(filepath.Base(files[i]), <span class="string">"."</span>)[<span class="number">0</span>]</span><br><span class="line">		<span class="comment">// 调用es.HasHash检查元数据服务中是否存在该散列值</span></span><br><span class="line">		hashInMetadata, e := es.HasHash(hash)</span><br><span class="line">		<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">			log.Println(e)</span><br><span class="line">			<span class="keyword">return</span></span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">// 不存在，调用del删除散列值</span></span><br><span class="line">		<span class="keyword">if</span> !hashInMetadata &#123;</span><br><span class="line">			del(hash)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 通过ES的search API搜索所有对象元数据中hash属性等于散列值的文档</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">HasHash</span><span class="params">(hash <span class="keyword">string</span>)</span> <span class="params">(<span class="keyword">bool</span>, error)</span></span> &#123;</span><br><span class="line">	url := fmt.Sprintf(<span class="string">"http://%s/metadata/_search?q=hash:%s&amp;size=0"</span>, os.Getenv(<span class="string">"ES_SERVER"</span>), hash)</span><br><span class="line">	r, e := http.Get(url)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span>, e</span><br><span class="line">	&#125;</span><br><span class="line">	b, _ := ioutil.ReadAll(r.Body)</span><br><span class="line">	<span class="keyword">var</span> sr searchResult</span><br><span class="line">	json.Unmarshal(b, &amp;sr)</span><br><span class="line">	<span class="comment">// 如果满足条件的文档数量不为0，说明还存在对该散列值的引用，函数返回true,否则返回false</span></span><br><span class="line">	<span class="keyword">return</span> sr.Hits.Total != <span class="number">0</span>, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 访问数据服务的DELETE对象接口进行散列值的删除</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">del</span><span class="params">(hash <span class="keyword">string</span>)</span></span> &#123;</span><br><span class="line">	log.Println(<span class="string">"delete"</span>, hash)</span><br><span class="line">	url := <span class="string">"http://"</span> + os.Getenv(<span class="string">"LISTEN_ADDRESS"</span>) + <span class="string">"/objects/"</span> + hash</span><br><span class="line">	request, _ := http.NewRequest(<span class="string">"DELETE"</span>, url, <span class="literal">nil</span>)</span><br><span class="line">	client := http.Client&#123;&#125;</span><br><span class="line">	client.Do(request)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>为支持对象的删除操作，数据服务的objects包发生变化：</p>
+<p>DELETE对象相关函数</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Handler</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">	m := r.Method</span><br><span class="line">	<span class="keyword">if</span> m == http.MethodGet &#123;</span><br><span class="line">		get(w, r)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> m == http.MethodDelete &#123;</span><br><span class="line">		del(w, r)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	w.WriteHeader(http.StatusMethodNotAllowed)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 根据对象散列值搜索对象文件</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">del</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">	hash := strings.Split(r.URL.EscapedPath(), <span class="string">"/"</span>)[<span class="number">2</span>]</span><br><span class="line">	files, _ := filepath.Glob(os.Getenv(<span class="string">"STORAGE_ROOT"</span>) + <span class="string">"/objects/"</span> + hash + <span class="string">".*"</span>)</span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">len</span>(files) != <span class="number">1</span> &#123;</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 调用locate.Del将散列值移出对象定位缓存</span></span><br><span class="line">	locate.Del(hash)</span><br><span class="line">	<span class="comment">// 调用os.Rename将对象文件移动到$STORAGE_ROOT/garbage/目录下</span></span><br><span class="line">	os.Rename(files[<span class="number">0</span>], os.Getenv(<span class="string">"STORAGE_ROOT"</span>)+<span class="string">"/garbage/"</span>+filepath.Base(files[<span class="number">0</span>]))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="对象数据的检查和修复"><a href="#对象数据的检查和修复" class="headerlink" title="对象数据的检查和修复"></a>对象数据的检查和修复</h5><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="comment">// 在数据服务节点上定期运行</span></span><br><span class="line">	<span class="comment">// 调用filepath.Glob获取$STOTAGE_ROOT/objects/目录下所有文件</span></span><br><span class="line">	files, _ := filepath.Glob(os.Getenv(<span class="string">"STORAGE_ROOT"</span>) + <span class="string">"/objects/*"</span>)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 在for循环中遍历访问文件</span></span><br><span class="line">	<span class="keyword">for</span> i := <span class="keyword">range</span> files &#123;</span><br><span class="line">		<span class="comment">// 从文件名中获得对象的散列值</span></span><br><span class="line">		hash := strings.Split(filepath.Base(files[i]), <span class="string">"."</span>)[<span class="number">0</span>]</span><br><span class="line">		<span class="comment">// 调用verify检查数据</span></span><br><span class="line">		verify(hash)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">verify</span><span class="params">(hash <span class="keyword">string</span>)</span></span> &#123;</span><br><span class="line">	log.Println(<span class="string">"verify"</span>, hash)</span><br><span class="line">	<span class="comment">// 调用es.SearchHashSize从元数据服务中获取该散列值对应的对象大小</span></span><br><span class="line">	size, e := es.SearchHashSize(hash)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(e)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 以对象的散列值和大小为参数调用objects.GetStream创建一个对象数据流</span></span><br><span class="line">	<span class="comment">// 底层实现会自动完成数据的修复。</span></span><br><span class="line">	stream, e := objects.GetStream(hash, size)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(e)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 调用utils.CalculateHash计算对象的散列值</span></span><br><span class="line">	d := utils.CalculateHash(stream)</span><br><span class="line">	<span class="comment">// 检查hash是否一致，不一致则以log的形式报告错误(数据损坏，已经不可修复)</span></span><br><span class="line">	<span class="keyword">if</span> d != hash &#123;</span><br><span class="line">		log.Printf(<span class="string">"object hash mismatch, calculated=%s, requested=%s"</span>, d, hash)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 关闭数据对象流</span></span><br><span class="line">	stream.Close()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 输入对象的散列值hash,通过ES的seach API查询元数据属性中hash等于该散列值的文档的size属性</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">SearchHashSize</span><span class="params">(hash <span class="keyword">string</span>)</span> <span class="params">(size <span class="keyword">int64</span>, e error)</span></span> &#123;</span><br><span class="line">	url := fmt.Sprintf(<span class="string">"http://%s/metadata/_search?q=hash:%s&amp;size=1"</span>,</span><br><span class="line">		os.Getenv(<span class="string">"ES_SERVER"</span>), hash)</span><br><span class="line">	r, e := http.Get(url)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> r.StatusCode != http.StatusOK &#123;</span><br><span class="line">		e = fmt.Errorf(<span class="string">"fail to search hash size: %d"</span>, r.StatusCode)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	result, _ := ioutil.ReadAll(r.Body)</span><br><span class="line">	<span class="keyword">var</span> sr searchResult</span><br><span class="line">	json.Unmarshal(result, &amp;sr)</span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">len</span>(sr.Hits.Hits) != <span class="number">0</span> &#123;</span><br><span class="line">		size = sr.Hits.Hits[<span class="number">0</span>].Source.Size</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 返回size</span></span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h4><p>本版本所有代码及测试用例可见<a href="https://github.com/dongshifu/distributed_object_storage_dong/tree/main/v7" target="_blank" rel="noopener">增加数据维护版本全部代码</a></p>
+<h4 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h4><p>《分布式对象存储—原理、架构及Go语言实现》</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" rel="tag"># 分布式</a>
+              <a href="/tags/go/" rel="tag"># go</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/04/20/%E5%88%86%E5%B8%83%E5%BC%8F%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8-7%E5%8E%8B%E7%BC%A9/" rel="prev" title="数据压缩">
+      <i class="fa fa-chevron-left"></i> 数据压缩
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+      <div class="tabs tabs-comment">
+        <ul class="nav-tabs">
+            <li class="tab"><a href="#comment-gitalk">gitalk</a></li>
+            <li class="tab"><a href="#comment-livere">livere</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane gitalk" id="comment-gitalk">
+              <div class="comments" id="gitalk-container"></div>
+            </div>
+            <div class="tab-pane livere" id="comment-livere">
+              
+  <div class="comments" id="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81MjkwMy8yOTM4MA=="></div>
+  </div>
+  
+            </div>
+        </div>
+      </div>
+      <script>
+        window.addEventListener('tabs:register', () => {
+          let activeClass = 'gitalk';
+            activeClass = localStorage.getItem('comments_active') || activeClass;
+          if (activeClass) {
+            let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+            if (activeTab) {
+              activeTab.click();
+            }
+          }
+        });
+        window.addEventListener('tabs:click', event => {
+          let commentClass = event.target.classList[1];
+          localStorage.setItem('comments_active', commentClass);
+        });
+      </script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#数据维护"><span class="nav-number">1.</span> <span class="nav-text">数据维护</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#对象存储系统的数据维护工作"><span class="nav-number">1.1.</span> <span class="nav-text">对象存储系统的数据维护工作</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#对象版本留存"><span class="nav-number">1.1.1.</span> <span class="nav-text">对象版本留存</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#数据服务的REST接口"><span class="nav-number">1.1.2.</span> <span class="nav-text">数据服务的REST接口</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#具体实现"><span class="nav-number">1.2.</span> <span class="nav-text">具体实现</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#删除过期元数据"><span class="nav-number">1.2.1.</span> <span class="nav-text">删除过期元数据</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#删除没有元数据引用的对象数据"><span class="nav-number">1.2.2.</span> <span class="nav-text">删除没有元数据引用的对象数据</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#对象数据的检查和修复"><span class="nav-number">1.2.3.</span> <span class="nav-text">对象数据的检查和修复</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#测试"><span class="nav-number">1.3.</span> <span class="nav-text">测试</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#参考"><span class="nav-number">1.4.</span> <span class="nav-text">参考</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ShifuDong"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">ShifuDong</p>
+  <div class="site-description" itemprop="description">记录生活， 记录学习， 分享知识</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">67</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/mailto:sfd_w@foxmail.com" title="E-Mail → mailto:sfd_w@foxmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ShifuDong</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.0.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.5.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.getAttribute('pjax') !== null) {
+      element.setAttribute('pjax', '');
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'a6ee5b68c97a3db64850',
+      clientSecret: '1dfa06f32032431e4af79b80f9ddf9dfd13dbda2',
+      repo: 'dongshifu.github.io',
+      owner: 'dongshifu',
+      admin: ['dongshifu'],
+      id: 'bf1579563999a22133e0e7e94131dc8e',
+        language: 'zh-CN',
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script>
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+</script>
+
+    </div>
+</body>
+</html>

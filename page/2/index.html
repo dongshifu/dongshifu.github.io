@@ -203,6 +203,292 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/20/%E5%88%86%E5%B8%83%E5%BC%8F%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8-2%E5%8F%AF%E6%89%A9%E5%B1%95%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/01/20/%E5%88%86%E5%B8%83%E5%BC%8F%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8-2%E5%8F%AF%E6%89%A9%E5%B1%95%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/" class="post-title-link" itemprop="url">可扩展分布式系统实现</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-01-20 15:03:58" itemprop="dateCreated datePublished" datetime="2021-01-20T15:03:58+08:00">2021-01-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-05-12 08:32:51" itemprop="dateModified" datetime="2021-05-12T08:32:51+08:00">2021-05-12</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8/" itemprop="url" rel="index">
+                    <span itemprop="name">分布式对象存储</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="可扩展分布式系统"><a href="#可扩展分布式系统" class="headerlink" title="可扩展分布式系统"></a>可扩展分布式系统</h3><h4 id="分布式系统"><a href="#分布式系统" class="headerlink" title="分布式系统"></a>分布式系统</h4><p>一个分布式系统要求<strong>各节点分布在网络上，并通过消息传递来合作完成一个共同目标</strong>。</p>
+<p>分布式系统的三大关键特征:</p>
+<ul>
+<li>节点之间<strong>并发</strong>工作</li>
+<li>没有全局锁</li>
+<li>某个节点上发生的错误不影响其他节点。</li>
+</ul>
+<p>分布式系统的好处在于<strong>可扩展性，只需要加入新的节点就可以自由扩展集群的性能。</strong></p>
+<p>实现分布式系统的关键是实现接口和具体实现的解耦。</p>
+<h4 id="接口服务和数据存储服务分离"><a href="#接口服务和数据存储服务分离" class="headerlink" title="接口服务和数据存储服务分离"></a>接口服务和数据存储服务分离</h4><p>如图所示，<strong>接口服务层提供了对外的REST接口</strong>，而<strong>数据服务层则提供数据的存储功能</strong>。接口服务处理客户端的请求，然后向数据服务存取对象，数据服务处理来自接口服务的请求并在本地磁盘上存取对象。</p>
+<p><img src="https://api2.mubu.com/v3/document_image/fd1e34fc-3de6-44cc-a135-143050dd1ac8-11197877.jpg" alt="接口服务和数据存储服务分离"></p>
+<p>接口服务和数据服务之间的两种接口：</p>
+<ul>
+<li>实现<strong>对象存取</strong>的接口：对象的存取使用REST 接口。也就是说数据服务本身也提供REST 接口。此时，<strong>接口服务节点作为HTTP客户端向数据服务请求对象</strong>。</li>
+<li>第二种接口通过RabbitMQ消息队列进行通信，对 RabbitMQ 的使用分为两种模式。<ul>
+<li>一种模式是向某个exchange进行<strong>一对多</strong>的消息<strong>群发</strong></li>
+<li>另一种模式则是向某个消息队列进行<strong>一对一</strong>的消息<strong>单发</strong>。</li>
+</ul>
+</li>
+</ul>
+<p><strong>每一个数据服务节点都需要向所有的接口服务节点通知自身的存在</strong>，为此，创建一个名为apiServers 的 exchange<strong>,每一台数据服务节点都会持续向这个exchange发送心跳消息。所有的接口服务节点在启动以后都会创建一个消息队列来绑定这个exchange，任何发往这个exchange 的消息都会被转发给绑定它的所有消息队列，也就是说每一个接口服务节点都会接收到任意一台数据服务节点的心跳消息。</strong></p>
+<p>接口服务需要在收到对象GET 请求时<strong>定位该对象被保存在哪个数据服务节点上</strong>，所以还需要创建一个名为dataServers的exchange。<strong>所有的数据服务节点绑定这个exchange并接收来自接口服务的定位消息。拥有该对象的数据服务节点则使用消息单发通知该接口服务节点。</strong></p>
+<p>之所以必须使用REST和消息队列这两种不同类型的接口是为了满足不同的需求:<strong>对象存取的特点是数据量有可能很大，不适合将一个巨大的对象通过消息队列传输。而REST接口虽然能够处理大数据量传输，但是对于群发却显得力不从心。</strong></p>
+<h5 id="REST接口"><a href="#REST接口" class="headerlink" title="REST接口"></a>REST接口</h5><ul>
+<li>对于数据服务来说，它的REST接口和单机版本完全相同，也就是对象的PUT和GET方法。</li>
+<li>对于接口服务来说，除了对象的PUT和GET 方法之外，还应另外提供一个<strong>用于定位的 locate接口，用来帮助验证架构。</strong><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">GET /locate/&lt;object_name&gt;</span><br><span class="line">响应正文</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>客户端通过GET方法发起对象定位请求，<strong>接口服务节点收到该请求后通过dataServers exchange会向数据服务层群发一个定位消息，然后等待数据服务节点的反馈</strong>。<strong>如果有数据服务节点发回确认消息，则返回该数据服务节点的地址;如果超过一定时间没有任何反馈,则返回HTTP错误代码<code>404 NOT FOUND</code>.</strong></p>
+<h5 id="RabbitMQ消息设计"><a href="#RabbitMQ消息设计" class="headerlink" title="RabbitMQ消息设计"></a>RabbitMQ消息设计</h5><p>数据服务需要通过RabbitMQ将自身的存在通知给所有的接口服务，这样的消息称为<strong>心跳消息。</strong></p>
+<p><img src="https://api2.mubu.com/v3/document_image/c2721c9a-25ea-4f7c-ae66-f47e56243975-11197877.jpg" alt="数据服务心跳消息"></p>
+<p>apiServers和dataServers这两个exchange需要在RabbitMQ服务器上预先创建。<strong>每个接口服务节点在启动后都会创建自己的消息队列并绑定至 apiServers exchange。</strong> <strong>每个数据服务节点在启动后每隔5s就会发送一条消息给apiServers exchange，消息的正文就是该数据服务节点的 HTTP监听地址。接口服务节点在收到该消息后就会记录这个地址。</strong></p>
+<p><img src="https://api2.mubu.com/v3/document_image/3c415222-3bad-43dc-a1fe-d70b137c92c9-11197877.jpg" alt="定位流程"></p>
+<p>每个数据服务节点在启动时都必须创建自己的消息队列并绑定至dataServers exchange。<strong>当接口服务需要定位时，会创建一个临时消息队列，然后发送一条消息给dataServers exchange</strong>，<strong>消息的正文是需要定位的对象，返回地址则是该临时队列的名字。定位成功的数据服务节点需要将反馈消息发送给这个临时队列，反馈消息的正文是该数据服务节点自身的监听地址</strong>。<strong>临时消息队列会在一定时间后关闭。如果在关闭前没有收到任何反馈则该对象定位失败,接口服务节点就会知道该对象不存在于数据服务层。</strong></p>
+<h5 id="接口和存储分离的对象PUT流程"><a href="#接口和存储分离的对象PUT流程" class="headerlink" title="接口和存储分离的对象PUT流程"></a>接口和存储分离的对象PUT流程</h5><p><img src="https://api2.mubu.com/v3/document_image/b406ad2b-b000-4a1b-82a8-de523383823e-11197877.jpg" alt="接口和存储分离的对象PUT流程"></p>
+<p>客户端向接口服务发送HTTP的PUT 请求并提供了<code>&lt;object_name&gt;</code>和<code>&lt;contentof object&gt;</code>，接口服务选出一个随机数据服务节点并向它转发这个PUT请求，数据服务节点将<code>&lt;content of object&gt;</code>写入<code>$STORAGE_ROOT/objects/&lt;object_name&gt;</code>文件。</p>
+<h5 id="接口和存储分离的对象GET流程"><a href="#接口和存储分离的对象GET流程" class="headerlink" title="接口和存储分离的对象GET流程"></a>接口和存储分离的对象GET流程</h5><p><img src="https://api2.mubu.com/v3/document_image/31754790-b3b4-4498-8e1b-e84c17faa6d8-11197877.jpg" alt="接口和存储分离的对象GET流程"></p>
+<p>客户端的GET 请求提供了<code>&lt;object_name&gt;</code>，接口服务在收到GET请求后会对该object进行定位，如果定位失败则返回<code>404 Not Found</code>;如果定位成功，<strong>接口服务会接收到某个数据服务的地址，就可以向该地址转发来自客户端的GET请求，由数据服务读取本地磁盘上的文件并将其内容写入HTTP响应的正文。</strong></p>
+<h4 id="具体实现"><a href="#具体实现" class="headerlink" title="具体实现"></a>具体实现</h4><h5 id="数据服务"><a href="#数据服务" class="headerlink" title="数据服务"></a>数据服务</h5><p>为支持新的功能，数据服务的在实现上扩展了单机版的相关功能：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">go</span> heartbeat.StartHeartbeat()</span><br><span class="line">	<span class="keyword">go</span> locate.StartLocate()</span><br><span class="line">	http.HandleFunc(<span class="string">"/objects/"</span>, objects.Handler)</span><br><span class="line">	log.Fatal(http.ListenAndServe(os.Getenv(<span class="string">"LISTEN_ADDRESS"</span>), <span class="literal">nil</span>))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>数据服务的heartbeat包：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 每隔5s向apiServers exchange发送一条消息</span></span><br><span class="line"><span class="comment">// 将本服务节点的监听对地址发送出去</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">StartHeartbeat</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="comment">// 调用rabbitmq.New创建一个rabbitmq.RabbitMQ结构体</span></span><br><span class="line">	q := rabbitmq.New(os.Getenv(<span class="string">"RABBITMQ_SERVER"</span>))</span><br><span class="line">	<span class="keyword">defer</span> q.Close()</span><br><span class="line">	<span class="comment">// 无限循环调用Publish方法向apiServers exchange发送本节点的监听地址</span></span><br><span class="line">	<span class="keyword">for</span> &#123;</span><br><span class="line">		q.Publish(<span class="string">"apiServers"</span>, os.Getenv(<span class="string">"LISTEN_ADDRESS"</span>))</span><br><span class="line">		time.Sleep(<span class="number">5</span> * time.Second)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>数据服务的locate包：</p>
+<p>locate包有两个函数，分别是用<strong>于实际定位对象的Locate函数和用于监听定位消息的StartLocate函数</strong>：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 实际定位对象</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Locate</span><span class="params">(name <span class="keyword">string</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">	<span class="comment">// os.Stat访问磁盘上对应的文件名</span></span><br><span class="line">	_, err := os.Stat(name)</span><br><span class="line">	<span class="comment">// 判断文件名是否存在，存在返回true,失败返回false</span></span><br><span class="line">	<span class="keyword">return</span> !os.IsNotExist(err)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 用于监听定位消息</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">StartLocate</span><span class="params">()</span></span> &#123;</span><br><span class="line">	q := rabbitmq.New(os.Getenv(<span class="string">"RABBITMQ_SERVER"</span>))</span><br><span class="line">	<span class="keyword">defer</span> q.Close()</span><br><span class="line">	<span class="comment">// 绑定dataServers exchange</span></span><br><span class="line">	q.Bind(<span class="string">"dataServers"</span>)</span><br><span class="line">	<span class="comment">// 返回一个channel</span></span><br><span class="line">	c := q.Consume()</span><br><span class="line">	<span class="comment">// range遍历channel,接收消息</span></span><br><span class="line">	<span class="keyword">for</span> msg := <span class="keyword">range</span> c &#123;</span><br><span class="line">		<span class="comment">// JSON编码使得对象名字上有一对双引号，使用strconv.Unquote将输入的字符串前后的双引号去除并作为结果返回</span></span><br><span class="line">		object, e := strconv.Unquote(<span class="keyword">string</span>(msg.Body))</span><br><span class="line">		<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="built_in">panic</span>(e)</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> Locate(os.Getenv(<span class="string">"STORAGE_ROOT"</span>) + <span class="string">"/objects/"</span> + object) &#123;</span><br><span class="line">			<span class="comment">//文件存在，调用Send方法向消息的发送方返回本服务节点的监听地址，表示该对象存在于本服务节点上。</span></span><br><span class="line">			q.Send(msg.ReplyTo, os.Getenv(<span class="string">"LISTEN_ADDRESS"</span>))</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="接口服务"><a href="#接口服务" class="headerlink" title="接口服务"></a>接口服务</h5><p>接口服务除了<strong>提供对象的REST接口以外还需要提供locate功能</strong>，其main函数为：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="comment">// 提供locate功能</span></span><br><span class="line">	<span class="keyword">go</span> heartbeat.ListenHeartbeat()</span><br><span class="line">	<span class="comment">// 处理URL以/objects/开头的对象请求</span></span><br><span class="line">	http.HandleFunc(<span class="string">"/objects/"</span>, objects.Handler)</span><br><span class="line">	<span class="comment">// 处理URL以/locate/开头的定位请求</span></span><br><span class="line">	http.HandleFunc(<span class="string">"/locate/"</span>, locate.Handler)</span><br><span class="line">	log.Fatal(http.ListenAndServe(os.Getenv(<span class="string">"LISTEN_ADDRESS"</span>), <span class="literal">nil</span>))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意：接口服务层和数据服务层的objects包以及heartbeat、locate包虽然名字相同，但具体实现差距较大。</p>
+<ul>
+<li>数据服务的objects包负责对象在<strong>本地磁盘上的存取</strong>;而接口服务的objects包则负责将<strong>对象请求转发给数据服</strong>务。</li>
+<li>数据服务的heartbeat包用于<strong>发送心跳消息</strong>;而接口服务的heartbeat包则用于<strong>接收数据服务节点的心跳消息</strong>。</li>
+<li>数据服务的locate包用于<strong>接收定位消息、定位对象以及发送反馈消息</strong>；而接口服务的locate包则用于<strong>发送定位消息并处理反馈消息</strong>。</li>
+</ul>
+<p>接口服务的heartbeat包：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// map,整个包可见，用于缓存所有的数据服务节点</span></span><br><span class="line"><span class="keyword">var</span> dataServers = <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="keyword">string</span>]time.Time)</span><br><span class="line"><span class="keyword">var</span> mutex sync.Mutex</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">ListenHeartbeat</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="comment">// 创建消息队列绑定apiServers exchange</span></span><br><span class="line">	q := rabbitmq.New(os.Getenv(<span class="string">"RABBITMQ_SERVER"</span>))</span><br><span class="line">	<span class="keyword">defer</span> q.Close()</span><br><span class="line">	q.Bind(<span class="string">"apiServers"</span>)</span><br><span class="line">	<span class="comment">// 通过go channel监听每个来自数据服务节点的心跳信息</span></span><br><span class="line">	c := q.Consume()</span><br><span class="line">	<span class="keyword">go</span> removeExpiredDataServer() <span class="comment">//goroutine并行处理</span></span><br><span class="line">	<span class="keyword">for</span> msg := <span class="keyword">range</span> c &#123;</span><br><span class="line">		<span class="comment">//将数据服务节点的监听地址作为map的键，收到消息的时间作为值存入map中</span></span><br><span class="line">		dataServer, e := strconv.Unquote(<span class="keyword">string</span>(msg.Body))</span><br><span class="line">		<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="built_in">panic</span>(e)</span><br><span class="line">		&#125;</span><br><span class="line">		mutex.Lock()</span><br><span class="line">		dataServers[dataServer] = time.Now()</span><br><span class="line">		mutex.Unlock()</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 每隔5s扫描一遍map,清除其中超过10s没有收到心跳消息的数据服务节点</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">removeExpiredDataServer</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">for</span> &#123;</span><br><span class="line">		time.Sleep(<span class="number">5</span> * time.Second)</span><br><span class="line">		mutex.Lock()</span><br><span class="line">		<span class="keyword">for</span> s, t := <span class="keyword">range</span> dataServers &#123;</span><br><span class="line">			<span class="keyword">if</span> t.Add(<span class="number">10</span> * time.Second).Before(time.Now()) &#123;</span><br><span class="line">				<span class="built_in">delete</span>(dataServers, s)</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		mutex.Unlock()</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 遍历map并返回当前所有的数据服务节点</span></span><br><span class="line"><span class="comment">// 为防止多个goroutine并发读写map造成错误，map读写全部需要mutex的保护</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">GetDataServers</span><span class="params">()</span> []<span class="title">string</span></span> &#123;</span><br><span class="line">	mutex.Lock()</span><br><span class="line">	<span class="keyword">defer</span> mutex.Unlock()</span><br><span class="line">	ds := <span class="built_in">make</span>([]<span class="keyword">string</span>, <span class="number">0</span>)</span><br><span class="line">	<span class="keyword">for</span> s, _ := <span class="keyword">range</span> dataServers &#123;</span><br><span class="line">		ds = <span class="built_in">append</span>(ds, s)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> ds</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 从当前所有的数据服务节点中随机选择一个节点并返回</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">ChooseRandomDataServer</span><span class="params">()</span> <span class="title">string</span></span> &#123;</span><br><span class="line">	ds := GetDataServers()</span><br><span class="line">	n := <span class="built_in">len</span>(ds)</span><br><span class="line">	<span class="keyword">if</span> n == <span class="number">0</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="string">""</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> ds[rand.Intn(n)]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>接口服务的locate包：主要用于<strong>向数据服务节点群发定位消息并接收反馈</strong>。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 处理HTTP请求</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Handler</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">	m := r.Method</span><br><span class="line">	<span class="keyword">if</span> m != http.MethodGet &#123;</span><br><span class="line">		w.WriteHeader(http.StatusMethodNotAllowed)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 将文件名作为Locate函数的参数进行定位</span></span><br><span class="line">	info := Locate(strings.Split(r.URL.EscapedPath(), <span class="string">"/"</span>)[<span class="number">2</span>])</span><br><span class="line">	<span class="comment">// 为空，说明定位失败</span></span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">len</span>(info) == <span class="number">0</span> &#123;</span><br><span class="line">		w.WriteHeader(http.StatusNotFound)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 不为空，则拥有该对象的一个数据服务节点的地址，将地址作为HTTP响应的正文输出</span></span><br><span class="line">	b, _ := json.Marshal(info)</span><br><span class="line">	w.Write(b)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Locate</span><span class="params">(name <span class="keyword">string</span>)</span> <span class="title">string</span></span> &#123;</span><br><span class="line">	<span class="comment">//创建一个消息队列</span></span><br><span class="line">	q := rabbitmq.New(os.Getenv(<span class="string">"RABBITMQ_SERVER"</span>))</span><br><span class="line">	<span class="comment">// 向dataServers exchange群发对象名字的定位信息</span></span><br><span class="line">	q.Publish(<span class="string">"dataServers"</span>, name)</span><br><span class="line">	c := q.Consume()</span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123; <span class="comment">//1s后关闭临时消息队列</span></span><br><span class="line">		<span class="comment">//设置超时机制，避免无止境的等待。</span></span><br><span class="line">		<span class="comment">//1s后没有任何反馈，消息队列关闭，收到一个长度为0的消息，返回一个空字符串</span></span><br><span class="line">		time.Sleep(time.Second)</span><br><span class="line">		q.Close()</span><br><span class="line">	&#125;()</span><br><span class="line">	<span class="comment">//阻塞等待数据服务节点向自己发送反馈消息</span></span><br><span class="line">	<span class="comment">//若在1s内有来自数据服务节点的消息，返回该消息的正文内容，也就是该数据服务节点的监听地址</span></span><br><span class="line">	msg := &lt;-c</span><br><span class="line">	s, _ := strconv.Unquote(<span class="keyword">string</span>(msg.Body))</span><br><span class="line">	<span class="keyword">return</span> s</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 检查Locate结果是否为空字符串来判定对象是否存在</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Exist</span><span class="params">(name <span class="keyword">string</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> Locate(name) != <span class="string">""</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>接口服务的objects包：</p>
+<p>接口服务的objects包跟数据服务有很大区别，其put函数和get函数并不会访问本地磁盘上的对象，而是将HTTP请求转发给数据服务。put函数负责处理对象PUT请求，其相关函数如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">put</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">	<span class="comment">// 从URL中获取objects_name</span></span><br><span class="line">	object := strings.Split(r.URL.EscapedPath(), <span class="string">"/"</span>)[<span class="number">2</span>]</span><br><span class="line">	<span class="comment">// 将r.Body和objects作为参数调用storeObject</span></span><br><span class="line">	<span class="comment">// 第一个返回值为int类型的变量，用于表示HTTP错误码</span></span><br><span class="line">	<span class="comment">// 第二个返回值为error,如果error不为nil，出错并打印</span></span><br><span class="line">	c, e := storeObject(r.Body, object)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(e)</span><br><span class="line">	&#125;</span><br><span class="line">	w.WriteHeader(c)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">storeObject</span><span class="params">(r io.Reader, object <span class="keyword">string</span>)</span> <span class="params">(<span class="keyword">int</span>, error)</span></span> &#123;</span><br><span class="line">	stream, e := putStream(object)</span><br><span class="line">	<span class="comment">// 没有找到可用的数据服务节点</span></span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> http.StatusServiceUnavailable, e</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 找到可用的数服务节点并得到一个objectstream.PutStream的指针</span></span><br><span class="line">	<span class="comment">// objectstream.PutStream实现了Write方法，是一个io.Write接口</span></span><br><span class="line">	<span class="comment">// 用io.Copy将HTTP请求的正文写入stream</span></span><br><span class="line">	io.Copy(stream, r)</span><br><span class="line">	e = stream.Close()</span><br><span class="line">	<span class="comment">//写入出错</span></span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> http.StatusInternalServerError, e</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">//写入成功</span></span><br><span class="line">	<span class="keyword">return</span> http.StatusOK, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">putStream</span><span class="params">(object <span class="keyword">string</span>)</span> <span class="params">(*objectstream.PutStream, error)</span></span> &#123;</span><br><span class="line">	<span class="comment">// 先获得一个随机数服务节点的地址</span></span><br><span class="line">	server := heartbeat.ChooseRandomDataServer()</span><br><span class="line">	fmt.Println(<span class="string">"data server ="</span>, server)</span><br><span class="line">	<span class="comment">// 没有可用的数据服务节点，返回objectstream.PutStream的空指针</span></span><br><span class="line">	<span class="keyword">if</span> server == <span class="string">""</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, fmt.Errorf(<span class="string">"cannot find any dataServer"</span>)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> objectstream.NewPutStream(server, object), <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>objectstream包：对Go中的http包的一个封装，用于将一些http函数的调用转换成写流的形式，方便处理。具体实现如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">type</span> PutStream <span class="keyword">struct</span> &#123;</span><br><span class="line">	<span class="comment">// writer用于实现Write方法</span></span><br><span class="line">	writer *io.PipeWriter</span><br><span class="line">	<span class="comment">// c用于把在一个gouroutine传输数据过程中发生的错误传回主线程</span></span><br><span class="line">	c      <span class="keyword">chan</span> error</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 用于生成一个PutStream结构体</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewPutStream</span><span class="params">(server, object <span class="keyword">string</span>)</span> *<span class="title">PutStream</span></span> &#123;</span><br><span class="line">	<span class="comment">// 用io.Pipe创建一对reader和writer,类型为*io.PipeReader和*io.PipeWriter</span></span><br><span class="line">	<span class="comment">// 管道互联，写入writer的内容可以从reader中读出</span></span><br><span class="line">	<span class="comment">// 希望以写入数据流的方法操作HTTP的PUT请求</span></span><br><span class="line">	reader, writer := io.Pipe()</span><br><span class="line">	c := <span class="built_in">make</span>(<span class="keyword">chan</span> error)</span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		<span class="comment">// 生成put请求，需要提供一个io.Reader作为http.NewRequest的参数</span></span><br><span class="line">		request, _ := http.NewRequest(<span class="string">"PUT"</span>, <span class="string">"http://"</span>+server+<span class="string">"/objects/"</span>+object, reader)</span><br><span class="line">		<span class="comment">// http.Client负责从request中读取需要PUT的内容</span></span><br><span class="line">		client := http.Client&#123;&#125;</span><br><span class="line">		<span class="comment">// 由于管道的读写阻塞特性，在goroutine中调用client.Do方法</span></span><br><span class="line">		r, e := client.Do(request)</span><br><span class="line">		<span class="keyword">if</span> e == <span class="literal">nil</span> &amp;&amp; r.StatusCode != http.StatusOK &#123;</span><br><span class="line">			e = fmt.Errorf(<span class="string">"dataServer return http code %d"</span>, r.StatusCode)</span><br><span class="line">		&#125;</span><br><span class="line">		c &lt;- e</span><br><span class="line">	&#125;()</span><br><span class="line">	<span class="keyword">return</span> &amp;PutStream&#123;writer, c&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 用于写入writer,实现该方法PutStream才被认为实现了io.Write接口</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(w *PutStream)</span> <span class="title">Write</span><span class="params">(p []<span class="keyword">byte</span>)</span> <span class="params">(n <span class="keyword">int</span>, err error)</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> w.writer.Write(p)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 关闭writer,为了让管道另一端的reader读到io.EOF，否则在gouroutine中运行的client.Do将始终阻塞无法返回</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(w *PutStream)</span> <span class="title">Close</span><span class="params">()</span> <span class="title">error</span></span> &#123;</span><br><span class="line">	w.writer.Close()</span><br><span class="line">	<span class="comment">// 从c中读取发送自goroutine得错误并返回</span></span><br><span class="line">	<span class="keyword">return</span> &lt;-w.c</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>接口服务层object包用于处理GET请求具体实现:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">get</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">	object := strings.Split(r.URL.EscapedPath(), <span class="string">"/"</span>)[<span class="number">2</span>]</span><br><span class="line">	<span class="comment">// 调用getStream生成一个类型为io.Reader的stream</span></span><br><span class="line">	stream, e := getStream(object)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(e)</span><br><span class="line">		w.WriteHeader(http.StatusNotFound)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 调用io.Copy将stream的内容写入HTTP响应的正文</span></span><br><span class="line">	io.Copy(w, stream)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">getStream</span><span class="params">(object <span class="keyword">string</span>)</span> <span class="params">(io.Reader, error)</span></span> &#123;</span><br><span class="line">	<span class="comment">// 定位object对象</span></span><br><span class="line">	server := locate.Locate(object)</span><br><span class="line">	<span class="keyword">if</span> server == <span class="string">""</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, fmt.Errorf(<span class="string">"object %s locate fail"</span>, object)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 调用objectstream.NewGetStream并返回结果</span></span><br><span class="line">	<span class="keyword">return</span> objectstream.NewGetStream(server, object)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>objectstream包的GetStream相关实现：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> GetStream <span class="keyword">struct</span> &#123;</span><br><span class="line">	reader io.Reader</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">newGetStream</span><span class="params">(url <span class="keyword">string</span>)</span> <span class="params">(*GetStream, error)</span></span> &#123;</span><br><span class="line">	<span class="comment">// 输入的url表示用于获取数据流的HTTP服务地址</span></span><br><span class="line">	<span class="comment">// 调用http.Get发起一个GET请求，获取该地址的HTTP响应</span></span><br><span class="line">	r, e := http.Get(url) <span class="comment">//返回的r类型为*http.Response,其body是用于读取HTTP响应正文的io.Reader</span></span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, e</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> r.StatusCode != http.StatusOK &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, fmt.Errorf(<span class="string">"dataServer return http code %d"</span>, r.StatusCode)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> &amp;GetStream&#123;r.Body&#125;, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 封装newGetStream函数</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewGetStream</span><span class="params">(server, object <span class="keyword">string</span>)</span> <span class="params">(*GetStream, error)</span></span> &#123;</span><br><span class="line">	<span class="keyword">if</span> server == <span class="string">""</span> || object == <span class="string">""</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, fmt.Errorf(<span class="string">"invalid server %s object %s"</span>, server, object)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 内部拼凑一个url传给newGetStream，对外隐藏url的细节</span></span><br><span class="line">	<span class="keyword">return</span> newGetStream(<span class="string">"http://"</span> + server + <span class="string">"/objects/"</span> + object)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 用于读取reader成员，实现该方法，则GetStream结构体实现io.Reader接口</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(r *GetStream)</span> <span class="title">Read</span><span class="params">(p []<span class="keyword">byte</span>)</span> <span class="params">(n <span class="keyword">int</span>, err error)</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> r.reader.Read(p)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>rabbitmq包实现：</p>
+<p>为使用RabbitMQ,需要下载RabbitMQ提供的Go语言包<code>&quot;github.com/streadway/amqp&quot;</code>。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">go get -u <span class="string">"github.com/streadway/amqp"</span></span><br></pre></td></tr></table></figure>
+<p>为方便使用，实现一个rabbitmq包，该包对<code>&quot;github.com/streadway/amqp</code>进行封装以简化接口：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> rabbitmq</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"encoding/json"</span></span><br><span class="line">	<span class="string">"github.com/streadway/amqp"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> RabbitMQ <span class="keyword">struct</span> &#123;</span><br><span class="line">	channel  *amqp.Channel</span><br><span class="line">	conn     *amqp.Connection</span><br><span class="line">	Name     <span class="keyword">string</span></span><br><span class="line">	exchange <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 创建一个新的rabbitmq.RabbitMQ结构体</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">New</span><span class="params">(s <span class="keyword">string</span>)</span> *<span class="title">RabbitMQ</span></span> &#123;</span><br><span class="line">	conn, e := amqp.Dial(s)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(e)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	ch, e := conn.Channel()</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(e)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	q, e := ch.QueueDeclare(</span><br><span class="line">		<span class="string">""</span>,    <span class="comment">// name</span></span><br><span class="line">		<span class="literal">false</span>, <span class="comment">// durable</span></span><br><span class="line">		<span class="literal">true</span>,  <span class="comment">// delete when unused</span></span><br><span class="line">		<span class="literal">false</span>, <span class="comment">// exclusive</span></span><br><span class="line">		<span class="literal">false</span>, <span class="comment">// no-wait</span></span><br><span class="line">		<span class="literal">nil</span>,   <span class="comment">// arguments</span></span><br><span class="line">	)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(e)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	mq := <span class="built_in">new</span>(RabbitMQ)</span><br><span class="line">	mq.channel = ch</span><br><span class="line">	mq.conn = conn</span><br><span class="line">	mq.Name = q.Name</span><br><span class="line">	<span class="keyword">return</span> mq</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 将自己的消息队列和一个exchange绑定</span></span><br><span class="line"><span class="comment">// 所有发往该exchange的消息都能在自己的消息队列中被接收到</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(q *RabbitMQ)</span> <span class="title">Bind</span><span class="params">(exchange <span class="keyword">string</span>)</span></span> &#123;</span><br><span class="line">	e := q.channel.QueueBind(</span><br><span class="line">		q.Name,   <span class="comment">// queue name</span></span><br><span class="line">		<span class="string">""</span>,       <span class="comment">// routing key</span></span><br><span class="line">		exchange, <span class="comment">// exchange</span></span><br><span class="line">		<span class="literal">false</span>,</span><br><span class="line">		<span class="literal">nil</span>)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(e)</span><br><span class="line">	&#125;</span><br><span class="line">	q.exchange = exchange</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 往某个消息队列发送消息</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(q *RabbitMQ)</span> <span class="title">Send</span><span class="params">(queue <span class="keyword">string</span>, body <span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;</span><br><span class="line">	str, e := json.Marshal(body)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(e)</span><br><span class="line">	&#125;</span><br><span class="line">	e = q.channel.Publish(<span class="string">""</span>,</span><br><span class="line">		queue,</span><br><span class="line">		<span class="literal">false</span>,</span><br><span class="line">		<span class="literal">false</span>,</span><br><span class="line">		amqp.Publishing&#123;</span><br><span class="line">			ReplyTo: q.Name,</span><br><span class="line">			Body:    []<span class="keyword">byte</span>(str),</span><br><span class="line">		&#125;)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(e)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 往某个exchange发送消息</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(q *RabbitMQ)</span> <span class="title">Publish</span><span class="params">(exchange <span class="keyword">string</span>, body <span class="keyword">interface</span>&#123;&#125;)</span></span> &#123;</span><br><span class="line">	str, e := json.Marshal(body)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(e)</span><br><span class="line">	&#125;</span><br><span class="line">	e = q.channel.Publish(exchange,</span><br><span class="line">		<span class="string">""</span>,</span><br><span class="line">		<span class="literal">false</span>,</span><br><span class="line">		<span class="literal">false</span>,</span><br><span class="line">		amqp.Publishing&#123;</span><br><span class="line">			ReplyTo: q.Name,</span><br><span class="line">			Body:    []<span class="keyword">byte</span>(str),</span><br><span class="line">		&#125;)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(e)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 生成一个接收消息的go channel,使客户程序可以通过Go的原生机制接收队列中的消息。</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(q *RabbitMQ)</span> <span class="title">Consume</span><span class="params">()</span> &lt;-<span class="title">chan</span> <span class="title">amqp</span>.<span class="title">Delivery</span></span> &#123;</span><br><span class="line">	c, e := q.channel.Consume(q.Name,</span><br><span class="line">		<span class="string">""</span>,</span><br><span class="line">		<span class="literal">true</span>,</span><br><span class="line">		<span class="literal">false</span>,</span><br><span class="line">		<span class="literal">false</span>,</span><br><span class="line">		<span class="literal">false</span>,</span><br><span class="line">		<span class="literal">nil</span>,</span><br><span class="line">	)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(e)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> c</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 关闭消息队列</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(q *RabbitMQ)</span> <span class="title">Close</span><span class="params">()</span></span> &#123;</span><br><span class="line">	q.channel.Close()</span><br><span class="line">	q.conn.Close()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="功能测试"><a href="#功能测试" class="headerlink" title="功能测试"></a>功能测试</h4><p>测试环境：包括6个数据服务节点和2个接口服务节点，共8个节点。为了方便测试,8个节点其实都运行在同一台服务器上，只是绑定了8个不同的地址加以区分。<br>6个数据服务节点地址分别是<code>10.29.1.1:12346、10.29.1.2:12346、10.29.1.3:12346、10.29.1.4:12346、10.29.1.5:12346、10.29.1.6:12346</code>。2个接口服务节点地址是<code>10.29.2.1:12346,10.29.2.2:12346</code></p>
+<p>在同一台服务器上绑定多个地址命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">sudo ifconfig eno1:1 10.29.1.1/16</span><br><span class="line">sudo ifconfig eno1:2 10.29.1.2/16</span><br><span class="line">sudo ifconfig eno1:3 10.29.1.3/16</span><br><span class="line">sudo ifconfig eno1:4 10.29.1.4/16</span><br><span class="line">sudo ifconfig eno1:5 10.29.1.5/16</span><br><span class="line">sudo ifconfig eno1:6 10.29.1.6/16</span><br><span class="line">sudo ifconfig eno1:7 10.29.2.1/16</span><br><span class="line">sudo ifconfig eno1:8 10.29.2.2/16</span><br></pre></td></tr></table></figure>
+<p>eno1是这台机器的网络接口，可使用<code>ifconfig</code>查询得到，由于Ubuntu 16.0.4的内核支持接口别名，只需要在ifconfig 命令上使用别名接口(eno1后面加上冒号和一个数字)就可以在同一个接口上绑定多个地址。<br>为了让节点能够建立消息队列，还需要一台 RabbitMQ服务器（地址设置为本地即可)，在其上安装rabbitmq-server：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install rabbitmq-server</span><br><span class="line"><span class="comment"># 下载rabbitmqadmin管理工具</span></span><br><span class="line">sudo rabbitmq-plugins <span class="built_in">enable</span> rabbitmq_managements </span><br><span class="line">wget localhost:15672/cli /rabbitmqadmin</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 创建apiServers 和 dataServers这两个exchange.</span></span><br><span class="line">$ python3 rabbitmqadmin <span class="built_in">declare</span> exchange name=apiServers <span class="built_in">type</span>=fanout</span><br><span class="line">$ python3 rabbitmqadmin <span class="built_in">declare</span> exchange name=dataServers <span class="built_in">type</span>=fanout</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#添加用户test，密码test。</span></span><br><span class="line">$ sudo rabbitmqctl add_user <span class="built_in">test</span> <span class="built_in">test</span></span><br><span class="line"><span class="comment">#给test用户添加访问所有exchange的权限。</span></span><br><span class="line">$ sudo rabbitmqctl set_permissions -p / <span class="built_in">test</span> <span class="string">".*"</span> <span class="string">".*"</span> <span class="string">".*"</span></span><br></pre></td></tr></table></figure>
+<p>消息队列服务器就绪，现在需要同时启动8个服务程序，在启动前还要记得创建相应的<code>$STORAGE_ROOT</code>目录及其子目录<code>objects</code>,接下来的操作可使用shell脚本进行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#clean environment</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> `seq 1 6`</span><br><span class="line"><span class="keyword">do</span></span><br><span class="line">    rm -rf /tmp/<span class="variable">$i</span>/objects/*</span><br><span class="line">    rm -rf /tmp/<span class="variable">$i</span>/temp/*</span><br><span class="line"><span class="keyword">done</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># prepare the distributed envrionment</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> `seq 1 6`</span><br><span class="line"><span class="keyword">do</span></span><br><span class="line">    mkdir -p /tmp/<span class="variable">$i</span>/objects</span><br><span class="line">    mkdir -p /tmp/<span class="variable">$i</span>/temp</span><br><span class="line">    mkdir -p /tmp/<span class="variable">$i</span>/garbage</span><br><span class="line"><span class="keyword">done</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># rabbitmq env</span></span><br><span class="line"><span class="comment"># wget localhost:15672/cli/rabbitmqadmin #rabbitmq访问</span></span><br><span class="line">python3 rabbitmqadmin <span class="built_in">declare</span> exchange name=apiServers <span class="built_in">type</span>=fanout</span><br><span class="line">python3 rabbitmqadmin <span class="built_in">declare</span> exchange name=dataServers <span class="built_in">type</span>=fanout</span><br><span class="line"><span class="comment">#sudo rabbitmqctl add_user test test #首次运行需要创建用户和密码</span></span><br><span class="line"><span class="comment">#sudo rabbitmqctl set_permissions -p / test ".*" ".*" ".*" #修改访问权限</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># start test env</span></span><br><span class="line"><span class="built_in">export</span> RABBITMQ_SERVER=amqp://<span class="built_in">test</span>:<span class="built_in">test</span>@localhost:5672</span><br><span class="line"><span class="built_in">export</span> ES_SERVER=localhost:9200</span><br><span class="line"></span><br><span class="line">LISTEN_ADDRESS=10.29.1.1:12346 STORAGE_ROOT=/tmp/1 go run ../dataServer/dataServer.go &amp;</span><br><span class="line">LISTEN_ADDRESS=10.29.1.2:12346 STORAGE_ROOT=/tmp/2 go run ../dataServer/dataServer.go &amp;</span><br><span class="line">LISTEN_ADDRESS=10.29.1.3:12346 STORAGE_ROOT=/tmp/3 go run ../dataServer/dataServer.go &amp;</span><br><span class="line">LISTEN_ADDRESS=10.29.1.4:12346 STORAGE_ROOT=/tmp/4 go run ../dataServer/dataServer.go &amp;</span><br><span class="line">LISTEN_ADDRESS=10.29.1.5:12346 STORAGE_ROOT=/tmp/5 go run ../dataServer/dataServer.go &amp;</span><br><span class="line">LISTEN_ADDRESS=10.29.1.6:12346 STORAGE_ROOT=/tmp/6 go run ../dataServer/dataServer.go &amp;</span><br><span class="line"></span><br><span class="line">LISTEN_ADDRESS=10.29.2.1:12346 go run ../apiServer/apiServer.go &amp;</span><br><span class="line">LISTEN_ADDRESS=10.29.2.2:12346 go run ../apiServer/apiServer.go &amp;</span><br></pre></td></tr></table></figure>
+<p>使用curl测试：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">curl -v <span class="number">10.29</span><span class="number">.2</span><span class="number">.1</span>:<span class="number">12346</span>/objects/test2 -XPUT -d<span class="string">"this is object test2"</span></span><br><span class="line"></span><br><span class="line">curl <span class="number">10.29</span><span class="number">.2</span><span class="number">.2</span>:<span class="number">12346</span>/locate/test2</span><br><span class="line">echo</span><br><span class="line">curl <span class="number">10.29</span><span class="number">.2</span><span class="number">.1</span>:<span class="number">12346</span>/objects/test2</span><br><span class="line">echo</span><br></pre></td></tr></table></figure>
+<p>测试结果如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">*   Trying 10.29.2.1...</span><br><span class="line">* TCP_NODELAY <span class="built_in">set</span></span><br><span class="line">* Connected to 10.29.2.1 (10.29.2.1) port 12346 (<span class="comment">#0)</span></span><br><span class="line">&gt; PUT /objects/test2 HTTP/1.1</span><br><span class="line">&gt; Host: 10.29.2.1:12346</span><br><span class="line">&gt; User-Agent: curl/7.63.0</span><br><span class="line">&gt; Accept: */*</span><br><span class="line">&gt; Content-Length: 20</span><br><span class="line">&gt; Content-Type: application/x-www-form-urlencoded</span><br><span class="line">&gt; </span><br><span class="line">* upload completely sent off: 20 out of 20 bytes</span><br><span class="line">&lt; HTTP/1.1 200 OK</span><br><span class="line">&lt; Date: Sat, 10 Apr 2021 08:11:54 GMT</span><br><span class="line">&lt; Content-Length: 0</span><br><span class="line">&lt; </span><br><span class="line">* Connection <span class="comment">#0 to host 10.29.2.1 left intact</span></span><br><span class="line"><span class="string">"10.29.1.4:12346"</span></span><br><span class="line">this is object test2</span><br></pre></td></tr></table></figure>
+<p>完整代码可见：<a href="https://github.com/dongshifu/distributed_object_storage_dong/tree/main/v1" target="_blank" rel="noopener">可扩展分布式系统实现</a></p>
+<h4 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h4><p>《分布式对象存储—原理、架构及Go语言实现》</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/09/%E5%88%86%E5%B8%83%E5%BC%8F%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8-1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/01/09/%E5%88%86%E5%B8%83%E5%BC%8F%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8-1/" class="post-title-link" itemprop="url">分布式对象存储介绍及单机实现</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-01-09 15:03:58" itemprop="dateCreated datePublished" datetime="2021-01-09T15:03:58+08:00">2021-01-09</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-05-12 10:08:33" itemprop="dateModified" datetime="2021-05-12T10:08:33+08:00">2021-05-12</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8/" itemprop="url" rel="index">
+                    <span itemprop="name">分布式对象存储</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="对象存储"><a href="#对象存储" class="headerlink" title="对象存储"></a>对象存储</h3><h4 id="网络存储"><a href="#网络存储" class="headerlink" title="网络存储"></a>网络存储</h4><ul>
+<li>NAS: Network Attached Storage的简称，是一个提供了<strong>存储功能</strong>和<strong>文件系统</strong>的<strong>网络服务器</strong>。客户端可以<strong>访问</strong>NAS上的文件系统，还可以<strong>上传和下载</strong>文件。NAS客户端和服务端之间使用的协议有SMB、NFS 以及AFS等<strong>网络文件系统协议</strong>。对于客户端来说，NAS就是一个网络上的文件服务器。</li>
+<li>SAN： Storage Area Network 的简称。和NAS的区别是<strong>SAN只提供了块存储，而把文件系统的抽象交给客户端来管理</strong>。SAN 的客户端和服务端之间的协议有FibreChannel、iSCSI、ATA over Ethernet(AoE）和 HyperSCSI。对于客户端来说，<strong>SAN就是一块磁盘,可以对其格式化、创建文件系统并挂载。</strong></li>
+</ul>
+<p>现代的网络存储通常混合使用NAS和SAN，同时提供文件级别的协议和块级别的协议。</p>
+<h4 id="网络文件系统、块存储与对象存储的区别"><a href="#网络文件系统、块存储与对象存储的区别" class="headerlink" title="网络文件系统、块存储与对象存储的区别"></a>网络文件系统、块存储与对象存储的区别</h4><h5 id="数据管理"><a href="#数据管理" class="headerlink" title="数据管理"></a>数据管理</h5><ul>
+<li>网络文件系统：数据是以一个个<strong>文件的形式来管理</strong></li>
+<li>块存储：数据是以<strong>数据块的形式来管理</strong>的，<strong>每个数据块有它自己的地址，但是没有额外的背景信息</strong>。</li>
+<li>对象存储：以<strong>对象</strong>的方式来管理数据的，一个对象通常包含了3个部分:<strong>对象的数据、对象的元数据以及一个全局唯一的标识符（即对象的ID)</strong>。其中<ul>
+<li>对象的数据就是该对象中存储的<strong>数据本身</strong>。一个对象可以用来保存大量无结构的数据(例如：音乐的具体内容)。</li>
+<li>对象的元数据是对象的<strong>描述信息</strong>，为了和对象的数据本身区分开来，称其为元数据(例如：音乐的名字、大小等)。</li>
+<li>对象的标识符用于引用该对象。和对象的名字不同，标识符具有<strong>全局唯一性</strong>。名字不具有这个特性。通常用<strong>对象的散列值来做其标识符</strong></li>
+</ul>
+</li>
+</ul>
+<h5 id="数据访问"><a href="#数据访问" class="headerlink" title="数据访问"></a>数据访问</h5><ul>
+<li>网络文件系统的客户端通过NFS等<strong>网络协议</strong>访问某个远程服务器上存储的文件。</li>
+<li>块存储的客户端通过<strong>数据块的地址</strong>访问SAN上的数据块。</li>
+<li>对象存储则通过<strong>REST网络服务</strong>访问对象。</li>
+</ul>
+<p>REST为Representational State Transfer的简称。REST网络服务通过<strong>标准HTTP服务对网络资源提供一套预先定义的无状态操作</strong>。网络资源被定义为可以<strong>通过URL 访问的文档或文件</strong>。更广发的：网络上一切可以通过任何方式被标识、命名、引用或处理的东西都是一种网络资源。</p>
+<p>对于对象存储来说，<strong>对象就是一种网络资源，但除了对象本身以外，还需要提供一些其他的网络资源用来访问对象存储的各种功能</strong>。客户端向 REST网络服务发起请求并接收响应，以确认网络资源发生了某种变化。HTTP预定义的请求方法(Request Method)通常包括且不限于GET、POST、PUT、DELETE等。它们分别对应不同的处理方式:GET方法在REST 标准中通常用来获取某个网络资源，PUT通常用于<strong>创建或替换</strong>某个网络资源（注意，它跟<strong>PUT的区别是POST一般不同于替换网络资源，如果该资源已经存在，POST通常会返回一个错误而不是覆盖它，POST通常用于创建某个网络资源，DELETE通常用于删除某个网络资源。</strong></p>
+<h5 id="对象存储的优势"><a href="#对象存储的优势" class="headerlink" title="对象存储的优势"></a>对象存储的优势</h5><ul>
+<li>扩展方便：扩展只需要添加新的存储节点就可以</li>
+<li>低代价的数据冗余能力</li>
+</ul>
+<h3 id="单机版对象存储系统"><a href="#单机版对象存储系统" class="headerlink" title="单机版对象存储系统"></a>单机版对象存储系统</h3><p>通过在一台服务器上运行一个<strong>HTTP服务提供的REST接口</strong>，并通过接口实现本地服务器上的对象存取。</p>
+<p><img src="https://api2.mubu.com/v3/document_image/d0432f98-00b4-4a53-b82d-906980f1bcd5-11197877.jpg" alt="单机版分布式存储系统"></p>
+<h4 id="REST接口"><a href="#REST接口" class="headerlink" title="REST接口"></a>REST接口</h4><p>实现PUT方法和GET方法</p>
+<h5 id="对象PUT"><a href="#对象PUT" class="headerlink" title="对象PUT"></a>对象PUT</h5><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">PUT /object/&lt;object_name&gt;</span><br><span class="line">请求正文(Request Body)</span><br></pre></td></tr></table></figure>
+<p><img src="https://api2.mubu.com/v3/document_image/d7a4de74-3320-4ec9-9ae7-760aedea5e94-11197877.jpg" alt="单机版put操作"></p>
+<p>客户端通过PUT方法将一个对象上传至服务器，服务器则将该对象保存在本地磁盘上。<strong><code>/objects/&lt;object_name&gt;</code>是标识该对象网络资源的URL</strong>。URL是Uniform Resource Locator  的简称，也就是一个网络地址，用于引用某个网络资源在网络上的位置。</p>
+<p>在对象存储中，通常使用<strong>PUT方法来上传一个对象</strong>。客户端的PUT请求提供了对象的名字<code>&lt;object_name&gt;</code>和对象的数据<code>&lt;content of object&gt;</code>,它们最终被保存在本地磁盘上的文件<code>STORAGE_ROOT/objects/&lt;object_name&gt;</code>中。<code>$STORAGE_ROOT</code>环境变量保存着在<strong>本地磁盘上的存储根目录的名字。</strong></p>
+<h5 id="对象GET"><a href="#对象GET" class="headerlink" title="对象GET"></a>对象GET</h5><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">GET /objects/&lt;object_name&gt;</span><br><span class="line">响应正文 (Response Body)</span><br></pre></td></tr></table></figure>
+<p><img src="https://api2.mubu.com/v3/document_image/8c258fbb-a251-429e-8c7d-4f64c0bb7687-11197877.jpg" alt="单机版get操作"></p>
+<p>客户端通过GET方法从服务器上<strong>下载</strong>一个对象，<strong>服务器在本地磁盘上查找并读取该对象，如果该对象不存在，则服务器返回HTTP错误代码<code>404 Not Found</code>。</strong></p>
+<p>在对象存储中，总是使用GET方法来下载一个对象。客户端的GET请求提供了<code>&lt;object_name&gt;</code>，服务进程从本地磁盘上的文件<code>$STORAGE_ROOT/objects/&lt;object_name&gt;</code>中<strong>读取对象并将其写入HTTP响应正文。</strong></p>
+<h3 id="具体实现"><a href="#具体实现" class="headerlink" title="具体实现"></a>具体实现</h3><p>main函数</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="comment">//注册HTTP处理函数objects.Handler,若有客户端访问该服务器的HTTP服务且URL以"objects/"开头，</span></span><br><span class="line">	<span class="comment">//则请求将由objects.Handler负责处理。除此之外的HTTP请求会默认返回HTTP错误代码404 Not Found.</span></span><br><span class="line">	http.HandleFunc(<span class="string">"/objects/"</span>, objects.Handler)</span><br><span class="line">	<span class="comment">//监听端口</span></span><br><span class="line">	<span class="comment">//正常情况下没有返回，程序运行后开始监听端口上的请求</span></span><br><span class="line">	<span class="comment">//非正常情况下，该函数将错误返回，log.Fatal打印错误信息并退出程序</span></span><br><span class="line">	log.Fatal(http.ListenAndServe(os.Getenv(<span class="string">"LISTEN_ADDRESS"</span>), <span class="literal">nil</span>))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>objects包下的<code>Handler</code>函数、<code>get、put</code>函数：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> objects</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"net/http"</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 检查HTTP请求方法:PUT则调用put函数，GET则调用共get函数。其余则返回405 Method Not Allowed错误代码</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Handler</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">	m := r.Method <span class="comment">//Method记录该HTTP请求的方法</span></span><br><span class="line">	<span class="keyword">if</span> m == http.MethodPut &#123;</span><br><span class="line">		put(w, r)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> m == http.MethodGet &#123;</span><br><span class="line">		get(w, r)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">//写HTTP响应的代码</span></span><br><span class="line">	w.WriteHeader(http.StatusMethodNotAllowed)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>put方法：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> objects</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"io"</span></span><br><span class="line">	<span class="string">"log"</span></span><br><span class="line">	<span class="string">"net/http"</span></span><br><span class="line">	<span class="string">"os"</span></span><br><span class="line">	<span class="string">"strings"</span></span><br><span class="line">	<span class="string">"fmt"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">put</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">	fmt.Println(r.URL.EscapedPath())</span><br><span class="line">	<span class="comment">//r.URL.EsccapedPath得到request的路径，此处为/objects/xxx</span></span><br><span class="line">	f, e := os.Create(os.Getenv(<span class="string">"STORAGE_ROOT"</span>) + <span class="string">"/objects/"</span> +</span><br><span class="line">		strings.Split(r.URL.EscapedPath(), <span class="string">"/"</span>)[<span class="number">2</span>]) <span class="comment">//得到文件名</span></span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="comment">//创建文件失败</span></span><br><span class="line">		log.Println(e)</span><br><span class="line">		<span class="comment">//写入HTTP响应的代码</span></span><br><span class="line">		w.WriteHeader(http.StatusInternalServerError)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">defer</span> f.Close()</span><br><span class="line">	io.Copy(f, r.Body) <span class="comment">//将r.Body写入文件</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>get方法：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> objects</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"io"</span></span><br><span class="line">	<span class="string">"log"</span></span><br><span class="line">	<span class="string">"net/http"</span></span><br><span class="line">	<span class="string">"os"</span></span><br><span class="line">	<span class="string">"strings"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">get</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">	f, e := os.Open(os.Getenv(<span class="string">"STORAGE_ROOT"</span>) + <span class="string">"/objects/"</span> +</span><br><span class="line">		strings.Split(r.URL.EscapedPath(), <span class="string">"/"</span>)[<span class="number">2</span>])</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(e)</span><br><span class="line">		w.WriteHeader(http.StatusNotFound)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">defer</span> f.Close()</span><br><span class="line">	io.Copy(w, f) </span><br><span class="line">	<span class="comment">//f本身的类型是*os.File,同时实现了io.Writer和io.Reader两个接口，即实现了Write和Read方法</span></span><br><span class="line">	<span class="comment">//http.ResponseWriter也是接口，该接口实现了Write方法，也是一个io.Write接口</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="linux下功能测试"><a href="#linux下功能测试" class="headerlink" title="linux下功能测试"></a>linux下功能测试</h3><p>运行服务器：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mkdir /tmp/objects</span><br><span class="line">LISTEN_ADDRESS=:12345 STORAGE_ROOT=/tmp go run server.go</span><br></pre></td></tr></table></figure>
+<p>curl 进行http访问：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">curl -v 10.29.102.172:12345/objects/<span class="built_in">test</span> <span class="comment">#默认get操作，此时没有数据，返回404 Not Found</span></span><br><span class="line"></span><br><span class="line">curl -v 10.29.102.172:12345/objects/<span class="built_in">test</span> -XPUT -d<span class="string">"this is a test object"</span> <span class="comment"># put一个对象</span></span><br><span class="line"></span><br><span class="line">curl -v 10.29.102.172:12345/objects/<span class="built_in">test</span> <span class="comment">#默认get操作，成功返回200 OK</span></span><br></pre></td></tr></table></figure>
+<h4 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h4><p>《分布式对象存储—原理、架构及Go语言实现》</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/03/Go-channel-3channel%E5%8F%91%E9%80%81%E5%92%8C%E6%8E%A5%E6%94%B6%E6%95%B0%E6%8D%AE%E7%9A%84%E8%BF%87%E7%A8%8B/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1303,336 +1589,6 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/12/mysql-2mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/12/12/mysql-2mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/" class="post-title-link" itemprop="url">mysql性能优化-存储引擎</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-12-12 09:05:57" itemprop="dateCreated datePublished" datetime="2020-12-12T09:05:57+08:00">2020-12-12</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-30 13:42:00" itemprop="dateModified" datetime="2021-03-30T13:42:00+08:00">2021-03-30</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/mysql/" itemprop="url" rel="index">
-                    <span itemprop="name">mysql</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="Mysql插拔式存储引擎"><a href="#Mysql插拔式存储引擎" class="headerlink" title="Mysql插拔式存储引擎"></a>Mysql插拔式存储引擎</h3><h4 id="mysql存储引擎简介"><a href="#mysql存储引擎简介" class="headerlink" title="mysql存储引擎简介"></a>mysql存储引擎简介</h4><ul>
-<li>插拔式的插件方式。  </li>
-<li><strong>存储引擎是指定在表之上的</strong>，即<strong>一个库中的每一个表都可以指定专用的存储引擎。</strong>  </li>
-<li>不管表采用什么样的存储引擎，都会在数据区产生对应的一个<strong>frm文件(表结构定义描述文件)。</strong></li>
-</ul>
-<h4 id="Innodb"><a href="#Innodb" class="headerlink" title="Innodb"></a>Innodb</h4><ul>
-<li><p>Mysql5.5及以后版本的默认存储引擎  </p>
-</li>
-<li><p>Key Advantages:  </p>
-<ul>
-<li>Its DML operations follow the ACID model [<strong>事务ACID</strong>]  </li>
-<li>Row-level locking[<strong>行级锁</strong>]  </li>
-<li>InnoDB tables arrange your data on disk to optimize queries based on primary keys[<strong>聚集索引(主键索引)方式进行数据存储</strong>]  </li>
-<li>To maintain data integrity, InnoDB supports FOREIGN KEY constraints[<strong>支持外键关系保证数据完整性</strong>]  </li>
-</ul>
-</li>
-</ul>
-<h4 id="Myisam"><a href="#Myisam" class="headerlink" title="Myisam"></a>Myisam</h4><ul>
-<li><p>Mysql5.5版本之前的默认存储引擎 ,较多的系统表也还是使用这个存储引,系统临时表也会用到Myisam存储引擎  </p>
-</li>
-<li><p>特点:  </p>
-<ul>
-<li>select count(*) from table 无需进行数据的扫描  </li>
-<li>数据(MYD)和索引(MYI)分开存储  </li>
-<li>表级锁  </li>
-<li>不支持事务  </li>
-</ul>
-</li>
-</ul>
-<h4 id="Memory存储引擎"><a href="#Memory存储引擎" class="headerlink" title="Memory存储引擎"></a>Memory存储引擎</h4><ul>
-<li><strong>数据都是存储在内存中，IO效率要比其他引擎高很多。</strong>  </li>
-<li><p><strong>服务重启数据丢失，内存数据表默认只有16M</strong>。  </p>
-</li>
-<li><p>特点:  </p>
-<ul>
-<li>支持hash索引，B tree索引，<strong>默认hash(查找复杂度0(1))</strong>  </li>
-<li>字段长度都是固定长度varchar(32)=char(32)   </li>
-<li>不支持大数据存储类型字段如 blog，text  </li>
-<li>表级锁  </li>
-</ul>
-</li>
-<li><p>应用场景:  </p>
-<ul>
-<li>等值查找热度较高数据  </li>
-<li>查询结果内存中的计算，大多数都是采用这种存储引擎  </li>
-<li>作为临时表存储需计算的数据  </li>
-</ul>
-</li>
-</ul>
-<h4 id="Archive存储引擎"><a href="#Archive存储引擎" class="headerlink" title="Archive存储引擎"></a>Archive存储引擎</h4><ul>
-<li><p>压缩协议进行数据的存储 ,数据存储为ARZ文件格式  </p>
-</li>
-<li><p>特点:  </p>
-<ul>
-<li>只支持insert和select两种操作   </li>
-<li>只允许自增ID列建立索引  </li>
-<li>行级锁  </li>
-<li>不支持事务  </li>
-<li>数据占用磁盘少  </li>
-</ul>
-</li>
-<li><p>应用场景:  </p>
-<ul>
-<li>日志系统  </li>
-<li>大量的设备数据采集 </li>
-</ul>
-</li>
-</ul>
-<h4 id="CSV存储引擎"><a href="#CSV存储引擎" class="headerlink" title="CSV存储引擎"></a>CSV存储引擎</h4><ul>
-<li>数据存储以CSV文件  </li>
-<li><p>特点:  </p>
-<ul>
-<li>不能定义索引、列定义必须为NOT NULL、不能设置自增列 —&gt;不适用大表或者数据的在线处理   </li>
-<li>CSV数据的存储用,隔开，可直接编辑CSV文件进行数据的编排 —&gt;数据安全性低  </li>
-<li>注:编辑之后，要生效使用flush table XXX 命令  </li>
-</ul>
-</li>
-<li><p>应用场景:  </p>
-<ul>
-<li>数据的快速导出导入 表格直接转换成CSV  </li>
-</ul>
-</li>
-</ul>
-<h4 id="各引擎对比"><a href="#各引擎对比" class="headerlink" title="各引擎对比"></a>各引擎对比</h4><p><img src="https://api2.mubu.com/v3/document_image/6091bb4c-98c4-4513-8069-954152ee02e8-11197877.jpg" alt="各引擎对比"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/10/mysql-1mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E5%88%86%E6%9E%90-%E7%B4%A2%E5%BC%95/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/12/10/mysql-1mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E5%88%86%E6%9E%90-%E7%B4%A2%E5%BC%95/" class="post-title-link" itemprop="url">mysql性能优化分析-索引</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-12-10 21:29:27" itemprop="dateCreated datePublished" datetime="2020-12-10T21:29:27+08:00">2020-12-10</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-30 13:42:03" itemprop="dateModified" datetime="2021-03-30T13:42:03+08:00">2021-03-30</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/mysql/" itemprop="url" rel="index">
-                    <span itemprop="name">mysql</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="索引"><a href="#索引" class="headerlink" title="索引"></a>索引</h3><p><strong>正确的</strong>创建<strong>合适的</strong>索引是提升数据库查询性能的基础。  </p>
-<h4 id="索引定义"><a href="#索引定义" class="headerlink" title="索引定义"></a>索引定义</h4><p>索引是为了<strong>加速对表中数据行的检索</strong>而创建的一种<strong>分散存储的数据结构</strong>(<strong>硬盘</strong>级)。</p>
-<p><img src="https://api2.mubu.com/v3/document_image/7363550a-3c61-48ae-8f12-2b19a0acbc57-11197877.jpg" alt="索引"> </p>
-<h4 id="使用索引意义"><a href="#使用索引意义" class="headerlink" title="使用索引意义"></a>使用索引意义</h4><ul>
-<li>索引能极大的<strong>减少存储引擎需要扫描的数据</strong>量。  </li>
-<li>索引可以把<strong>随机IO变成顺序IO</strong>。  </li>
-<li>索引可以帮助我们在<strong>进行分组、排序等操作时，避免使用临时表</strong>。  </li>
-</ul>
-<h4 id="使用B-树的意义"><a href="#使用B-树的意义" class="headerlink" title="使用B+树的意义"></a>使用B+树的意义</h4><p>二叉查找树 Binary Search Tree  </p>
-<p><img src="https://api2.mubu.com/v3/document_image/235038cb-5681-4ac4-ada2-df8ae2529089-11197877.jpg" alt="二叉树"></p>
-<p>平衡二叉查找树 Balanced Binary Search Tree  </p>
-<p><img src="https://api2.mubu.com/v3/document_image/cec150e9-957e-46d3-ac69-76bf683d7573-11197877.jpg" alt="平衡二叉查找树"></p>
-<p>二叉树和平衡二叉树的缺点：  </p>
-<ul>
-<li>树结构<strong>太深</strong>  </li>
-<li><p>因为<strong>每个节点都存有数据，数据处的(高)深度决定着他的IO操作次数，IO操作耗时大。</strong>  </p>
-</li>
-<li><p><strong>数据存储太小</strong>  </p>
-</li>
-<li><strong>每一个磁盘块(节点/页，单位4kb)保存的数据量(远远不足4k)太小了</strong>  </li>
-<li>没有很好的利用操作<strong>磁盘IO的数据交换特性</strong>，也没有利用好<strong>磁盘IO的预读能力(空间局部性原理，预读8k、12k等)</strong>，从而带来频繁的IO操作。  </li>
-</ul>
-<p>多路平衡查找树 B-Tree  :</p>
-<p><img src="https://api2.mubu.com/v3/document_image/5ea41241-12e1-4f23-8550-dee925ffdcc7-11197877.jpg" alt="绝对平衡树"></p>
-<p>平衡查找树的分支数量与关键字大小有关，可以大致认为：<strong>磁盘块的容量/关键字大小 = 平衡树分支数量。</strong>  </p>
-<p>加强版的多路平衡查找树 Mysql的B+Tree  :</p>
-<p><img src="https://api2.mubu.com/v3/document_image/9988480f-165b-4407-afda-33033bab14ff-11197877.jpg" alt="B+树"></p>
-<p>B+Tree与B-Tree的区别  </p>
-<ul>
-<li>B+节点关键字搜索采用<strong>闭合区间</strong>  </li>
-<li>B+<strong>非叶节点不保存数据相关信息，只保存关键字和子节点的引用</strong>  </li>
-<li>B+<strong>关键字对应的数据保存在叶子节点中</strong>  </li>
-<li>B+<strong>叶子节点是顺序排列</strong>的，并且<strong>相邻节点具有顺序引用的关系</strong>  </li>
-</ul>
-<p>选择B+树的原因：</p>
-<ul>
-<li>B+树是B-树的变种(PLUS版)多路绝对平衡查找树，他拥有B-树的优势  </li>
-<li>B+树扫库、表能力更强  </li>
-<li>B+树的磁盘读写能力更强  </li>
-<li>B+树的排序能力更强   </li>
-<li>B+树的查询效率更加稳定  </li>
-</ul>
-<h4 id="MySql中B-Tree索引的体现形式"><a href="#MySql中B-Tree索引的体现形式" class="headerlink" title="MySql中B+Tree索引的体现形式"></a>MySql中B+Tree索引的体现形式</h4><p>Myisam:数据和索引分开存储，<strong>数据保存在MYD文件，索引文件为MYI。</strong>  </p>
-<p><img src="https://api2.mubu.com/v3/document_image/faa0f796-3dc4-4e06-892d-d76725f55e48-11197877.jpg" alt="myisam索引"></p>
-<p>Myisam双索引：</p>
-<p><img src="https://api2.mubu.com/v3/document_image/7899eede-8cc3-43b1-9ecc-466708913605-11197877.jpg" alt="Myisam双索引"></p>
-<p>Innodb 索引结构：</p>
-<p><img src="https://api2.mubu.com/v3/document_image/e94761d0-7249-4401-8958-13f6657ec61b-11197877.jpg" alt="Innodb聚集索引"></p>
-<p>未指定索引的情况下InnoDB会自动生成隐式索引:</p>
-<p><img src="https://api2.mubu.com/v3/document_image/ae632bb5-2312-4aa3-9e8e-522939f7e909-11197877.jpg" alt="innoDB双索引"></p>
-<p>使用辅助索引查询某项具体信息时，需要反向到主键索引中查找相关信息（<strong>回表操作</strong>）。</p>
-<p>这样设计的好处就是在数据迁移的时候辅助索引可以不做作相应的指向改变。<br>对于InnoDB的辅助索引，它的<strong>叶子节点存储的是索引值和指向主键索引的位置</strong>。  </p>
-<p>Myisam 与InnoDB对比：</p>
-<p><img src="https://api2.mubu.com/v3/document_image/81003d7c-27fd-4ca2-b277-7a7176dda226-11197877.jpg" alt="索引对比">)</p>
-<h4 id="索引知识点汇总"><a href="#索引知识点汇总" class="headerlink" title="索引知识点汇总"></a>索引知识点汇总</h4><ul>
-<li>列的离散性 ：</li>
-</ul>
-<p><img src="https://api2.mubu.com/v3/document_image/1ecf984c-7986-43eb-8435-a2148c5b1988-11197877.jpg" alt="列的离散性"></p>
-<p><strong>离散性低的索引会造成选择性差，无法寻找合适的分支，数库会使用全局扫描。</strong>类似男女这种字段如果简历索引则要遍历位图索引。  </p>
-<ul>
-<li>最左匹配原则</li>
-</ul>
-<p>对索引中<strong>关键字进行计算(对比)，一定是从左往右依次进行(每一位)，且不可跳过。</strong></p>
-<p><img src="https://api2.mubu.com/v3/document_image/f040342e-bf46-4385-9ac8-be9aee20578e-11197877.jpg" alt="最左匹配原则"></p>
-<ul>
-<li>联合索引  <ul>
-<li>单列索引：节点中关键字[name]  </li>
-<li>联合索引：节点中关键字[name,phoneNum]  </li>
-<li>单列索引是特殊的联合索引  </li>
-</ul>
-</li>
-<li><p>联合索引列选择原则  :</p>
-<ul>
-<li><strong>经常用的列优先</strong> 【最左匹配原则】  </li>
-<li><strong>选择性(离散度)高的列优先</strong>【离散度高原则】  </li>
-<li><strong>宽度小的列优先</strong>【最少空间原则】 </li>
-</ul>
-</li>
-<li><p>覆盖索引  </p>
-<ul>
-<li>如果<strong>索引包含所有满足查询需要的数据的索引成为覆盖索引(Covering Index)，也就是平时所说的不需要回表操作。</strong>  </li>
-<li>使用explain，可以通过输出的extra列来判断，<strong>对于一个索引覆盖查询，显示为using index，MySQL查询优化器在执行查询前会决定是否有索引覆盖查询。</strong>  </li>
-<li>覆盖索引可<strong>减少数据库IO，将随机IO变为顺序IO，可提高查询性能</strong>。</li>
-</ul>
-</li>
-</ul>
-<h4 id="索引使用的注意点"><a href="#索引使用的注意点" class="headerlink" title="索引使用的注意点"></a>索引使用的注意点</h4><ul>
-<li>索引列的数据长度能少则少。  </li>
-<li>索引一定不是越多越好，越全越好，一定是建合适的。  </li>
-<li>匹配列前缀可用到索引 like 9999%，like %9999%、like %9999用不到索引; Where 条件中 not in 和 &lt;&gt;操作无法使用索引;  </li>
-<li>匹配范围值，order by 也可用到索引;   </li>
-<li>多用指定列查询，只返回自己想到的数据列，少用select *;   </li>
-<li>联合索引中如果不是按照索引最左列开始查找，无法使用索引;   </li>
-<li>联合索引中精确匹配最左前列并范围匹配另外一列可以用到索引;   </li>
-<li>联合索引中如果查询中有某个列的范围查询，则其右边的所有列都无法使用索引;  </li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
@@ -1683,7 +1639,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">65</span>
+          <span class="site-state-item-count">67</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
