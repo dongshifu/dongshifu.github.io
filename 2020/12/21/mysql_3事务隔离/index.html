@@ -347,12 +347,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2020/12/20/mysql-5mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-mvcc/" rel="prev" title="mysql性能优化-mvcc">
-      <i class="fa fa-chevron-left"></i> mysql性能优化-mvcc
+    <a href="/2020/12/21/mysql_2%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F/" rel="prev" title="mysql日志系统">
+      <i class="fa fa-chevron-left"></i> mysql日志系统
     </a></div>
       <div class="post-nav-item">
-    <a href="/2020/12/21/mysql_2%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F/" rel="next" title="mysql日志系统">
-      mysql日志系统 <i class="fa fa-chevron-right"></i>
+    <a href="/2021/01/02/Go-channel_1%E4%BD%BF%E7%94%A8/" rel="next" title="channel用法">
+      channel用法 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -369,19 +369,19 @@
           
       <div class="tabs tabs-comment">
         <ul class="nav-tabs">
-            <li class="tab"><a href="#comment-gitalk">gitalk</a></li>
             <li class="tab"><a href="#comment-livere">livere</a></li>
+            <li class="tab"><a href="#comment-gitalk">gitalk</a></li>
         </ul>
         <div class="tab-content">
-            <div class="tab-pane gitalk" id="comment-gitalk">
-              <div class="comments" id="gitalk-container"></div>
-            </div>
             <div class="tab-pane livere" id="comment-livere">
               
   <div class="comments" id="comments">
     <div id="lv-container" data-id="city" data-uid="MTAyMC81MjkwMy8yOTM4MA=="></div>
   </div>
   
+            </div>
+            <div class="tab-pane gitalk" id="comment-gitalk">
+              <div class="comments" id="gitalk-container"></div>
             </div>
         </div>
       </div>
@@ -448,7 +448,7 @@
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-count">12</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
@@ -613,6 +613,20 @@ window.addEventListener('pjax:success', () => {
 
   
 
+<script>
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+</script>
+
 <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
 
 <script>
@@ -629,20 +643,6 @@ window.addEventListener('pjax:success', () => {
     });
     gitalk.render('gitalk-container');
   }, window.Gitalk);
-</script>
-
-<script>
-  window.livereOptions = {
-    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
-  };
-  (function(d, s) {
-    var j, e = d.getElementsByTagName(s)[0];
-    if (typeof LivereTower === 'function') { return; }
-    j = d.createElement(s);
-    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
-    j.async = true;
-    e.parentNode.insertBefore(j, e);
-  })(document, 'script');
 </script>
 
     </div>
