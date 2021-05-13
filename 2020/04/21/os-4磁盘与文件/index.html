@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="alternate" href="/atom.xml" title="ShifuDong" type="application/atom+xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.5.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":"flat"},
+    back2top: {"enable":true,"sidebar":true,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":5,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="新建一个空文件占用多少磁盘空间linux下touch一个空文件： 1touch empyt_file 进行该操作，是否要消耗磁盘空间？需要的话，大概能消耗多少？ ls这个命令可以查看文件大小： 1234$ touch empty_file$ ls -l  total 0  -rw-r--r-- 1 dongshifu dongshifu 0 Aug 17 17:49 empty_file ls命令">
+<meta name="keywords" content="文件">
+<meta property="og:type" content="article">
+<meta property="og:title" content="文件在磁盘中的开销">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;04&#x2F;21&#x2F;os-4%E7%A3%81%E7%9B%98%E4%B8%8E%E6%96%87%E4%BB%B6&#x2F;index.html">
+<meta property="og:site_name" content="ShifuDong">
+<meta property="og:description" content="新建一个空文件占用多少磁盘空间linux下touch一个空文件： 1touch empyt_file 进行该操作，是否要消耗磁盘空间？需要的话，大概能消耗多少？ ls这个命令可以查看文件大小： 1234$ touch empty_file$ ls -l  total 0  -rw-r--r-- 1 dongshifu dongshifu 0 Aug 17 17:49 empty_file ls命令">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;c3c116ba-3f8f-4006-8cf4-a24d3d2a5d5c-11197877.jpg">
+<meta property="og:updated_time" content="2021-05-13T01:44:18.980Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;c3c116ba-3f8f-4006-8cf4-a24d3d2a5d5c-11197877.jpg">
+
+<link rel="canonical" href="http://yoursite.com/2020/04/21/os-4%E7%A3%81%E7%9B%98%E4%B8%8E%E6%96%87%E4%BB%B6/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>文件在磁盘中的开销 | ShifuDong</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ShifuDong</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">Knowledge Sharing</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/04/21/os-4%E7%A3%81%E7%9B%98%E4%B8%8E%E6%96%87%E4%BB%B6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          文件在磁盘中的开销
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-04-21 19:29:16" itemprop="dateCreated datePublished" datetime="2020-04-21T19:29:16+08:00">2020-04-21</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-05-13 09:44:18" itemprop="dateModified" datetime="2021-05-13T09:44:18+08:00">2021-05-13</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/OS/" itemprop="url" rel="index">
+                    <span itemprop="name">OS</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="新建一个空文件占用多少磁盘空间"><a href="#新建一个空文件占用多少磁盘空间" class="headerlink" title="新建一个空文件占用多少磁盘空间"></a>新建一个空文件占用多少磁盘空间</h3><p>linux下<code>touch</code>一个空文件：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">touch empyt_file</span><br></pre></td></tr></table></figure>
+<p>进行该操作，是否要消耗磁盘空间？需要的话，大概能消耗多少？</p>
+<p><code>ls</code>这个命令可以查看文件大小：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ touch empty_file</span><br><span class="line">$ ls -l  </span><br><span class="line">total 0  </span><br><span class="line">-rw-r--r-- 1 dongshifu dongshifu 0 Aug 17 17:49 empty_file</span><br></pre></td></tr></table></figure>
+<p><code>ls</code>命令表示这个空文件占用的是0。<strong>文件的大小确实是0，因为还没有为该文件写入任何内容</strong>。但是现在要思考的是，<strong>一个空文件是否占用磁盘空间</strong>。所以直觉告诉这绝对不可能，磁盘上多出来一个文件，怎么可能一点空间开销都没有！</p>
+<p>为了解开这个谜底，还需要借助<code>df</code>命令。输入<code>df –i</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># df -i</span></span><br><span class="line">Filesystem            Inodes   IUsed   IFree IUse% Mounted on</span><br><span class="line">......</span><br><span class="line">/dev/sdb1            2147361984 12785019 2134576965    1% /search</span><br></pre></td></tr></table></figure>
+<p>该命令输出展示了<strong>文件系统中inode的使用情况</strong>。注意IUsed是12785019。继续新建一个空文件：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># touch empty_file2</span></span><br><span class="line">df -i</span><br><span class="line">Filesystem            Inodes   IUsed   IFree IUse% Mounted on</span><br><span class="line">......</span><br><span class="line">/dev/sdb1            2147361984 12785020 2134576964    1% /search</span><br></pre></td></tr></table></figure>
+<p>这下注意IUsed变成了12785020。</p>
+<p>得出结论：<strong>新建一个空文件会占用一个Inode。</strong></p>
+<h4 id="Inode"><a href="#Inode" class="headerlink" title="Inode"></a>Inode</h4><p>那么inode里都存了哪些和文件相关的信息呢？稍微看一下内核的源代码。以ext2文件系统为例，在linux-2.6里的文件<code>fs/ext2/ext2.h</code>中，可以找到内核对于inode结构体的定义。该结构体较为复杂，<strong>主要存储除了文件内容以外的一些其他数据</strong>，选一些比较关键的截取出来：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">ext2_inode</span> &#123;</span></span><br><span class="line">        __le16  i_mode;         <span class="comment">// 文件权限</span></span><br><span class="line">        __le16  i_uid;          <span class="comment">// 文件所有者ID</span></span><br><span class="line">        __le32  i_size;         <span class="comment">// 文件字节数大小</span></span><br><span class="line">        __le32  i_atime;        <span class="comment">// 文件上次被访问的时间</span></span><br><span class="line">        __le32  i_ctime;        <span class="comment">// 文件创建时间</span></span><br><span class="line">        __le32  i_mtime;        <span class="comment">// 文件被修改的时间</span></span><br><span class="line">        __le32  i_dtime;        <span class="comment">// 文件被删除的时间</span></span><br><span class="line">        __le16  i_gid;          <span class="comment">// 文件所属组ID</span></span><br><span class="line">        __le16  i_links_count;  <span class="comment">// 此文件的inode被连接的次数</span></span><br><span class="line">        __le32  i_blocks;       <span class="comment">// 文件的block数量</span></span><br><span class="line">        ...</span><br><span class="line">        __le32  i_block[EXT2_N_BLOCKS]; <span class="comment">// 指向存储文件数据的块的数组</span></span><br><span class="line">        ...</span><br></pre></td></tr></table></figure>
+<p>可以看到<strong>和文件相关的所属用户、访问时间等都是存在inode中的</strong>。使用<code>stat</code>命令就可以直接看到文件inode中数据。</p>
+<p>每个inode到底是多大呢？<code>dumpe2fs</code>可以查看（XFS的话使用xfs_info)。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># dumpe2fs -h /dev/mapper/vgroot-lvroot</span></span><br><span class="line">dumpe2fs 1.41.12 (17-May-2010)</span><br><span class="line">......</span><br><span class="line">Inode size:               256</span><br></pre></td></tr></table></figure>
+<p><strong>Inode size表示每个Inode的大小。</strong>一般，每个inode都是256字节。<strong>两个inode的大小正好对齐到磁盘扇区的512字节。</strong></p>
+<h4 id="文件名保存地址"><a href="#文件名保存地址" class="headerlink" title="文件名保存地址"></a>文件名保存地址</h4><p>Inode结构体都看完了，搞了半天不知道有没有发现一个问题，<strong>inode里并没有存储文件名！！那么，文件名到底跑哪儿去了？</strong></p>
+<p>在<code>fs/ext2/ext2.h</code>中，可以找到如下文件夹相关的结构体</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">ext2_dir_entry</span> &#123;</span></span><br><span class="line">         __le32  inode;                  <span class="comment">/* Inode number */</span></span><br><span class="line">         __le16  rec_len;                <span class="comment">/* Directory entry length */</span></span><br><span class="line">         __le16  name_len;               <span class="comment">/* Name length */</span></span><br><span class="line">         <span class="keyword">char</span>    name[];                 <span class="comment">/* File name, up to EXT2_NAME_LEN */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>该结构体就是<strong>文件夹所使用的数据结构</strong>。没错<strong>，文件名是存在其所属的文件夹中的，就是其中的<code>char name[]</code>字段。和文件名一起，文件夹里还记录了该文件的inode号等信息。</strong></p>
+<h3 id="一个字节的文件实际占用多少磁盘空间"><a href="#一个字节的文件实际占用多少磁盘空间" class="headerlink" title="一个字节的文件实际占用多少磁盘空间"></a>一个字节的文件实际占用多少磁盘空间</h3><p>假如给文件里只写入1个字节，那么这个文件实际的磁盘占用多大，难道真的是1个字节吗？</p>
+<p>实际操作：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># mkdir tempDir</span></span><br><span class="line"><span class="comment"># cd tempDir</span></span><br><span class="line"><span class="comment"># du -h</span></span><br><span class="line">0    .</span><br><span class="line"><span class="comment"># touch test</span></span><br><span class="line"><span class="comment"># du -h</span></span><br><span class="line">0</span><br></pre></td></tr></table></figure>
+<p>在一个目录中创建了一个空的文件以后，通过<code>du</code>命令看到的该文件夹的占用空间并没有发生变化。这符合之前的认识，因为空文件只占用inode。接着修改文件，添加一个字母：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> <span class="string">"a"</span> &gt; <span class="built_in">test</span></span><br><span class="line"><span class="comment"># du -h</span></span><br><span class="line">4.0K</span><br></pre></td></tr></table></figure>
+<p>保存后再次查看该目录的空间占用。<strong>发现由原来的0增加到了4K</strong>。 所以说，<strong>文件里的内容不论多小，哪怕是一个字节，其实操作系统也会分配4K的</strong>。哦，当然了<strong>还得再算前文中说到的inode和文件夹数据结构中存储的文件名等所用的空间。</strong> 所以，不要在系统里维护一大堆的碎文件<strong>。文件再小，占用磁盘其实一点都不少！</strong></p>
+<h4 id="4K占用的底层原理"><a href="#4K占用的底层原理" class="headerlink" title="4K占用的底层原理"></a>4K占用的底层原理</h4><p>再把linux源代码文件fs/ext2/ext2.h里关于inode的定义翻出来，<strong>找到结构体中定义的指向数据节点用的block数组：</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">ext2_inode</span> &#123;</span></span><br><span class="line">    ......</span><br><span class="line">    __le32  i_block[EXT2_N_BLOCKS]; <span class="comment">// 指向存储文件数据的块的数组</span></span><br><span class="line">    ......</span><br></pre></td></tr></table></figure>
+<p><strong>当文件没有数据需要存储的时候，这个数组都是空值。而当写入了1个字节以后，文件系统就需要申请block去存储了，申请完后，指针放在这个数组里。哪怕文件内容只有一个字节，仍然会分配一个整的Block，因为这是文件系统的最小工作单位。那么这个block大小是多大呢，ext下可以通过<code>dumpe2fs</code>查看。</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#dumpe2fs -h /dev/mapper/vgroot-lvroot</span></span><br><span class="line">......</span><br><span class="line">Block size:               4096</span><br></pre></td></tr></table></figure>
+<p>一般情况，一个Block是4KB。</p>
+<h4 id="大文件如何存储"><a href="#大文件如何存储" class="headerlink" title="大文件如何存储"></a>大文件如何存储</h4><p>inode中定义的block数组大小呢，只有<code>EXT2_N_BLOCKS</code>个。再查看一下这个常量的定义，发现它是15，相关内核中定义如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> EXT2_NDIR_BLOCKS        12</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> EXT2_IND_BLOCK         EXT2_NDIR_BLOCKS</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> EXT2_DIND_BLOCK        (EXT2_IND_BLOCK + 1)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> EXT2_TIND_BLOCK        (EXT2_DIND_BLOCK + 1)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> EXT2_N_BLOCKS              (EXT2_TIND_BLOCK + 1)</span></span><br></pre></td></tr></table></figure>
+<p>就按4K的block size来看，15个block只够存的下15<em>4=60K的文件。 这个文件大小肯定不是那么简单，存一个mp4大片都得上G了。那<em>*Linux是怎么实现大文件存储的呢？其实上面宏的定义过程已经告知了一切，就是只有12个数组直接存block指针，其余的用来做间接索引（EXT2_IND_BLOCK），二级间接索引（EXT2_DIND_BLOCK）和三级索引（EXT2_TIND_BLOCK）。</em></em></p>
+<p><img src="https://api2.mubu.com/v3/document_image/c3c116ba-3f8f-4006-8cf4-a24d3d2a5d5c-11197877.jpg" alt="inode中的直接与间接索引"></p>
+<p>这样，一个文件可以使用的空间就指数倍的扩展了。 <strong>文件小的时候，都用直接索引，磁盘IO少，性能好。文件大的时候，访问一个block可能得先进行三次的IO，性能略慢，不过有OS层面的页缓存、目录项缓存的加持，也还好</strong>。</p>
+<h4 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h4><p><strong>文件系统是按照inode+block来组织的，所以不管文件多小，哪怕只有一个字节，在数据上都会消耗掉整整一个块(当然还得算上inode等开销)。</strong>这个块大小可以通过<code>dumpe2fs</code>等命令来查看。如果想改变这个块大小怎么办?对不起，只能重新格式化。</p>
+<p>再扯的远一点<strong>，所有的文件系统理念都是按照块来分配的，包括分布式文件系统</strong>，例如HDFS。<strong>由于HDFS应用场景是各种GB、TB甚至是PB级别的数据处理。所以为了降低block的管理成本，它的block size设置的非常大。在比较新的版本里，一个block直接就是128M，</strong>没看错，单位是M。 </p>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a href="https://mp.weixin.qq.com/s/WE6BodR_q0GSKks_TgYL1w" target="_blank" rel="noopener">https://mp.weixin.qq.com/s/WE6BodR_q0GSKks_TgYL1w</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%96%87%E4%BB%B6/" rel="tag"># 文件</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/04/12/os-3%E5%9B%BA%E6%80%81%E7%A1%AC%E7%9B%98/" rel="prev" title="操作系统固态硬盘基本介绍">
+      <i class="fa fa-chevron-left"></i> 操作系统固态硬盘基本介绍
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/04/25/os-6%E5%86%85%E5%AD%98/" rel="next" title="内存底层原理">
+      内存底层原理 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+      <div class="tabs tabs-comment">
+        <ul class="nav-tabs">
+            <li class="tab"><a href="#comment-gitalk">gitalk</a></li>
+            <li class="tab"><a href="#comment-livere">livere</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane gitalk" id="comment-gitalk">
+              <div class="comments" id="gitalk-container"></div>
+            </div>
+            <div class="tab-pane livere" id="comment-livere">
+              
+  <div class="comments" id="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81MjkwMy8yOTM4MA=="></div>
+  </div>
+  
+            </div>
+        </div>
+      </div>
+      <script>
+        window.addEventListener('tabs:register', () => {
+          let activeClass = 'gitalk';
+            activeClass = localStorage.getItem('comments_active') || activeClass;
+          if (activeClass) {
+            let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+            if (activeTab) {
+              activeTab.click();
+            }
+          }
+        });
+        window.addEventListener('tabs:click', event => {
+          let commentClass = event.target.classList[1];
+          localStorage.setItem('comments_active', commentClass);
+        });
+      </script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#新建一个空文件占用多少磁盘空间"><span class="nav-number">1.</span> <span class="nav-text">新建一个空文件占用多少磁盘空间</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Inode"><span class="nav-number">1.1.</span> <span class="nav-text">Inode</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#文件名保存地址"><span class="nav-number">1.2.</span> <span class="nav-text">文件名保存地址</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#一个字节的文件实际占用多少磁盘空间"><span class="nav-number">2.</span> <span class="nav-text">一个字节的文件实际占用多少磁盘空间</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4K占用的底层原理"><span class="nav-number">2.1.</span> <span class="nav-text">4K占用的底层原理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#大文件如何存储"><span class="nav-number">2.2.</span> <span class="nav-text">大文件如何存储</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#小结"><span class="nav-number">2.3.</span> <span class="nav-text">小结</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考"><span class="nav-number">3.</span> <span class="nav-text">参考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ShifuDong"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">ShifuDong</p>
+  <div class="site-description" itemprop="description">记录生活， 记录学习， 分享知识</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">78</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">30</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/mailto:sfd_w@foxmail.com" title="E-Mail → mailto:sfd_w@foxmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ShifuDong</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.0.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.5.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.getAttribute('pjax') !== null) {
+      element.setAttribute('pjax', '');
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'a6ee5b68c97a3db64850',
+      clientSecret: '1dfa06f32032431e4af79b80f9ddf9dfd13dbda2',
+      repo: 'dongshifu.github.io',
+      owner: 'dongshifu',
+      admin: ['dongshifu'],
+      id: '49cafe4425f0e66755108f72004d3c88',
+        language: 'zh-CN',
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script>
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+</script>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="alternate" href="/atom.xml" title="ShifuDong" type="application/atom+xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.5.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":"flat"},
+    back2top: {"enable":true,"sidebar":true,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":5,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="机械硬盘好像本科时候学的操作系统课程在讲解磁盘的时候非常简略。现在复习一下。 磁盘结构对于常见的机械磁盘，分磁盘面、磁道、柱面和扇区。   有以下概念 ：  磁盘面：磁盘是由一叠磁盘面叠加组合构成，每个磁盘面上都会有一个磁头负责读写。  磁道(Sector&#x2F;Track)：每个盘面会围绕圆心划分出多个同心圆圈，每个圆圈叫做一个磁道。  柱面(Cylinders)：所有盘片上的同一位置的磁道组成的立体">
+<meta name="keywords" content="机械硬盘">
+<meta property="og:type" content="article">
+<meta property="og:title" content="操作系统硬盘基本介绍">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;04&#x2F;10&#x2F;os-2%E7%A1%AC%E7%9B%98&#x2F;index.html">
+<meta property="og:site_name" content="ShifuDong">
+<meta property="og:description" content="机械硬盘好像本科时候学的操作系统课程在讲解磁盘的时候非常简略。现在复习一下。 磁盘结构对于常见的机械磁盘，分磁盘面、磁道、柱面和扇区。   有以下概念 ：  磁盘面：磁盘是由一叠磁盘面叠加组合构成，每个磁盘面上都会有一个磁头负责读写。  磁道(Sector&#x2F;Track)：每个盘面会围绕圆心划分出多个同心圆圈，每个圆圈叫做一个磁道。  柱面(Cylinders)：所有盘片上的同一位置的磁道组成的立体">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;97cfa71c-113a-43bd-abdb-d78b1bc43a28-11197877.jpg">
+<meta property="og:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;3b042450-4931-4f66-a012-3c6132ca439c-11197877.jpg">
+<meta property="og:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;204662d6-e7e5-41f5-8d33-41927478da19-11197877.jpg">
+<meta property="og:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;88ea6682-01e8-4fbe-8f04-b8eea8cf3aaa-11197877.jpg">
+<meta property="og:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;7e22af98-48ad-4f07-960b-f1db61ec5e21-11197877.jpg">
+<meta property="og:updated_time" content="2021-05-13T01:42:09.131Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;97cfa71c-113a-43bd-abdb-d78b1bc43a28-11197877.jpg">
+
+<link rel="canonical" href="http://yoursite.com/2020/04/10/os-2%E7%A1%AC%E7%9B%98/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>操作系统硬盘基本介绍 | ShifuDong</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ShifuDong</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">Knowledge Sharing</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/04/10/os-2%E7%A1%AC%E7%9B%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          操作系统硬盘基本介绍
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-04-10 19:29:16" itemprop="dateCreated datePublished" datetime="2020-04-10T19:29:16+08:00">2020-04-10</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-05-13 09:42:09" itemprop="dateModified" datetime="2021-05-13T09:42:09+08:00">2021-05-13</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/OS/" itemprop="url" rel="index">
+                    <span itemprop="name">OS</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="机械硬盘"><a href="#机械硬盘" class="headerlink" title="机械硬盘"></a>机械硬盘</h3><p>好像本科时候学的操作系统课程在讲解磁盘的时候非常简略。现在复习一下。</p>
+<h3 id="磁盘结构"><a href="#磁盘结构" class="headerlink" title="磁盘结构"></a>磁盘结构</h3><p>对于常见的机械磁盘，分磁盘面、磁道、柱面和扇区。</p>
+<p><img src="https://api2.mubu.com/v3/document_image/97cfa71c-113a-43bd-abdb-d78b1bc43a28-11197877.jpg" alt="磁盘逻辑结构"></p>
+<p><img src="https://api2.mubu.com/v3/document_image/3b042450-4931-4f66-a012-3c6132ca439c-11197877.jpg" alt="磁道和扇区"></p>
+<p>有以下概念 ：</p>
+<ul>
+<li><p>磁盘面：磁盘是由一叠磁盘面叠加组合构成，<strong>每个磁盘面上都会有一个磁头</strong>负责读写。</p>
+</li>
+<li><p>磁道(Sector/Track)：每个盘面会围绕圆心划分出多个<strong>同心圆圈，每个圆圈叫做一个磁道</strong>。</p>
+</li>
+<li><p>柱面(Cylinders)：所有盘片上的同一位置的磁道组成的<strong>立体</strong>叫做一个柱面。</p>
+</li>
+<li><p>扇区(Sector)：以磁道为单位管理磁盘仍然太大，所以又把每个磁道划分出了多个扇区。而<strong>磁盘存储的最小组成单位就是扇区</strong>。 </p>
+</li>
+</ul>
+<p>单柱面的存储容量 = 每个扇区的字节数 <em> 每柱面扇区数 </em> 磁盘面数 。</p>
+<p>整体磁盘的容量 = 单柱面容量 * 总的柱面数字。</p>
+<p>扇区与扇区之间其实不是紧挨着的，而是<strong>在每个扇区结尾还有一个存储纠错码的位置</strong>。假设<strong>某一个扇区读取时发生了错误，这样在扇区结尾的纠错码就能发现。磁头就会在磁盘下一圈转过来的时候再读取一遍。</strong></p>
+<h4 id="linux下查询"><a href="#linux下查询" class="headerlink" title="linux下查询"></a>linux下查询</h4><p>查看操作系统挂载的硬盘数量及大小，借助<code>lsblk</code>命令</p>
+<p>然后通过<code>fdisk</code>可以查看硬盘的详细信息：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> fdisk -l /dev/sda</span></span><br><span class="line"><span class="meta">#</span><span class="bash">可以查看到heads(磁头)数量，从而确定盘面数</span></span><br><span class="line"><span class="meta">#</span><span class="bash">cylinders 数量：每个盘面的磁道数</span></span><br><span class="line"><span class="meta">#</span><span class="bash">sectors/track 每个磁道上的扇区</span></span><br><span class="line"><span class="meta">#</span><span class="bash">每个逻辑扇区以及物理扇区的大小： 512bytes/4096bytes</span></span><br><span class="line"><span class="meta">#</span><span class="bash">每个units的大小=盘面数*每个磁道上的扇区数*逻辑扇区大小</span></span><br><span class="line"><span class="meta">#</span><span class="bash">磁盘总大小 = cylinders数 * units大小</span></span><br></pre></td></tr></table></figure>
+<h4 id="每个磁道可以存储的数据都是一样的吗？"><a href="#每个磁道可以存储的数据都是一样的吗？" class="headerlink" title="每个磁道可以存储的数据都是一样的吗？"></a>每个磁道可以存储的数据都是一样的吗？</h4><p>在<strong>老式的磁盘里，确实是每个磁道数据都是一样的</strong>。这样越是内圈磁道的存储密度越大。目的就是为了访问方便，通过一个CHS地址：柱面地址（Cylinders）、磁头地址（Heads）、扇区地址（Sectors）直接定位到存储数据所在的扇区。但是这产生的问题就是<strong>外圈磁道的数据密度没有充分发挥出来，造成磁盘存储容量很难提升</strong>。</p>
+<p>现代的磁盘人们改用等密度结构生产硬盘，也就是说，<strong>外圈磁道的扇区比内圈磁道多。这种磁盘里扇区是线性编号的，即从0到某个最大值方式排列，并连成一条线。这种寻址模式叫做LBA，全称为Logic Block Address（即扇区的逻辑块地址）。磁盘内部是自己会通过磁盘控制器来完成CHS到LBA的转换，进而定位到具体的物理扇区</strong></p>
+<h4 id="物理扇区大小"><a href="#物理扇区大小" class="headerlink" title="物理扇区大小"></a>物理扇区大小</h4><p>现代科技进步了，磁盘底层的最小组成单位并不是扇区512字节，physical Sector size 4KB。但这时存在一个问题是扇区大小为512字节的假设已经贯穿于整个软件链，比如BIOS，启动加载器，操作系统内核，文件系统代码，以及磁盘工具，等等。直接切换到4096 byte<strong>兼容性问题太大</strong>了，所以每个新的磁盘控制器将4096字节的物理扇区对应成了8个512字节的逻辑扇区，兼容各种老软件。</p>
+<p>除了<code>fdisk -l</code>命令外,如下方式也可以查看物理/逻辑扇区大小。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">cat /sys/block/sda/queue/physical_block_size</span></span><br><span class="line"><span class="meta">#</span><span class="bash">cat /sys/block/sda/queue/logical_block_size</span></span><br></pre></td></tr></table></figure>
+<h4 id="磁头的数量"><a href="#磁头的数量" class="headerlink" title="磁头的数量"></a>磁头的数量</h4><p>磁盘不可能真的装很多磁头，通过<code>fdisk -l</code>看到的磁头数量和扇区以及磁道一样，是被虚拟出来的。</p>
+<h3 id="磁盘分区"><a href="#磁盘分区" class="headerlink" title="磁盘分区"></a>磁盘分区</h3><p>分区是操作系统对磁盘进行管理的第一步，这也是任何一个计算机使用者都非常熟悉的概念。例如Windows下的C、D、E、F盘。那么操作系统的设计者是如何把整块磁盘分成C、D等分区的？</p>
+<p>为了方便讨论，这里假设要分的硬盘是有50个盘面，3000个柱面。给出两种方案</p>
+<ul>
+<li>方案一：50个盘面，C盘是0-10盘面， D盘是10-20个盘面,……</li>
+<li>方案二：3263个柱面，C盘0-1000个柱面，D盘1001-2001个柱面,……</li>
+</ul>
+<p>接下来讨论下那种方案更优秀，这得从<strong>磁盘的读写延时</strong>角度说起。读写原理说起来也简单，就是<strong>磁头要找到指定的磁道，指定的扇区，进而把数据读取出来或者写入进去的过程</strong>。这个过程分成如下三步：</p>
+<ul>
+<li>第一步，首先是磁头径向移动来寻找数据所在的磁道。这部分时间叫<strong>寻道时间</strong>。寻道时间，现代磁盘大概在3-15ms，其中寻道时间大小主要受磁头当前所在位置和目标磁道所在位置相对距离的影响</li>
+<li>第二步，找到目标磁道后通过盘面旋转，将目标扇区移动到磁头的正下方，这部分时间叫<strong>旋转延迟</strong>。现在主流服务器上经常使用的是1W转/分钟的磁盘，每旋转一周所需的时间为60*1000/10000=6ms，故其旋转延迟为（0-6ms）</li>
+<li>第三步，向目标扇区读取或者写入数据，这部分时间叫<strong>存取时间</strong>。这个是电磁操作，所以一般耗时较短，为零点几ms。</li>
+</ul>
+<p>到此为止，<strong>单次磁盘IO时间 = 寻道时间 + 旋转延迟 + 存取时间</strong></p>
+<p>分区上采用哪一种方案，最主要看的是那种方式性能更快。在磁盘分区的使用中，存在一个基本事实，那就是<strong>同一分区下的数据经常会一起读取。两种方案的对于旋转延迟、和存取时间上表现的性能是一样的，主要区别是在寻道时间的表现上</strong>：</p>
+<p>假如采用第一种，那么这样磁头就需要在3000多个磁道间不停地跳来跳去，这样磁盘的寻道时间就降不下来。而对于方案二，假如对于磁盘C，只需要在磁头在1-1000个磁道间移动就可以了，大大降低了寻道时间。所以<strong>所有的操作系统采用的都是方案二</strong>，没有用方案一的。</p>
+<p>分区的过程就是<strong>输入起始柱面号和截至柱面号的过程</strong>。不过在实际中，分区并不能从0号柱面开始的，因为磁<strong>盘的第一个磁道对应的柱面会被用来安装引导加载程序以及磁盘分区表。</strong>所以，操作系统通过按磁道对应的柱面划分分区，来降低磁盘IO所花费的的寻道时间 ，最终提高磁盘的读写性能。</p>
+<h3 id="机械硬盘的缺点及解决办法"><a href="#机械硬盘的缺点及解决办法" class="headerlink" title="机械硬盘的缺点及解决办法"></a>机械硬盘的缺点及解决办法</h3><h4 id="主要问题"><a href="#主要问题" class="headerlink" title="主要问题"></a>主要问题</h4><p>机械硬盘更多是用机械技术做出来的产品。当把带有机械技术基因的磁盘搭到计算机，尤其是应用到服务器领域的时候，暴露出了机械技术的两个严重问题：</p>
+<ul>
+<li><p>第一，速度慢。如果把内存和CPU的速度比作汽车和飞机的话，机械硬盘毫秒级别的延迟几乎就是牛车级别的。 </p>
+</li>
+<li><p>第二，容易坏。经常听说谁谁的磁盘坏了，很少有听说过谁的内存条，CPU坏了。</p>
+</li>
+</ul>
+<p>要想保证服务器运转的稳定和高速，就必须解决硬盘的这两个缺陷。</p>
+<h4 id="解决办法"><a href="#解决办法" class="headerlink" title="解决办法"></a>解决办法</h4><h5 id="多硬盘连接"><a href="#多硬盘连接" class="headerlink" title="多硬盘连接"></a>多硬盘连接</h5><p>单块硬盘不行，尝试同时使用多块硬盘。但假如给了N块硬盘，如何设计一个使用的方案？</p>
+<ul>
+<li>RAID 0：把<strong>一个文件分成N片，每一片都散列在不同的硬盘上</strong>。这样当文件进行读取的时候，就可以N块硬盘一起来工作，从而达到读取速度提高到N倍的效果。</li>
+</ul>
+<p><img src="https://api2.mubu.com/v3/document_image/204662d6-e7e5-41f5-8d33-41927478da19-11197877.jpg" alt="RAID0"></p>
+<p>缺点：没有解决容易坏的问题，<strong>任何一块硬盘坏了都会导致存储系统故障</strong>。</p>
+<ul>
+<li>RAID 1:仍然把文件分片，但是所有的分片都存在一块硬盘上，<strong>其它的硬盘只存拷贝。</strong>这既提高了硬盘的访问速度，也解决了坏的问题。任意一块硬盘坏了，存储系统都可以正常使用，只不过速度会打一点折扣。</li>
+</ul>
+<p><img src="https://api2.mubu.com/v3/document_image/88ea6682-01e8-4fbe-8f04-b8eea8cf3aaa-11197877.jpg" alt="RAID1"></p>
+<p>缺点：<strong>实现成本高。</strong></p>
+<ul>
+<li>RAID 5：样要对文件进行分片，但是不对存储的数据进行备份，而是会再单独存一个校验数据片。假如文件分为A1 A2 A3，然后需要再存一个<strong>校验片</strong>到别的磁盘上。这样<strong>不管A1，A2还是A3那一片丢失了，都可以根据另外两片和校验片合成出来。既保证了数据的安全性，又只用了一块磁盘做冗余存储</strong>。</li>
+</ul>
+<p><img src="https://api2.mubu.com/v3/document_image/7e22af98-48ad-4f07-960b-f1db61ec5e21-11197877.jpg" alt="RAID5"></p>
+<p>假如有8块256GB的硬盘，那么RAID5方案下的磁盘阵列从用户角度来看可用的存储空间是7*256GB，只“浪费”了一块盘的空间，所以目前RAID5应用比较广泛。</p>
+<h4 id="RAID卡缓存"><a href="#RAID卡缓存" class="headerlink" title="RAID卡缓存"></a>RAID卡缓存</h4><p>硬盘延迟是毫秒级别的，即使是多快硬盘并行，也只能提升数倍而已，不能够达到量级的提升。<strong>和CPU内存的纳秒级别工作频率比起来，还是太慢</strong>。在计算机界，没有<strong>缓存</strong>解决不了的速度问题，如果有，那就再加一层。现代磁盘本身也基本都带了缓存，另外在一些比较新的raid卡里，硬件开发者们又搞出来了一层“内存”，并且还自己附带一块电池，这就是RAID卡缓存。几款主流RAID卡的配置：</p>
+<ul>
+<li><p>PERC S120 入门软件阵列卡，主板集成无缓存 支持RAID 0 1</p>
+</li>
+<li><p>PERC H330 入门硬件RAID卡，无板载缓存, 支持RAID 0 1 5 10 50</p>
+</li>
+<li>PERC H730 主流硬件RAID卡带有1G缓存和电池 支持RAID 0 1 5 6 10 50 60</li>
+<li>PERC H730P 高性能硬件RAID卡带有2G缓存和电池 支持RAID 0 1 5 6 10 50 60</li>
+<li>PERC H830 同H730P,没有内置接口，使用外置接口连接附加存储磁盘柜用</li>
+</ul>
+<p>拿目前服务器端出镜率比较高的H730和H730P来看，他们分别带了1G和2G的缓存卡，并且自带电池。<strong>电池的作用就是当发现主机意外断电的时候，能够快速把缓存中的数据写回到磁盘中去。对于写入，一般操作系统写到这个RAID卡里就完事了，所以速度快。对于读取也是，只要缓存里有，就不会透传到磁盘的机械轴上。</strong></p>
+<p>文件相关函数里设置DIRECT I/O仅仅只能绕开操作系统本身的Page Cache,而<strong>RAID卡里的缓存，对于Linux来说，可以说算是一个黑盒。换句话说，就是操作系统并不清楚RAID卡是从缓存里吐的数据，还是真正从硬盘里读的。</strong></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%9C%BA%E6%A2%B0%E7%A1%AC%E7%9B%98/" rel="tag"># 机械硬盘</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/04/05/os-1%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/" rel="prev" title="操作系统内存管理">
+      <i class="fa fa-chevron-left"></i> 操作系统内存管理
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/04/12/os-3%E5%9B%BA%E6%80%81%E7%A1%AC%E7%9B%98/" rel="next" title="操作系统固态硬盘基本介绍">
+      操作系统固态硬盘基本介绍 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+      <div class="tabs tabs-comment">
+        <ul class="nav-tabs">
+            <li class="tab"><a href="#comment-gitalk">gitalk</a></li>
+            <li class="tab"><a href="#comment-livere">livere</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane gitalk" id="comment-gitalk">
+              <div class="comments" id="gitalk-container"></div>
+            </div>
+            <div class="tab-pane livere" id="comment-livere">
+              
+  <div class="comments" id="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81MjkwMy8yOTM4MA=="></div>
+  </div>
+  
+            </div>
+        </div>
+      </div>
+      <script>
+        window.addEventListener('tabs:register', () => {
+          let activeClass = 'gitalk';
+            activeClass = localStorage.getItem('comments_active') || activeClass;
+          if (activeClass) {
+            let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+            if (activeTab) {
+              activeTab.click();
+            }
+          }
+        });
+        window.addEventListener('tabs:click', event => {
+          let commentClass = event.target.classList[1];
+          localStorage.setItem('comments_active', commentClass);
+        });
+      </script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#机械硬盘"><span class="nav-number">1.</span> <span class="nav-text">机械硬盘</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#磁盘结构"><span class="nav-number">2.</span> <span class="nav-text">磁盘结构</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#linux下查询"><span class="nav-number">2.1.</span> <span class="nav-text">linux下查询</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#每个磁道可以存储的数据都是一样的吗？"><span class="nav-number">2.2.</span> <span class="nav-text">每个磁道可以存储的数据都是一样的吗？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#物理扇区大小"><span class="nav-number">2.3.</span> <span class="nav-text">物理扇区大小</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#磁头的数量"><span class="nav-number">2.4.</span> <span class="nav-text">磁头的数量</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#磁盘分区"><span class="nav-number">3.</span> <span class="nav-text">磁盘分区</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#机械硬盘的缺点及解决办法"><span class="nav-number">4.</span> <span class="nav-text">机械硬盘的缺点及解决办法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#主要问题"><span class="nav-number">4.1.</span> <span class="nav-text">主要问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#解决办法"><span class="nav-number">4.2.</span> <span class="nav-text">解决办法</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#多硬盘连接"><span class="nav-number">4.2.1.</span> <span class="nav-text">多硬盘连接</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RAID卡缓存"><span class="nav-number">4.3.</span> <span class="nav-text">RAID卡缓存</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ShifuDong"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">ShifuDong</p>
+  <div class="site-description" itemprop="description">记录生活， 记录学习， 分享知识</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">78</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">30</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/mailto:sfd_w@foxmail.com" title="E-Mail → mailto:sfd_w@foxmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ShifuDong</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.0.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.5.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.getAttribute('pjax') !== null) {
+      element.setAttribute('pjax', '');
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'a6ee5b68c97a3db64850',
+      clientSecret: '1dfa06f32032431e4af79b80f9ddf9dfd13dbda2',
+      repo: 'dongshifu.github.io',
+      owner: 'dongshifu',
+      admin: ['dongshifu'],
+      id: '48878f832dd2f0740c5194a244157baf',
+        language: 'zh-CN',
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script>
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+</script>
+
+    </div>
+</body>
+</html>

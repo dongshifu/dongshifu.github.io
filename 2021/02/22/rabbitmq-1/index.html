@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="alternate" href="/atom.xml" title="ShifuDong" type="application/atom+xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.5.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":"flat"},
+    back2top: {"enable":true,"sidebar":true,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":5,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="RabbitMQ简介Message Broker（消息代理）RabbitMQ 官网对 Message broker 的定义：Message broker 接收来自发布者的消息并将其路由到消费者。 RabbitMQ 实现了一个加  AMQP（Advanced Message Queuing Protocol）的协议，AMQP 就如互联网的 HTTP 协议，它更注重于如何传输数据，并不关心发送的数据是">
+<meta name="keywords" content="RabbitMQ">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RabbitMQ简介">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2021&#x2F;02&#x2F;22&#x2F;rabbitmq-1&#x2F;index.html">
+<meta property="og:site_name" content="ShifuDong">
+<meta property="og:description" content="RabbitMQ简介Message Broker（消息代理）RabbitMQ 官网对 Message broker 的定义：Message broker 接收来自发布者的消息并将其路由到消费者。 RabbitMQ 实现了一个加  AMQP（Advanced Message Queuing Protocol）的协议，AMQP 就如互联网的 HTTP 协议，它更注重于如何传输数据，并不关心发送的数据是">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https:&#x2F;&#x2F;i0.hdslb.com&#x2F;bfs&#x2F;article&#x2F;99b7a06fd5309c70c18e23d9e70b31af2d7e0e43.png@1248w_504h.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;i0.hdslb.com&#x2F;bfs&#x2F;article&#x2F;bf0f6ae284810963816540237726112522acad3b.png@1248w_396h.png">
+<meta property="og:image" content="https:&#x2F;&#x2F;i0.hdslb.com&#x2F;bfs&#x2F;article&#x2F;f1d5f471ddcf9493a2a3a4f0d28ad843e01ea3c4.png@1248w_716h.png">
+<meta property="og:updated_time" content="2021-05-13T01:35:41.161Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https:&#x2F;&#x2F;i0.hdslb.com&#x2F;bfs&#x2F;article&#x2F;99b7a06fd5309c70c18e23d9e70b31af2d7e0e43.png@1248w_504h.png">
+
+<link rel="canonical" href="http://yoursite.com/2021/02/22/rabbitmq-1/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>RabbitMQ简介 | ShifuDong</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ShifuDong</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">Knowledge Sharing</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/02/22/rabbitmq-1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          RabbitMQ简介
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-02-22 18:36:05" itemprop="dateCreated datePublished" datetime="2021-02-22T18:36:05+08:00">2021-02-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-05-13 09:35:41" itemprop="dateModified" datetime="2021-05-13T09:35:41+08:00">2021-05-13</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/RabbitMQ/" itemprop="url" rel="index">
+                    <span itemprop="name">RabbitMQ</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="RabbitMQ简介"><a href="#RabbitMQ简介" class="headerlink" title="RabbitMQ简介"></a>RabbitMQ简介</h3><h4 id="Message-Broker（消息代理）"><a href="#Message-Broker（消息代理）" class="headerlink" title="Message Broker（消息代理）"></a>Message Broker（消息代理）</h4><p>RabbitMQ 官网对 Message broker 的定义：Message broker <strong>接收来自发布者的消息并将其路由到消费者。</strong></p>
+<p>RabbitMQ 实现了一个加  AMQP（Advanced Message Queuing Protocol）的协议，AMQP 就如互联网的 HTTP 协议，它<strong>更注重于如何传输数据，并不关心发送的数据是什么</strong>。这也就意味着<strong>需要消息的发送者和接收者来协调消息的格式。</strong></p>
+<h4 id="Message-Broker的作用"><a href="#Message-Broker的作用" class="headerlink" title="Message Broker的作用"></a>Message Broker的作用</h4><p>有这样一个应用，客户端需要与服务器进行通信，传递数据。最简单的情况就是客户端通过 HTTP 类协议直接与服务器连接，并发送数据。看似非常简单，但如果服务器因为维护或其它原因发生了停机，或者想对其横向扩展，添加更多的服务器来进行响应。那么问题就来了，<strong>客户端目前是与这台服务器紧密的耦合在一起了，而随着系统的增长和进化，这种紧耦合就开始让人头疼。</strong></p>
+<p>此时，如果在客户端和服务器之间放置一个Message broker则不一样：</p>
+<p><img src="https://i0.hdslb.com/bfs/article/99b7a06fd5309c70c18e23d9e70b31af2d7e0e43.png@1248w_504h.png" alt="在客户端和服务器之间添加Message broker"></p>
+<p><strong>客户端首先将数据发送给 Message broker。Message broker 会对数据进行检验，并将其发送给服务器。</strong>但是在这种简单的情景下，似乎没带来什么好处。然而，Message broker 可以通过简单的设置来允许多种场景，从而让<strong>后端服务器的横向扩展或停机维护</strong>等工作变得轻松，并且<strong>客户端并不会感知到任何的变化。</strong></p>
+<h4 id="Exchange和Queue"><a href="#Exchange和Queue" class="headerlink" title="Exchange和Queue"></a>Exchange和Queue</h4><p>在最简单的场景下，RabbitMQ 的架构示意图大致如下：</p>
+<p><img src="https://i0.hdslb.com/bfs/article/bf0f6ae284810963816540237726112522acad3b.png@1248w_396h.png" alt="Rabbitmq架构"></p>
+<ul>
+<li>首先某个消息从发布者那里发往 RabbitMQ</li>
+<li>这个<strong>消息需要声明一个 Exchange（交换机）</strong>，并被发往这个 Exchange<ul>
+<li>Exchange 有点类似<strong>“暂存区”</strong>，消息都会发往 Exchange。用个类比来说：Exchange 就像邮箱一样，写的信件首先都要放到邮箱里才能进行发送。</li>
+</ul>
+</li>
+<li>然后，Exchange 将使用消息内的一些<strong>信息</strong>以及它自己的<strong>配置</strong>来决定<strong>一条或多条发送消息的路由。</strong></li>
+<li>这些路由都通向一个 Queue（队列），<strong>消息会存储在这个 Queue 里，等待消息的接收者来进行使用。</strong></li>
+<li>一个消息的接收者可以使用 Queue 中的信息。<strong>一旦确认这个消息被传递成功，那么它将从 Queue 中被删除。</strong><ul>
+<li>RabbitMQ 所提供的<strong>松耦合</strong>的特性，主要是因为 <strong>Exchange 和 Queue 的分离</strong>。</li>
+<li>继续使用邮箱的类比，<strong>Queue 就相当于是接收信件的邮箱。而根据邮件地址，邮件系统会选择不同的邮箱来接收邮件。</strong></li>
+</ul>
+</li>
+</ul>
+<p>RabbitMQ的4种Exchange:</p>
+<ul>
+<li><p>Direct Exchange。是默认的 Exchange ，<strong>会把消息发送到一个接收者。如果注册了多个接收者来监听同样的路由 Key，那么 RabbitMQ 将会向每个 Queue 轮流发送一条消息，相当于提供了一个简单的负载均衡</strong></p>
+</li>
+<li><p>Fanout Exchange。 把消息的<strong>副本</strong>发送到<strong>每个绑定到该 Exchange 的 Queue 上面</strong>。而这里的 <strong>Queue 没有办法对消息进行过滤，如果需要过滤，则需要在消息接收者那里实现。</strong></p>
+</li>
+<li><p>Topic Exchange。和 Direct Exchange 类似，但不同的是：<strong>每个消息接收者监听特定的路由 Key，它们会收到消息的副本。</strong></p>
+<ul>
+<li>例如聊天室就可以使用 Topic Exchange。每个聊天室的 ID 可以作为路由 Key，这样就可以<strong>保证消息只会发送给同一个聊天室的其他参与者。</strong></li>
+</ul>
+</li>
+<li><p>Headers Exchange。<strong>这类 Exchange 会忽略路由 Key，取而代之的是，它们会查看消息的 Header，并由此来决定消息应该发往哪个 Queue。Queue 可以有一个或多个 Header 用来进行匹配。这也就开启了复杂的路由场景</strong>，例如某个 Queue 有时可以接收到某类消息而有时则不行。</p>
+</li>
+</ul>
+<h4 id="Fanout-Exchange"><a href="#Fanout-Exchange" class="headerlink" title="Fanout Exchange"></a>Fanout Exchange</h4><p>当消息被发往 RabbitMQ 的时候，需要<strong>指明它需要发送到哪个 Exchange。而这个 Exchange 就可以被设置成为所谓的 Fanout Exchange。</strong>使用 Fanout Exchange，<strong>消息会被克隆，并被发送到所有与这个 Exchange 绑定的 Queue 上</strong>.</p>
+<p><img src="https://i0.hdslb.com/bfs/article/f1d5f471ddcf9493a2a3a4f0d28ad843e01ea3c4.png@1248w_716h.png" alt="fanout exchange"></p>
+<p>这里每一个 Queue 都会得到属于自己的消息的副本，这些消息副本就可以被消息的接收者所使用。</p>
+<ul>
+<li>在很多大规模多人游戏的场景中，经常使用这种方式来同步玩家的数据：每个玩家都订阅到一个 Fanout Exchange，游戏的实例只需要将数据发送到一个地方即可，游戏中其他的玩家就会获得更新，而游戏实例就不需要知道如何数据发往每一个玩家了。</li>
+</ul>
+<h4 id="基本管理命令"><a href="#基本管理命令" class="headerlink" title="基本管理命令"></a>基本管理命令</h4><p>基本安装和配置参考RabbitMQ官网。</p>
+<ul>
+<li>获取RabbitMQ Server状态: <code>rabbitmqctl status</code> 得到大量关于RabbitMQ运行的消息</li>
+<li>获取所有Queue队列： <code>rabbitmqctl list_queues</code></li>
+<li>获取当前集群的server信息： <code>rabbitmqctl cluster_status</code></li>
+<li>使用<code>service rabbitmq-server start/stop/restart/status</code>也可以进行服务管理</li>
+</ul>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a href="https://www.bilibili.com/read/cv10512424?from=search" target="_blank" rel="noopener">https://www.bilibili.com/read/cv10512424?from=search</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/RabbitMQ/" rel="tag"># RabbitMQ</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/20/os-%E7%BD%91%E7%BB%9C-2/" rel="prev" title="网络调优工具使用">
+      <i class="fa fa-chevron-left"></i> 网络调优工具使用
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/25/os-%E7%BD%91%E7%BB%9C-3/" rel="next" title="TCP连接耗时">
+      TCP连接耗时 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+      <div class="tabs tabs-comment">
+        <ul class="nav-tabs">
+            <li class="tab"><a href="#comment-gitalk">gitalk</a></li>
+            <li class="tab"><a href="#comment-livere">livere</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane gitalk" id="comment-gitalk">
+              <div class="comments" id="gitalk-container"></div>
+            </div>
+            <div class="tab-pane livere" id="comment-livere">
+              
+  <div class="comments" id="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81MjkwMy8yOTM4MA=="></div>
+  </div>
+  
+            </div>
+        </div>
+      </div>
+      <script>
+        window.addEventListener('tabs:register', () => {
+          let activeClass = 'gitalk';
+            activeClass = localStorage.getItem('comments_active') || activeClass;
+          if (activeClass) {
+            let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+            if (activeTab) {
+              activeTab.click();
+            }
+          }
+        });
+        window.addEventListener('tabs:click', event => {
+          let commentClass = event.target.classList[1];
+          localStorage.setItem('comments_active', commentClass);
+        });
+      </script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#RabbitMQ简介"><span class="nav-number">1.</span> <span class="nav-text">RabbitMQ简介</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Message-Broker（消息代理）"><span class="nav-number">1.1.</span> <span class="nav-text">Message Broker（消息代理）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Message-Broker的作用"><span class="nav-number">1.2.</span> <span class="nav-text">Message Broker的作用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Exchange和Queue"><span class="nav-number">1.3.</span> <span class="nav-text">Exchange和Queue</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Fanout-Exchange"><span class="nav-number">1.4.</span> <span class="nav-text">Fanout Exchange</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#基本管理命令"><span class="nav-number">1.5.</span> <span class="nav-text">基本管理命令</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考"><span class="nav-number">2.</span> <span class="nav-text">参考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ShifuDong"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">ShifuDong</p>
+  <div class="site-description" itemprop="description">记录生活， 记录学习， 分享知识</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">78</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">30</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/mailto:sfd_w@foxmail.com" title="E-Mail → mailto:sfd_w@foxmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ShifuDong</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.0.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.5.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.getAttribute('pjax') !== null) {
+      element.setAttribute('pjax', '');
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'a6ee5b68c97a3db64850',
+      clientSecret: '1dfa06f32032431e4af79b80f9ddf9dfd13dbda2',
+      repo: 'dongshifu.github.io',
+      owner: 'dongshifu',
+      admin: ['dongshifu'],
+      id: '9f0f060d1155d089459cfe547c7e5b75',
+        language: 'zh-CN',
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script>
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+</script>
+
+    </div>
+</body>
+</html>

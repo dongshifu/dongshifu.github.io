@@ -203,6 +203,654 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/02/25/os-%E7%BD%91%E7%BB%9C-3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/02/25/os-%E7%BD%91%E7%BB%9C-3/" class="post-title-link" itemprop="url">TCP连接耗时</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-02-25 18:36:05" itemprop="dateCreated datePublished" datetime="2021-02-25T18:36:05+08:00">2021-02-25</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-05-13 09:32:14" itemprop="dateModified" datetime="2021-05-13T09:32:14+08:00">2021-05-13</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index">
+                    <span itemprop="name">网络</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="TCP连接耗时"><a href="#TCP连接耗时" class="headerlink" title="TCP连接耗时"></a>TCP连接耗时</h3><p>开发过程中调用mysql, redis等组件获取数据或者执行rpc远程调用以及调用restful api的时候底层使用的是TCP协议。这是因为在传输层协议中，TCP协议具备可靠的连接，错误重传，拥塞控制等优点。</p>
+<h4 id="正常的TCP连接建立过程"><a href="#正常的TCP连接建立过程" class="headerlink" title="正常的TCP连接建立过程"></a>正常的TCP连接建立过程</h4><p>在软中断中，当一个包被内核从<code>RingBuffer</code>中摘下来的时候，在内核中是用<code>struct sk_buff</code>结构体来表示的(参见内核代码<code>include/linux/skbuff.h</code>)。其中的data成员是接收到的数据，<strong>在协议栈逐层被处理的时候，通过修改指针指向data的不同位置，来找到每一层协议关心的数据。</strong></p>
+<p><img src="https://api2.mubu.com/v3/document_image/c89a0e92-adb3-4685-97f9-8e3ac4553a12-11197877.jpg" alt="网络包读取过程"></p>
+<p>对于TCP协议包来说，它的Header中有一个重要的字段:flags,也就是<strong>标志位</strong>。</p>
+<p>通过设置不同的标记为，可以将TCP包分成<code>SYNC、FIN、ACK、RST</code>等类型。客户端通过<code>connect</code>系统调用命令内核发出<code>SYNC、ACK</code>等包来实现和服务器TCP连接的建立。在服务器端，可能会接收许许多多的连接请求，内核还需要借助一些辅助数据结构-<strong>半连接队列和全连接队列</strong>。看一下整个连接过程：</p>
+<p><img src="https://api2.mubu.com/v3/document_image/1b6c4373-b894-4e5d-a81f-de6e00f83d65-11197877.jpg" alt="TCP三次握手具体过程"></p>
+<p>简单分析每一步的耗时：</p>
+<ul>
+<li>客户端发出SYNC包：客户端一般是通过<strong>connect系统调用</strong>来发出SYN的，这里牵涉到<strong>本机的系统调用和软中断的CPU耗时开销</strong></li>
+<li><strong>SYN传到服务器</strong>：SYN从客户端网卡被发出，开始长途远距离的网络传输</li>
+<li>服务器处理SYN包：<strong>内核通过软中断来收包，然后放到半连接队列中，然后再发出SYN/ACK响应。又是CPU耗时开销</strong></li>
+<li><strong>SYC/ACK传到客户端</strong>：SYN/ACK从服务器端被发出后，同样进行一次长途网络跋涉</li>
+<li>客户端处理SYN/ACK：客户端内核收包并处理SYN后，经过几us的CPU处理，接着发出ACK。同样是软中断处理开销</li>
+<li><strong>ACK传到服务器</strong>：和SYN包，一样，再经过几乎同样远的路，传输一遍。 又一次长途网络跋涉</li>
+<li>服务端收到ACK：<strong>服务器端内核收到并处理ACK，然后把对应的连接从半连接队列中取出来，然后放到全连接队列中。一次软中断CPU开销</strong></li>
+<li>服务器端用户进程唤醒：<strong>正在被accpet系统调用阻塞的用户进程被唤醒，然后从全连接队列中取出来已经建立好的连接。一次上下文切换的CPU开销</strong></li>
+</ul>
+<p>以上操作主要可以分为两类：</p>
+<ul>
+<li>第一类是内核消耗CPU进行接收、发送或者是处理，包括系统调用、软中断和上下文切换。它们的耗时基本都是几个us左右</li>
+<li>第二类是网络传输，当包被从一台机器上发出以后，中间要经过各式各样的网线、各种交换机路由器。所以<strong>网络传输的耗时相比本机的CPU处理，就要高的多了。根据网络远近一般在几ms~到几百ms不等。</strong></li>
+</ul>
+<p>1ms等于1000us，因此网络传输耗时比双端的CPU开销要高1000倍左右，甚至更高可能还到100000倍。所以，<strong>在正常的TCP连接的建立过程中，一般可以考虑网络延时即可</strong>。一个RTT指的是包从一台服务器到另外一台服务器的一个来回的延迟时间。所以从全局来看，TCP连接建立的网络耗时大约需要三次传输，再加上少许的双方CPU开销，总共大约比1.5倍RTT大一点点。不过从客户端视角来看，只要ACK包发出了，内核就认为连接是建立成功了。所以如果在客户端打点统计TCP连接建立耗时的话，只需要两次传输耗时-既1个RTT多一点的时间。（对于服务器端视角来看同理，从SYN包收到开始算，到收到ACK，中间也是一次RTT耗时）</p>
+<h4 id="TCP连接建立时的异常情况"><a href="#TCP连接建立时的异常情况" class="headerlink" title="TCP连接建立时的异常情况"></a>TCP连接建立时的异常情况</h4><p>在正常情况下一次TCP连接总的耗时也就就大约是一次网络RTT的耗时。但在某些情况下，可能会导致连接时的网络传输耗时上涨、CPU处理开销增加、甚至是连接失败。</p>
+<h5 id="客户端connect系统调用耗时失控"><a href="#客户端connect系统调用耗时失控" class="headerlink" title="客户端connect系统调用耗时失控"></a>客户端connect系统调用耗时失控</h5><p>正常一个系统调用的耗时也就是几个us（微秒）左右。但当TCP客户端TIME_WAIT有30000左右，<strong>导致可用端口不是特别充足的时候，connect系统调用的CPU开销直接上涨了100多倍，会达到毫秒级别。</strong></p>
+<p>查看<strong>本机的端口内核参数配置</strong>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ sudo sysctl -a | grep ip_local_port_range</span><br><span class="line">net.ipv4.ip_local_port_range = 32768	60999</span><br></pre></td></tr></table></figure>
+<p>可以看到内核分配的端口其实就3万个左右，<strong>当端口快占满的时候(TIME_WAIT过多)，端口的选择会十分耗时,且该段时间内cpu一直处于找空闲端口阶段，一直在占用CPU。</strong></p>
+<p><strong>主要原因：临时端口选择过程是生成一个随机数，利用随机数在<code>ip_local_port_range</code>范围内取值，如果取到的值在<code>ip_local_reserved_ports</code>范围内 ，那就再依次取下一个值，直到不在<code>ip_local_reserved_ports</code>范围内为止。原来临时端口竟然是随机撞出来的。也就是说假如就有range里配置了5W个端口可以用，已经使用掉了49999个。那么新建立连接的时候，可能需要调用这个随机函数5W次才能撞到这个没用的端口身上。</strong></p>
+<h5 id="解决办法"><a href="#解决办法" class="headerlink" title="解决办法"></a>解决办法</h5><ul>
+<li><p><strong>保证可用临时端口的充裕，避免你的connect系统调用进入反复查找模式。正常端口充足的时候，只需要微秒几倍。但是一旦出现端口紧张，则一次系统调用耗时会上升到毫秒几倍，整整多出100倍。这个开销比正常tcp连接的建立吃掉的cpu时间（每个30usec左右）的开销要大的多。</strong></p>
+<ul>
+<li><p>修改方法：</p>
+</li>
+<li><p>```bash</p>
+<h1 id="vim-etc-sysctl-conf"><a href="#vim-etc-sysctl-conf" class="headerlink" title="vim /etc/sysctl.conf"></a>vim /etc/sysctl.conf</h1><p>net.ipv4.ip_local_port_range = 10000 65000</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">- **可以考虑设置net.ipv4.tcp_tw_recycle和net.ipv4.tcp_tw_reuse这两个参数，避免端口长时间保守地等待2MSL时间。**</span><br><span class="line">- 参考https://blog.csdn.net/enweitech/article/details/79261439</span><br><span class="line"></span><br><span class="line">##### 半/全连接队列全满</span><br><span class="line"></span><br><span class="line">如果连接建立的过程中，**任意一个队列满了，那么客户端发送过来的syn或者ack就会被丢弃。客户端等待很长一段时间无果后，然后会发出TCP Retransmission重传。**</span><br><span class="line"></span><br><span class="line">TCP**握手超时重传的时间是秒级别的**。也就是说一旦server端的连接队列导致连接建立不成功，那么光建立连接就至少需要秒级以上。而正常的在同机房的情况下只是不到1毫秒的事情，整整高了1000倍左右。尤其是对于给用户提供实时服务的程序来说，用户体验将会受到较大影响。如果连重传也没有握手成功的话，很可能等不及二次重试，这个用户访问直接就超时了。</span><br><span class="line"></span><br><span class="line">更坏的情况是，它还有可能会影响其它的用户。假如使用的是进程/线程池这种模型提供服务，比如php-fpm。**fpm进程是阻塞的，当它响应一个用户请求的时候，该进程是没有办法再响应其它请求的**。假如开了100个进程/线程，而某一段时间内有50个进程/线程卡在和redis或者mysql服务器的握手连接上了（**注意：这个时候服务器是TCP连接的客户端一方**）。这一段时间内相当于可以用的正常工作的进程/线程只有50个了。而这个50个worker可能根本处理不过来，这时**候服务可能就会产生拥堵。再持续稍微时间长一点的话，可能就产生雪崩了，整个服务都有可能会受影响。**</span><br><span class="line"></span><br><span class="line">##### 解决办法</span><br><span class="line"></span><br><span class="line">查看服务是否有因为半/全连接队列满的情况发生。**在客户端，可以抓包查看是否有SYN的TCP Retransmission。如果有偶发的TCP Retransmission，那就说明对应的服务端连接队列可能有问题了。**</span><br><span class="line"></span><br><span class="line">在服务端的话，查看起来就更方便一些。**`netstat -s`可查看到当前系统半连接队列满导致的丢包统计，但该数字记录的是总丢包数。需要再借助`watch`命令动态监控。**如果下面的数字在监控的过程中变了，那说明当前服务器有因为半连接队列满而产生的丢包。可能需要加大半连接队列的长度。</span><br><span class="line"></span><br><span class="line">```bash</span><br><span class="line">$ watch &apos;netstat -s | grep LISTEN&apos;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+<p>对于全连接队列来说，查看方法也类似：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ watch <span class="string">'netstat -s  | grep overflowed'</span></span><br></pre></td></tr></table></figure>
+<p><strong>如果服务因为队列满产生丢包，其中一个做法就是加大半/全连接队列的长度。 半连接队列长度Linux内核中，主要受<code>tcp_max_syn_backlog</code>影响 加大它到一个合适的值就可以。</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># cat /proc/sys/net/ipv4/tcp_max_syn_backlog</span></span><br><span class="line">512</span><br><span class="line"><span class="comment"># echo "2048" &gt; /proc/sys/net/ipv4/tcp_max_syn_backlog</span></span><br></pre></td></tr></table></figure>
+<p><strong>全连接队列长度是应用程序调用<code>listen</code>时传入的<code>backlog</code>以及内核参数<code>net.core.somaxconn</code>二者之中较小的那个。可能需要同时调整应用程序和该内核参数</strong>。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># cat /proc/sys/net/core/somaxconn</span></span><br><span class="line">128</span><br><span class="line"><span class="comment"># echo "256" &gt; /proc/sys/net/core/somaxconn</span></span><br></pre></td></tr></table></figure>
+<p>改完之后可以通过<code>ss</code>命令输出的<code>Send-Q</code>确认最终生效长度：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ ss -nlt</span><br><span class="line">Recv-Q Send-Q Local Address:Port Address:Port</span><br><span class="line">0      128    *:80               *:*</span><br></pre></td></tr></table></figure>
+<p><code>Recv-Q</code>告知<strong>当前该进程的全连接队列使用长度情况</strong>。<strong>如果<code>Recv-Q</code>已经逼近了<code>Send-Q</code>,那么可能不需要等到丢包也应该准备加大全连接队列。</strong></p>
+<p>如果加大队列后仍然有非常偶发的队列溢出的话，可以暂且容忍。如果仍然有较长时间处理不过来怎么办？另外一个做法就是<strong>直接报错，不要让客户端超时等待。例如将Redis、Mysql等后端接口的内核参数<code>tcp_abort_on_overflow</code>为1。如果队列满了，直接发reset给client。告诉后端进程/线程不要痴情地傻等</strong>。这时候client会收到错误“connection reset by peer”。<strong>牺牲一个用户的访问请求，要比把整个站都搞崩了还是要强的。</strong></p>
+<h4 id="实际测试"><a href="#实际测试" class="headerlink" title="实际测试"></a>实际测试</h4><p>参考<a href="https://mp.weixin.qq.com/s?__biz=MjM5Njg5NDgwNA==&amp;mid=2247484126&amp;idx=1&amp;sn=4c35ea42477ffd5db5f05fe8bc850cdb&amp;chksm=a6e303e591948af3cc31b1db349958c8a879b9eb7100ebd138dc361aaf04ba5878f602a16365&amp;cur_album_id=1532487451997454337&amp;scene=189#rd" target="_blank" rel="noopener">张彦飞的博客</a>.可以得出的结论主要有：</p>
+<p>TCP连接建立异常情况下，可能需要好几秒，一个坏处就是会影响用户体验，甚至导致当前用户访问超时都有可能。另外一个坏处是可能会诱发雪崩。所以当服务器使用短连接的方式访问数据的时候，一定要学会要监控服务器的连接建立是否有异常状态发生。如果有，学会优化掉它。当然可以采用本机内存缓存，或者使用连接池来保持长连接，通过这两种方式直接避免掉TCP握手挥手的各种开销也可以。</p>
+<p>当连接队列溢出时需要特别注意：<strong>一旦发生队列满，当时撞上的那个连接请求就得需要长时间的连接建立延时。</strong></p>
+<p>正常情况下，TCP建立的延时大约就是两台机器之间的一个RTT耗时，这是避免不了的。但是可以控制<strong>两台机器之间的物理距离</strong>来降低这个RTT，比如把要访问的redis尽可能地部署的离后端接口机器近一点，这样RTT也能从几十ms削减到最低可能零点几ms。</p>
+<p><strong>线上部署时，理想的方案是将自己服务依赖的各种mysql、redis等服务和自己部署在同一个地区、同一个机房（再变态一点，甚至可以是甚至是同一个机架）。因为这样包括TCP链接建立啥的各种网络包传输都要快很多。要尽可能避免长途跨地区机房的调用情况出现。</strong></p>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a href="https://mp.weixin.qq.com/s?__biz=MjM5Njg5NDgwNA==&amp;mid=2247484126&amp;idx=1&amp;sn=4c35ea42477ffd5db5f05fe8bc850cdb&amp;chksm=a6e303e591948af3cc31b1db349958c8a879b9eb7100ebd138dc361aaf04ba5878f602a16365&amp;cur_album_id=1532487451997454337&amp;scene=189#rd" target="_blank" rel="noopener">https://mp.weixin.qq.com/s?__biz=MjM5Njg5NDgwNA==&amp;mid=2247484126&amp;idx=1&amp;sn=4c35ea42477ffd5db5f05fe8bc850cdb&amp;chksm=a6e303e591948af3cc31b1db349958c8a879b9eb7100ebd138dc361aaf04ba5878f602a16365&amp;cur_album_id=1532487451997454337&amp;scene=189#rd</a></p>
+<p><a href="https://mp.weixin.qq.com/s/tH8RFmjrveOmgLvk9hmrkw" target="_blank" rel="noopener">https://mp.weixin.qq.com/s/tH8RFmjrveOmgLvk9hmrkw</a></p>
+<p><a href="https://blog.csdn.net/enweitech/article/details/79261439" target="_blank" rel="noopener">https://blog.csdn.net/enweitech/article/details/79261439</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/02/22/rabbitmq-1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/02/22/rabbitmq-1/" class="post-title-link" itemprop="url">RabbitMQ简介</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-02-22 18:36:05" itemprop="dateCreated datePublished" datetime="2021-02-22T18:36:05+08:00">2021-02-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-05-13 09:35:41" itemprop="dateModified" datetime="2021-05-13T09:35:41+08:00">2021-05-13</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/RabbitMQ/" itemprop="url" rel="index">
+                    <span itemprop="name">RabbitMQ</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="RabbitMQ简介"><a href="#RabbitMQ简介" class="headerlink" title="RabbitMQ简介"></a>RabbitMQ简介</h3><h4 id="Message-Broker（消息代理）"><a href="#Message-Broker（消息代理）" class="headerlink" title="Message Broker（消息代理）"></a>Message Broker（消息代理）</h4><p>RabbitMQ 官网对 Message broker 的定义：Message broker <strong>接收来自发布者的消息并将其路由到消费者。</strong></p>
+<p>RabbitMQ 实现了一个加  AMQP（Advanced Message Queuing Protocol）的协议，AMQP 就如互联网的 HTTP 协议，它<strong>更注重于如何传输数据，并不关心发送的数据是什么</strong>。这也就意味着<strong>需要消息的发送者和接收者来协调消息的格式。</strong></p>
+<h4 id="Message-Broker的作用"><a href="#Message-Broker的作用" class="headerlink" title="Message Broker的作用"></a>Message Broker的作用</h4><p>有这样一个应用，客户端需要与服务器进行通信，传递数据。最简单的情况就是客户端通过 HTTP 类协议直接与服务器连接，并发送数据。看似非常简单，但如果服务器因为维护或其它原因发生了停机，或者想对其横向扩展，添加更多的服务器来进行响应。那么问题就来了，<strong>客户端目前是与这台服务器紧密的耦合在一起了，而随着系统的增长和进化，这种紧耦合就开始让人头疼。</strong></p>
+<p>此时，如果在客户端和服务器之间放置一个Message broker则不一样：</p>
+<p><img src="https://i0.hdslb.com/bfs/article/99b7a06fd5309c70c18e23d9e70b31af2d7e0e43.png@1248w_504h.png" alt="在客户端和服务器之间添加Message broker"></p>
+<p><strong>客户端首先将数据发送给 Message broker。Message broker 会对数据进行检验，并将其发送给服务器。</strong>但是在这种简单的情景下，似乎没带来什么好处。然而，Message broker 可以通过简单的设置来允许多种场景，从而让<strong>后端服务器的横向扩展或停机维护</strong>等工作变得轻松，并且<strong>客户端并不会感知到任何的变化。</strong></p>
+<h4 id="Exchange和Queue"><a href="#Exchange和Queue" class="headerlink" title="Exchange和Queue"></a>Exchange和Queue</h4><p>在最简单的场景下，RabbitMQ 的架构示意图大致如下：</p>
+<p><img src="https://i0.hdslb.com/bfs/article/bf0f6ae284810963816540237726112522acad3b.png@1248w_396h.png" alt="Rabbitmq架构"></p>
+<ul>
+<li>首先某个消息从发布者那里发往 RabbitMQ</li>
+<li>这个<strong>消息需要声明一个 Exchange（交换机）</strong>，并被发往这个 Exchange<ul>
+<li>Exchange 有点类似<strong>“暂存区”</strong>，消息都会发往 Exchange。用个类比来说：Exchange 就像邮箱一样，写的信件首先都要放到邮箱里才能进行发送。</li>
+</ul>
+</li>
+<li>然后，Exchange 将使用消息内的一些<strong>信息</strong>以及它自己的<strong>配置</strong>来决定<strong>一条或多条发送消息的路由。</strong></li>
+<li>这些路由都通向一个 Queue（队列），<strong>消息会存储在这个 Queue 里，等待消息的接收者来进行使用。</strong></li>
+<li>一个消息的接收者可以使用 Queue 中的信息。<strong>一旦确认这个消息被传递成功，那么它将从 Queue 中被删除。</strong><ul>
+<li>RabbitMQ 所提供的<strong>松耦合</strong>的特性，主要是因为 <strong>Exchange 和 Queue 的分离</strong>。</li>
+<li>继续使用邮箱的类比，<strong>Queue 就相当于是接收信件的邮箱。而根据邮件地址，邮件系统会选择不同的邮箱来接收邮件。</strong></li>
+</ul>
+</li>
+</ul>
+<p>RabbitMQ的4种Exchange:</p>
+<ul>
+<li><p>Direct Exchange。是默认的 Exchange ，<strong>会把消息发送到一个接收者。如果注册了多个接收者来监听同样的路由 Key，那么 RabbitMQ 将会向每个 Queue 轮流发送一条消息，相当于提供了一个简单的负载均衡</strong></p>
+</li>
+<li><p>Fanout Exchange。 把消息的<strong>副本</strong>发送到<strong>每个绑定到该 Exchange 的 Queue 上面</strong>。而这里的 <strong>Queue 没有办法对消息进行过滤，如果需要过滤，则需要在消息接收者那里实现。</strong></p>
+</li>
+<li><p>Topic Exchange。和 Direct Exchange 类似，但不同的是：<strong>每个消息接收者监听特定的路由 Key，它们会收到消息的副本。</strong></p>
+<ul>
+<li>例如聊天室就可以使用 Topic Exchange。每个聊天室的 ID 可以作为路由 Key，这样就可以<strong>保证消息只会发送给同一个聊天室的其他参与者。</strong></li>
+</ul>
+</li>
+<li><p>Headers Exchange。<strong>这类 Exchange 会忽略路由 Key，取而代之的是，它们会查看消息的 Header，并由此来决定消息应该发往哪个 Queue。Queue 可以有一个或多个 Header 用来进行匹配。这也就开启了复杂的路由场景</strong>，例如某个 Queue 有时可以接收到某类消息而有时则不行。</p>
+</li>
+</ul>
+<h4 id="Fanout-Exchange"><a href="#Fanout-Exchange" class="headerlink" title="Fanout Exchange"></a>Fanout Exchange</h4><p>当消息被发往 RabbitMQ 的时候，需要<strong>指明它需要发送到哪个 Exchange。而这个 Exchange 就可以被设置成为所谓的 Fanout Exchange。</strong>使用 Fanout Exchange，<strong>消息会被克隆，并被发送到所有与这个 Exchange 绑定的 Queue 上</strong>.</p>
+<p><img src="https://i0.hdslb.com/bfs/article/f1d5f471ddcf9493a2a3a4f0d28ad843e01ea3c4.png@1248w_716h.png" alt="fanout exchange"></p>
+<p>这里每一个 Queue 都会得到属于自己的消息的副本，这些消息副本就可以被消息的接收者所使用。</p>
+<ul>
+<li>在很多大规模多人游戏的场景中，经常使用这种方式来同步玩家的数据：每个玩家都订阅到一个 Fanout Exchange，游戏的实例只需要将数据发送到一个地方即可，游戏中其他的玩家就会获得更新，而游戏实例就不需要知道如何数据发往每一个玩家了。</li>
+</ul>
+<h4 id="基本管理命令"><a href="#基本管理命令" class="headerlink" title="基本管理命令"></a>基本管理命令</h4><p>基本安装和配置参考RabbitMQ官网。</p>
+<ul>
+<li>获取RabbitMQ Server状态: <code>rabbitmqctl status</code> 得到大量关于RabbitMQ运行的消息</li>
+<li>获取所有Queue队列： <code>rabbitmqctl list_queues</code></li>
+<li>获取当前集群的server信息： <code>rabbitmqctl cluster_status</code></li>
+<li>使用<code>service rabbitmq-server start/stop/restart/status</code>也可以进行服务管理</li>
+</ul>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a href="https://www.bilibili.com/read/cv10512424?from=search" target="_blank" rel="noopener">https://www.bilibili.com/read/cv10512424?from=search</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/02/20/os-%E7%BD%91%E7%BB%9C-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/02/20/os-%E7%BD%91%E7%BB%9C-2/" class="post-title-link" itemprop="url">网络调优工具使用</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-02-20 18:36:05" itemprop="dateCreated datePublished" datetime="2021-02-20T18:36:05+08:00">2021-02-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-05-13 09:35:45" itemprop="dateModified" datetime="2021-05-13T09:35:45+08:00">2021-05-13</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index">
+                    <span itemprop="name">网络</span>
+                  </a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BD%91%E7%BB%9C/%E5%B7%A5%E5%85%B7/" itemprop="url" rel="index">
+                    <span itemprop="name">工具</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p><img src="https://api2.mubu.com/v3/document_image/be5fa6e0-26bb-4ba7-8337-6a6991d28593-11197877.jpg" alt="linux内核接收网络包的过程"></p>
+<p>linux内核对网络包的接收过程大致分为：硬中断处理、接收数据到RingBuffer、ksoftirqd软中断处理几个过程。在软中断处理中，将数据包从RingBuffer中获取送到协议栈进行处理，之后再送到用户进程socket的接收队列中。</p>
+<h3 id="几个工具"><a href="#几个工具" class="headerlink" title="几个工具"></a>几个工具</h3><p>监控网卡的工具：</p>
+<h4 id="ethtool"><a href="#ethtool" class="headerlink" title="ethtool"></a>ethtool</h4><p>该工具用来<strong>查看和设置网卡参数</strong>。这个工具其实本身只是提供几个通用接口，<strong>真正的实现是都是在网卡驱动中</strong>。几个选项：</p>
+<ul>
+<li><code>-i</code> 显示<strong>网卡驱动</strong>的信息，如驱动的名称、版本等</li>
+<li><code>-S</code> 查看网卡<strong>收发包</strong>的统计情况</li>
+<li><code>-g/-G</code> <strong>查看或者修改RingBuffer的大小</strong></li>
+<li><code>-l/-L</code> 查看或者修改<strong>网卡队列</strong>数</li>
+<li><code>-c/-C</code> 查看或者修改<strong>硬中断合并策略</strong></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看网卡驱动：</span></span><br><span class="line"><span class="variable">$ethtool</span> -i eno1</span><br><span class="line"></span><br><span class="line">driver: e1000e</span><br><span class="line">version: 3.2.6-k</span><br><span class="line">firmware-version: 0.13-4</span><br></pre></td></tr></table></figure>
+<h4 id="ifconfig"><a href="#ifconfig" class="headerlink" title="ifconfig"></a>ifconfig</h4><p>网络管理工具ifconfig不只是可以为网卡配置ip，启动或者禁用网卡，也包含了一<strong>些网卡的统计信息</strong>。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">eno1      Link encap:以太网  硬件地址 98:90:96:a5:4c:a7  </span><br><span class="line">          inet 地址:172.27.229.18  广播:172.27.255.255  掩码:255.255.0.0</span><br><span class="line">          inet6 地址: fe80::aea1:731a:3687:7f4a/64 Scope:Link</span><br><span class="line">          UP BROADCAST RUNNING MULTICAST  MTU:1500  跃点数:1</span><br><span class="line">          接收数据包:10938370 错误:0 丢弃:0 过载:0 帧数:0</span><br><span class="line">          发送数据包:1479049 错误:0 丢弃:0 过载:0 载波:0</span><br><span class="line">          碰撞:0 发送队列长度:1000 </span><br><span class="line">          接收字节:2793457160 (2.7 GB)  发送字节:187860463 (187.8 MB)</span><br><span class="line">          中断:20 Memory:f7d00000-f7d20000 </span><br><span class="line">          </span><br><span class="line">中英文对应：      </span><br><span class="line">    RX packets：接收的总包数</span><br><span class="line">    RX bytes：接收的字节数</span><br><span class="line">    RX errors：表示总的收包的错误数量</span><br><span class="line">    RX dropped：数据包已经进入了 Ring Buffer，但是由于其它原因导致的丢包</span><br><span class="line">    RX overruns：表示了 fifo 的 overruns，这是由于 Ring Buffer不足导致的丢包</span><br></pre></td></tr></table></figure>
+<h4 id="伪文件系统-proc"><a href="#伪文件系统-proc" class="headerlink" title="伪文件系统/proc"></a>伪文件系统/proc</h4><p>Linux内核提供了<code>/proc</code>伪文件系统，通过<code>/proc</code>可以查看<strong>内核内部数据结构、改变内核设置</strong>。</p>
+<p>主要内容：</p>
+<ul>
+<li><code>/proc/sys</code>目录可以查看或修改<strong>内核参数</strong></li>
+<li><code>/proc/cpuinfo</code>可以查看CPU信息</li>
+<li><code>/proc/meminfo</code>可以查看内存信息</li>
+<li><code>/proc/interrupts</code>统计所有的<strong>硬中断</strong></li>
+<li><code>/proc/softirqs</code>统计的所有的<strong>软中断</strong>信息</li>
+<li><code>/proc/slabinfo</code>统计了内核数据结构的<strong>slab内存</strong>使用情况</li>
+<li><code>/proc/net/dev</code>可以看到一些<strong>网卡</strong>统计数据</li>
+</ul>
+<p>关注伪文件 <code>/proc/net/dev</code>查看内核中对网卡的相关统计，包含的主要信息：</p>
+<ul>
+<li>bytes: 发送或接收的数据的总<strong>字节</strong>数</li>
+<li>packets: 接口发送或接收的数据<strong>包</strong>总数</li>
+<li>errs: 由设备驱动程序检测到的发送或接收错误的总数</li>
+<li>drop: 设备驱动程序<strong>丢弃的数据包总数</strong></li>
+<li>fifo: FIFO<strong>缓冲区错误</strong>的数量</li>
+<li>frame: The number of packet framing errors.（分组帧错误的数量）</li>
+<li>colls: 接口上检测到的冲突数</li>
+</ul>
+<h4 id="伪文件系统sysfs"><a href="#伪文件系统sysfs" class="headerlink" title="伪文件系统sysfs"></a>伪文件系统sysfs</h4><p><code>sysfs</code>和<code>/proc</code>类似，也是一个伪文件系统，但是比<code>proc</code>更新，结构更清晰。其中的<code>/sys/class/net/eno1/statistics/</code>也包含了网卡的统计信息。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># cd /sys/class/net/eno1/statistics/ </span></span><br><span class="line"><span class="comment"># grep . * | grep tx</span></span><br><span class="line"></span><br><span class="line">tx_aborted_errors:0</span><br><span class="line">tx_bytes:193280753</span><br><span class="line">tx_carrier_errors:0</span><br><span class="line">tx_compressed:0</span><br><span class="line">tx_dropped:0</span><br><span class="line">tx_errors:0</span><br><span class="line">tx_fifo_errors:0</span><br><span class="line">tx_heartbeat_errors:0</span><br><span class="line">tx_packets:1513872</span><br><span class="line">tx_window_errors:0</span><br></pre></td></tr></table></figure>
+<h4 id="RingBuffer监控和调优"><a href="#RingBuffer监控和调优" class="headerlink" title="RingBuffer监控和调优"></a>RingBuffer监控和调优</h4><p>当网线中的数据帧到达网卡后，第一站就是RingBuffer（网卡通过DMA机制将数据帧送到RingBuffer中）。</p>
+<p>使用<code>ethtool</code>查看RingBuffer:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ethtool -g eno1</span></span><br><span class="line"></span><br><span class="line">Ring parameters <span class="keyword">for</span> eno1:</span><br><span class="line">Pre-set maximums:</span><br><span class="line">RX:		4096</span><br><span class="line">RX Mini:	0</span><br><span class="line">RX Jumbo:	0</span><br><span class="line">TX:		4096</span><br><span class="line">Current hardware settings:</span><br><span class="line">RX:		256</span><br><span class="line">RX Mini:	0</span><br><span class="line">RX Jumbo:	0</span><br><span class="line">TX:		256</span><br></pre></td></tr></table></figure>
+<p>本机器的网卡设置RingBuffer最大允许到4096,实际设置为256。</p>
+<p>注意：ethtool查看到的是实际是<code>Rx bd</code>的大小。<strong><code>Rx bd</code>位于网卡中，相当于一个指针。<code>RingBuffer</code>在内存中，<code>Rx bd</code>指向<code>RingBuffer</code>。<code>Rx  bd</code>和<code>RingBuffer</code>中的元素是一一对应的关系</strong>。在网卡启动的时候，内核会为网卡的<code>Rx  bd</code>在内存中分配<code>RingBuffer</code>，并设置好对应关系。</p>
+<p>在Linux的整个网络栈中，<code>RingBuffer</code>起到一个任务的收发中转站的角色。<strong>对于接收过程来讲，网卡负责往<code>RingBuffer</code>中写入收到的数据帧，<code>ksoftirqd</code>内核线程负责从中取走处理。只要<code>ksoftirqd</code>线程工作的足够快，<code>RingBuffer</code>这个中转站就不会出现问题</strong>。但是设想一下，<strong>假如某一时刻，瞬间来了特别多的包，而<code>ksoftirqd</code>处理不过来了，会发生什么？这时<code>RingBuffer</code>可能瞬间就被填满了，后面再来的包网卡直接就会丢弃，不做任何处理！</strong></p>
+<p>查看机器上是否有因为RingBuffer设置导致的丢包：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ethtool -S eno1</span></span><br><span class="line"></span><br><span class="line">rx_fifo_errors: 0 <span class="comment">#有的机器上不一定有</span></span><br><span class="line">tx_fifo_errors: 0</span><br></pre></td></tr></table></figure>
+<p><code>rx_fifo_errors</code>如果不为0的话（在 <code>ifconfig</code>中体现为<code>overruns</code>  指标增长），就表示有包因为<code>RingBuffer</code>装不下而被丢弃了。那么怎么解决这个问题呢？很自然首先想到的是，加大<code>RingBuffer</code>这个“中转仓库”的大小。通过<code>ethtool</code>就可以修改:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ethtool -G eth1 rx 512 tx 512</span></span><br></pre></td></tr></table></figure>
+<p>这样网卡会被分配更大一点的”中转站“，可以<strong>解决偶发的瞬时的丢包</strong>。不过这种方法有个<strong>小副作用，那就是排队的包过多会增加处理网络包的延时。</strong>所以另外一种解决思路更好，那就是<strong>让内核处理网络包的速度更快一些，而不是让网络包傻傻地在<code>RingBuffer</code>中排队。</strong>怎么加快内核消费RingBuffer中任务的速度?</p>
+<h4 id="硬中断监控与调优"><a href="#硬中断监控与调优" class="headerlink" title="硬中断监控与调优"></a>硬中断监控与调优</h4><h5 id="监控部分"><a href="#监控部分" class="headerlink" title="监控部分"></a>监控部分</h5><p>硬中断可以通过内核提供的伪文件<code>/proc/interrupts</code>来查看：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ cat /proc/interrupts</span><br><span class="line"></span><br><span class="line">           CPU0       CPU1       CPU2       CPU3       CPU4       CPU5       CPU6       CPU7       </span><br><span class="line"> 31:          0          0          0          0          0        536          0    4507261  IR-PCI-MSI 409600-edge      eno1</span><br></pre></td></tr></table></figure>
+<p>分析：</p>
+<ul>
+<li>网卡的输入队列<code>eno1</code>的中断号是31</li>
+<li>31号中断由CPU5和CPU7来处理</li>
+</ul>
+<p>注意：</p>
+<ul>
+<li>为什么输入队列的中断在CPU5和CPU7上？</li>
+</ul>
+<p>这是因为内核的一个配置，在伪文件系统中可以查看到：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#cat /proc/irq/31/smp_affinity</span></span><br><span class="line">80</span><br></pre></td></tr></table></figure>
+<p><code>smp_affinity</code>里是CPU的亲和性的绑定，80是二进制的<code>01010000</code>,第5位和第7位都为1，代表的就是第5和第7个CPU核心CPU5和CPU7。</p>
+<ul>
+<li>对于收包来过程来讲，硬中断的总次数表示的是Linux收包总数吗？</li>
+</ul>
+<p>不是，<strong>硬件中断次数不代表总的网络包数。第一网卡可以设置中断合并，多个网络帧可以只发起一次中断。第二NAPI 运行的时候会关闭硬中断，通过poll来收包。</strong></p>
+<h5 id="多队列网络调优"><a href="#多队列网络调优" class="headerlink" title="多队列网络调优"></a>多队列网络调优</h5><p>现在的主流网卡基本上都是支持多队列的，可以<strong>通过将不同的队列分给不同的CPU核心来处理，从而加快Linux内核处理网络包的速度。这是最为有用的一个优化手段</strong>。</p>
+<p><strong>每一个队列都有一个中断号，可以独立向某个CPU核心发起硬中断请求，让CPU来<code>poll</code>包。通过将接收进来的包被放到不同的内存队列里，多个CPU就可以同时分别向不同的队列发起消费了。这个特性叫做RSS（Receive Side Scaling，接收端扩展）</strong>。通过<code>ethtool</code>工具可以查看网卡的队列情况。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ethtool -l eth0 # 本人网卡不支持该操作，参考开发内功修炼</span></span><br><span class="line">Channel parameters <span class="keyword">for</span> eth0:</span><br><span class="line">Pre-set maximums:</span><br><span class="line">RX:     0</span><br><span class="line">TX:     0</span><br><span class="line">Other:      1</span><br><span class="line">Combined:   63</span><br><span class="line">Current hardware settings:</span><br><span class="line">RX:     0</span><br><span class="line">TX:     0</span><br><span class="line">Other:      1</span><br><span class="line">Combined:   8</span><br></pre></td></tr></table></figure>
+<p>上述结果表示当前网卡支持的最大队列数是63，当前开启的队列数是8。对于这个配置来讲，最多同时可以有8个核心来参与网络收包。<strong>如果想提高内核收包的能力，直接简单加大队列数就可以了，这比加大RingBuffer更为有用。因为加大RingBuffer只是给个更大的空间让网络帧能继续排队，而加大队列数则能让包更早地被内核处理</strong>。<code>ethtool</code>修改队列数量方法如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#ethtool -L eth0 combined 32</span></span><br></pre></td></tr></table></figure>
+<p><strong>硬中断发生在哪一个核上，它发出的软中断就由哪个核来处理。所有通过加大网卡队列数，这样硬中断工作、软中断工作都会有更多的核心参与进来。</strong></p>
+<p>每一个队列都有一个中断号，每一个中断号都是绑定在特定的CPU上。如果不满意某一个中断的CPU绑定，可以通过修改<code>/proc/irq/{中断号}/smp_affinity</code>来实现。</p>
+<h5 id="硬中断合并"><a href="#硬中断合并" class="headerlink" title="硬中断合并"></a>硬中断合并</h5><p>一个实际中的例子，假如你是一位开发同学，和你对口的产品经理一天有10个小需求需要让你帮忙来处理。她对你有两种中断方式：</p>
+<ul>
+<li>第一种：产品经理想到一个需求，就过来找你，和你描述需求细节，然后让你帮你来改</li>
+<li>第二种：产品经理想到需求后，不来打扰你，等攒够5个来找你一次，你集中处理</li>
+</ul>
+<p>现在不考虑及时性，<strong>只考虑工作整体效率</strong>，哪种方案下你的工作效率会高呢？或者换句话说，你更喜欢哪一种工作状态呢？很明显，只要你是一个正常的开发，都会觉得第二种方案更好。对人脑来讲，频繁的中断会打乱你的计划，你脑子里刚才刚想到一半技术方案可能也就废了。当产品经理走了以后，你再想捡起来刚被中断之的工作的时候，很可能得花点时间回忆一会儿才能继续工作。</p>
+<p>对于CPU来讲也是一样，<strong>CPU要做一件新的事情之前，要加载该进程的地址空间，load进程代码，读取进程数据，各级别cache要慢慢热身。因此如果能适当降低中断的频率，多攒几个包一起发出中断，对提升CPU的工作效率是有帮助的</strong>。所以，网卡允许我们对硬中断进行合并。</p>
+<p>现在看一下网卡的硬中断合并配置：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ethtool -c eno1</span></span><br><span class="line"></span><br><span class="line">Adaptive RX: off  TX: off</span><br><span class="line">...</span><br><span class="line">rx-usecs: 3</span><br><span class="line">rx-frames: 0</span><br><span class="line">rx-usecs-irq: 0</span><br><span class="line">rx-frames-irq: 0</span><br><span class="line">rx-usecs-low: 0</span><br><span class="line">rx-frame-low: 0</span><br><span class="line">rx-usecs-high: 0</span><br><span class="line">rx-frame-high: 0</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>参数的含义：</p>
+<ul>
+<li>Adaptive RX: <strong>自适应中断合并</strong>，网卡驱动自己判断啥时候该合并啥时候不合并</li>
+<li>rx-usecs：当过这么长时间过后，一个RX interrupt就会被产生</li>
+<li>rx-frames：当累计接收到这么多个帧后，一个RX interrupt就会被产生</li>
+</ul>
+<p>修改相关参数：接使用<code>ethtool -C</code>就可以</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ethtool -C eno1 adaptive-rx on</span></span><br></pre></td></tr></table></figure>
+<p>需要注意的是，<strong>减少中断数量虽然能使得Linux整体吞吐更高，不过一些包的延迟也会增大，所以用的时候得适当注意。</strong></p>
+<h4 id="软中断监控和调优"><a href="#软中断监控和调优" class="headerlink" title="软中断监控和调优"></a>软中断监控和调优</h4><p><strong>软中断和它对应的硬中断是在同一个核心上处理的。因此，前面硬中断分散到多核上处理的时候，软中断的优化其实也就跟着做了，也会被多核处理。</strong>不过软中断也还有自己的可优化选项。</p>
+<h5 id="监控"><a href="#监控" class="headerlink" title="监控"></a>监控</h5><p>软中断的信息可以从<code>/proc/softirqs</code>读取：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">$ cat /proc/softirqs</span><br><span class="line"></span><br><span class="line">                    CPU0       CPU1       CPU2       CPU3       CPU4       CPU5       CPU6       CPU7       </span><br><span class="line">          HI:          0          0    1228152        865        360          7          0          0</span><br><span class="line">       TIMER:   27307279   27853788   27665421   31261338   27720654   27228264   27604399   29304702</span><br><span class="line">      NET_TX:      10611         21      33099       1480        103      39090         43         56</span><br><span class="line">      NET_RX:     936563     934954     932782     903383     896445     940357    1111527   11896810</span><br><span class="line">       BLOCK:        293    1850485      65944        395        365        332        354        333</span><br><span class="line">    IRQ_POLL:          0          0          0          0          0          0          0          0</span><br><span class="line">     TASKLET:         18          4     104755         75         25         84        748       8691</span><br><span class="line">       SCHED:   15801149   13822836   13336518   16738535   13374504   13423444   13224695   14819090</span><br><span class="line">     HRTIMER:          0          0          0          0          0          0          0          0</span><br><span class="line">         RCU:   23189803   22923131   23217378   25381785   22908760   22872174   23143036   24117847</span><br></pre></td></tr></table></figure>
+<h5 id="软中断budget调整"><a href="#软中断budget调整" class="headerlink" title="软中断budget调整"></a>软中断budget调整</h5><p>番茄工作法：大致意思就是要有一整段的不被打扰的时间，集中精力处理某一项作业。这一整段时间时长被建议是25分钟。<strong>对于Linux的处理软中断的ksoftirqd来说，它也和番茄工作法思路类似。一旦它被硬中断触发开始了工作，它会集中精力处理一波网络包（绝不只是1个），然后再去做别的事情。</strong></p>
+<p>处理一波是多少呢，策略略复杂。只说其中一个比较容易理解的，那就是<code>net.core.netdev_budget</code>内核参数：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># sysctl -a | grep core.netdev_budget </span></span><br><span class="line"></span><br><span class="line">net.core.netdev_budget = 300</span><br></pre></td></tr></table></figure>
+<p>这里的意思说的是，<strong>ksoftirqd一次最多处理300个包，处理够了就会把CPU主动让出来，以便Linux上其它的任务可以得到处理</strong>。那么假如说，<strong>现在想提高内核处理网络包的效率。那就可以让ksoftirqd进程多干一会儿网络包的接收，再让出CPU。至于怎么提高，直接修改不这个参数的值就行。</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># sysctl -w net.core.netdev_budget=600</span></span><br></pre></td></tr></table></figure>
+<p>如果<strong>要保证重启仍然生效，需要将这个配置写到<code>/etc/sysctl.conf</code></strong></p>
+<h5 id="软中断GRO合并"><a href="#软中断GRO合并" class="headerlink" title="软中断GRO合并"></a>软中断GRO合并</h5><p>GRO和硬中断合并的思想很类似，不过阶段不同。<strong>硬中断合并是在中断发起之前，而GRO已经到了软中断上下文中了。</strong></p>
+<p>如果应用中是大文件的传输，大部分包都是一段数据，不用GRO的话，会每次都将一个小包传送到协议栈（IP接收函数、TCP接收）函数中进行处理。<strong>开启GRO的话，Linux就会智能进行包的合并，之后将一个大包传给协议处理函数。这样CPU的效率也是就提高了。</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ethtool -k eno1 | grep generic-receive-offload</span></span><br><span class="line">generic-receive-offload: on</span><br></pre></td></tr></table></figure>
+<p>如果网卡驱动没有打开GRO的话，可以通过如下方式打开。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"># ethtool -K eno1  gro on</span><br></pre></td></tr></table></figure>
+<p>GRO说的仅仅只是包的接收阶段的优化方式，对于发送来说是GSO。</p>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a href="https://mp.weixin.qq.com/s?__biz=MjM5Njg5NDgwNA==&amp;mid=2247484065&amp;idx=1&amp;sn=ab0d3e11c472b845dedf6a87dcc38b25&amp;chksm=a6e3039a91948a8c23ec7d426469ebe30d70f59c7a58437e9ea8b8aac697aa1e2e29b4c47dec&amp;scene=178&amp;cur_album_id=1532487451997454337#rd" target="_blank" rel="noopener">https://mp.weixin.qq.com/s?__biz=MjM5Njg5NDgwNA==&amp;mid=2247484065&amp;idx=1&amp;sn=ab0d3e11c472b845dedf6a87dcc38b25&amp;chksm=a6e3039a91948a8c23ec7d426469ebe30d70f59c7a58437e9ea8b8aac697aa1e2e29b4c47dec&amp;scene=178&amp;cur_album_id=1532487451997454337#rd</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/02/10/%E5%88%86%E5%B8%83%E5%BC%8F%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8-3%E5%85%83%E6%95%B0%E6%8D%AE%E6%9C%8D%E5%8A%A1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2021/02/10/%E5%88%86%E5%B8%83%E5%BC%8F%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8-3%E5%85%83%E6%95%B0%E6%8D%AE%E6%9C%8D%E5%8A%A1/" class="post-title-link" itemprop="url">元数据服务</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-02-10 15:03:58" itemprop="dateCreated datePublished" datetime="2021-02-10T15:03:58+08:00">2021-02-10</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-05-12 08:34:09" itemprop="dateModified" datetime="2021-05-12T08:34:09+08:00">2021-05-12</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8/" itemprop="url" rel="index">
+                    <span itemprop="name">分布式对象存储</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="元数据服务"><a href="#元数据服务" class="headerlink" title="元数据服务"></a>元数据服务</h3><p>上一个版本的分布式对象存储实现了接口服务和数据服务的分离，对象的数据被保存在了专门的数据服务节点，而不是保存在接口服务的本地磁盘上。通过解耦后，可以往集群中添加新的接口服务结点或数据服务节点。</p>
+<p>但也存在问题：</p>
+<ul>
+<li>如果多次PUT同一个对象，会发现该<strong>对象在所有的数据服务节点上都有一份副本</strong>。这是由于在每次PUT的时候都是随机选择一个数据服务节点，只要PUT次数足够多，那么所有的节点必然都会被选中一次，结果就是每个节点上都保存着这个对象的数据。为了解决这个问题，对象存储系统提出了一个十分重要的概念，叫作<strong>数据去重。</strong><ul>
+<li>最简单的办法似乎式只需要在每次PUT之前先定位一下,确保该对象不存在之后再PUT就好了。然而问题并没有那么简单，更复杂的情况是，<strong>两个名字不同的对象有可能内容相同。这样的对象也属于需要去重的范畴</strong>。这是怎么回事呢?<strong>一个对外提供服务的对象存储系统不可能只有一个用户，而是会有很多用户一起使用，这些用户上传的对象可能存在大量的重复数据。为了节省存储空间，对象存储服务通常都会尽量让数据相同的对象共享系统中的同一份数据存储</strong>。</li>
+</ul>
+</li>
+<li>另一个问题则是<strong>数据的不一致</strong>。假设<strong>多次PUT同一个对象，且内容不同，这个对象的不同版本会被随机保存在不同的数据服务节点上。当GET它时就会随机取得不同版本的对象，这不仅破坏了对象数据的一致性，也破坏了GET方法的幂等性( 对同一个系统，使用同样的条件，一次请求和重复的多次请求对系统资源的影响是一致的)。</strong><ul>
+<li>该问题似乎可以通过每次PUT之前先进行定位，如果该对象不存在则随机选择，如果存在则选择相对应的数服务节点。这时候如果客户不要求版本控制，系统的行为表现为用最新的版本覆盖上一个版本。但如果客户希望保存某个对象的所有版本，这时候用户上传的某个对象的所有版本都需要被保存起来。比如说，当用户第一次上传一个对象时，它的初始版本为1:当用户使用PUT方法改变了该对象的内容，那么新对象的版本为2，依次递增。<strong>新的版本会覆盖旧的版本，但是旧版本的对象不会被删除。在下载对象时，用户可以指定GET对象的任意一个版本。</strong> <strong>为了实现版本控制，需要一个数据库来记录系统中所有对象的所有版本。这个数据库就是元数据服务。</strong></li>
+</ul>
+</li>
+</ul>
+<h4 id="元数据"><a href="#元数据" class="headerlink" title="元数据"></a>元数据</h4><p>元数据指的是<strong>对象的描述信息</strong>。为了和对象的数据本身区分开，赋予了元数据这个名称。对象的哪些信息可以称作元数据？举例来说，有<strong>对象的名字、版本、大小以及散列值等。这些都是系统定义的元数据，因为它们的存在对一个对象存储系统有实际意义，比如说客户端和接口服务之间根据对象的名字来引用一个对象:一个对象可以有多个版本，除了删除标记外，每个版本实际都指向数据服务节点上的一份数据存储。</strong></p>
+<p>用户自定义的元数据：除了系统定义的元数据以外，用户也可以为这个对象添加自定义的元数据。这些元数据通常以<strong>键值对形式保存</strong>的任意描述信息，比如一张照片的拍摄时间和拍摄地点，一首歌的作者和演唱者等。<strong>对象存储系统不关心这些元数据，但是用户需要将它们添加到对象存储系统中，作为该对象的元数据进行保存</strong>。</p>
+<h4 id="散列值和散列函数"><a href="#散列值和散列函数" class="headerlink" title="散列值和散列函数"></a>散列值和散列函数</h4><p>对象的散列值是一种非常特殊的元数据，因为<strong>对象存储通常将对象的散列值作为其全局唯一的标识符。</strong>在此前，数据服务节点上的对象都是用名字来引用的，<strong>如果两个对象名字不同，那么无法知道它们的内容是否相同</strong>。如此则无法实现针对不同对象的去重。现在，<strong>以对象的散列值作为标识符，就可以将接口服务层访问的对象和数据服务存取的对象数据解耦合</strong>。<strong>客户端和接口服务通过对象的名字来引用一个对象，而实际则是通过其散列值来引用存储在数据节点上的对象数据，只要散列值相同则可以认为对象的数据相同，这样就可以实现名字不同但数据相同的对象之间的去重。</strong></p>
+<p>对象的散列值是<strong>通过散列函数计算出来</strong>，散列函数会将对象的数据进行重复多轮的数学运算，这些运算操作包括按位与、按位或、按位异或等，<strong>最后计算出来一个长度固定的数字，作为对象的散列值</strong>。一个理想的散列函数具有以下5个特征。</p>
+<ul>
+<li>操作具有决定性，<strong>同样的数据必定计算出同样的散列值</strong>。</li>
+<li>无论计算任何数据都很快。</li>
+<li><strong>无法根据散列值倒推数据,只能遍历尝试所有可能的数据。</strong></li>
+<li>数据上微小的变化就会导致散列值的巨大改变，新散列值和旧散列值不具有相关性。</li>
+<li>无法找到两个能产生相同散列值的不同数据。</li>
+</ul>
+<p>实际情况无法满足所有要求，一个散列函数hash的安全级别根据3种属性决定:</p>
+<ul>
+<li>抗原像攻击:给定一个散列值h，难以找到一个数据m令 h=hash(m)。这个属性称为<strong>函数的单向性</strong>。欠缺单向性的散列函数易受到原像攻击。</li>
+<li>抗第二原像攻击:给定一个数据m1，难以找到第二个数据m2令hash(m1)=hash(m2)。欠缺该属性的散列函数易受到第二原像攻击。</li>
+<li>抗碰撞性:难以找到两个不同的数据m1和m2令hash(m1)=hash(m2)。这样的一对数据被称为散列碰撞。</li>
+</ul>
+<p>本项目使用的散列函数为SHA-256,该函数使用64位的数学运算，产生一个长度为256位的二进制数字作为散列值。</p>
+<h4 id="分布式对象存储加入元数据服务"><a href="#分布式对象存储加入元数据服务" class="headerlink" title="分布式对象存储加入元数据服务"></a>分布式对象存储加入元数据服务</h4><p>元数据服务就是提供对元数据的存取功能的服务。本项目中实现的元数据服务较为简单，它将<strong>只保存系统定义的元数据，也就是对象的名字、版本、大小和散列值，因为这些直接影响到存储功能</strong>。</p>
+<p>和上一版本的架构对，加入元数据服务的架构其他组件不变，而多了一个ElasticSearch （以下简称ES)，也就是项目种选择的元数据服务。需要说明的是能做元数据服务的并不只有ES一种，任何一个分布式数据库都可以做元数据服务。选择ES的原因是它足够好且实现方便。和RabbitMQ一样，ES本身也支持集群，但是在本书的测试环境中只使用了一个服务节点。<br><strong>ES使用的也是REST 接口</strong>，<strong>接口服务节点作为客户端通过HTTP访问ES的索引（index)。ES 的索引就相当于一个数据库，而类型（type）则相当于数据库里的一张表。项目种会创建一个名为metadata的索引，其中有一个名为objects 的类型。</strong></p>
+<p><img src="https://api2.mubu.com/v3/document_image/e15401f1-6fdc-490a-9351-1131bf07b90b-11197877.jpg" alt="加入元数据服务的分布式存储架构"></p>
+<h5 id="REST接口"><a href="#REST接口" class="headerlink" title="REST接口"></a>REST接口</h5><p>有了元数据服务之后，就可以给接口服务增加新的功能，首先是给对象的GET方法增加一个参数version:</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /objects/&lt;object_name&gt;?version=&lt;version_id&gt;</span><br></pre></td></tr></table></figure>
+<p>响应正文：</p>
+<ul>
+<li>对象的数据:这个参数可以<strong>告诉接口服务客户端需要的是该对象的第几个版本，默认是最新的那个</strong>。</li>
+</ul>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PUT /objects/&lt;object_name&gt;</span><br></pre></td></tr></table></figure>
+<p>请求头部(Request Header)</p>
+<ul>
+<li>Digest: SHA-256=&lt;对象散列值的Base64编码&gt;</li>
+<li>Content-Length:&lt;对象数据的长度&gt;</li>
+</ul>
+<p>请求正文</p>
+<ul>
+<li>对象的内容如下:</li>
+<li><strong>PUT方法没变,但是每次客户端PUT一个对象时,必须提供一个名为Digest 的HTTP请求头部，它记录了用SHA-256散列函数计算出来的对象散列值。</strong></li>
+</ul>
+<p>HTTP头部分为请求头部（Request Header）和响应头部(Response Header)，它允许客户端和服务器在HTTP的请求和响应中交换额外的信息。一个头部由3个部分组成:一个大小写不敏感的名字，后面跟着一个冒号“:”，然后是该头部的值。注意头部的值不能包含回车。</p>
+<p>Digest头部的名字是 Digest，后面跟着一个冒号，然后是 Digest头部的值，也就是”SHA-256=&lt;对象散列值的Base64编码&gt;”。<strong>SHA-256是要求使用的散列函数,根据RFC3230的要求，客户端需要在Digest头部提供计算散列值时使用的散列函数,如果服务器发现客户端使用的散列函数跟服务器使用的散列函数不一致则会拒绝整个请求</strong>。<strong>SHA-256计算出的散列值是一个256位的二进制数字，客户端还需要对其进行Base64编码，将数字转化成ASCII字符串格式，以确保不包含回车的二进制数字。</strong></p>
+<p>Base64编码规则选定了64个不同的字符，分别代表1个6位的二进制数字。对一个256位的二进制数字进行编码，首先要将其切成11个24位的二进制数字（不足的位在最后一个数字用0补齐)，然后每个数字正好用4个Base64字符来表示。</p>
+<p><strong>经过Base64编码后的散列值将作为该对象的全局唯一标识符，也是数据服务节点储存的对象名。也就是说，只要对象内容发生了变化，那么原来在数据服务节点上储存的数据不会被更新，而是会储存一个新的对象。</strong></p>
+<p>除了Digest头部以外，客户端还必须提供一个名为Content-Length 的HTTP请求头部用来告诉服务端该对象数据的长度。<strong>客户端提供的对象散列值和长度会作为元数据被保存在元数据服务中。</strong></p>
+<p>将数据服务层存取的对象名和接口服务层访问的对象名区分开对于去重来说至关重要。现在，<strong>无论接口服务层收到的对象名是什么，只要从数据服务层角度看到的对象名一致，就可以认为是对象的内容一致，去重就只需要简单地根据数据服务层的对象名来实现就可以</strong>。</p>
+<p>PUT成功后，在元数据服务中该对象就会添加一个新的版本，版本号从1开始递增。</p>
+<p>除了对象的GET 和 PUT方法发生了变化以外，还可以添加新的功能，首先是对象的DELETE方法。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DELETE /objects/&lt;object_name&gt;</span><br></pre></td></tr></table></figure>
+<p>使用DELETE方法来删除一个对象。</p>
+<p>在此之前都没有实现对象的删除功能,这是有原因的<strong>。对象存储的去重会让名字不同的对象共享同一份数据存储，而删除一个对象意味着要将该对象和数据存储之间的联系断开。在把对象的名字和对象的数据存储解耦合之前，无法做到在删除一个对象的同时保留对象的数据存储。</strong> <strong>有了元数据服务，在删除一个对象时，只需要在元数据中给对象添加一个表示删除的特殊版本,而在数据节点上保留其数据。</strong></p>
+<p><strong>在GET时，如果该对象的最新版本是一个删除标记，则返回404 Not Found。除了对象的删除功能之外，还需要提供对象的列表功能，用于查询所有对象或指定对象的所有版本。</strong></p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /versions/</span><br></pre></td></tr></table></figure>
+<ul>
+<li>响应正文<br><strong>指定对象的所有版本:客户端GET某个指定对象的版本列表，接口服务节点返回该对象的所有版本。HTTP响应内容结构同上。</strong></li>
+</ul>
+<h5 id="ES接口"><a href="#ES接口" class="headerlink" title="ES接口"></a>ES接口</h5><p>元数据服务的索引使用映射(mappings)结构：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">mappings":&#123;</span><br><span class="line">    "objects":&#123;</span><br><span class="line">        "properties":&#123;</span><br><span class="line">            "name" : &#123;"type" : "string" , "index" :"not analyzed"&#125;,</span><br><span class="line">            "version" :&#123;"type": "integer"&#125;,</span><br><span class="line">            "size":&#123;"type"": ""integer"&#125;,</span><br><span class="line">            "hash" : &#123;"type : "string" &#125;,</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>ES的索引相当于数据库而类型相当于数据库的表，那么现在这个映射则相当于定义表结构。</strong>这个映射会在创建metadata索引时作为参数一并被引入，<strong>该索引只有一个类型就是objects，其中包括4个属性分别是 name、version、size和hash，相当于数据库表的4个列。</strong></p>
+<p>name属性有个额外的要求”index”:”not_analyzed”，这是<strong>为了在搜索时能够精确匹配name</strong>。<strong>默认的 analyzed index 会对name进行分词匹配。这有可能导致不相关的匹配结果。比如我们有一个元数据的name是“little cat”，如果使用analyzed index，那么它会被分成little和cat两个词，之后任何包含little或cat的搜索都会导致“little cat”被选中。</strong></p>
+<h5 id="添加对象元数据"><a href="#添加对象元数据" class="headerlink" title="添加对象元数据"></a>添加对象元数据</h5><p>当客户端PUT或DELETE对象时，都需要往元数据服务添加新版本，处理步骤如图：</p>
+<p><img src="https://api2.mubu.com/v3/document_image/6dfe689e-2b45-45eb-b31d-264ddbbe97b1-11197877.jpg" alt="往元数据服务添加新版本"></p>
+<p>上图显示了往元数据服务添加新版本的流程，<strong>当接口服务需要给某个对象添加一个新版本时，首先会去查询该对象当前最新版本的元数据，如果该对象不存在，则新版本从1开始:否则新版本为当前最新版本加1，然后将其添加进元数据服务。</strong></p>
+<p><strong>GET对象时分两种情况，如果没有指定版本号，同样需要搜索对象最新版本的元数据;如果指定了版本号，可以根据对象的名字和版本号直接获取对象指定版本的元数据。</strong></p>
+<h5 id="用到的ES-API"><a href="#用到的ES-API" class="headerlink" title="用到的ES API"></a>用到的ES API</h5><p>要想荻取对象当前最新版本的元数据需要使用ES搜索API.</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /metadata/_search?q=name:&lt;object_name&gt;&amp;size=1&amp;sort=version:desc</span><br></pre></td></tr></table></figure>
+<p>给对象添加一个新版本需要使用ES索引API:</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PUT /metadata/objects/&lt;object_name&gt;_&lt;version&gt;?op_type=create</span><br></pre></td></tr></table></figure>
+<p>在这里，特地将<code>&lt;object_name&gt;_&lt;version&gt;</code>作为<code>_i</code>d创建。这是为了<strong>当客户端指定版本GET对象时可以直接根据对象名和版本号拼出相对应的_id来从ES中获取元数据，从而免除了搜索的步骤。</strong></p>
+<p>使用<code>op_type=create</code>可以确保<strong>当多个客户端同时上传同一个对象时不至于发生数据丢失，因为只有第一个请求能成功上传给ES。其他请求会收到HTTP错误代码409 Conflict，这样接口服务节点就能知道发生了版本冲突并重新上传。</strong></p>
+<p>当客户端GET对象时分两种情况，如果没有指定版本号，则使用和之前同样的ES搜索API来获取对象的最新版本。</p>
+<p>如果客户端指定版本号GET对象，则使用<code>ES Get API</code>直接获取对象指定版本的元数据。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /metadata/objects/&lt;object_name&gt;_&lt;version_id&gt;/_source</span><br></pre></td></tr></table></figure>
+<p>当客户端GET全体对象版本列表时，使用ES<strong>搜索API</strong>方法如下:</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /metadata/_search?sort=name,version&amp;from=&lt;from&gt;&amp;size=&lt;size&gt;</span><br></pre></td></tr></table></figure>
+<p>其中，<strong>from和 size用于分页显示。在不指定from和 size的情况下，ES 默认的分页是从0开始显示10条。</strong></p>
+<p>当客户端<strong>GET指定对象版本列表时</strong>，使用ES 搜索API方法如下:</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /metadata/_search?sort=name,versions&amp;from=&lt;from&gt;&amp;size=&lt;size&gt;&amp;q=name:&lt;object_name&gt;</span><br></pre></td></tr></table></figure>
+<p>这里多了一个q参数用于指定name。</p>
+<h5 id="对象PUT流程"><a href="#对象PUT流程" class="headerlink" title="对象PUT流程"></a>对象PUT流程</h5><p><img src="https://api2.mubu.com/v3/document_image/777aada2-f039-4763-b3be-9e17b1e04b08-11197877.jpg" alt="加入元数据服务的对象put流程"></p>
+<p>客户端的HTTP请求提供了对象的名字、散列值和大小，接口服务以散列值作为数据服务的对象名来保存对象，然后在元数据服务中根据对象的名字搜索当前最新的元数据，使其版本号加1并添加一个新版本的元数据。</p>
+<h5 id="对象GET流程"><a href="#对象GET流程" class="headerlink" title="对象GET流程"></a>对象GET流程</h5><p><img src="https://api2.mubu.com/v3/document_image/9cf5cce9-c1cc-48c5-b810-19ab62954001-11197877.jpg" alt="加入元数据服务的对象get流程"></p>
+<p>客户端在HTTP请求中指定对象的名字，可在 URL的查询参数中指定版本号。如果指定版本号，则接口服务根据对象的名字和版本号获取元数据;否则根据对象的名字搜索最新元数据。<strong>然后从元数据中获得对象的散列值作为数据服务的对象名来读取对象。</strong></p>
+<h4 id="具体实现"><a href="#具体实现" class="headerlink" title="具体实现"></a>具体实现</h4><p>主要关注于与上一版本有变化的部分(主要在接口服务种实现元数据的互动)进行说明。</p>
+<h5 id="接口服务"><a href="#接口服务" class="headerlink" title="接口服务"></a>接口服务</h5><h6 id="接口服务的main函数"><a href="#接口服务的main函数" class="headerlink" title="接口服务的main函数"></a>接口服务的main函数</h6><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">go</span> heartbeat.ListenHeartbeat()</span><br><span class="line">	http.HandleFunc(<span class="string">"/objects/"</span>, objects.Handler)</span><br><span class="line">	http.HandleFunc(<span class="string">"/locate/"</span>, locate.Handler)</span><br><span class="line">	http.HandleFunc(<span class="string">"/versions/"</span>, versions.Handler)</span><br><span class="line">	log.Fatal(http.ListenAndServe(os.Getenv(<span class="string">"LISTEN_ADDRESS"</span>), <span class="literal">nil</span>))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>本版本的接口服务main函数多了一个用于处理<code>/vesions/</code>的函数，名字为<code>versions.Handler</code>。</p>
+<h6 id="接口服务的versions包"><a href="#接口服务的versions包" class="headerlink" title="接口服务的versions包"></a>接口服务的<code>versions</code>包</h6><p>主要工作为调用es包的函数完成相关工作：</p>
+<p><code>versions.Handler</code>函数：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Handler</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">	<span class="comment">// 检查HTTP方法是否为GET</span></span><br><span class="line">	m := r.Method</span><br><span class="line">	<span class="comment">// 如果不为GET，返回405 Method Not Allowed</span></span><br><span class="line">	<span class="keyword">if</span> m != http.MethodGet &#123;</span><br><span class="line">		w.WriteHeader(http.StatusMethodNotAllowed)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 方法为GET,获取URL中的&lt;object_name&gt;部分</span></span><br><span class="line">	from := <span class="number">0</span></span><br><span class="line">	size := <span class="number">1000</span></span><br><span class="line">	name := strings.Split(r.URL.EscapedPath(), <span class="string">"/"</span>)[<span class="number">2</span>]</span><br><span class="line">	<span class="comment">// 无限循环调用es包的SearchAllVersions函数</span></span><br><span class="line">	<span class="keyword">for</span> &#123;</span><br><span class="line">		<span class="comment">// 返回一个元数据的数组</span></span><br><span class="line">		metas, e := es.SearchAllVersions(name, from, size)</span><br><span class="line">		<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">			log.Println(e)</span><br><span class="line">			w.WriteHeader(http.StatusInternalServerError)</span><br><span class="line">			<span class="keyword">return</span></span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">// 遍历数组，将元数据一一写入HTTP响应的正文</span></span><br><span class="line">		<span class="keyword">for</span> i := <span class="keyword">range</span> metas &#123;</span><br><span class="line">			b, _ := json.Marshal(metas[i])</span><br><span class="line">			w.Write(b)</span><br><span class="line">			w.Write([]<span class="keyword">byte</span>(<span class="string">"\n"</span>))</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">// 如果返回的数组长度不等于size，说明元数据服务种没有更多的数据，直接返回</span></span><br><span class="line">		<span class="keyword">if</span> <span class="built_in">len</span>(metas) != size &#123;</span><br><span class="line">			<span class="keyword">return</span></span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">// 否则把from的值增加1000进行下一轮迭代</span></span><br><span class="line">		from += size</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h6 id="接口服务的objects包"><a href="#接口服务的objects包" class="headerlink" title="接口服务的objects包"></a>接口服务的objects包</h6><p>加入元数据服务以后,接口服务的objects包与上一版本相比发生了较大的变化,除了多了一个对象的DELETE方法以外，对象的PUT和GET方法也都有所改变，它们需要和元数据服务互动。</p>
+<p>obejects.Handler函数：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Handler</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">	m := r.Method</span><br><span class="line">	<span class="keyword">if</span> m == http.MethodPut &#123;</span><br><span class="line">		put(w, r)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> m == http.MethodGet &#123;</span><br><span class="line">		get(w, r)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 与上一版本多一个DELETE方法处理del函数</span></span><br><span class="line">	<span class="keyword">if</span> m == http.MethodDelete &#123;</span><br><span class="line">		del(w, r)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	w.WriteHeader(http.StatusMethodNotAllowed)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>objects.del函数：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">del</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">	name := strings.Split(r.URL.EscapedPath(), <span class="string">"/"</span>)[<span class="number">2</span>]</span><br><span class="line">	<span class="comment">// 以name为参数调用es.SearchLaestVersion,搜索该对象最新的版本</span></span><br><span class="line">	version, e := es.SearchLatestVersion(name)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(e)</span><br><span class="line">		w.WriteHeader(http.StatusInternalServerError)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 插入新的元数据，接受元数据的name, version, size和hash</span></span><br><span class="line">	<span class="comment">// hash 为空字符串表示这个一个删除标记</span></span><br><span class="line">	e = es.PutMetadata(name, version.Version+<span class="number">1</span>, <span class="number">0</span>, <span class="string">""</span>)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(e)</span><br><span class="line">		w.WriteHeader(http.StatusInternalServerError)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>objects.put相关函数:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">put</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">	<span class="comment">// 先从HTTP请求头部获取对象的散列值</span></span><br><span class="line">	hash := utils.GetHashFromHeader(r.Header)</span><br><span class="line">	<span class="keyword">if</span> hash == <span class="string">""</span> &#123;</span><br><span class="line">		log.Println(<span class="string">"missing object hash in digest header"</span>)</span><br><span class="line">		w.WriteHeader(http.StatusBadRequest)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 以散列值作为参数调用stroreObject</span></span><br><span class="line">	c, e := storeObject(r.Body, url.PathEscape(hash))</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(e)</span><br><span class="line">		w.WriteHeader(c)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> c != http.StatusOK &#123;</span><br><span class="line">		w.WriteHeader(c)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 从URL中获取对象的名字和对象的大小</span></span><br><span class="line">	name := strings.Split(r.URL.EscapedPath(), <span class="string">"/"</span>)[<span class="number">2</span>]</span><br><span class="line">	size := utils.GetSizeFromHeader(r.Header)</span><br><span class="line">	<span class="comment">// 以对象的名字、散列值和大小为参数调用es.AddVersions给对象添加新版本</span></span><br><span class="line">	e = es.AddVersion(name, hash, size)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(e)</span><br><span class="line">		w.WriteHeader(http.StatusInternalServerError)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>GetHashFromHeader函数和GetSizeFromHeader函数是utils包提供的两个函数：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">GetHashFromHeader</span><span class="params">(h http.Header)</span> <span class="title">string</span></span> &#123;</span><br><span class="line">	<span class="comment">// 获取"digest"头部</span></span><br><span class="line">	digest := h.Get(<span class="string">"digest"</span>)</span><br><span class="line">	<span class="comment">// 检查diest头部的形式是否满足"SHA-256=&lt;hash&gt;"</span></span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">len</span>(digest) &lt; <span class="number">9</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="string">""</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> digest[:<span class="number">8</span>] != <span class="string">"SHA-256="</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="string">""</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> digest[<span class="number">8</span>:]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">GetSizeFromHeader</span><span class="params">(h http.Header)</span> <span class="title">int64</span></span> &#123;</span><br><span class="line">	<span class="comment">// 得到"conten-length"头部，并调用strconv.PareseInt将字符串转换为int64输出</span></span><br><span class="line">	size, _ := strconv.ParseInt(h.Get(<span class="string">"content-length"</span>), <span class="number">0</span>, <span class="number">64</span>)</span><br><span class="line">	<span class="keyword">return</span> size</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>objects.get函数：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">get</span><span class="params">(w http.ResponseWriter, r *http.Request)</span></span> &#123;</span><br><span class="line">	name := strings.Split(r.URL.EscapedPath(), <span class="string">"/"</span>)[<span class="number">2</span>]</span><br><span class="line">	<span class="comment">// 获取URL并从URL的查询参数中获取"version"参数的值</span></span><br><span class="line">	<span class="comment">// Query方法返回一个保存URL所有查询参数的map，该map的键是查询参数的名字，值是一个字符串数组</span></span><br><span class="line">	<span class="comment">// HTTP的URL查询参数允许存在多个值，以"version"为key可以得到URL中查询参数的所有值</span></span><br><span class="line">	versionId := r.URL.Query()[<span class="string">"version"</span>]</span><br><span class="line">	version := <span class="number">0</span></span><br><span class="line">	<span class="keyword">var</span> e error</span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">len</span>(versionId) != <span class="number">0</span> &#123;</span><br><span class="line">		<span class="comment">// 项目中不考虑多个"version"查询参数的情况</span></span><br><span class="line">		<span class="comment">// 始终以versionId数组的第一个元素作为客户端提供的版本号</span></span><br><span class="line">		<span class="comment">// 将字符串转换为整型</span></span><br><span class="line">		version, e = strconv.Atoi(versionId[<span class="number">0</span>])</span><br><span class="line">		<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">			log.Println(e)</span><br><span class="line">			w.WriteHeader(http.StatusBadRequest)</span><br><span class="line">			<span class="keyword">return</span></span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 调用es的GetMetadata函数得到对象的元数据meta</span></span><br><span class="line">	meta, e := es.GetMetadata(name, version)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(e)</span><br><span class="line">		w.WriteHeader(http.StatusInternalServerError)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// meta.Hash为对象的散列值，如果为空表示该对象版本是一个删除标记</span></span><br><span class="line">	<span class="comment">// 返回404 Not Found</span></span><br><span class="line">	<span class="keyword">if</span> meta.Hash == <span class="string">""</span> &#123;</span><br><span class="line">		w.WriteHeader(http.StatusNotFound)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 以散列值为对象名从数据服务层获取对象并输出</span></span><br><span class="line">	object := url.PathEscape(meta.Hash)</span><br><span class="line">	stream, e := getStream(object)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Println(e)</span><br><span class="line">		w.WriteHeader(http.StatusNotFound)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	io.Copy(w, stream)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="es包"><a href="#es包" class="headerlink" title="es包"></a>es包</h5><p>es包封装了以HTTP访问ES的各种API的操作。</p>
+<p>es.getMetadata函数：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 结构与ES映射中定义的objects类型属性一一对应</span></span><br><span class="line"><span class="keyword">type</span> Metadata <span class="keyword">struct</span> &#123;</span><br><span class="line">	Name    <span class="keyword">string</span></span><br><span class="line">	Version <span class="keyword">int</span></span><br><span class="line">	Size    <span class="keyword">int64</span></span><br><span class="line">	Hash    <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 根据对象的名字和版本号来获取对象的元数据</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">getMetadata</span><span class="params">(name <span class="keyword">string</span>, versionId <span class="keyword">int</span>)</span> <span class="params">(meta Metadata, e error)</span></span> &#123;</span><br><span class="line">	<span class="comment">// ES服务器地址来自环境变量ES_SERVER,索引是metadata,类型是objects</span></span><br><span class="line">	<span class="comment">// 文档的id由对象的名字和版本号拼接而成。</span></span><br><span class="line">	url := fmt.Sprintf(<span class="string">"http://%s/metadata/objects/%s_%d/_source"</span>,</span><br><span class="line">		os.Getenv(<span class="string">"ES_SERVER"</span>), name, versionId)</span><br><span class="line">	<span class="comment">// GET到URL中的对象的元数据，免除耗时的搜索操作</span></span><br><span class="line">	r, e := http.Get(url)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> r.StatusCode != http.StatusOK &#123;</span><br><span class="line">		e = fmt.Errorf(<span class="string">"fail to get %s_%d: %d"</span>, name, versionId, r.StatusCode)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 读出数据</span></span><br><span class="line">	result, _ := ioutil.ReadAll(r.Body)</span><br><span class="line">	<span class="comment">// ES返回的结果经过JSON解码后被es,SearchLatestVersion函数使用</span></span><br><span class="line">	json.Unmarshal(result, &amp;meta)</span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>es.SearchLatestVersion函数：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> hit <span class="keyword">struct</span> &#123;</span><br><span class="line">	Source Metadata <span class="string">`json:"_source"`</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> searchResult <span class="keyword">struct</span> &#123;</span><br><span class="line">	Hits <span class="keyword">struct</span> &#123;</span><br><span class="line">		Total <span class="keyword">int</span></span><br><span class="line">		Hits  []hit</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">SearchLatestVersion</span><span class="params">(name <span class="keyword">string</span>)</span> <span class="params">(meta Metadata, e error)</span></span> &#123;</span><br><span class="line">	<span class="comment">// 调用ES搜索API.在URL中指定对象的名字，版本号以降序排列且只返回第一个结果。</span></span><br><span class="line">	url := fmt.Sprintf(<span class="string">"http://%s/metadata/_search?q=name:%s&amp;size=1&amp;sort=version:desc"</span>,</span><br><span class="line">		os.Getenv(<span class="string">"ES_SERVER"</span>), url.PathEscape(name))</span><br><span class="line">	fmt.Println(url)</span><br><span class="line">	r, e := http.Get(url)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> r.StatusCode != http.StatusOK &#123;</span><br><span class="line">		e = fmt.Errorf(<span class="string">"fail to search latest metadata: %d"</span>, r.StatusCode)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	result, _ := ioutil.ReadAll(r.Body)</span><br><span class="line">	<span class="keyword">var</span> sr searchResult</span><br><span class="line">	<span class="comment">// ES返回的结果通过JSON解码到一个searchResult结构体中</span></span><br><span class="line">	<span class="comment">// searchResult和ES搜索API返回的结构体保持一致</span></span><br><span class="line">	<span class="comment">// 方便读取搜索到的元数据并赋值给meta返回。</span></span><br><span class="line">	json.Unmarshal(result, &amp;sr)</span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">len</span>(sr.Hits.Hits) != <span class="number">0</span> &#123;</span><br><span class="line">		meta = sr.Hits.Hits[<span class="number">0</span>].Source</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// ES的返回结果长度为0，说明没有搜到相对应的元数据，直接返回</span></span><br><span class="line">	<span class="comment">// 此时meta中各属性都为初始值：字符串为空，整型为0</span></span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>es.GetMetadata函数：</p>
+<p>GetMetadata函数的功能类似getMetadata，输入对象的名字和版本号返回对象，区别在于当version为0时会调用SearchLatestVersion获取当前最新的版本。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">GetMetadata</span><span class="params">(name <span class="keyword">string</span>, version <span class="keyword">int</span>)</span> <span class="params">(Metadata, error)</span></span> &#123;</span><br><span class="line">	<span class="comment">// 当version为0的时候，调用SearchLatestVersion获取当前最新的版本</span></span><br><span class="line">	<span class="keyword">if</span> version == <span class="number">0</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> SearchLatestVersion(name)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> getMetadata(name, version)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>es.PutMetadata函数:</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 用于向ES服务上传一个新的元数据，输入的4个参数对应元数据的4个属性</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">PutMetadata</span><span class="params">(name <span class="keyword">string</span>, version <span class="keyword">int</span>, size <span class="keyword">int64</span>, hash <span class="keyword">string</span>)</span> <span class="title">error</span></span> &#123;</span><br><span class="line">	<span class="comment">// 生成ES文档，一个ES的文档相当于数据库的一条记录</span></span><br><span class="line">	doc := fmt.Sprintf(<span class="string">`&#123;"name":"%s","version":%d,"size":%d,"hash":"%s"&#125;`</span>,</span><br><span class="line">		name, version, size, hash)</span><br><span class="line">	client := http.Client&#123;&#125;</span><br><span class="line">	<span class="comment">// 使用op_type=create参数，如果同时又多个客户端上传同一个数据，结果会发生冲突</span></span><br><span class="line">	<span class="comment">// 只有第一个文档被成功创建，之后的PUT请求，ES会返回409Conflict</span></span><br><span class="line">	url := fmt.Sprintf(<span class="string">"http://%s/metadata/objects/%s_%d?op_type=create"</span>,</span><br><span class="line">		os.Getenv(<span class="string">"ES_SERVER"</span>), name, version)</span><br><span class="line">	<span class="comment">// 用PUT方法将文档上传到metadata索引的objects类型</span></span><br><span class="line">	request, _ := http.NewRequest(<span class="string">"PUT"</span>, url, strings.NewReader(doc))</span><br><span class="line">	r, e := client.Do(request)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> e</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 如果为409Conflict，函数让版本号加1并递归调用自身继续上传</span></span><br><span class="line">	<span class="keyword">if</span> r.StatusCode == http.StatusConflict &#123;</span><br><span class="line">		<span class="keyword">return</span> PutMetadata(name, version+<span class="number">1</span>, size, hash)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> r.StatusCode != http.StatusCreated &#123;</span><br><span class="line">		result, _ := ioutil.ReadAll(r.Body)</span><br><span class="line">		<span class="keyword">return</span> fmt.Errorf(<span class="string">"fail to put metadata: %d %s"</span>, r.StatusCode, <span class="keyword">string</span>(result))</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>es.AddVersion函数：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">AddVersion</span><span class="params">(name, hash <span class="keyword">string</span>, size <span class="keyword">int64</span>)</span> <span class="title">error</span></span> &#123;</span><br><span class="line">	<span class="comment">// 获取对象最新的版本</span></span><br><span class="line">	version, e := SearchLatestVersion(name)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> e</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 在版本号上加1调用PutMetadata</span></span><br><span class="line">	<span class="keyword">return</span> PutMetadata(name, version.Version+<span class="number">1</span>, size, hash)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>es.SearchAllVersion函数：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 用于搜索某个对象或所有对象的全部版本</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">SearchAllVersions</span><span class="params">(name <span class="keyword">string</span>, from, size <span class="keyword">int</span>)</span> <span class="params">([]Metadata, error)</span></span> &#123;</span><br><span class="line">	<span class="comment">// name表示对象的名字，如果name不为空字符粗则搜索指定对象的所有版本</span></span><br><span class="line">	<span class="comment">// 否则搜索所有对象的全部版本</span></span><br><span class="line">	<span class="comment">// from和size指定分页的显示结果</span></span><br><span class="line">	<span class="comment">// 搜索的结果按照对象的名字和版本号排序</span></span><br><span class="line">	url := fmt.Sprintf(<span class="string">"http://%s/metadata/_search?sort=name,version&amp;from=%d&amp;size=%d"</span>,</span><br><span class="line">		os.Getenv(<span class="string">"ES_SERVER"</span>), from, size)</span><br><span class="line">	<span class="keyword">if</span> name != <span class="string">""</span> &#123;</span><br><span class="line">		url += <span class="string">"&amp;q=name:"</span> + name</span><br><span class="line">	&#125;</span><br><span class="line">	r, e := http.Get(url)</span><br><span class="line">	<span class="keyword">if</span> e != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, e</span><br><span class="line">	&#125;</span><br><span class="line">	metas := <span class="built_in">make</span>([]Metadata, <span class="number">0</span>)</span><br><span class="line">	result, _ := ioutil.ReadAll(r.Body)</span><br><span class="line">	<span class="keyword">var</span> sr searchResult</span><br><span class="line">	json.Unmarshal(result, &amp;sr)</span><br><span class="line">	<span class="keyword">for</span> i := <span class="keyword">range</span> sr.Hits.Hits &#123;</span><br><span class="line">		metas = <span class="built_in">append</span>(metas, sr.Hits.Hits[i].Source)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> metas, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h4><p>测试环境与上一版本相同，具体代码见<a href="https://github.com/dongshifu/distributed_object_storage_dong/tree/main/v2" target="_blank" rel="noopener">带元数据服务的分布式对象存储</a></p>
+<h4 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h4><p>《分布式对象存储—原理、架构及Go语言实现》</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/01/20/%E5%88%86%E5%B8%83%E5%BC%8F%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8-2%E5%8F%AF%E6%89%A9%E5%B1%95%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -914,686 +1562,11 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/21/mysql_3%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/12/21/mysql_3%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB/" class="post-title-link" itemprop="url">mysql事务</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-12-21 21:29:27" itemprop="dateCreated datePublished" datetime="2020-12-21T21:29:27+08:00">2020-12-21</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-30 13:43:38" itemprop="dateModified" datetime="2021-03-30T13:43:38+08:00">2021-03-30</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/mysql/" itemprop="url" rel="index">
-                    <span itemprop="name">mysql</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="事务隔离"><a href="#事务隔离" class="headerlink" title="事务隔离"></a>事务隔离</h3><p>转账场景：要给朋友小王转100块钱，而此时银行卡只有100块钱。转账过程具体到程序里会有一系列的操作，比如查询余额、做加减法、更新余额等，这些操作必须保证是一体的，不然等程序查完之后，还没做减法之前，100块钱完全可以借着这个时间差再查一次，然后再给另外一个朋友转账，如果银行这么整，不就乱了么？这时就要用到“事务”这个概念。</p>
-<p>简单来说，<strong>事务就是要保证一组数据库操作，要么全部成功，要么全部失败</strong>。在<strong>MySQL中，事务支持是在引擎层实现的</strong>。MySQL是一个支持多引擎的系统<strong>，但并不是所有的引擎都支持事务</strong>。比如MySQL原生的MyISAM引擎就不支持事务，这也是MyISAM被InnoDB取代的重要原因之一。</p>
-<h3 id="隔离性与隔离级别"><a href="#隔离性与隔离级别" class="headerlink" title="隔离性与隔离级别"></a>隔离性与隔离级别</h3><p>事务的四要素:ACID（Atomicity、Consistency、Isolation、Durability，即原子性、一致性、隔离性、持久性）。本次主要学习隔离性。</p>
-<p>当数据库上有多个事务同时执行的时候，就可能出现<a href="https://dongshifu.github.io/2020/12/17/mysql-4mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-%E4%BA%8B%E5%8A%A1%E5%8F%8A%E9%94%81/" target="_blank" rel="noopener">脏读（dirty read）、不可重复读（non-repeatable read）、幻读（phantom read）的问题</a>. 为了解决这些问题，就有了“隔离级别”的概念。</p>
-<p><strong>隔离得越严实，效率就会越低</strong>。因此很多时候，我们都要在二者之间寻找一个<strong>平衡点</strong>。SQL标准的事务隔离级别包括：<strong>读未提交（read uncommitted）、读提交（read committed）、可重复读（repeatable read）和串行化（serializable ）</strong>。</p>
-<ul>
-<li>读未提交是指，<strong>一个事务还没提交时，它做的变更就能被别的事务看到</strong>。</li>
-<li>读提交是指，一个事务<strong>提交之后，它做的变更才会被其他事务看到</strong>。</li>
-<li>可重复读是指，一个事务执行过程中看到的数据，总是跟这个事务在启动时看到的数据是一致的。当然<strong>在可重复读隔离级别下，未提交变更对其他事务也是不可见的。</strong></li>
-<li>串行化，顾名思义是<strong>对于同一行记录，“写”会加“写锁”，“读”会加“读锁”。当出现读写锁冲突的时候，后访问的事务必须等前一个事务执行完成，才能继续执行。</strong></li>
-</ul>
-<p>举例说明事务的隔离性：</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; create table T(c int) engine=InnoDB;</span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> T(c) <span class="keyword">values</span>(<span class="number">1</span>);</span><br></pre></td></tr></table></figure>
-<p><img src="https://api2.mubu.com/v3/document_image/da798e7f-1080-480e-a530-6a73973f01dd-11197877.jpg" alt="事务的隔离性"></p>
-<p>在不同的隔离级别下，事务A会有哪些不同的返回结果，也就是图里面V1、V2、V3的返回值分别是什么。</p>
-<ul>
-<li>若隔离级别是“读未提交”，<strong>事务B虽然还没有提交，但是结果已经被A看到</strong>了。v1 为2，v2为2，v3为2</li>
-<li>若隔离级别是“读提交”，<strong>事务B的更新在提交后才能被A看到</strong>。v1为1，v2为2，v3为2</li>
-<li>若隔离级别是“可重复读”，事务在执行期间看到的数据前后必须是一致的。v1为1，v2为1，v3为2</li>
-<li>若隔离级别是“串行化”，则在事务B执行“将1改成2”的时候，会被锁住。直到事务A提交后，事务B才可以继续执行。所以从A的角度看， V1、V2值是1，V3的值是2。</li>
-</ul>
-<p>在实现上，数据库里面会创建一个<strong>视图</strong>，<strong>访问的时候以视图的逻辑结果为准</strong>。在<strong>“可重复读”隔离级别下，这个视图是在事务启动时创建的，整个事务存在期间都用这个视图。在“读提交”隔离级别下，这个视图是在每个SQL语句开始执行的时候创建的。这里需要注意的是，“读未提交”隔离级别下直接返回记录上的最新值，没有视图概念；而“串行化”隔离级别下直接用加锁的方式来避免并行访问。</strong></p>
-<p>在不同的隔离级别下，数据库行为是有所不同的。Oracle数据库的默认隔离级别其实就是“读提交”，因此对于一些从Oracle迁移到MySQL的应用，为保证数据库隔离级别的一致，一定要记得将MySQL的隔离级别设置为“读提交”。</p>
-<h4 id="配置隔离级别"><a href="#配置隔离级别" class="headerlink" title="配置隔离级别"></a>配置隔离级别</h4><p>配置的方式是，将启动参数<code>transaction-isolation</code>的值设置成<code>READ-COMMITTED</code>。你可以用<code>show variables</code>来查看当前的值。</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; show variables like 'transaction_isolation';</span><br><span class="line">或 <span class="keyword">select</span> @@tx_isolation;</span><br><span class="line">mysql&gt;  set global transaction_isolation=0; -- 读未提交</span><br><span class="line">mysql&gt;  set global transaction_isolation=1; -- 读提交</span><br><span class="line">mysql&gt;  set global transaction_isolation=2; -- 可重复读</span><br><span class="line">mysql&gt;  set global transaction_isolation=3; -- 串行化</span><br><span class="line"><span class="keyword">set</span> [glogal|<span class="keyword">session</span>] <span class="keyword">transaction</span> <span class="keyword">isolation</span> <span class="keyword">level</span> 隔离级别名称;</span><br></pre></td></tr></table></figure>
-<p><strong>需要“可重复读”的场景</strong>：假设在管理一个个人银行账户表。一个表存了每个月月底的余额，一个表存了账单明细。这时候要做数据校对，也就是判断上个月的余额和当前余额的差额，是否与本月的账单明细一致。一定希望在校对过程中，即使有用户发生了一笔新的交易，也不影响校对结果。这时候使用“可重复读”隔离级别就很方便。<strong>事务启动时的视图可以认为是静态的，不受其他事务更新的影响。</strong></p>
-<h4 id="事务隔离的实现"><a href="#事务隔离的实现" class="headerlink" title="事务隔离的实现"></a>事务隔离的实现</h4><p>展开说明“可重复读”事务隔离的具体实现：</p>
-<p>在MySQL中，实际上每条记录在<strong>更新的时候都会同时记录一条回滚操作。记录上的最新值，通过回滚操作，都可以得到前一个状态的值</strong>。假设一个值从1被按顺序改成了2、3、4，在回滚日志里面就会有类似下面的记录：</p>
-<p><img src="https://api2.mubu.com/v3/document_image/e3437af8-6bab-4bcb-aa8a-6b603f4d1596-11197877.jpg" alt="回滚记录"></p>
-<p>当前值是4，但是在查询这条记录的时候，不同时刻启动的事务会有不同的read-view。如图中看到的，在视图A、B、C里面，这一个记录的值分别是1、2、4，<strong>同一条记录在系统中可以存在多个版本，就是数据库的多版本并发控制（MVCC）</strong>。对于read-view A，要得到1，就<strong>必须将当前值依次执行图中所有的回滚操作得到</strong>。另外，即使现在有另外一个事务正在将4改成5，这个事务跟read-view A、B、C对应的事务是不会冲突的。</p>
-<p><strong>回滚日志总不能一直保留，什么时候删除</strong>呢？答案是，<strong>在不需要的时候才删除</strong>。也就是说，<strong>系统会判断，当没有事务再需要用到这些回滚日志时，回滚日志会被删除</strong>。</p>
-<p>什么时候不需要？就是<strong>当系统里没有比这个回滚日志更早的read-view的时候。</strong></p>
-<h4 id="为什么建议尽量不要使用长事务"><a href="#为什么建议尽量不要使用长事务" class="headerlink" title="为什么建议尽量不要使用长事务"></a>为什么建议尽量不要使用长事务</h4><p>长事务意味着系统里面会<strong>存在很老的事务视图</strong>。由于<strong>这些事务随时可能访问数据库里面的任何数据，所以这个事务提交之前，数据库里面它可能用到的回滚记录都必须保留，这就会导致大量占用存储空间。</strong></p>
-<p>在MySQL 5.5及以前的版本，回滚日志是跟数据字典一起放在ibdata文件里的，<strong>即使长事务最终提交，回滚段被清理，文件也不会变小。若回滚段太大，最终只好为了清理回滚段，重建整个库。</strong> <strong>除了对回滚段的影响，长事务还占用锁资源，也可能拖垮整个库</strong></p>
-<h3 id="事务的启动方式"><a href="#事务的启动方式" class="headerlink" title="事务的启动方式"></a>事务的启动方式</h3><p>MySQL的事务启动方式有以下几种：</p>
-<ul>
-<li><p>显式启动事务语句， <code>begin</code> 或 <code>start transaction</code>。配套的提交语句是<code>commit</code>，回滚语句是<code>rollback</code>。</p>
-</li>
-<li><p><code>set autocommit=0</code>，这个命令<strong>会将这个线程的自动提交关掉。意味着如果只执行一个select语句，这个事务就启动了，而且并不会自动提交。这个事务持续存在直到主动执行commit 或 rollback 语句，或者断开连接。</strong></p>
-</li>
-</ul>
-<p>有些客户端连接框架会默认连接成功后先执行一个<code>set autocommit=0</code>的命令。这就<strong>导致接下来的查询都在事务中，如果是长连接，就导致了意外的长事务。</strong></p>
-<p>因此<strong>，建议总是使用<code>set autocommit=1</code>, 通过显式语句的方式来启动事务。</strong></p>
-<p>对于一个需要频繁使用事务的业务，第二种方式每个事务在开始时都不需要主动执行一次 “begin”，减少了语句的交互次数。如果也有这个顾虑，建议使用commit work and chain语法: <strong>在autocommit为1的情况下，用begin显式启动的事务，如果执行commit则提交事务。如果执行 commit work and chain，则是提交事务并自动启动下一个事务，这样也省去了再次执行begin语句的开销。同时带来的好处是从程序开发的角度明确地知道每个语句是否处于事务中。</strong></p>
-<p>可以在information_schema库的<code>innodb_trx</code>表中<strong>查询长事务</strong>，比如下面这个语句，用于查找持续时间超过60s的事务。</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> information_schema.innodb_trx <span class="keyword">where</span> TIME_TO_SEC(<span class="keyword">timediff</span>(<span class="keyword">now</span>(),trx_started))&gt;<span class="number">60</span></span><br></pre></td></tr></table></figure>
-<h4 id="如何避免长事务对业务的影响？"><a href="#如何避免长事务对业务的影响？" class="headerlink" title="如何避免长事务对业务的影响？"></a>如何避免长事务对业务的影响？</h4><p>从应用开发端和数据库端来看。</p>
-<p><strong>首先，从应用开发端来看：</strong></p>
-<ul>
-<li><p>确认是否使用了set autocommit=0。这个确认工作可以在测试环境中开展，把MySQL的general_log开起来，然后随便跑一个业务逻辑，通过general_log的日志来确认。一般框架如果会设置这个值，也就会提供参数来控制行为，你的<strong>目标就是把它改成1。</strong></p>
-</li>
-<li><p>确认是否有<strong>不必要的只读事务</strong>。有些框架会习惯不管什么语句先用begin/commit框起来。我见过有些是业务并没有这个需要，但是也把好几个select语句放到了事务中。这种只读事务可以去掉。</p>
-</li>
-<li><p>业务连接数据库的时候，根据业务本身的预估，通过<code>SET MAX_EXECUTION_TIME</code>命令，来<strong>控制每个语句执行的最长时间，避免单个语句意外执行太长时间</strong>。</p>
-</li>
-</ul>
-<p><strong>其次，从数据库端来看：</strong></p>
-<ul>
-<li><p>监控 <code>information_schema.Innodb_trx</code>表，<strong>设置长事务阈值，超过就报警/或者kill；</strong></p>
-</li>
-<li><p>Percona的pt-kill这个工具不错，推荐使用；</p>
-</li>
-<li><p>在业务功能测试阶段要求输出所有的general_log，<strong>分析日志行为提前发现问题</strong>；</p>
-</li>
-<li><p>如果使用的是MySQL 5.6或者更新版本，把<code>innodb_undo_tablespaces</code>设置成2（或更大的值）。如果真的出现大事务导致回滚段过大，这样设置后清理起来更方便</p>
-</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/20/mysql-5mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-mvcc/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/12/20/mysql-5mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-mvcc/" class="post-title-link" itemprop="url">mysql性能优化-mvcc</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-12-20 17:02:01" itemprop="dateCreated datePublished" datetime="2020-12-20T17:02:01+08:00">2020-12-20</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-17 21:34:36" itemprop="dateModified" datetime="2021-03-17T21:34:36+08:00">2021-03-17</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/mysql/" itemprop="url" rel="index">
-                    <span itemprop="name">mysql</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="MVCC"><a href="#MVCC" class="headerlink" title="MVCC"></a>MVCC</h3><p>实验1:</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span> <span class="keyword">session</span> autocommit=<span class="keyword">off</span>;  </span><br><span class="line"><span class="keyword">update</span> <span class="keyword">users</span> <span class="keyword">set</span> lastUpdate=<span class="keyword">now</span>() <span class="keyword">where</span> <span class="keyword">id</span> =<span class="number">1</span>; </span><br><span class="line"></span><br><span class="line"><span class="comment">--在未做commit/rollback操作之前  </span></span><br><span class="line"><span class="comment">--在其他的事务能不能进行对应数据的查询(特别是加上了X锁的数据)  </span></span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> <span class="keyword">users</span> <span class="keyword">where</span> <span class="keyword">id</span> &gt; <span class="number">1</span>; </span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> <span class="keyword">users</span> <span class="keyword">where</span> <span class="keyword">id</span> = <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
-<p>实验2:</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">begin</span> </span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> <span class="keyword">users</span> <span class="keyword">where</span> <span class="keyword">id</span> =<span class="number">1</span> ;</span><br><span class="line"></span><br><span class="line"><span class="keyword">begin</span></span><br><span class="line"><span class="keyword">update</span> <span class="keyword">users</span> <span class="keyword">set</span> lastUpdate=<span class="keyword">now</span>() <span class="keyword">where</span> <span class="keyword">id</span> =<span class="number">1</span>;</span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> <span class="keyword">users</span> <span class="keyword">where</span> <span class="keyword">id</span> =<span class="number">1</span>;</span><br></pre></td></tr></table></figure>
-<p>两个实验从结果上来看是一致的，底层实现是一样的吗？跟MVCC有什么关系？ </p>
-<h4 id="MVCC-1"><a href="#MVCC-1" class="headerlink" title="MVCC"></a>MVCC</h4><p>multiversion concurrency control （多版本并发控制）：并发访问(读或写)数据库时,对正在事务内处理的数据做多版本的管理。达到避免写操作的堵塞，从而引发读操作的并发问题。</p>
-<p>MVCC插入逻辑流程 ：</p>
-<p><img src="https://api2.mubu.com/v3/document_image/de8de1d3-76d7-4062-bbcd-82146470f0be-11197877.jpg" alt="MVCC插入逻辑流程"></p>
-<p>MVCC删除逻辑流程：</p>
-<p><img src="https://api2.mubu.com/v3/document_image/8e3f45d4-6284-44e3-a785-09c59fdeb861-11197877.jpg" alt="MVCC删除逻辑流程"></p>
-<p>MVCC修改逻辑流程：</p>
-<p><img src="https://api2.mubu.com/v3/document_image/d80ca7d4-6d88-495a-a294-2cf1e6d1d949-11197877.jpg" alt="MVCC修改逻辑流程"></p>
-<p>MVCC查询逻辑流程:</p>
-<p><img src="https://api2.mubu.com/v3/document_image/6bfce1c3-7ec8-4023-ad62-e14a1689f4e2-11197877.jpg" alt="MVCC查询逻辑流程"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/17/mysql-4mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-%E4%BA%8B%E5%8A%A1%E5%8F%8A%E9%94%81/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/12/17/mysql-4mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-%E4%BA%8B%E5%8A%A1%E5%8F%8A%E9%94%81/" class="post-title-link" itemprop="url">mysql性能优化-事务及锁</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-12-17 10:46:03" itemprop="dateCreated datePublished" datetime="2020-12-17T10:46:03+08:00">2020-12-17</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-17 21:31:54" itemprop="dateModified" datetime="2021-03-17T21:31:54+08:00">2021-03-17</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/mysql/" itemprop="url" rel="index">
-                    <span itemprop="name">mysql</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h3><h4 id="事务的ACID特性"><a href="#事务的ACID特性" class="headerlink" title="事务的ACID特性"></a>事务的ACID特性</h4><ul>
-<li>原子性(Atomicity) <strong>最小的工作单元</strong>，整个工作单元要么<strong>一起提交成功，要么全部失败回滚</strong>。  </li>
-<li>一致性(Consistency) <strong>事务中操作的数据及状态改变是一致的</strong>，即写入资料的结果必须完全符合预设的规则，不会因为出现系统意外等原因导致状态的不一致。  </li>
-<li>隔离性(Isolation) <strong>一个事务所操作的数据在提交之前，对其他事务的可见性设定(一般设定为不可见)。</strong>  </li>
-<li>持久性(Durability) 事务所做的修改就会<strong>永久保存</strong>，不会因为系统意外导致数据的丢失。 </li>
-</ul>
-<h4 id="事务并发带来的的问题"><a href="#事务并发带来的的问题" class="headerlink" title="事务并发带来的的问题"></a>事务并发带来的的问题</h4><ul>
-<li>脏读:<strong>在不同事务下，当前事务可以读到另外事务未提交的数据</strong>。</li>
-</ul>
-<p><img src="https://api2.mubu.com/v3/document_image/1d32ed1d-7caa-4b42-9156-29eba926152b-11197877.jpg" alt="脏读"></p>
-<ul>
-<li>不可重复读：在<strong>一个事务内多次读取同一数据集合</strong>。<strong>在这一事务还未结束前，另一事务也访问了该同一数据集合并做了修改，由于第二个事务的修改，第一次事务的两次读取的数据可能不一致。</strong></li>
-</ul>
-<p><img src="https://api2.mubu.com/v3/document_image/e0c73513-4f11-4041-adfd-d9f751c73566-11197877.jpg" alt="不可重复读"></p>
-<ul>
-<li>幻读:本质上也属于不可重复读的情况，T1读取某个范围的数据，T2在这个范围内插入新的数据，T1再次读取这个范围的数据，此时读取的结果和和第一次读取的结果不同。</li>
-</ul>
-<p><img src="https://api2.mubu.com/v3/document_image/7a4e33c7-588d-4c8e-a48c-ddbe6a23c54f-11197877.jpg" alt="幻读"></p>
-<h4 id="事务的隔离级别"><a href="#事务的隔离级别" class="headerlink" title="事务的隔离级别"></a>事务的隔离级别</h4><ul>
-<li>未提交读：<strong>事务中的修改，即使没有提交，对其它事务也是可见的</strong><ul>
-<li>存在脏读，不能解决并发问题</li>
-</ul>
-</li>
-<li>Read Committed(提交读)：一个事务开始之后，只能看到自己提交的事务所做的修改。<ul>
-<li>解决了脏读问题，没有解决不可重复读(nonrepeatable read) 问题</li>
-</ul>
-</li>
-<li>Repeatable Read (可重复读)：在同一个事务中多次读取同样的数据结果是一样的。<ul>
-<li>解决不可重复读问题，未定义解决幻读的问题</li>
-</ul>
-</li>
-<li>Serializable (串行化)：解决所有问题 最高的隔离级别，通过强制事务的<strong>串行执行</strong> </li>
-</ul>
-<p>查看mysql的设置的事务隔离级别:</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> @@tx_isolation; <span class="comment">--默认为REPEATABLE-READ</span></span><br></pre></td></tr></table></figure>
-<p><img src="https://api2.mubu.com/v3/document_image/69afe5ec-ba61-48fe-903e-063c2bf57fcc-11197877.jpg" alt="mysql事务隔离级别"></p>
-<h3 id="数据库锁"><a href="#数据库锁" class="headerlink" title="数据库锁"></a>数据库锁</h3><h4 id="表锁和行锁"><a href="#表锁和行锁" class="headerlink" title="表锁和行锁"></a>表锁和行锁</h4><p>锁用于管理<strong>不同事务对共享资源的并发访问</strong>。</p>
-<p>表锁与行锁的区别: </p>
-<ul>
-<li>锁定粒度:表锁 &gt; 行锁  </li>
-<li>加锁效率:表锁 &gt; 行锁  </li>
-<li>冲突概率:表锁 &gt; 行锁  </li>
-<li>并发性能:表锁 &lt; 行锁  </li>
-</ul>
-<h4 id="InnoDB锁类型"><a href="#InnoDB锁类型" class="headerlink" title="InnoDB锁类型"></a>InnoDB锁类型</h4><p>InnoDB存储引擎支持行锁和表锁(另类的行锁)。</p>
-<ul>
-<li>共享锁(行锁):Shared Locks  <ul>
-<li>又称为<strong>读锁</strong>，简称S锁，顾名思义，共享锁就是<strong>多个事务对于同一数据可以共享一把锁，都能访问到数据，但是只能读不能修改</strong>； </li>
-</ul>
-</li>
-<li>排它锁(行锁):Exclusive Locks  <ul>
-<li>又称为<strong>写锁</strong>，简称X锁，<strong>排他锁不能与其他锁并存，如一个事务获取了一个数据行的排他锁，其他事务就不能再获取该行的锁</strong>(共享锁、排他锁)，只有该获取了排他锁的事务是可以对数据行进行读取和修改，(<strong>其他事务要读取数据可来自于快照</strong>)。  </li>
-</ul>
-</li>
-<li>意向锁共享锁(表锁):Intention Shared Locks  </li>
-<li>意向锁排它锁(表锁):Intention Exclusive Locks  </li>
-<li>自增锁:AUTO-INC Locks</li>
-</ul>
-<h5 id="表锁操作"><a href="#表锁操作" class="headerlink" title="表锁操作"></a>表锁操作</h5><p>共享锁加锁释放锁语法:</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> <span class="keyword">users</span> <span class="keyword">WHERE</span> <span class="keyword">id</span>=<span class="number">1</span> <span class="keyword">LOCK</span> <span class="keyword">IN</span> <span class="keyword">SHARE</span> <span class="keyword">MODE</span>;   </span><br><span class="line"><span class="keyword">commit</span>/<span class="keyword">rollback</span></span><br></pre></td></tr></table></figure>
-<p>排它锁加锁释锁方式:  </p>
- <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">delete</span> / <span class="keyword">update</span> / <span class="keyword">insert</span> 默认加上X锁  </span><br><span class="line"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> table_name <span class="keyword">WHERE</span> ... <span class="keyword">FOR</span> <span class="keyword">UPDATE</span>  </span><br><span class="line"><span class="keyword">commit</span>/<span class="keyword">rollback</span></span><br></pre></td></tr></table></figure>
-<p>行锁的算法：</p>
-<ul>
-<li>记录锁 Record Locks  </li>
-<li>间隙锁 Gap Locks  </li>
-<li>临键锁 Next-key Locks</li>
-</ul>
-<h5 id="行锁"><a href="#行锁" class="headerlink" title="行锁"></a>行锁</h5><ul>
-<li>InnoDB的行锁是通过<strong>给索引上的索引项加锁</strong>来实现的。   </li>
-<li><strong>只有通过索引条件进行数据检索，InnoDB才使用行级锁，</strong>否则，InnoDB 将使用表锁(锁住索引的所有记录)</li>
-<li><p><strong>使用二级索引(辅助索引)去更新数据，会把二级索引和聚集索引都上锁</strong>。  </p>
-</li>
-<li><p>意向共享锁(IS)  ：表示事务<strong>准备</strong>给数据行加入共享锁，即<strong>一个数据行加共享锁前必须先取得该表的IS锁，意向共享锁之间是可以相互兼容的。</strong>  </p>
-</li>
-<li>意向排它锁(IX)  ：表示事务准备给数据行加入排他锁，即一个数据行加排他锁前必须先取得该表的IX锁，意向排它锁之间是可以相互兼容的。</li>
-</ul>
-<p>意向锁(IS、IX)是InnoDB数据操作之前<strong>自动加</strong>的，<strong>不需要用户干预</strong>。  </p>
-<p>意义：当事务想去进行锁表时，可以先判断意向锁是否存在，存在时则可快速返回该表不能启用表锁。 </p>
-<h5 id="自增锁-AUTO-INC-Locks"><a href="#自增锁-AUTO-INC-Locks" class="headerlink" title="自增锁:AUTO-INC Locks"></a>自增锁:AUTO-INC Locks</h5><ul>
-<li>针对<strong>自增列自增长</strong>的一个特殊的<strong>表级</strong>别锁  </li>
-<li><code>show variables like &#39;innodb_autoinc_lock_mode&#39;;</code></li>
-<li><strong>默认取值1，代表连续，事务未提交ID永久丢失</strong></li>
-</ul>
-<h5 id="临键锁Next-key-locks"><a href="#临键锁Next-key-locks" class="headerlink" title="临键锁Next-key locks"></a>临键锁Next-key locks</h5><p><img src="https://api2.mubu.com/v3/document_image/efa963f1-d97a-41c2-9151-53d963a0b882-11197877.jpg" alt="临键锁"></p>
-<ul>
-<li>锁住记录+区间(左开右闭)  </li>
-<li><strong>当sql执行按照索引进行数据的检索时,查询条件为范围查找(between and、&lt;、&gt;等)并有数据命中则此时SQL语句加上的锁为Next-key locks，锁住索引的记录+区间(左开右闭)</strong> </li>
-</ul>
-<h5 id="间隙锁Gap-locks"><a href="#间隙锁Gap-locks" class="headerlink" title="间隙锁Gap locks"></a>间隙锁Gap locks</h5><p><img src="https://api2.mubu.com/v3/document_image/7a70a939-fb7c-4389-8bb2-ec5fb753a9d1-11197877.jpg" alt="间隙锁"></p>
-<ul>
-<li><strong>锁住数据不存在的区间</strong>(左开右开)  </li>
-<li>当sql执行按照索引进行数据的检索时，<strong>查询条件的数据不存在，这时SQL语句加上的锁即为 Gap locks，锁住索引不存在的区间(左开右开)</strong>  </li>
-</ul>
-<h5 id="记录锁Record-locks"><a href="#记录锁Record-locks" class="headerlink" title="记录锁Record locks"></a>记录锁Record locks</h5><p><img src="https://api2.mubu.com/v3/document_image/bed5f5dc-376c-44a6-9022-d45a8da2b91c-11197877.jpg" alt="记录锁"></p>
-<ul>
-<li>锁住<strong>具体的索引项</strong>  </li>
-<li>当sql执行<strong>按照唯一性(Primary key、Unique key)索引进行数据的检索</strong>时，查询条件等值匹 配且查询的数据存在，这时SQL语句加上的锁即为记录锁Record locks，<strong>锁住具体的索引项</strong>  </li>
-</ul>
-<h4 id="利用锁解决并发问题"><a href="#利用锁解决并发问题" class="headerlink" title="利用锁解决并发问题"></a>利用锁解决并发问题</h4><p>解决脏读 :</p>
-<p><img src="https://api2.mubu.com/v3/document_image/e2cf51fb-3076-418d-a9dd-5316ed372267-11197877.jpg" alt="解决脏读"></p>
-<p>解决不可重复读  :</p>
-<p><img src="https://api2.mubu.com/v3/document_image/632f11ea-acd7-4adc-b2d3-819bb46c924c-11197877.jpg" alt="解决不可重复读"></p>
-<p>解决幻读:</p>
-<p><img src="https://api2.mubu.com/v3/document_image/cf157ef6-11cd-4f0c-befe-00c8ac992a70-11197877.jpg" alt="解决幻读"></p>
-<h4 id="死锁"><a href="#死锁" class="headerlink" title="死锁"></a>死锁</h4><ul>
-<li>多个并发事务(2个或者以上);  </li>
-<li>每个事务都持有锁(或者是已经在等待锁);  </li>
-<li>每个事务都需要再继续持有锁;  </li>
-<li><strong>事务之间产生加锁的循环等待，形成死锁</strong>。</li>
-</ul>
-<h4 id="死锁的避免"><a href="#死锁的避免" class="headerlink" title="死锁的避免"></a>死锁的避免</h4><ul>
-<li>类似的业务逻辑以<strong>固定的顺序访问表和行</strong>。  </li>
-<li>大事务拆小。大事务更倾向于死锁，如果业务允许，<strong>将大事务拆小</strong>。  </li>
-<li>在<strong>同一个事务中，尽可能做到一次锁定所需要的所有资源，减少死锁概率。</strong>  </li>
-<li><strong>降低隔离级别</strong>，如果业务允许，将隔离级别调低也是较好的选择  </li>
-<li>为表添加<strong>合理的索引</strong>。可以看到<strong>如果不走索引将会为表的每一行记录添 加上锁(或者说是表锁)</strong>  </li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/14/mysql-3mysql%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90-%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E5%8F%8A%E8%BF%90%E8%A1%8C%E6%9C%BA%E7%90%86/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/12/14/mysql-3mysql%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90-%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E5%8F%8A%E8%BF%90%E8%A1%8C%E6%9C%BA%E7%90%86/" class="post-title-link" itemprop="url">mysql性能分析-体系结构及运行机理</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-12-14 09:38:25" itemprop="dateCreated datePublished" datetime="2020-12-14T09:38:25+08:00">2020-12-14</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-17 21:23:07" itemprop="dateModified" datetime="2021-03-17T21:23:07+08:00">2021-03-17</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/mysql/" itemprop="url" rel="index">
-                    <span itemprop="name">mysql</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="Mysql体系结构"><a href="#Mysql体系结构" class="headerlink" title="Mysql体系结构"></a>Mysql体系结构</h3><p><img src="https://api2.mubu.com/v3/document_image/a1619f89-f86a-4530-ab7c-6db518222e98-11197877.jpg" alt="mysql体系结构"></p>
-<ul>
-<li><p>Client Connectors  </p>
-<ul>
-<li>接入方 支持协议很多  </li>
-<li>Management Serveices &amp; Utilities 系统管理和控制工具，mysql dump、 mysql复制集群、分区管理等  </li>
-</ul>
-</li>
-<li><p>Connection Pool  </p>
-<ul>
-<li>连接池:管理缓冲用户连接、用户名、<strong>密码、权限校验</strong>、线程处理等需要缓存的需求  </li>
-</ul>
-</li>
-<li><p>SQL Interface  </p>
-<ul>
-<li>SQL接口:接受用户的SQL命令，并且返回用户需要查询的结果  </li>
-</ul>
-</li>
-<li><p>Parser  </p>
-<ul>
-<li>解析器，SQL命令传递到解析器的时候会被<strong>解析器验证和解析</strong>。解析器是由Lex和YACC实现的  </li>
-</ul>
-</li>
-<li><p>Optimizer  </p>
-<ul>
-<li>查询优化器，<strong>SQL语句在查询之前会使用查询优化器对查询进行优化</strong>  </li>
-</ul>
-</li>
-<li><p>Cache和Buffer(高速缓存区)  </p>
-<ul>
-<li>查询缓存，如果<strong>查询缓存有命中的查询结果，查询语句就可以直接去查询缓存中取数据</strong>  </li>
-</ul>
-</li>
-<li><p>pluggable storage Engines </p>
-<ul>
-<li>插件式存储引擎。<strong>存储引擎是MySql中具体的与文件打交道的子系统</strong>  </li>
-</ul>
-</li>
-<li><p>file system  </p>
-<ul>
-<li>文件系统，数据、日志(redo，undo)、索引、错误日志、查询记录、慢查询等</li>
-</ul>
-</li>
-</ul>
-<h3 id="Mysql查询优化"><a href="#Mysql查询优化" class="headerlink" title="Mysql查询优化"></a>Mysql查询优化</h3><p><img src="https://api2.mubu.com/v3/document_image/38b5c5c9-ec61-4671-80ff-2eb68bbd83f1-11197877.jpg" alt="查询过程"></p>
-<h4 id="client-server通信"><a href="#client-server通信" class="headerlink" title="client/server通信"></a>client/server通信</h4><p>Mysql客户端与服务端的通信方式是<strong>“半双工”;</strong>  </p>
-<ul>
-<li>全双工:双向通信，发送同时也可以接收(tcp握手过程)  </li>
-<li>半双工:<strong>双向通信，同时只能接收或者是发送，无法同时做操作</strong>  <ul>
-<li>半双工通信: 在任何一个时刻，要么是有服务器向客户端发送数据，要么是客户端向服务端发送数据，这<strong>两个动作不能同时发生</strong>。所以我们无法也无需将一个消息切成小块进行传输。  </li>
-<li>特点和限制: 客户端一旦开始发送消息，另一端要接收完整个消息才能响应。  </li>
-<li>客户端一旦开始接收数据没法停下来发送指令。  </li>
-</ul>
-</li>
-<li>单工:只能单一方向传送  </li>
-</ul>
-<h4 id="查询状态"><a href="#查询状态" class="headerlink" title="查询状态"></a>查询状态</h4><p>对于一个mysql连接，或者说一个线程，时刻都有一个状态来标识这个连接正在做什么。</p>
-<p>查看命令 <code>show full processlist / show processlist</code>  </p>
-<p><img src="https://api2.mubu.com/v3/document_image/4e83270b-5e57-4839-8470-5e4141670dfc-11197877.jpg" alt="查询参数"></p>
-<ul>
-<li>Sleep:线程正在等待客户端发送数据  </li>
-<li>Query:连接线程正在执行查询</li>
-<li>Locked:线程正在等待表锁的释放  </li>
-<li>Sorting result:线程正在对结果进行排序  </li>
-<li>Sending data:向请求端返回数据</li>
-</ul>
-<p>可通过<code>kill {id}</code>的方式进行连接的杀掉 </p>
-<h4 id="查询缓存"><a href="#查询缓存" class="headerlink" title="查询缓存"></a>查询缓存</h4><ul>
-<li>工作原理:<ul>
-<li>缓存SELECT操作的结果集和SQL语句</li>
-<li>新的SELECT语句，先去查询缓存，判断是否存在可用的记录集</li>
-</ul>
-</li>
-<li>判断标准: <ul>
-<li>与缓存的SQL语句，<strong>是否完全一样</strong>，区分大小写(简单认为存储了一个key-value结构，<strong>key为sql，value为sql查询结果集</strong>)。</li>
-</ul>
-</li>
-<li>几个关键字<ul>
-<li>query_cache_type<ul>
-<li>值:0 -– <strong>不启用</strong>查询缓存，<strong>默认值</strong></li>
-<li>值:1 -– 启用查询缓存，<strong>只要符合查询缓存的要求，客户端的查询语句和记录集都可以缓存起来，供其他客户端使用，加上SQL_NO_CACHE将不缓存</strong></li>
-<li>值:2 -– 启用查询缓存，只要<strong>查询语句中添加了参数:SQL_CACHE，且符合查询缓存的要求</strong>，客户端的查询语句和记录集，则可以缓存起来，供其他客户端使用</li>
-</ul>
-</li>
-<li>query_cache_size  <ul>
-<li>允许设置query_cache_size的值最小为40K，默认1M，推荐设置为:64M/128M</li>
-</ul>
-</li>
-<li>query_cache_limit <ul>
-<li>限制查询缓存区最大能缓存的查询记录集，默认设置为1M </li>
-<li><code>show status like &#39;Qcache%&#39;</code>命令可查看缓存情况。  </li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>不会缓存的情况</p>
-<ul>
-<li>当查询语句中有一些不确定的数据时，则不会被缓存。如包含函数NOW()，CURRENT_DATE()等类似的函数，或者用户自定义的函数，存储函数，用户变量等都不会被缓存。</li>
-<li>当查询的结果大于query_cache_limit设置的值时，结果不会被缓存。</li>
-<li>对于InnoDB引擎来说，<strong>当一个语句在事务中修改了某个表，那么在这个事务提交之前，所有与这个表相关的查询都无法被缓存。因此长时间执行事务，会大大降低缓存命中率。</strong>  </li>
-<li>查询的表是系统表  </li>
-<li>查询语句不涉及到表</li>
-</ul>
-</li>
-<li><p>为什么mysql默认关闭了缓存开启  </p>
-<ul>
-<li>在查询之前必须<strong>先检查是否命中缓存,浪费计算资源。</strong></li>
-<li>如果这个查询可以被缓存，那么执行完成后，MySQL发现查询缓存中没有这个查询，则会将结果存入查询缓存，这会带来额外的系统消耗。</li>
-<li>针对表进行<strong>写入或更新数据时，将对应表的所有缓存都设置失效。</strong> </li>
-<li>如果<strong>查询缓存很大或者碎片很多</strong>时，这个操作可能带来很大的系统消耗。</li>
-</ul>
-</li>
-<li><p>缓存适用业务场景</p>
-<ul>
-<li>以<strong>读为主的业务</strong>，数据生成之后就不常改变的业务</li>
-<li>比如门户类、新闻类、报表类、论坛类等  </li>
-</ul>
-</li>
-</ul>
-<h4 id="查询优化处理"><a href="#查询优化处理" class="headerlink" title="查询优化处理"></a>查询优化处理</h4><p>查询优化处理的三个阶段:  </p>
-<ul>
-<li>解析:解析sql通过lex<strong>词法分析</strong>，yacc语法分析将sql语句解析成<strong>解析树</strong>。</li>
-<li>预处理阶段：根据mysql的语法的规则<strong>进一步检查解析树的合法性</strong>，如：<strong>检查数据的表和列是否存在，解析名字和别名的设置，还会进行权限的验证</strong>。</li>
-<li>查询优化器 ：优化器的主要作用就是<strong>找到最优的执行计划</strong>。</li>
-</ul>
-<p>查询优化器如何找到最优执行计划：</p>
-<ul>
-<li>使用等价变化规则  <ul>
-<li>数据表的关联并不总是按照查询语句的顺序进行。 </li>
-<li>5=5 and a&gt;5 改写成 a&gt;5  ，a<b and a=5 改写成 b>5 and a=5  </li>
-</ul>
-</li>
-<li>将外连接转化为内连接 <ul>
-<li>并不是所有的OUTER JOIN都必须以外链接的方式进行。  </li>
-</ul>
-</li>
-<li>优化count 、min、max等函数<ul>
-<li>min函数只需找索引<strong>最左边</strong></li>
-<li>max函数只需找索引最右边 </li>
-<li>myisam引擎count(*)  </li>
-</ul>
-</li>
-<li>覆盖索引扫描  </li>
-<li>子查询优化</li>
-<li>提前终止查询  <ul>
-<li>用了<strong>limit关键字</strong>或者使用<strong>不存在的条件</strong></li>
-</ul>
-</li>
-<li>IN的优化<ul>
-<li>先进行<strong>排序</strong>，再采用<strong>二分查找</strong>的方式</li>
-</ul>
-</li>
-</ul>
-<p>Mysql的查询优化器基于<strong>成本计算</strong>的原则，会尝试各种执行计划，<strong>以数据抽样的方式进行试验(随机的读取一个4K的数据块进行分析)。</strong>可用explain来进行分析。</p>
-<h4 id="查询执行引擎"><a href="#查询执行引擎" class="headerlink" title="查询执行引擎"></a>查询执行引擎</h4><p>调用插件式的存储引擎的原子API的功能进行执行计划的执行。 </p>
-<h4 id="返回客户端"><a href="#返回客户端" class="headerlink" title="返回客户端"></a>返回客户端</h4><ul>
-<li>有需要做缓存的，执行缓存操作。  </li>
-<li>增量的返回结果：<strong>开始生成第一条结果时，mysql就开始往请求方逐步返回数据</strong>。  <ul>
-<li>好处: mysql服务器无须保存过多的数据，浪费内存；用户体验好，马上就拿到了数据。 </li>
-</ul>
-</li>
-</ul>
-<h4 id="慢SQL"><a href="#慢SQL" class="headerlink" title="慢SQL"></a>慢SQL</h4><p>定位慢SQL:</p>
-<ul>
-<li>业务驱动  </li>
-<li>测试驱动  </li>
-<li>慢查询日志  </li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">show variables like 'slow_query_log';</span><br><span class="line">set global slow_query_log = on;</span><br><span class="line">set global slow_query_log_file = '/var/lib/mysql/test-slow.log';   </span><br><span class="line">set global log_queries_not_using_indexes = on;</span><br><span class="line">set global long_query_time = 0.1;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>慢查询日志分析</li>
-</ul>
-<p><img src="https://api2.mubu.com/v3/document_image/b4851df7-e19f-44fa-8b14-87d44517f53e-11197877.jpg" alt="慢查询日志分析"></p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Time :日志记录的时间  </span><br><span class="line">User@Host:执行的用户及主机  </span><br><span class="line">Query_time:查询耗费时间  </span><br><span class="line">Lock_time 锁表时间  </span><br><span class="line">Rows_sent 发送给请求方的记录条数  </span><br><span class="line">Rows_examined 语句扫描的记录条数  </span><br><span class="line"><span class="keyword">SET</span> <span class="built_in">timestamp</span> 语句执行的时间点  </span><br><span class="line"><span class="keyword">select</span> .... 执行的具体语句</span><br></pre></td></tr></table></figure>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysqldumpslow -t 10 -s at /var/lib/mysql/test-slow.log</span><br></pre></td></tr></table></figure>
-<p><img src="https://api2.mubu.com/v3/document_image/e937e8cb-5a7b-4587-89ba-fba600203b88-11197877.jpg" alt="慢查询工具"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1639,20 +1612,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">67</span>
+          <span class="site-state-item-count">78</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-count">13</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-count">30</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

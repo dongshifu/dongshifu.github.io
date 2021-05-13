@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="alternate" href="/atom.xml" title="ShifuDong" type="application/atom+xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.5.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":"flat"},
+    back2top: {"enable":true,"sidebar":true,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":5,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="内存底层原理内存底层结构由于高速缓存的工作机制，内存对齐后性能高。且底层实现中内存的IO是以8个字节64bit为单位进行的。 内存物理结构：一个内存是由若干个黑色的内存颗粒构成的。每一个内存颗粒叫做一个chip。每个chip内部，由8个bank组成。每一个bank是一个二维平面上的矩阵。矩阵中每一个元素中都是保存了1个字节，也就是8个bit 内存编址对于在应用程序中内存中地址连续的8个字节,例如0">
+<meta name="keywords" content="内存介绍">
+<meta property="og:type" content="article">
+<meta property="og:title" content="内存底层原理">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;04&#x2F;25&#x2F;os-6%E5%86%85%E5%AD%98&#x2F;index.html">
+<meta property="og:site_name" content="ShifuDong">
+<meta property="og:description" content="内存底层原理内存底层结构由于高速缓存的工作机制，内存对齐后性能高。且底层实现中内存的IO是以8个字节64bit为单位进行的。 内存物理结构：一个内存是由若干个黑色的内存颗粒构成的。每一个内存颗粒叫做一个chip。每个chip内部，由8个bank组成。每一个bank是一个二维平面上的矩阵。矩阵中每一个元素中都是保存了1个字节，也就是8个bit 内存编址对于在应用程序中内存中地址连续的8个字节,例如0">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;6be26faa-2427-4112-bd72-15e2cab64e46-11197877.jpg">
+<meta property="og:updated_time" content="2021-05-13T01:45:34.840Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;6be26faa-2427-4112-bd72-15e2cab64e46-11197877.jpg">
+
+<link rel="canonical" href="http://yoursite.com/2020/04/25/os-6%E5%86%85%E5%AD%98/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>内存底层原理 | ShifuDong</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ShifuDong</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">Knowledge Sharing</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/04/25/os-6%E5%86%85%E5%AD%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          内存底层原理
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-04-25 19:29:16" itemprop="dateCreated datePublished" datetime="2020-04-25T19:29:16+08:00">2020-04-25</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-05-13 09:45:34" itemprop="dateModified" datetime="2021-05-13T09:45:34+08:00">2021-05-13</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/OS/" itemprop="url" rel="index">
+                    <span itemprop="name">OS</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="内存底层原理"><a href="#内存底层原理" class="headerlink" title="内存底层原理"></a>内存底层原理</h3><h4 id="内存底层结构"><a href="#内存底层结构" class="headerlink" title="内存底层结构"></a>内存底层结构</h4><p>由于高速缓存的工作机制，内存对齐后性能高。且底层实现中<strong>内存的IO是以8个字节64bit为单位进行的。</strong></p>
+<p>内存物理结构：一个内存是由若干个黑色的<strong>内存颗粒</strong>构成的。每一个内存颗粒叫做一个<strong>chip</strong>。<strong>每个chip内部，由8个bank组成</strong>。每一个bank是一个<strong>二维平面上的矩阵</strong>。矩阵中<strong>每一个元素中都是保存了1个字节，也就是8个bit</strong></p>
+<h4 id="内存编址"><a href="#内存编址" class="headerlink" title="内存编址"></a>内存编址</h4><p>对于在应用程序中内存中地址连续的8个字节,例如0x0000-0x0007，是从位于bank上的呢？直观感觉，应该是在第一个bank上吗？其实不是的，程序员视角看起来连续的地址0x0000-0x0007，<strong>实际上是位于8个bank中的，每一个bank只保存了一个字节。在物理上，他们并不连续</strong>。下图很好地阐述了实际情况。</p>
+<p><img src="https://api2.mubu.com/v3/document_image/6be26faa-2427-4112-bd72-15e2cab64e46-11197877.jpg" alt="连续8字节在内存中的实际分布"></p>
+<p>编址原因：是电路工作效率。<strong>内存中的8个bank是可以并行工作的。如果想读取地址0x0000-0x0007，每个bank工作一次，拼起来就是需要的数据，IO效率会比较高。</strong>但要存在一个bank里，那这个bank只能自己干活。只能串行进行读取，需要读8次，这样速度会慢很多。</p>
+<p><strong>内存对齐最最底层的原因是内存的IO是以8个字节64bit为单位进行的。</strong> 对于64位数据宽度的内存，假如cpu也是64位的cpu（现在的计算机基本都是这样的），<strong>每次内存IO获取数据都是从同行同列的8个bank中各自读取一个字节拼起来的。从内存的0地址开始，0-7字节的数据可以一次IO读取出来，8-15字节的数据也可以一次读取出来。</strong></p>
+<p>假如指定要获取的是0x0001-0x0008，也是8字节，但是不是0开头的，内存需要怎么工作呢？没有好办法，内存只好先工作一次把0x0000-0x0007取出来，然后再把0x0008-0x0015取出来，<strong>把两次的结果都返回</strong>。CPU和内存IO的硬件限制导致没办法一次跨在两个数据宽度中间进行IO。</p>
+<h4 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h4><ul>
+<li><p>事实上，<strong>编译和链接器会自动替开发者对齐内存的，尽量保证一个变量不跨列寻址。</strong></p>
+</li>
+<li><p>其实在内存硬件层上，还有操作系统层。操作系统还管理了CPU的一级、二级、三级缓存。高速缓存里的<strong>Cache Line是64字节，它是内存IO单位的8倍，不会让内存IO浪费。</strong></p>
+</li>
+</ul>
+<h3 id="内存访问延迟"><a href="#内存访问延迟" class="headerlink" title="内存访问延迟"></a>内存访问延迟</h3><p>内存延迟一般是通过CL-tRCD-tRP-tRAS四个参数来标识的。详细理解一下这四个参数的含义：</p>
+<ul>
+<li>CL(Column Address Latency）：发送一个列地址到内存与数据开始响应之间的周期数</li>
+<li>tRCD（Row Address to Column Address Delay）：打开一行内存并访问其中的列所需的最小时钟周期数</li>
+<li><p>tRP(Row Precharge Time)：发出预充电命令与打开下一行之间所需的最小时钟周期数。</p>
+</li>
+<li><p>tRAS(Row Active Time)：行活动命令与发出预充电命令之间所需的最小时钟周期数。也就是对下一次预充电时间进行限制。</p>
+</li>
+</ul>
+<p>除了CL是固定周期数以外，其它的三个都是最小周期。另外上面的参数都是以<strong>时钟周期为单位</strong>的。因为<strong>现代的内存都是一个时钟周期上下沿分别各传输一次数据，所以用Speed/2就可以得出</strong>，如果机器的Speed是1066MHz，则时钟周期为533MHz。自己的机器可以通过dmidecode命令查看：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dmidecode | grep -P -A16 <span class="string">"Memory Device"</span></span><br></pre></td></tr></table></figure>
+<h4 id="四个工作场景"><a href="#四个工作场景" class="headerlink" title="四个工作场景"></a>四个工作场景</h4><ul>
+<li>场景1：</li>
+</ul>
+<p>进程需要内存地址0x0000为的一个字节的数据，CPU这时候向内存控制器发出请求，内存控制器进行<strong>行地址的预充电，需要等待tRP个时钟周期。再发出打开一行内存的命令，又需要等待tRCD个时钟周期。接着发送列地址，再等待CL个周期。</strong>最终将0x0000-0x0007的数据全部返回给了CPU。CPU把这些数据放入到了自己的cache里，并帮你开始对0x0000的数据进行运算。</p>
+<ul>
+<li>场景2：</li>
+</ul>
+<p>进程需要内存地址0x0003的一个字节数据，<strong>CPU发现发现它在自己的cache里存在，直接使用就好了。这个场景里其实根本就没有内存IO发生</strong>。</p>
+<ul>
+<li>场景3：</li>
+</ul>
+<p>进程需要内存地址0x0008的一个字节数据，<strong>CPU的cache并没有命中，于是向内存控制器请求。内存控制器发现行地址和上一次工作的行地址一致，这次只需要发送列地址后等待CL个周期，</strong>就可以拿到0x0008-0x0015的数据并返回给CPU了。</p>
+<ul>
+<li>场景4：</li>
+</ul>
+<p>进程需要内存地址0xf000的一个字节数据，同样<strong>CPU的cache并不命中，向内存控制器请求。内存控制器一看（内心有些许的郁闷），这次行w地址又变了，得，和场景1一样。继续等待tRP+tRCD+CL个周期后，才能够取到数据并返回。</strong></p>
+<blockquote>
+<p>实际的计算机的内存IO过程中还需要进行逻辑地址和物理地址的转换，这里忽略。</p>
+</blockquote>
+<h4 id="实际计算"><a href="#实际计算" class="headerlink" title="实际计算"></a>实际计算</h4><p>内存也存在和磁盘一样，随机IO比顺序IO要慢的问题。<strong>如果行地址同上一次访问的不一致，则需要重新拷贝row buffer，延迟周期需要tRP+tRCD+CL。而如果是顺序IO的话（行地址不变），只需要CL个周期既可完成。</strong></p>
+<p>估算内存的延时,若测试机器上的内存参数Speed为1066MHz（通过dmidecode查得），该值除以2就是时钟周期的频率=1066/2=533Mhz。其延迟周期为7-7-7-24。</p>
+<ul>
+<li>随机IO：这种状况下需要tRP+tRCD+CL个时钟周期，7+7+7=21个周期。但是还有个tRAS的限制，两次行地址预充电不得小于24。所以得按24来计算，24*(1s/533Mhz) = 45ns</li>
+<li>顺序IO：这种状况下只需要CL个时钟周期 7*(1s/533Mhz)=13ns</li>
+</ul>
+<h4 id="扩展：CPU的cache-line虚拟内存概念"><a href="#扩展：CPU的cache-line虚拟内存概念" class="headerlink" title="扩展：CPU的cache line虚拟内存概念"></a>扩展：CPU的cache line虚拟内存概念</h4><p>因为对于内存来说，<strong>随机IO一次开销比顺序IO高好几倍。所以操作系统在工作的时候，会尽量让内存通过顺序IO的方式来进行。</strong>做法关键就是Cache Line。<strong>当CPU发现缓存不命中的时候，实际上从来不会向内存去请求1个字节，8个字节这种。而是一次性就要64字节，然后放到自己的Cache中存起来。</strong></p>
+<p>用上面的例子来看，</p>
+<ul>
+<li>如果随机请求8字节：耗时是45ns</li>
+<li>如果随机请求64字节：耗时是45+7*13 = 136ns</li>
+</ul>
+<p>开销也没贵多少，<strong>因为只有第一个字节是随机IO，后面的7个字节都是顺序IO。数据是8倍，但是IO耗时只有3倍，而且取出来的数据后面大概率要用</strong>，所以计算机内部就这么搞了，通过这种方式<strong>避免一些随机IO</strong>！</p>
+<p>另外，<strong>内存也支持burst(突发传输)模式，在这种模式下可以只传入一次行列地址，就命令内存返回该内存开头的连续字节数据，比如64字节。这种模式下，只有第一次的8字节需要真正的行列访问延迟，后面的7个字节可以直接按内存的数据频率给吐出来。</strong></p>
+<h3 id="内存核心频率"><a href="#内存核心频率" class="headerlink" title="内存核心频率"></a>内存核心频率</h3><p><strong>内存真正的工作频率是核心频率，时钟频率和数据频率都是在核心频率的基础上，通过技术手段放大出来的。内存越新，放大的倍数越多</strong>。 <strong>核心频率已经多年没有实质性进步了，这是受物理材料的极限限制，内存的核心频率一直在133MHz~200MHz之间徘徊</strong>。</p>
+<p>实际的内存提速使用的是<strong>电路时钟周期预取</strong>以及<strong>Bank Group</strong>等技术。</p>
+<h4 id="扩展：内存延迟"><a href="#扩展：内存延迟" class="headerlink" title="扩展：内存延迟"></a>扩展：内存延迟</h4><p>内存还有个概念叫<strong>IO频率、也叫时钟频率。简单理解为将DDR内存的Speed频率除以2，就是内存的IO频率</strong>。这个<strong>必须和CPU的外频相匹配才能工作</strong>。例如对于DDR3来说，假如核心频率133Mhz的内存工作频率下，匹配533MHz的CPU外频,其IO频率就是533Mhz。数据传输因为上下沿都可以传，所以是核心频率的8倍，也就是1066MHz左右。</p>
+<p>所有的内存条都有CL-tRCD-tRP-tRAS四个参数。其中最重要的是CL-tRCD-tRP这三个参数，只要费点劲，所有的在售内存你都能找到这3个值。例如经典的DDR3-1066、DDR3-1333及DDR3-1600的CL值分别为7-7-7、8-8-8及9-9-9。现在京东上一条比较流行的台式机内存金士顿(Kingston)DDR4 2400 8G，其时序是17-17-17。</p>
+<p>第四个参数有时候会被省略。原因有二，第一：现在的开发者不需要直接和内存打交道，而操作系统呢又做的比较内存友好，很少会有这个开销真正发生。第二，这个开销的值要比其它的值大很多，实在不太好看。商家为了内存能多卖一些，干脆就避而不谈了。</p>
+<p><strong>好了，问题来了。为什么内存越进步，延迟周期反而会变大了呢？</strong></p>
+<p>这就是因为<strong>延迟周期使用延迟时间除以内存Speed算出来的</strong>。这其实根本就不科学，最科学的办法应该是用延迟时间来评估。<strong>延迟时间很大程度上是受内存的核心频率的制约的</strong>。而这些年核心频率又基本上没有进步，所以延迟时间也不会有实质的降低。内存的制造商们又为了频率数据好看，能多卖些内存，非得采用Speed作为主周期来用。导致在用这个周期一衡量，貌似延迟周期就越来越大了。</p>
+<h3 id="测试参考"><a href="#测试参考" class="headerlink" title="测试参考"></a>测试参考</h3><p>在各种情况下进行内存访问延迟实验。<strong>最快的情况下其实不是内存在IO，而是CPU的高速缓存在工作。穿</strong>透到内存的话，顺序IO延时大约在10ns左右，随机访问确实比顺序访问慢的多，大概是4倍的关系。</p>
+<p>现代的服务器里，<strong>CPU和内存条都有多个，它们之间目前主要采用的是复杂的NUMA架构进行互联，NUMA把服务器里的CPU和内存分组划分成了不同的node。属于同一个node里的CPU和内存之间访问速度会比较快。而如果跨node的话，则需要经过QPI总线，总体来说，速度会略慢一些</strong>。</p>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a href="https://mp.weixin.qq.com/s/F0NTfz-3x3UxQeF-GSavRg" target="_blank" rel="noopener">https://mp.weixin.qq.com/s/F0NTfz-3x3UxQeF-GSavRg</a></p>
+<p><a href="https://mp.weixin.qq.com/s/ps8VfGpbL4-xKggM2ywjHw" target="_blank" rel="noopener">https://mp.weixin.qq.com/s/ps8VfGpbL4-xKggM2ywjHw</a></p>
+<p><a href="https://mp.weixin.qq.com/s/3KOXcvmtc5jiwzGSTSF_yQ" target="_blank" rel="noopener">https://mp.weixin.qq.com/s/3KOXcvmtc5jiwzGSTSF_yQ</a></p>
+<p><a href="https://mp.weixin.qq.com/s/OR2XB4J76haGc1THeq7WQg" target="_blank" rel="noopener">https://mp.weixin.qq.com/s/OR2XB4J76haGc1THeq7WQg</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%86%85%E5%AD%98%E4%BB%8B%E7%BB%8D/" rel="tag"># 内存介绍</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/04/21/os-4%E7%A3%81%E7%9B%98%E4%B8%8E%E6%96%87%E4%BB%B6/" rel="prev" title="文件在磁盘中的开销">
+      <i class="fa fa-chevron-left"></i> 文件在磁盘中的开销
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/05/01/os-7cpu%E5%86%85%E9%83%A8%E7%BC%93%E5%AD%98%E5%8F%8AMMU/" rel="next" title="CPU多核心及缓存">
+      CPU多核心及缓存 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+      <div class="tabs tabs-comment">
+        <ul class="nav-tabs">
+            <li class="tab"><a href="#comment-gitalk">gitalk</a></li>
+            <li class="tab"><a href="#comment-livere">livere</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane gitalk" id="comment-gitalk">
+              <div class="comments" id="gitalk-container"></div>
+            </div>
+            <div class="tab-pane livere" id="comment-livere">
+              
+  <div class="comments" id="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81MjkwMy8yOTM4MA=="></div>
+  </div>
+  
+            </div>
+        </div>
+      </div>
+      <script>
+        window.addEventListener('tabs:register', () => {
+          let activeClass = 'gitalk';
+            activeClass = localStorage.getItem('comments_active') || activeClass;
+          if (activeClass) {
+            let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+            if (activeTab) {
+              activeTab.click();
+            }
+          }
+        });
+        window.addEventListener('tabs:click', event => {
+          let commentClass = event.target.classList[1];
+          localStorage.setItem('comments_active', commentClass);
+        });
+      </script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#内存底层原理"><span class="nav-number">1.</span> <span class="nav-text">内存底层原理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#内存底层结构"><span class="nav-number">1.1.</span> <span class="nav-text">内存底层结构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#内存编址"><span class="nav-number">1.2.</span> <span class="nav-text">内存编址</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#扩展"><span class="nav-number">1.3.</span> <span class="nav-text">扩展</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#内存访问延迟"><span class="nav-number">2.</span> <span class="nav-text">内存访问延迟</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#四个工作场景"><span class="nav-number">2.1.</span> <span class="nav-text">四个工作场景</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#实际计算"><span class="nav-number">2.2.</span> <span class="nav-text">实际计算</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#扩展：CPU的cache-line虚拟内存概念"><span class="nav-number">2.3.</span> <span class="nav-text">扩展：CPU的cache line虚拟内存概念</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#内存核心频率"><span class="nav-number">3.</span> <span class="nav-text">内存核心频率</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#扩展：内存延迟"><span class="nav-number">3.1.</span> <span class="nav-text">扩展：内存延迟</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#测试参考"><span class="nav-number">4.</span> <span class="nav-text">测试参考</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考"><span class="nav-number">5.</span> <span class="nav-text">参考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ShifuDong"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">ShifuDong</p>
+  <div class="site-description" itemprop="description">记录生活， 记录学习， 分享知识</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">78</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">30</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/mailto:sfd_w@foxmail.com" title="E-Mail → mailto:sfd_w@foxmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ShifuDong</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.0.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.5.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.getAttribute('pjax') !== null) {
+      element.setAttribute('pjax', '');
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'a6ee5b68c97a3db64850',
+      clientSecret: '1dfa06f32032431e4af79b80f9ddf9dfd13dbda2',
+      repo: 'dongshifu.github.io',
+      owner: 'dongshifu',
+      admin: ['dongshifu'],
+      id: '0381853acc9270917c281ffeac7f3d9c',
+        language: 'zh-CN',
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script>
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+</script>
+
+    </div>
+</body>
+</html>

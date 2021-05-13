@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="alternate" href="/atom.xml" title="ShifuDong" type="application/atom+xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.5.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":"flat"},
+    back2top: {"enable":true,"sidebar":true,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":5,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="cpu多核真相物理CPU：主板上真正安装的CPU的个数 物理核：一个CPU会集成多个物理核心 逻辑核：超线程技术可以把一个物理核虚拟出来多个逻辑核 超线程里的2个逻辑核实际上是在一个物理核上运行的，模拟双核心运作，共享该物理核的L1和L2缓存。物理计算能力并没有增加，超线程技术只有在多任务的时候才能提升机器核整体的吞吐量。而且据Intel官方介绍，相比实核，平均性能提升只有20-30%30%左右。">
+<meta name="keywords" content="CPU及缓存">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CPU多核心及缓存">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2020&#x2F;05&#x2F;01&#x2F;os-7cpu%E5%86%85%E9%83%A8%E7%BC%93%E5%AD%98%E5%8F%8AMMU&#x2F;index.html">
+<meta property="og:site_name" content="ShifuDong">
+<meta property="og:description" content="cpu多核真相物理CPU：主板上真正安装的CPU的个数 物理核：一个CPU会集成多个物理核心 逻辑核：超线程技术可以把一个物理核虚拟出来多个逻辑核 超线程里的2个逻辑核实际上是在一个物理核上运行的，模拟双核心运作，共享该物理核的L1和L2缓存。物理计算能力并没有增加，超线程技术只有在多任务的时候才能提升机器核整体的吞吐量。而且据Intel官方介绍，相比实核，平均性能提升只有20-30%30%左右。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;da647419-f0ef-4f51-8cab-a50c408074f3-11197877.jpg">
+<meta property="og:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;b6e8d43f-0635-487e-a49e-bfae31655cff-11197877.jpg">
+<meta property="og:updated_time" content="2021-05-13T01:46:29.221Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;da647419-f0ef-4f51-8cab-a50c408074f3-11197877.jpg">
+
+<link rel="canonical" href="http://yoursite.com/2020/05/01/os-7cpu%E5%86%85%E9%83%A8%E7%BC%93%E5%AD%98%E5%8F%8AMMU/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>CPU多核心及缓存 | ShifuDong</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ShifuDong</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">Knowledge Sharing</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/05/01/os-7cpu%E5%86%85%E9%83%A8%E7%BC%93%E5%AD%98%E5%8F%8AMMU/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          CPU多核心及缓存
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-05-01 19:29:16" itemprop="dateCreated datePublished" datetime="2020-05-01T19:29:16+08:00">2020-05-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-05-13 09:46:29" itemprop="dateModified" datetime="2021-05-13T09:46:29+08:00">2021-05-13</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/OS/" itemprop="url" rel="index">
+                    <span itemprop="name">OS</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="cpu多核真相"><a href="#cpu多核真相" class="headerlink" title="cpu多核真相"></a>cpu多核真相</h3><p><strong>物理CPU</strong>：主板上真正安装的<strong>CPU的个数</strong></p>
+<p><strong>物理核</strong>：一个CPU会集成多个<strong>物理核心</strong></p>
+<p><strong>逻辑核</strong>：超线程技术可以<strong>把一个物理核虚拟出来多个逻辑核</strong></p>
+<p>超线程里的2个逻辑核实际上是在一个物理核上运行的，模拟双核心运作，<strong>共享该物理核的L1和L2缓存</strong>。物理计算能力并没有增加，超线程技术只有在多任务的时候才能提升机器核整体的吞吐量。而且据Intel官方介绍，<strong>相比实核，平均性能提升只有20-30%30%左右。</strong></p>
+<p>通过top命令看到的CPU核是逻辑核，linux下可以通过<code>/proc/cupinfo</code>来查看更加详细的信息：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#cat /proc/cpuinfo | grep "physical id" | sort | uniq #查看物理cpu个数</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#cat /proc/cpuinfo| grep "cpu cores"| uniq #查看每个cpu的物理核数量</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#cat /proc/cpuinfo  | grep -E "core id|process|physical id" #查看逻辑核数量</span></span><br></pre></td></tr></table></figure>
+<h3 id="缓存"><a href="#缓存" class="headerlink" title="缓存"></a>缓存</h3><p>286之前的时代的CPU本是没有缓存的，因为当时的<strong>CPU和内存速度差异</strong>没有现在这么大,CPU直接访问内存。但是到386时代，CPU和内存的速度不匹配了，第一次出现了缓存。而且最早的缓存并没有放在CPU模块里，而是放在主板上的。再往后<strong>CPU越来越快，现在CPU的速度比内存要快百倍以上，所以就逐步演化出了L1、L2、L3三级缓存结构，而且都集成到的CPU芯片里，以进一步提高访问速度。</strong></p>
+<p>现代Intel的CPU架构的基本结构：</p>
+<p><img src="https://api2.mubu.com/v3/document_image/da647419-f0ef-4f51-8cab-a50c408074f3-11197877.jpg" alt="cpu核心架构"></p>
+<p>L1最接近于CPU，速度也最快，但是容量最小。一般现代CPU的L1会分成两个，一个用来<strong>cache data，一个用来cache code</strong>，这是因为code和data的更新策略并不相同，而且因为CISC的变长指令，code cache要做特殊优化。<strong>一般每个核都有自己独立的data L1和code L1。</strong><br>越往下，速度越慢，容量越大。L2一般也可以做到每个核一个独立的。但是<strong>L3一般就是整颗CPU共享的</strong>了。</p>
+<h4 id="linux下实际查看"><a href="#linux下实际查看" class="headerlink" title="linux下实际查看"></a>linux下实际查看</h4><p>Linux的内核的开发者定义了一套框架模型来完成这一目的，它就是CPUFreq系统。CPUFreq提供的sysfs接口，可以看到比/proc/cpuinfo更为详细的CPU详细信息。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># cd /sys/devices/system/cpu/;ll</span></span><br><span class="line">drwxr-xr-x  9 root root    0 4月   8 14:15 cpu0/</span><br><span class="line">drwxr-xr-x  9 root root    0 4月   8 14:15 cpu1/</span><br><span class="line">drwxr-xr-x  9 root root    0 4月   8 14:15 cpu2/</span><br><span class="line">drwxr-xr-x  9 root root    0 4月   8 14:15 cpu3/</span><br><span class="line">drwxr-xr-x  9 root root    0 4月   8 14:15 cpu4/</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
+<p><strong>L1一级缓存查看：</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># cat cpu0/cache/index0/level</span></span><br><span class="line">1</span><br><span class="line"><span class="comment"># cat cpu0/cache/index0/size</span></span><br><span class="line">32K</span><br><span class="line"><span class="comment"># cat cpu0/cache/index0/type</span></span><br><span class="line">Data</span><br><span class="line"><span class="comment"># cat cpu0/cache/index0/shared_cpu_list</span></span><br><span class="line">0,4</span><br><span class="line"><span class="comment"># cat cpu0/cache/index1/level</span></span><br><span class="line">1</span><br><span class="line"><span class="comment"># cat cpu0/cache/index1/size</span></span><br><span class="line">32K</span><br><span class="line"><span class="comment"># cat cpu0/cache/index1/type</span></span><br><span class="line">Instruction</span><br><span class="line"><span class="comment"># cat cpu0/cache/index1/shared_cpu_list</span></span><br><span class="line">0,4</span><br></pre></td></tr></table></figure>
+<p>从上面的level接口可以看出index0和index1都是一级缓存，只不过<strong>一个是Data数据缓存，一个是Instruction也就是代码缓存</strong>。<br>上面提到的是每个Core是独立的L1缓存，为什么shared_cpu_list显示有共享?这里看到的cpu0并不是物理Core，而是逻辑核，都是超线程技术虚拟出来的。实<strong>际上cpu0和cpu4是属于一个物理Core，所以每个Data L1和Instruction是这两个逻辑核共享的</strong>。本台电脑总共是有4个Data L1,4个Instrunction L1，大小都是32K。</p>
+<p><strong>L2二级缓存查看：</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># cat cpu0/cache/index2/size</span></span><br><span class="line">256K</span><br><span class="line"><span class="comment"># cat cpu0/cache/index2/type</span></span><br><span class="line">Unified</span><br><span class="line"><span class="comment"># cat cpu0/cache/index2/shared_cpu_list</span></span><br><span class="line">0,4</span><br></pre></td></tr></table></figure>
+<p>二级缓存要比一级缓存大不少，有256K，但是<strong>不分Data和Instruction。</strong>另外L2和L1一样，也是总共有4个，<strong>每两个逻辑核共享一个L2。</strong></p>
+<p><strong>L3三级缓存查看：</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># cat cpu0/cache/index3/size</span></span><br><span class="line">8192K</span><br><span class="line"><span class="comment"># cat cpu0/cache/index3/type</span></span><br><span class="line">Unified</span><br><span class="line"><span class="comment"># cat cpu0/cache/index3/shared_cpu_list</span></span><br><span class="line">0-7</span><br></pre></td></tr></table></figure>
+<p>L3达到了8M，买CPU的时候商品里能看到的缓存属性一般告诉的就是L3属性。因为L3要比L2和L1看起来要大的多。但实际上我的这台电脑里L3只有以个，每个CPU各一个，不像是L2、L1有很多。</p>
+<p>另外，Linux上还有个<code>dmidecode</code>命令，也能查看到一些关于CPU缓存的信息</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo dmidecode -t cache</span><br></pre></td></tr></table></figure>
+<h4 id="Cache-Line"><a href="#Cache-Line" class="headerlink" title="Cache Line"></a>Cache Line</h4><p>Cache Line是<strong>本级缓存向下一层取数据时的基本单位</strong>。可以通过如下方式查看：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># cd /sys/devices/system/cpu/;ll</span></span><br><span class="line"><span class="comment"># cat cpu0/cache/index0/coherency_line_size</span></span><br><span class="line">64</span><br><span class="line"><span class="comment"># cat cpu0/cache/index1/coherency_line_size</span></span><br><span class="line">64</span><br><span class="line"><span class="comment"># cat cpu0/cache/index2/coherency_line_size</span></span><br><span class="line">64</span><br><span class="line"><span class="comment"># cat cpu0/cache/index3/coherency_line_size</span></span><br><span class="line">64</span><br></pre></td></tr></table></figure>
+<p>可以看到<strong>L1、L2、L3的Cache Line大小都是64字节（注意是字节。内存中的实际情况是：一次IO其实吐出来的只有64比特，注意是比特。 一个cache line请求需要内存吐8次数据。 这个是64bit是由总线位宽决定的，没办法改）。就是说每次cpu从内存获取数据的时候，都是以该单位来进行的，哪怕只取一个bit，CPU也是给取一个Cache Line然后放到各级缓存里存起来。</strong></p>
+<h3 id="TLB缓存"><a href="#TLB缓存" class="headerlink" title="TLB缓存"></a>TLB缓存</h3><p>TLB(Translation Lookaside Buffer)是一个小的，虚拟寻址的缓存，其中每一行都保存着一个由单个PTE(Page Table Entry 页表项)组成的块。如果<strong>没有TLB，则每次取数据都需要两次访问内存，即查页表获得物理地址和取数据。</strong>该<strong>缓存位于MMU内</strong>。</p>
+<h4 id="虚拟内存"><a href="#虚拟内存" class="headerlink" title="虚拟内存"></a>虚拟内存</h4><p>在<strong>用户的视角里</strong>，<strong>每个进程都有自己独立的地址空间</strong>，A进程的4GB和B进程4GB是完全独立不相关的，他们看到的都是操作系统虚拟出来的地址空间。但是呢，虚拟地址最终还是要落在实际内存的物理地址上进行操作的。<strong>操作系统就会通过页表的机制来实现进程的虚拟地址到物理地址的翻译工作。其中每一页的大小都是固定的</strong>。</p>
+<p>页表管理的两个关键点，分别是页面大小和页表级数</p>
+<p><strong>1.页面大小</strong><br>在Linux下，通过如下命令可以查看到当前操作系统的页大小</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># getconf PAGE_SIZE</span></span><br><span class="line">4096</span><br></pre></td></tr></table></figure>
+<p>可以看到当前的Linux机器的页表是4KB的大小。</p>
+<p><strong>2.页表级数</strong></p>
+<p>1）如果页表<strong>级数越少，虚拟地址到物理地址的映射会很快，但是需要管理的页表项会很多，能支持的地址空间也有限。</strong></p>
+<p>2）<strong>相反页表级数越多，需要的存储的页表数据就会越少，而且能支持到比较大的地址空间，但是虚拟地址到物理地址的映射就会越慢</strong>。</p>
+<h4 id="linux虚拟内存实现"><a href="#linux虚拟内存实现" class="headerlink" title="linux虚拟内存实现"></a>linux虚拟内存实现</h4><h5 id="32位系统的虚拟内存实现：二级页表"><a href="#32位系统的虚拟内存实现：二级页表" class="headerlink" title="32位系统的虚拟内存实现：二级页表"></a>32位系统的虚拟内存实现：<strong>二级页表</strong></h5><p>如果想支持32位的操作系统下的4GB进程虚拟地址空间，假设页表大小为4K，则共有2的20次方页面。如果采用速度最快的1级页表，对应则需要2的20次方个页表项。一个页表项假如4字节，那么一个进程就需要<code>（1048576*4=）4M</code>的内存来存页表项。<br>如果是采用2级页表，如图，则创建进程时只需要有一个页目录就可以了，占用<code>(1024*4)=4KB</code>的内存。剩下的二级页表项只有用到的时候才会再去申请。</p>
+<p><img src="https://api2.mubu.com/v3/document_image/b6e8d43f-0635-487e-a49e-bfae31655cff-11197877.jpg" alt="二级页表"></p>
+<p>这样则只需要页目录1024个，页表项1024个，<strong>总共2028个页表管理条目，（2048*4=）8k就可以支持起4GB的地址空间转换。</strong></p>
+<h5 id="64位系统的虚拟内存实现：四级页表"><a href="#64位系统的虚拟内存实现：四级页表" class="headerlink" title="64位系统的虚拟内存实现：四级页表"></a>64位系统的虚拟内存实现：四级页表</h5><p>现在的操作系统需要支持的可是48位地址空间（理论上可以支持64位，但其实现在只支持到了48位，也足够用了），而且要支持成百上千的进程，如果不采用分级页表的方式，则创建进程时就需要为其维护一个2的36次方个页表项（64位Linux目前只使用了地址中的48位的，在这里面，最后12位都是页内地址，只有前36位才是用来寻找页表的）， 2^36 *4Byte=32GB，这个更不能忍。也必须和32位系统一样，进一步提高页表的级数。</p>
+<p>Linux在v2.6.11以后，最终采用的方案是4级页表，分别是：</p>
+<ul>
+<li>PGD：page Global directory(47-39), 页全局目录</li>
+<li>PUD：Page Upper Directory(38-30)，页上级目录</li>
+<li>PMD：page middle directory(29-21)，页中间目录</li>
+<li>PTE：page table entry(20-12)，页表项</li>
+</ul>
+<p>这样，一个64位的虚拟空间，初始创建的时候只需要维护一个29 大小的一个页全局目录就够了，现在的页表数据结构被扩展到了8byte。这个页全局目录仅仅需要(29 *8=)4K，剩下的中间页目录、页表项只需要在使用的时候再分配就好了。Linux就是通过这种方式支持起(2^48 =)256T的进程地址空间的。</p>
+<h4 id="TLB"><a href="#TLB" class="headerlink" title="TLB"></a>TLB</h4><p>使用多级页表虽然只需要4k的初始页目录就可以支持起一个256T的进程地址空间。但是，这也带来了额外的问题，<strong>页表是存在内存里的。那就是一次内存IO光是虚拟地址到物理地址的转换就要去内存查4次页表，再算上真正的内存访问，竟然需要5次内存IO才能获取一个内存数据!</strong></p>
+<p>和<strong>CPU的L1、L2、L3的缓存思想一致，既然进行地址转换需要的内存IO次数多，且耗时。那么干脆就在CPU里把页表尽可能地cache起来不就行了么</strong>，所以就有了<strong>TLB(Translation Lookaside Buffer，位于MMU中，MMU位于CPU内)，专门用于改进虚拟地址到物理地址转换速度的缓存。其访问速度非常快，和寄存器相当，比L1访问还快。</strong></p>
+<h5 id="MMU"><a href="#MMU" class="headerlink" title="MMU"></a>MMU</h5><p>MMU（内存管理单元）：包括从逻辑地址到虚拟地址（线性地址）再到内存地址的变换过程、页式存储管理、段式存储管理、段页式存储管理、虚拟存储管理（请求分页、请求分段、请求段页）。 <strong>MMU位于CPU内部，可以假想为一个进程的所需要的资源都放在虚拟地址空间里面，而CPU在取指令时，机器指令中的地址码部分为虚拟地址（线性地址），需要经过MMU转换成为内存地址，才能进行取指令。</strong>MMU完成两大功能：</p>
+<ul>
+<li><p>虚拟地址到内存地址的地址变换</p>
+</li>
+<li><p>设置修改CPU对内存的访问级别。比如在Linux的虚拟地址空间中，3-4G为内核空间，访问级别最高，可以访问整个内存；而0-3G的用户空间只能访问用户空间的内容。其实这也是由MMU的地址变换机制所决定的。对于Inter（英特尔）CPU架构，CPU对内存的访问设置了4个访问级别：0、1、2、3，0最高，4最低。而Linux下，只是使用了CPU的两种级别：0、3。</p>
+</li>
+</ul>
+<p>CPU的状态属于程序状态字PSW的一位，系统模式(0)，用户模式(1)，CPU交替执行操作系统程序和用户程序。0级对应CPU的内核态（特权态、管态、系统态），而3级对应用户态（普通态或目态），这其实是对内核的一种保护机制。例如，在执行printf函数的时候，其本身是在用户空间执行，然后发生系统调用，调用系统函数write将用户空间的数据写入到内核空间，最后把内核的数据刷到（fsync）磁盘上，在这个过程中，CPU的状态发生了变化，从0级（用户态）到3级（内核态）。</p>
+<p>有了TLB之后，CPU访问某个虚拟内存地址的过程如下：</p>
+<ul>
+<li>CPU产生一个虚拟地址</li>
+<li><strong>MMU从TLB中获取页表，翻译成物理地址</strong></li>
+<li>MMU<strong>把物理地址发送给L1/L2/L3/缓存</strong></li>
+<li>L1/L2/L3/内存将地址对应数据返回给CPU</li>
+</ul>
+<p>第2步是类似于寄存器的访问速度，所以如果TLB能命中，则虚拟地址到物理地址的时间开销几乎可以忽略。</p>
+<h4 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h4><p>因为TLB并不是很大，只有4k，而且现在逻辑核又造成会有两个进程来共享。所以可能会有cache miss的情况出现。<strong>而且一旦TLB miss造成的后果可比物理地址cache miss后果要严重一些，最多可能需要进行5次内存IO才行。</strong></p>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a href="https://mp.weixin.qq.com/s/PQTuFZO51an6OAe3WX4BVw" target="_blank" rel="noopener">https://mp.weixin.qq.com/s/PQTuFZO51an6OAe3WX4BVw</a></p>
+<p><a href="https://mp.weixin.qq.com/s/mssTS3NN7-w2df1vhYSuYw" target="_blank" rel="noopener">https://mp.weixin.qq.com/s/mssTS3NN7-w2df1vhYSuYw</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/CPU%E5%8F%8A%E7%BC%93%E5%AD%98/" rel="tag"># CPU及缓存</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/04/25/os-6%E5%86%85%E5%AD%98/" rel="prev" title="内存底层原理">
+      <i class="fa fa-chevron-left"></i> 内存底层原理
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/05/03/os-8%E7%BA%BF%E7%A8%8B%E5%92%8C%E8%BF%9B%E7%A8%8B%E5%88%87%E6%8D%A2/" rel="next" title="进程和线程的切换开销">
+      进程和线程的切换开销 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+      <div class="tabs tabs-comment">
+        <ul class="nav-tabs">
+            <li class="tab"><a href="#comment-gitalk">gitalk</a></li>
+            <li class="tab"><a href="#comment-livere">livere</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane gitalk" id="comment-gitalk">
+              <div class="comments" id="gitalk-container"></div>
+            </div>
+            <div class="tab-pane livere" id="comment-livere">
+              
+  <div class="comments" id="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81MjkwMy8yOTM4MA=="></div>
+  </div>
+  
+            </div>
+        </div>
+      </div>
+      <script>
+        window.addEventListener('tabs:register', () => {
+          let activeClass = 'gitalk';
+            activeClass = localStorage.getItem('comments_active') || activeClass;
+          if (activeClass) {
+            let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+            if (activeTab) {
+              activeTab.click();
+            }
+          }
+        });
+        window.addEventListener('tabs:click', event => {
+          let commentClass = event.target.classList[1];
+          localStorage.setItem('comments_active', commentClass);
+        });
+      </script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#cpu多核真相"><span class="nav-number">1.</span> <span class="nav-text">cpu多核真相</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#缓存"><span class="nav-number">2.</span> <span class="nav-text">缓存</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#linux下实际查看"><span class="nav-number">2.1.</span> <span class="nav-text">linux下实际查看</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Cache-Line"><span class="nav-number">2.2.</span> <span class="nav-text">Cache Line</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TLB缓存"><span class="nav-number">3.</span> <span class="nav-text">TLB缓存</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#虚拟内存"><span class="nav-number">3.1.</span> <span class="nav-text">虚拟内存</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#linux虚拟内存实现"><span class="nav-number">3.2.</span> <span class="nav-text">linux虚拟内存实现</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#32位系统的虚拟内存实现：二级页表"><span class="nav-number">3.2.1.</span> <span class="nav-text">32位系统的虚拟内存实现：二级页表</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#64位系统的虚拟内存实现：四级页表"><span class="nav-number">3.2.2.</span> <span class="nav-text">64位系统的虚拟内存实现：四级页表</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#TLB"><span class="nav-number">3.3.</span> <span class="nav-text">TLB</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#MMU"><span class="nav-number">3.3.1.</span> <span class="nav-text">MMU</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#扩展"><span class="nav-number">3.4.</span> <span class="nav-text">扩展</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考"><span class="nav-number">4.</span> <span class="nav-text">参考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ShifuDong"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">ShifuDong</p>
+  <div class="site-description" itemprop="description">记录生活， 记录学习， 分享知识</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">78</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">30</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/mailto:sfd_w@foxmail.com" title="E-Mail → mailto:sfd_w@foxmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ShifuDong</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.0.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.5.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.getAttribute('pjax') !== null) {
+      element.setAttribute('pjax', '');
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'a6ee5b68c97a3db64850',
+      clientSecret: '1dfa06f32032431e4af79b80f9ddf9dfd13dbda2',
+      repo: 'dongshifu.github.io',
+      owner: 'dongshifu',
+      admin: ['dongshifu'],
+      id: 'bdbaba325e9903e944794b8a610705ba',
+        language: 'zh-CN',
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script>
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+</script>
+
+    </div>
+</body>
+</html>

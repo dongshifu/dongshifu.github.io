@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="alternate" href="/atom.xml" title="ShifuDong" type="application/atom+xml">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.5.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":true,"show_result":true,"style":"flat"},
+    back2top: {"enable":true,"sidebar":true,"scrollpercent":true},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":true,"trigger":"auto","top_n_per_article":5,"unescape":false,"preload":false},
+    path: 'search.xml',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="linux内核对网络包的接收过程大致分为：硬中断处理、接收数据到RingBuffer、ksoftirqd软中断处理几个过程。在软中断处理中，将数据包从RingBuffer中获取送到协议栈进行处理，之后再送到用户进程socket的接收队列中。 几个工具监控网卡的工具： ethtool该工具用来查看和设置网卡参数。这个工具其实本身只是提供几个通用接口，真正的实现是都是在网卡驱动中。几个选项：  -i">
+<meta name="keywords" content="网络">
+<meta property="og:type" content="article">
+<meta property="og:title" content="网络调优工具使用">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2021&#x2F;02&#x2F;20&#x2F;os-%E7%BD%91%E7%BB%9C-2&#x2F;index.html">
+<meta property="og:site_name" content="ShifuDong">
+<meta property="og:description" content="linux内核对网络包的接收过程大致分为：硬中断处理、接收数据到RingBuffer、ksoftirqd软中断处理几个过程。在软中断处理中，将数据包从RingBuffer中获取送到协议栈进行处理，之后再送到用户进程socket的接收队列中。 几个工具监控网卡的工具： ethtool该工具用来查看和设置网卡参数。这个工具其实本身只是提供几个通用接口，真正的实现是都是在网卡驱动中。几个选项：  -i">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;be5fa6e0-26bb-4ba7-8337-6a6991d28593-11197877.jpg">
+<meta property="og:updated_time" content="2021-05-13T01:35:45.345Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https:&#x2F;&#x2F;api2.mubu.com&#x2F;v3&#x2F;document_image&#x2F;be5fa6e0-26bb-4ba7-8337-6a6991d28593-11197877.jpg">
+
+<link rel="canonical" href="http://yoursite.com/2021/02/20/os-%E7%BD%91%E7%BB%9C-2/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>网络调优工具使用 | ShifuDong</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ShifuDong</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">Knowledge Sharing</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+
+</nav>
+  <div class="site-search">
+    <div class="popup search-popup">
+    <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocorrect="off" autocapitalize="none"
+           placeholder="搜索..." spellcheck="false"
+           type="text" id="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result"></div>
+
+</div>
+<div class="search-pop-overlay"></div>
+
+  </div>
+</div>
+    </header>
+
+    
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2021/02/20/os-%E7%BD%91%E7%BB%9C-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          网络调优工具使用
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-02-20 18:36:05" itemprop="dateCreated datePublished" datetime="2021-02-20T18:36:05+08:00">2021-02-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-05-13 09:35:45" itemprop="dateModified" datetime="2021-05-13T09:35:45+08:00">2021-05-13</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index">
+                    <span itemprop="name">网络</span>
+                  </a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BD%91%E7%BB%9C/%E5%B7%A5%E5%85%B7/" itemprop="url" rel="index">
+                    <span itemprop="name">工具</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p><img src="https://api2.mubu.com/v3/document_image/be5fa6e0-26bb-4ba7-8337-6a6991d28593-11197877.jpg" alt="linux内核接收网络包的过程"></p>
+<p>linux内核对网络包的接收过程大致分为：硬中断处理、接收数据到RingBuffer、ksoftirqd软中断处理几个过程。在软中断处理中，将数据包从RingBuffer中获取送到协议栈进行处理，之后再送到用户进程socket的接收队列中。</p>
+<h3 id="几个工具"><a href="#几个工具" class="headerlink" title="几个工具"></a>几个工具</h3><p>监控网卡的工具：</p>
+<h4 id="ethtool"><a href="#ethtool" class="headerlink" title="ethtool"></a>ethtool</h4><p>该工具用来<strong>查看和设置网卡参数</strong>。这个工具其实本身只是提供几个通用接口，<strong>真正的实现是都是在网卡驱动中</strong>。几个选项：</p>
+<ul>
+<li><code>-i</code> 显示<strong>网卡驱动</strong>的信息，如驱动的名称、版本等</li>
+<li><code>-S</code> 查看网卡<strong>收发包</strong>的统计情况</li>
+<li><code>-g/-G</code> <strong>查看或者修改RingBuffer的大小</strong></li>
+<li><code>-l/-L</code> 查看或者修改<strong>网卡队列</strong>数</li>
+<li><code>-c/-C</code> 查看或者修改<strong>硬中断合并策略</strong></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看网卡驱动：</span></span><br><span class="line"><span class="variable">$ethtool</span> -i eno1</span><br><span class="line"></span><br><span class="line">driver: e1000e</span><br><span class="line">version: 3.2.6-k</span><br><span class="line">firmware-version: 0.13-4</span><br></pre></td></tr></table></figure>
+<h4 id="ifconfig"><a href="#ifconfig" class="headerlink" title="ifconfig"></a>ifconfig</h4><p>网络管理工具ifconfig不只是可以为网卡配置ip，启动或者禁用网卡，也包含了一<strong>些网卡的统计信息</strong>。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">eno1      Link encap:以太网  硬件地址 98:90:96:a5:4c:a7  </span><br><span class="line">          inet 地址:172.27.229.18  广播:172.27.255.255  掩码:255.255.0.0</span><br><span class="line">          inet6 地址: fe80::aea1:731a:3687:7f4a/64 Scope:Link</span><br><span class="line">          UP BROADCAST RUNNING MULTICAST  MTU:1500  跃点数:1</span><br><span class="line">          接收数据包:10938370 错误:0 丢弃:0 过载:0 帧数:0</span><br><span class="line">          发送数据包:1479049 错误:0 丢弃:0 过载:0 载波:0</span><br><span class="line">          碰撞:0 发送队列长度:1000 </span><br><span class="line">          接收字节:2793457160 (2.7 GB)  发送字节:187860463 (187.8 MB)</span><br><span class="line">          中断:20 Memory:f7d00000-f7d20000 </span><br><span class="line">          </span><br><span class="line">中英文对应：      </span><br><span class="line">    RX packets：接收的总包数</span><br><span class="line">    RX bytes：接收的字节数</span><br><span class="line">    RX errors：表示总的收包的错误数量</span><br><span class="line">    RX dropped：数据包已经进入了 Ring Buffer，但是由于其它原因导致的丢包</span><br><span class="line">    RX overruns：表示了 fifo 的 overruns，这是由于 Ring Buffer不足导致的丢包</span><br></pre></td></tr></table></figure>
+<h4 id="伪文件系统-proc"><a href="#伪文件系统-proc" class="headerlink" title="伪文件系统/proc"></a>伪文件系统/proc</h4><p>Linux内核提供了<code>/proc</code>伪文件系统，通过<code>/proc</code>可以查看<strong>内核内部数据结构、改变内核设置</strong>。</p>
+<p>主要内容：</p>
+<ul>
+<li><code>/proc/sys</code>目录可以查看或修改<strong>内核参数</strong></li>
+<li><code>/proc/cpuinfo</code>可以查看CPU信息</li>
+<li><code>/proc/meminfo</code>可以查看内存信息</li>
+<li><code>/proc/interrupts</code>统计所有的<strong>硬中断</strong></li>
+<li><code>/proc/softirqs</code>统计的所有的<strong>软中断</strong>信息</li>
+<li><code>/proc/slabinfo</code>统计了内核数据结构的<strong>slab内存</strong>使用情况</li>
+<li><code>/proc/net/dev</code>可以看到一些<strong>网卡</strong>统计数据</li>
+</ul>
+<p>关注伪文件 <code>/proc/net/dev</code>查看内核中对网卡的相关统计，包含的主要信息：</p>
+<ul>
+<li>bytes: 发送或接收的数据的总<strong>字节</strong>数</li>
+<li>packets: 接口发送或接收的数据<strong>包</strong>总数</li>
+<li>errs: 由设备驱动程序检测到的发送或接收错误的总数</li>
+<li>drop: 设备驱动程序<strong>丢弃的数据包总数</strong></li>
+<li>fifo: FIFO<strong>缓冲区错误</strong>的数量</li>
+<li>frame: The number of packet framing errors.（分组帧错误的数量）</li>
+<li>colls: 接口上检测到的冲突数</li>
+</ul>
+<h4 id="伪文件系统sysfs"><a href="#伪文件系统sysfs" class="headerlink" title="伪文件系统sysfs"></a>伪文件系统sysfs</h4><p><code>sysfs</code>和<code>/proc</code>类似，也是一个伪文件系统，但是比<code>proc</code>更新，结构更清晰。其中的<code>/sys/class/net/eno1/statistics/</code>也包含了网卡的统计信息。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># cd /sys/class/net/eno1/statistics/ </span></span><br><span class="line"><span class="comment"># grep . * | grep tx</span></span><br><span class="line"></span><br><span class="line">tx_aborted_errors:0</span><br><span class="line">tx_bytes:193280753</span><br><span class="line">tx_carrier_errors:0</span><br><span class="line">tx_compressed:0</span><br><span class="line">tx_dropped:0</span><br><span class="line">tx_errors:0</span><br><span class="line">tx_fifo_errors:0</span><br><span class="line">tx_heartbeat_errors:0</span><br><span class="line">tx_packets:1513872</span><br><span class="line">tx_window_errors:0</span><br></pre></td></tr></table></figure>
+<h4 id="RingBuffer监控和调优"><a href="#RingBuffer监控和调优" class="headerlink" title="RingBuffer监控和调优"></a>RingBuffer监控和调优</h4><p>当网线中的数据帧到达网卡后，第一站就是RingBuffer（网卡通过DMA机制将数据帧送到RingBuffer中）。</p>
+<p>使用<code>ethtool</code>查看RingBuffer:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ethtool -g eno1</span></span><br><span class="line"></span><br><span class="line">Ring parameters <span class="keyword">for</span> eno1:</span><br><span class="line">Pre-set maximums:</span><br><span class="line">RX:		4096</span><br><span class="line">RX Mini:	0</span><br><span class="line">RX Jumbo:	0</span><br><span class="line">TX:		4096</span><br><span class="line">Current hardware settings:</span><br><span class="line">RX:		256</span><br><span class="line">RX Mini:	0</span><br><span class="line">RX Jumbo:	0</span><br><span class="line">TX:		256</span><br></pre></td></tr></table></figure>
+<p>本机器的网卡设置RingBuffer最大允许到4096,实际设置为256。</p>
+<p>注意：ethtool查看到的是实际是<code>Rx bd</code>的大小。<strong><code>Rx bd</code>位于网卡中，相当于一个指针。<code>RingBuffer</code>在内存中，<code>Rx bd</code>指向<code>RingBuffer</code>。<code>Rx  bd</code>和<code>RingBuffer</code>中的元素是一一对应的关系</strong>。在网卡启动的时候，内核会为网卡的<code>Rx  bd</code>在内存中分配<code>RingBuffer</code>，并设置好对应关系。</p>
+<p>在Linux的整个网络栈中，<code>RingBuffer</code>起到一个任务的收发中转站的角色。<strong>对于接收过程来讲，网卡负责往<code>RingBuffer</code>中写入收到的数据帧，<code>ksoftirqd</code>内核线程负责从中取走处理。只要<code>ksoftirqd</code>线程工作的足够快，<code>RingBuffer</code>这个中转站就不会出现问题</strong>。但是设想一下，<strong>假如某一时刻，瞬间来了特别多的包，而<code>ksoftirqd</code>处理不过来了，会发生什么？这时<code>RingBuffer</code>可能瞬间就被填满了，后面再来的包网卡直接就会丢弃，不做任何处理！</strong></p>
+<p>查看机器上是否有因为RingBuffer设置导致的丢包：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ethtool -S eno1</span></span><br><span class="line"></span><br><span class="line">rx_fifo_errors: 0 <span class="comment">#有的机器上不一定有</span></span><br><span class="line">tx_fifo_errors: 0</span><br></pre></td></tr></table></figure>
+<p><code>rx_fifo_errors</code>如果不为0的话（在 <code>ifconfig</code>中体现为<code>overruns</code>  指标增长），就表示有包因为<code>RingBuffer</code>装不下而被丢弃了。那么怎么解决这个问题呢？很自然首先想到的是，加大<code>RingBuffer</code>这个“中转仓库”的大小。通过<code>ethtool</code>就可以修改:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ethtool -G eth1 rx 512 tx 512</span></span><br></pre></td></tr></table></figure>
+<p>这样网卡会被分配更大一点的”中转站“，可以<strong>解决偶发的瞬时的丢包</strong>。不过这种方法有个<strong>小副作用，那就是排队的包过多会增加处理网络包的延时。</strong>所以另外一种解决思路更好，那就是<strong>让内核处理网络包的速度更快一些，而不是让网络包傻傻地在<code>RingBuffer</code>中排队。</strong>怎么加快内核消费RingBuffer中任务的速度?</p>
+<h4 id="硬中断监控与调优"><a href="#硬中断监控与调优" class="headerlink" title="硬中断监控与调优"></a>硬中断监控与调优</h4><h5 id="监控部分"><a href="#监控部分" class="headerlink" title="监控部分"></a>监控部分</h5><p>硬中断可以通过内核提供的伪文件<code>/proc/interrupts</code>来查看：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ cat /proc/interrupts</span><br><span class="line"></span><br><span class="line">           CPU0       CPU1       CPU2       CPU3       CPU4       CPU5       CPU6       CPU7       </span><br><span class="line"> 31:          0          0          0          0          0        536          0    4507261  IR-PCI-MSI 409600-edge      eno1</span><br></pre></td></tr></table></figure>
+<p>分析：</p>
+<ul>
+<li>网卡的输入队列<code>eno1</code>的中断号是31</li>
+<li>31号中断由CPU5和CPU7来处理</li>
+</ul>
+<p>注意：</p>
+<ul>
+<li>为什么输入队列的中断在CPU5和CPU7上？</li>
+</ul>
+<p>这是因为内核的一个配置，在伪文件系统中可以查看到：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#cat /proc/irq/31/smp_affinity</span></span><br><span class="line">80</span><br></pre></td></tr></table></figure>
+<p><code>smp_affinity</code>里是CPU的亲和性的绑定，80是二进制的<code>01010000</code>,第5位和第7位都为1，代表的就是第5和第7个CPU核心CPU5和CPU7。</p>
+<ul>
+<li>对于收包来过程来讲，硬中断的总次数表示的是Linux收包总数吗？</li>
+</ul>
+<p>不是，<strong>硬件中断次数不代表总的网络包数。第一网卡可以设置中断合并，多个网络帧可以只发起一次中断。第二NAPI 运行的时候会关闭硬中断，通过poll来收包。</strong></p>
+<h5 id="多队列网络调优"><a href="#多队列网络调优" class="headerlink" title="多队列网络调优"></a>多队列网络调优</h5><p>现在的主流网卡基本上都是支持多队列的，可以<strong>通过将不同的队列分给不同的CPU核心来处理，从而加快Linux内核处理网络包的速度。这是最为有用的一个优化手段</strong>。</p>
+<p><strong>每一个队列都有一个中断号，可以独立向某个CPU核心发起硬中断请求，让CPU来<code>poll</code>包。通过将接收进来的包被放到不同的内存队列里，多个CPU就可以同时分别向不同的队列发起消费了。这个特性叫做RSS（Receive Side Scaling，接收端扩展）</strong>。通过<code>ethtool</code>工具可以查看网卡的队列情况。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ethtool -l eth0 # 本人网卡不支持该操作，参考开发内功修炼</span></span><br><span class="line">Channel parameters <span class="keyword">for</span> eth0:</span><br><span class="line">Pre-set maximums:</span><br><span class="line">RX:     0</span><br><span class="line">TX:     0</span><br><span class="line">Other:      1</span><br><span class="line">Combined:   63</span><br><span class="line">Current hardware settings:</span><br><span class="line">RX:     0</span><br><span class="line">TX:     0</span><br><span class="line">Other:      1</span><br><span class="line">Combined:   8</span><br></pre></td></tr></table></figure>
+<p>上述结果表示当前网卡支持的最大队列数是63，当前开启的队列数是8。对于这个配置来讲，最多同时可以有8个核心来参与网络收包。<strong>如果想提高内核收包的能力，直接简单加大队列数就可以了，这比加大RingBuffer更为有用。因为加大RingBuffer只是给个更大的空间让网络帧能继续排队，而加大队列数则能让包更早地被内核处理</strong>。<code>ethtool</code>修改队列数量方法如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#ethtool -L eth0 combined 32</span></span><br></pre></td></tr></table></figure>
+<p><strong>硬中断发生在哪一个核上，它发出的软中断就由哪个核来处理。所有通过加大网卡队列数，这样硬中断工作、软中断工作都会有更多的核心参与进来。</strong></p>
+<p>每一个队列都有一个中断号，每一个中断号都是绑定在特定的CPU上。如果不满意某一个中断的CPU绑定，可以通过修改<code>/proc/irq/{中断号}/smp_affinity</code>来实现。</p>
+<h5 id="硬中断合并"><a href="#硬中断合并" class="headerlink" title="硬中断合并"></a>硬中断合并</h5><p>一个实际中的例子，假如你是一位开发同学，和你对口的产品经理一天有10个小需求需要让你帮忙来处理。她对你有两种中断方式：</p>
+<ul>
+<li>第一种：产品经理想到一个需求，就过来找你，和你描述需求细节，然后让你帮你来改</li>
+<li>第二种：产品经理想到需求后，不来打扰你，等攒够5个来找你一次，你集中处理</li>
+</ul>
+<p>现在不考虑及时性，<strong>只考虑工作整体效率</strong>，哪种方案下你的工作效率会高呢？或者换句话说，你更喜欢哪一种工作状态呢？很明显，只要你是一个正常的开发，都会觉得第二种方案更好。对人脑来讲，频繁的中断会打乱你的计划，你脑子里刚才刚想到一半技术方案可能也就废了。当产品经理走了以后，你再想捡起来刚被中断之的工作的时候，很可能得花点时间回忆一会儿才能继续工作。</p>
+<p>对于CPU来讲也是一样，<strong>CPU要做一件新的事情之前，要加载该进程的地址空间，load进程代码，读取进程数据，各级别cache要慢慢热身。因此如果能适当降低中断的频率，多攒几个包一起发出中断，对提升CPU的工作效率是有帮助的</strong>。所以，网卡允许我们对硬中断进行合并。</p>
+<p>现在看一下网卡的硬中断合并配置：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ethtool -c eno1</span></span><br><span class="line"></span><br><span class="line">Adaptive RX: off  TX: off</span><br><span class="line">...</span><br><span class="line">rx-usecs: 3</span><br><span class="line">rx-frames: 0</span><br><span class="line">rx-usecs-irq: 0</span><br><span class="line">rx-frames-irq: 0</span><br><span class="line">rx-usecs-low: 0</span><br><span class="line">rx-frame-low: 0</span><br><span class="line">rx-usecs-high: 0</span><br><span class="line">rx-frame-high: 0</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>参数的含义：</p>
+<ul>
+<li>Adaptive RX: <strong>自适应中断合并</strong>，网卡驱动自己判断啥时候该合并啥时候不合并</li>
+<li>rx-usecs：当过这么长时间过后，一个RX interrupt就会被产生</li>
+<li>rx-frames：当累计接收到这么多个帧后，一个RX interrupt就会被产生</li>
+</ul>
+<p>修改相关参数：接使用<code>ethtool -C</code>就可以</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ethtool -C eno1 adaptive-rx on</span></span><br></pre></td></tr></table></figure>
+<p>需要注意的是，<strong>减少中断数量虽然能使得Linux整体吞吐更高，不过一些包的延迟也会增大，所以用的时候得适当注意。</strong></p>
+<h4 id="软中断监控和调优"><a href="#软中断监控和调优" class="headerlink" title="软中断监控和调优"></a>软中断监控和调优</h4><p><strong>软中断和它对应的硬中断是在同一个核心上处理的。因此，前面硬中断分散到多核上处理的时候，软中断的优化其实也就跟着做了，也会被多核处理。</strong>不过软中断也还有自己的可优化选项。</p>
+<h5 id="监控"><a href="#监控" class="headerlink" title="监控"></a>监控</h5><p>软中断的信息可以从<code>/proc/softirqs</code>读取：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">$ cat /proc/softirqs</span><br><span class="line"></span><br><span class="line">                    CPU0       CPU1       CPU2       CPU3       CPU4       CPU5       CPU6       CPU7       </span><br><span class="line">          HI:          0          0    1228152        865        360          7          0          0</span><br><span class="line">       TIMER:   27307279   27853788   27665421   31261338   27720654   27228264   27604399   29304702</span><br><span class="line">      NET_TX:      10611         21      33099       1480        103      39090         43         56</span><br><span class="line">      NET_RX:     936563     934954     932782     903383     896445     940357    1111527   11896810</span><br><span class="line">       BLOCK:        293    1850485      65944        395        365        332        354        333</span><br><span class="line">    IRQ_POLL:          0          0          0          0          0          0          0          0</span><br><span class="line">     TASKLET:         18          4     104755         75         25         84        748       8691</span><br><span class="line">       SCHED:   15801149   13822836   13336518   16738535   13374504   13423444   13224695   14819090</span><br><span class="line">     HRTIMER:          0          0          0          0          0          0          0          0</span><br><span class="line">         RCU:   23189803   22923131   23217378   25381785   22908760   22872174   23143036   24117847</span><br></pre></td></tr></table></figure>
+<h5 id="软中断budget调整"><a href="#软中断budget调整" class="headerlink" title="软中断budget调整"></a>软中断budget调整</h5><p>番茄工作法：大致意思就是要有一整段的不被打扰的时间，集中精力处理某一项作业。这一整段时间时长被建议是25分钟。<strong>对于Linux的处理软中断的ksoftirqd来说，它也和番茄工作法思路类似。一旦它被硬中断触发开始了工作，它会集中精力处理一波网络包（绝不只是1个），然后再去做别的事情。</strong></p>
+<p>处理一波是多少呢，策略略复杂。只说其中一个比较容易理解的，那就是<code>net.core.netdev_budget</code>内核参数：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># sysctl -a | grep core.netdev_budget </span></span><br><span class="line"></span><br><span class="line">net.core.netdev_budget = 300</span><br></pre></td></tr></table></figure>
+<p>这里的意思说的是，<strong>ksoftirqd一次最多处理300个包，处理够了就会把CPU主动让出来，以便Linux上其它的任务可以得到处理</strong>。那么假如说，<strong>现在想提高内核处理网络包的效率。那就可以让ksoftirqd进程多干一会儿网络包的接收，再让出CPU。至于怎么提高，直接修改不这个参数的值就行。</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># sysctl -w net.core.netdev_budget=600</span></span><br></pre></td></tr></table></figure>
+<p>如果<strong>要保证重启仍然生效，需要将这个配置写到<code>/etc/sysctl.conf</code></strong></p>
+<h5 id="软中断GRO合并"><a href="#软中断GRO合并" class="headerlink" title="软中断GRO合并"></a>软中断GRO合并</h5><p>GRO和硬中断合并的思想很类似，不过阶段不同。<strong>硬中断合并是在中断发起之前，而GRO已经到了软中断上下文中了。</strong></p>
+<p>如果应用中是大文件的传输，大部分包都是一段数据，不用GRO的话，会每次都将一个小包传送到协议栈（IP接收函数、TCP接收）函数中进行处理。<strong>开启GRO的话，Linux就会智能进行包的合并，之后将一个大包传给协议处理函数。这样CPU的效率也是就提高了。</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ethtool -k eno1 | grep generic-receive-offload</span></span><br><span class="line">generic-receive-offload: on</span><br></pre></td></tr></table></figure>
+<p>如果网卡驱动没有打开GRO的话，可以通过如下方式打开。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"># ethtool -K eno1  gro on</span><br></pre></td></tr></table></figure>
+<p>GRO说的仅仅只是包的接收阶段的优化方式，对于发送来说是GSO。</p>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a href="https://mp.weixin.qq.com/s?__biz=MjM5Njg5NDgwNA==&amp;mid=2247484065&amp;idx=1&amp;sn=ab0d3e11c472b845dedf6a87dcc38b25&amp;chksm=a6e3039a91948a8c23ec7d426469ebe30d70f59c7a58437e9ea8b8aac697aa1e2e29b4c47dec&amp;scene=178&amp;cur_album_id=1532487451997454337#rd" target="_blank" rel="noopener">https://mp.weixin.qq.com/s?__biz=MjM5Njg5NDgwNA==&amp;mid=2247484065&amp;idx=1&amp;sn=ab0d3e11c472b845dedf6a87dcc38b25&amp;chksm=a6e3039a91948a8c23ec7d426469ebe30d70f59c7a58437e9ea8b8aac697aa1e2e29b4c47dec&amp;scene=178&amp;cur_album_id=1532487451997454337#rd</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%BD%91%E7%BB%9C/" rel="tag"># 网络</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/10/%E5%88%86%E5%B8%83%E5%BC%8F%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8-3%E5%85%83%E6%95%B0%E6%8D%AE%E6%9C%8D%E5%8A%A1/" rel="prev" title="元数据服务">
+      <i class="fa fa-chevron-left"></i> 元数据服务
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/22/rabbitmq-1/" rel="next" title="RabbitMQ简介">
+      RabbitMQ简介 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+      <div class="tabs tabs-comment">
+        <ul class="nav-tabs">
+            <li class="tab"><a href="#comment-gitalk">gitalk</a></li>
+            <li class="tab"><a href="#comment-livere">livere</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane gitalk" id="comment-gitalk">
+              <div class="comments" id="gitalk-container"></div>
+            </div>
+            <div class="tab-pane livere" id="comment-livere">
+              
+  <div class="comments" id="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81MjkwMy8yOTM4MA=="></div>
+  </div>
+  
+            </div>
+        </div>
+      </div>
+      <script>
+        window.addEventListener('tabs:register', () => {
+          let activeClass = 'gitalk';
+            activeClass = localStorage.getItem('comments_active') || activeClass;
+          if (activeClass) {
+            let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+            if (activeTab) {
+              activeTab.click();
+            }
+          }
+        });
+        window.addEventListener('tabs:click', event => {
+          let commentClass = event.target.classList[1];
+          localStorage.setItem('comments_active', commentClass);
+        });
+      </script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#几个工具"><span class="nav-number">1.</span> <span class="nav-text">几个工具</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#ethtool"><span class="nav-number">1.1.</span> <span class="nav-text">ethtool</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ifconfig"><span class="nav-number">1.2.</span> <span class="nav-text">ifconfig</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#伪文件系统-proc"><span class="nav-number">1.3.</span> <span class="nav-text">伪文件系统/proc</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#伪文件系统sysfs"><span class="nav-number">1.4.</span> <span class="nav-text">伪文件系统sysfs</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RingBuffer监控和调优"><span class="nav-number">1.5.</span> <span class="nav-text">RingBuffer监控和调优</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#硬中断监控与调优"><span class="nav-number">1.6.</span> <span class="nav-text">硬中断监控与调优</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#监控部分"><span class="nav-number">1.6.1.</span> <span class="nav-text">监控部分</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#多队列网络调优"><span class="nav-number">1.6.2.</span> <span class="nav-text">多队列网络调优</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#硬中断合并"><span class="nav-number">1.6.3.</span> <span class="nav-text">硬中断合并</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#软中断监控和调优"><span class="nav-number">1.7.</span> <span class="nav-text">软中断监控和调优</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#监控"><span class="nav-number">1.7.1.</span> <span class="nav-text">监控</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#软中断budget调整"><span class="nav-number">1.7.2.</span> <span class="nav-text">软中断budget调整</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#软中断GRO合并"><span class="nav-number">1.7.3.</span> <span class="nav-text">软中断GRO合并</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考"><span class="nav-number">2.</span> <span class="nav-text">参考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ShifuDong"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">ShifuDong</p>
+  <div class="site-description" itemprop="description">记录生活， 记录学习， 分享知识</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">78</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">30</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="/mailto:sfd_w@foxmail.com" title="E-Mail → mailto:sfd_w@foxmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ShifuDong</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.0.0
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.5.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.getAttribute('pjax') !== null) {
+      element.setAttribute('pjax', '');
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'a6ee5b68c97a3db64850',
+      clientSecret: '1dfa06f32032431e4af79b80f9ddf9dfd13dbda2',
+      repo: 'dongshifu.github.io',
+      owner: 'dongshifu',
+      admin: ['dongshifu'],
+      id: 'f01ca4af2627e8cb762b77b932b5f584',
+        language: 'zh-CN',
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script>
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+</script>
+
+    </div>
+</body>
+</html>

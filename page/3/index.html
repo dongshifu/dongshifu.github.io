@@ -203,6 +203,681 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/21/mysql_3%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/12/21/mysql_3%E4%BA%8B%E5%8A%A1%E9%9A%94%E7%A6%BB/" class="post-title-link" itemprop="url">mysql事务</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-12-21 21:29:27" itemprop="dateCreated datePublished" datetime="2020-12-21T21:29:27+08:00">2020-12-21</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-30 13:43:38" itemprop="dateModified" datetime="2021-03-30T13:43:38+08:00">2021-03-30</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mysql/" itemprop="url" rel="index">
+                    <span itemprop="name">mysql</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="事务隔离"><a href="#事务隔离" class="headerlink" title="事务隔离"></a>事务隔离</h3><p>转账场景：要给朋友小王转100块钱，而此时银行卡只有100块钱。转账过程具体到程序里会有一系列的操作，比如查询余额、做加减法、更新余额等，这些操作必须保证是一体的，不然等程序查完之后，还没做减法之前，100块钱完全可以借着这个时间差再查一次，然后再给另外一个朋友转账，如果银行这么整，不就乱了么？这时就要用到“事务”这个概念。</p>
+<p>简单来说，<strong>事务就是要保证一组数据库操作，要么全部成功，要么全部失败</strong>。在<strong>MySQL中，事务支持是在引擎层实现的</strong>。MySQL是一个支持多引擎的系统<strong>，但并不是所有的引擎都支持事务</strong>。比如MySQL原生的MyISAM引擎就不支持事务，这也是MyISAM被InnoDB取代的重要原因之一。</p>
+<h3 id="隔离性与隔离级别"><a href="#隔离性与隔离级别" class="headerlink" title="隔离性与隔离级别"></a>隔离性与隔离级别</h3><p>事务的四要素:ACID（Atomicity、Consistency、Isolation、Durability，即原子性、一致性、隔离性、持久性）。本次主要学习隔离性。</p>
+<p>当数据库上有多个事务同时执行的时候，就可能出现<a href="https://dongshifu.github.io/2020/12/17/mysql-4mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-%E4%BA%8B%E5%8A%A1%E5%8F%8A%E9%94%81/" target="_blank" rel="noopener">脏读（dirty read）、不可重复读（non-repeatable read）、幻读（phantom read）的问题</a>. 为了解决这些问题，就有了“隔离级别”的概念。</p>
+<p><strong>隔离得越严实，效率就会越低</strong>。因此很多时候，我们都要在二者之间寻找一个<strong>平衡点</strong>。SQL标准的事务隔离级别包括：<strong>读未提交（read uncommitted）、读提交（read committed）、可重复读（repeatable read）和串行化（serializable ）</strong>。</p>
+<ul>
+<li>读未提交是指，<strong>一个事务还没提交时，它做的变更就能被别的事务看到</strong>。</li>
+<li>读提交是指，一个事务<strong>提交之后，它做的变更才会被其他事务看到</strong>。</li>
+<li>可重复读是指，一个事务执行过程中看到的数据，总是跟这个事务在启动时看到的数据是一致的。当然<strong>在可重复读隔离级别下，未提交变更对其他事务也是不可见的。</strong></li>
+<li>串行化，顾名思义是<strong>对于同一行记录，“写”会加“写锁”，“读”会加“读锁”。当出现读写锁冲突的时候，后访问的事务必须等前一个事务执行完成，才能继续执行。</strong></li>
+</ul>
+<p>举例说明事务的隔离性：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; create table T(c int) engine=InnoDB;</span><br><span class="line"><span class="keyword">insert</span> <span class="keyword">into</span> T(c) <span class="keyword">values</span>(<span class="number">1</span>);</span><br></pre></td></tr></table></figure>
+<p><img src="https://api2.mubu.com/v3/document_image/da798e7f-1080-480e-a530-6a73973f01dd-11197877.jpg" alt="事务的隔离性"></p>
+<p>在不同的隔离级别下，事务A会有哪些不同的返回结果，也就是图里面V1、V2、V3的返回值分别是什么。</p>
+<ul>
+<li>若隔离级别是“读未提交”，<strong>事务B虽然还没有提交，但是结果已经被A看到</strong>了。v1 为2，v2为2，v3为2</li>
+<li>若隔离级别是“读提交”，<strong>事务B的更新在提交后才能被A看到</strong>。v1为1，v2为2，v3为2</li>
+<li>若隔离级别是“可重复读”，事务在执行期间看到的数据前后必须是一致的。v1为1，v2为1，v3为2</li>
+<li>若隔离级别是“串行化”，则在事务B执行“将1改成2”的时候，会被锁住。直到事务A提交后，事务B才可以继续执行。所以从A的角度看， V1、V2值是1，V3的值是2。</li>
+</ul>
+<p>在实现上，数据库里面会创建一个<strong>视图</strong>，<strong>访问的时候以视图的逻辑结果为准</strong>。在<strong>“可重复读”隔离级别下，这个视图是在事务启动时创建的，整个事务存在期间都用这个视图。在“读提交”隔离级别下，这个视图是在每个SQL语句开始执行的时候创建的。这里需要注意的是，“读未提交”隔离级别下直接返回记录上的最新值，没有视图概念；而“串行化”隔离级别下直接用加锁的方式来避免并行访问。</strong></p>
+<p>在不同的隔离级别下，数据库行为是有所不同的。Oracle数据库的默认隔离级别其实就是“读提交”，因此对于一些从Oracle迁移到MySQL的应用，为保证数据库隔离级别的一致，一定要记得将MySQL的隔离级别设置为“读提交”。</p>
+<h4 id="配置隔离级别"><a href="#配置隔离级别" class="headerlink" title="配置隔离级别"></a>配置隔离级别</h4><p>配置的方式是，将启动参数<code>transaction-isolation</code>的值设置成<code>READ-COMMITTED</code>。你可以用<code>show variables</code>来查看当前的值。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; show variables like 'transaction_isolation';</span><br><span class="line">或 <span class="keyword">select</span> @@tx_isolation;</span><br><span class="line">mysql&gt;  set global transaction_isolation=0; -- 读未提交</span><br><span class="line">mysql&gt;  set global transaction_isolation=1; -- 读提交</span><br><span class="line">mysql&gt;  set global transaction_isolation=2; -- 可重复读</span><br><span class="line">mysql&gt;  set global transaction_isolation=3; -- 串行化</span><br><span class="line"><span class="keyword">set</span> [glogal|<span class="keyword">session</span>] <span class="keyword">transaction</span> <span class="keyword">isolation</span> <span class="keyword">level</span> 隔离级别名称;</span><br></pre></td></tr></table></figure>
+<p><strong>需要“可重复读”的场景</strong>：假设在管理一个个人银行账户表。一个表存了每个月月底的余额，一个表存了账单明细。这时候要做数据校对，也就是判断上个月的余额和当前余额的差额，是否与本月的账单明细一致。一定希望在校对过程中，即使有用户发生了一笔新的交易，也不影响校对结果。这时候使用“可重复读”隔离级别就很方便。<strong>事务启动时的视图可以认为是静态的，不受其他事务更新的影响。</strong></p>
+<h4 id="事务隔离的实现"><a href="#事务隔离的实现" class="headerlink" title="事务隔离的实现"></a>事务隔离的实现</h4><p>展开说明“可重复读”事务隔离的具体实现：</p>
+<p>在MySQL中，实际上每条记录在<strong>更新的时候都会同时记录一条回滚操作。记录上的最新值，通过回滚操作，都可以得到前一个状态的值</strong>。假设一个值从1被按顺序改成了2、3、4，在回滚日志里面就会有类似下面的记录：</p>
+<p><img src="https://api2.mubu.com/v3/document_image/e3437af8-6bab-4bcb-aa8a-6b603f4d1596-11197877.jpg" alt="回滚记录"></p>
+<p>当前值是4，但是在查询这条记录的时候，不同时刻启动的事务会有不同的read-view。如图中看到的，在视图A、B、C里面，这一个记录的值分别是1、2、4，<strong>同一条记录在系统中可以存在多个版本，就是数据库的多版本并发控制（MVCC）</strong>。对于read-view A，要得到1，就<strong>必须将当前值依次执行图中所有的回滚操作得到</strong>。另外，即使现在有另外一个事务正在将4改成5，这个事务跟read-view A、B、C对应的事务是不会冲突的。</p>
+<p><strong>回滚日志总不能一直保留，什么时候删除</strong>呢？答案是，<strong>在不需要的时候才删除</strong>。也就是说，<strong>系统会判断，当没有事务再需要用到这些回滚日志时，回滚日志会被删除</strong>。</p>
+<p>什么时候不需要？就是<strong>当系统里没有比这个回滚日志更早的read-view的时候。</strong></p>
+<h4 id="为什么建议尽量不要使用长事务"><a href="#为什么建议尽量不要使用长事务" class="headerlink" title="为什么建议尽量不要使用长事务"></a>为什么建议尽量不要使用长事务</h4><p>长事务意味着系统里面会<strong>存在很老的事务视图</strong>。由于<strong>这些事务随时可能访问数据库里面的任何数据，所以这个事务提交之前，数据库里面它可能用到的回滚记录都必须保留，这就会导致大量占用存储空间。</strong></p>
+<p>在MySQL 5.5及以前的版本，回滚日志是跟数据字典一起放在ibdata文件里的，<strong>即使长事务最终提交，回滚段被清理，文件也不会变小。若回滚段太大，最终只好为了清理回滚段，重建整个库。</strong> <strong>除了对回滚段的影响，长事务还占用锁资源，也可能拖垮整个库</strong></p>
+<h3 id="事务的启动方式"><a href="#事务的启动方式" class="headerlink" title="事务的启动方式"></a>事务的启动方式</h3><p>MySQL的事务启动方式有以下几种：</p>
+<ul>
+<li><p>显式启动事务语句， <code>begin</code> 或 <code>start transaction</code>。配套的提交语句是<code>commit</code>，回滚语句是<code>rollback</code>。</p>
+</li>
+<li><p><code>set autocommit=0</code>，这个命令<strong>会将这个线程的自动提交关掉。意味着如果只执行一个select语句，这个事务就启动了，而且并不会自动提交。这个事务持续存在直到主动执行commit 或 rollback 语句，或者断开连接。</strong></p>
+</li>
+</ul>
+<p>有些客户端连接框架会默认连接成功后先执行一个<code>set autocommit=0</code>的命令。这就<strong>导致接下来的查询都在事务中，如果是长连接，就导致了意外的长事务。</strong></p>
+<p>因此<strong>，建议总是使用<code>set autocommit=1</code>, 通过显式语句的方式来启动事务。</strong></p>
+<p>对于一个需要频繁使用事务的业务，第二种方式每个事务在开始时都不需要主动执行一次 “begin”，减少了语句的交互次数。如果也有这个顾虑，建议使用commit work and chain语法: <strong>在autocommit为1的情况下，用begin显式启动的事务，如果执行commit则提交事务。如果执行 commit work and chain，则是提交事务并自动启动下一个事务，这样也省去了再次执行begin语句的开销。同时带来的好处是从程序开发的角度明确地知道每个语句是否处于事务中。</strong></p>
+<p>可以在information_schema库的<code>innodb_trx</code>表中<strong>查询长事务</strong>，比如下面这个语句，用于查找持续时间超过60s的事务。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> information_schema.innodb_trx <span class="keyword">where</span> TIME_TO_SEC(<span class="keyword">timediff</span>(<span class="keyword">now</span>(),trx_started))&gt;<span class="number">60</span></span><br></pre></td></tr></table></figure>
+<h4 id="如何避免长事务对业务的影响？"><a href="#如何避免长事务对业务的影响？" class="headerlink" title="如何避免长事务对业务的影响？"></a>如何避免长事务对业务的影响？</h4><p>从应用开发端和数据库端来看。</p>
+<p><strong>首先，从应用开发端来看：</strong></p>
+<ul>
+<li><p>确认是否使用了set autocommit=0。这个确认工作可以在测试环境中开展，把MySQL的general_log开起来，然后随便跑一个业务逻辑，通过general_log的日志来确认。一般框架如果会设置这个值，也就会提供参数来控制行为，你的<strong>目标就是把它改成1。</strong></p>
+</li>
+<li><p>确认是否有<strong>不必要的只读事务</strong>。有些框架会习惯不管什么语句先用begin/commit框起来。我见过有些是业务并没有这个需要，但是也把好几个select语句放到了事务中。这种只读事务可以去掉。</p>
+</li>
+<li><p>业务连接数据库的时候，根据业务本身的预估，通过<code>SET MAX_EXECUTION_TIME</code>命令，来<strong>控制每个语句执行的最长时间，避免单个语句意外执行太长时间</strong>。</p>
+</li>
+</ul>
+<p><strong>其次，从数据库端来看：</strong></p>
+<ul>
+<li><p>监控 <code>information_schema.Innodb_trx</code>表，<strong>设置长事务阈值，超过就报警/或者kill；</strong></p>
+</li>
+<li><p>Percona的pt-kill这个工具不错，推荐使用；</p>
+</li>
+<li><p>在业务功能测试阶段要求输出所有的general_log，<strong>分析日志行为提前发现问题</strong>；</p>
+</li>
+<li><p>如果使用的是MySQL 5.6或者更新版本，把<code>innodb_undo_tablespaces</code>设置成2（或更大的值）。如果真的出现大事务导致回滚段过大，这样设置后清理起来更方便</p>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/20/mysql-5mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-mvcc/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/12/20/mysql-5mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-mvcc/" class="post-title-link" itemprop="url">mysql性能优化-mvcc</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-12-20 17:02:01" itemprop="dateCreated datePublished" datetime="2020-12-20T17:02:01+08:00">2020-12-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-17 21:34:36" itemprop="dateModified" datetime="2021-03-17T21:34:36+08:00">2021-03-17</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mysql/" itemprop="url" rel="index">
+                    <span itemprop="name">mysql</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="MVCC"><a href="#MVCC" class="headerlink" title="MVCC"></a>MVCC</h3><p>实验1:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span> <span class="keyword">session</span> autocommit=<span class="keyword">off</span>;  </span><br><span class="line"><span class="keyword">update</span> <span class="keyword">users</span> <span class="keyword">set</span> lastUpdate=<span class="keyword">now</span>() <span class="keyword">where</span> <span class="keyword">id</span> =<span class="number">1</span>; </span><br><span class="line"></span><br><span class="line"><span class="comment">--在未做commit/rollback操作之前  </span></span><br><span class="line"><span class="comment">--在其他的事务能不能进行对应数据的查询(特别是加上了X锁的数据)  </span></span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> <span class="keyword">users</span> <span class="keyword">where</span> <span class="keyword">id</span> &gt; <span class="number">1</span>; </span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> <span class="keyword">users</span> <span class="keyword">where</span> <span class="keyword">id</span> = <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<p>实验2:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">begin</span> </span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> <span class="keyword">users</span> <span class="keyword">where</span> <span class="keyword">id</span> =<span class="number">1</span> ;</span><br><span class="line"></span><br><span class="line"><span class="keyword">begin</span></span><br><span class="line"><span class="keyword">update</span> <span class="keyword">users</span> <span class="keyword">set</span> lastUpdate=<span class="keyword">now</span>() <span class="keyword">where</span> <span class="keyword">id</span> =<span class="number">1</span>;</span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> <span class="keyword">users</span> <span class="keyword">where</span> <span class="keyword">id</span> =<span class="number">1</span>;</span><br></pre></td></tr></table></figure>
+<p>两个实验从结果上来看是一致的，底层实现是一样的吗？跟MVCC有什么关系？ </p>
+<h4 id="MVCC-1"><a href="#MVCC-1" class="headerlink" title="MVCC"></a>MVCC</h4><p>multiversion concurrency control （多版本并发控制）：并发访问(读或写)数据库时,对正在事务内处理的数据做多版本的管理。达到避免写操作的堵塞，从而引发读操作的并发问题。</p>
+<p>MVCC插入逻辑流程 ：</p>
+<p><img src="https://api2.mubu.com/v3/document_image/de8de1d3-76d7-4062-bbcd-82146470f0be-11197877.jpg" alt="MVCC插入逻辑流程"></p>
+<p>MVCC删除逻辑流程：</p>
+<p><img src="https://api2.mubu.com/v3/document_image/8e3f45d4-6284-44e3-a785-09c59fdeb861-11197877.jpg" alt="MVCC删除逻辑流程"></p>
+<p>MVCC修改逻辑流程：</p>
+<p><img src="https://api2.mubu.com/v3/document_image/d80ca7d4-6d88-495a-a294-2cf1e6d1d949-11197877.jpg" alt="MVCC修改逻辑流程"></p>
+<p>MVCC查询逻辑流程:</p>
+<p><img src="https://api2.mubu.com/v3/document_image/6bfce1c3-7ec8-4023-ad62-e14a1689f4e2-11197877.jpg" alt="MVCC查询逻辑流程"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/17/mysql-4mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-%E4%BA%8B%E5%8A%A1%E5%8F%8A%E9%94%81/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/12/17/mysql-4mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-%E4%BA%8B%E5%8A%A1%E5%8F%8A%E9%94%81/" class="post-title-link" itemprop="url">mysql性能优化-事务及锁</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-12-17 10:46:03" itemprop="dateCreated datePublished" datetime="2020-12-17T10:46:03+08:00">2020-12-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-17 21:31:54" itemprop="dateModified" datetime="2021-03-17T21:31:54+08:00">2021-03-17</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mysql/" itemprop="url" rel="index">
+                    <span itemprop="name">mysql</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h3><h4 id="事务的ACID特性"><a href="#事务的ACID特性" class="headerlink" title="事务的ACID特性"></a>事务的ACID特性</h4><ul>
+<li>原子性(Atomicity) <strong>最小的工作单元</strong>，整个工作单元要么<strong>一起提交成功，要么全部失败回滚</strong>。  </li>
+<li>一致性(Consistency) <strong>事务中操作的数据及状态改变是一致的</strong>，即写入资料的结果必须完全符合预设的规则，不会因为出现系统意外等原因导致状态的不一致。  </li>
+<li>隔离性(Isolation) <strong>一个事务所操作的数据在提交之前，对其他事务的可见性设定(一般设定为不可见)。</strong>  </li>
+<li>持久性(Durability) 事务所做的修改就会<strong>永久保存</strong>，不会因为系统意外导致数据的丢失。 </li>
+</ul>
+<h4 id="事务并发带来的的问题"><a href="#事务并发带来的的问题" class="headerlink" title="事务并发带来的的问题"></a>事务并发带来的的问题</h4><ul>
+<li>脏读:<strong>在不同事务下，当前事务可以读到另外事务未提交的数据</strong>。</li>
+</ul>
+<p><img src="https://api2.mubu.com/v3/document_image/1d32ed1d-7caa-4b42-9156-29eba926152b-11197877.jpg" alt="脏读"></p>
+<ul>
+<li>不可重复读：在<strong>一个事务内多次读取同一数据集合</strong>。<strong>在这一事务还未结束前，另一事务也访问了该同一数据集合并做了修改，由于第二个事务的修改，第一次事务的两次读取的数据可能不一致。</strong></li>
+</ul>
+<p><img src="https://api2.mubu.com/v3/document_image/e0c73513-4f11-4041-adfd-d9f751c73566-11197877.jpg" alt="不可重复读"></p>
+<ul>
+<li>幻读:本质上也属于不可重复读的情况，T1读取某个范围的数据，T2在这个范围内插入新的数据，T1再次读取这个范围的数据，此时读取的结果和和第一次读取的结果不同。</li>
+</ul>
+<p><img src="https://api2.mubu.com/v3/document_image/7a4e33c7-588d-4c8e-a48c-ddbe6a23c54f-11197877.jpg" alt="幻读"></p>
+<h4 id="事务的隔离级别"><a href="#事务的隔离级别" class="headerlink" title="事务的隔离级别"></a>事务的隔离级别</h4><ul>
+<li>未提交读：<strong>事务中的修改，即使没有提交，对其它事务也是可见的</strong><ul>
+<li>存在脏读，不能解决并发问题</li>
+</ul>
+</li>
+<li>Read Committed(提交读)：一个事务开始之后，只能看到自己提交的事务所做的修改。<ul>
+<li>解决了脏读问题，没有解决不可重复读(nonrepeatable read) 问题</li>
+</ul>
+</li>
+<li>Repeatable Read (可重复读)：在同一个事务中多次读取同样的数据结果是一样的。<ul>
+<li>解决不可重复读问题，未定义解决幻读的问题</li>
+</ul>
+</li>
+<li>Serializable (串行化)：解决所有问题 最高的隔离级别，通过强制事务的<strong>串行执行</strong> </li>
+</ul>
+<p>查看mysql的设置的事务隔离级别:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> @@tx_isolation; <span class="comment">--默认为REPEATABLE-READ</span></span><br></pre></td></tr></table></figure>
+<p><img src="https://api2.mubu.com/v3/document_image/69afe5ec-ba61-48fe-903e-063c2bf57fcc-11197877.jpg" alt="mysql事务隔离级别"></p>
+<h3 id="数据库锁"><a href="#数据库锁" class="headerlink" title="数据库锁"></a>数据库锁</h3><h4 id="表锁和行锁"><a href="#表锁和行锁" class="headerlink" title="表锁和行锁"></a>表锁和行锁</h4><p>锁用于管理<strong>不同事务对共享资源的并发访问</strong>。</p>
+<p>表锁与行锁的区别: </p>
+<ul>
+<li>锁定粒度:表锁 &gt; 行锁  </li>
+<li>加锁效率:表锁 &gt; 行锁  </li>
+<li>冲突概率:表锁 &gt; 行锁  </li>
+<li>并发性能:表锁 &lt; 行锁  </li>
+</ul>
+<h4 id="InnoDB锁类型"><a href="#InnoDB锁类型" class="headerlink" title="InnoDB锁类型"></a>InnoDB锁类型</h4><p>InnoDB存储引擎支持行锁和表锁(另类的行锁)。</p>
+<ul>
+<li>共享锁(行锁):Shared Locks  <ul>
+<li>又称为<strong>读锁</strong>，简称S锁，顾名思义，共享锁就是<strong>多个事务对于同一数据可以共享一把锁，都能访问到数据，但是只能读不能修改</strong>； </li>
+</ul>
+</li>
+<li>排它锁(行锁):Exclusive Locks  <ul>
+<li>又称为<strong>写锁</strong>，简称X锁，<strong>排他锁不能与其他锁并存，如一个事务获取了一个数据行的排他锁，其他事务就不能再获取该行的锁</strong>(共享锁、排他锁)，只有该获取了排他锁的事务是可以对数据行进行读取和修改，(<strong>其他事务要读取数据可来自于快照</strong>)。  </li>
+</ul>
+</li>
+<li>意向锁共享锁(表锁):Intention Shared Locks  </li>
+<li>意向锁排它锁(表锁):Intention Exclusive Locks  </li>
+<li>自增锁:AUTO-INC Locks</li>
+</ul>
+<h5 id="表锁操作"><a href="#表锁操作" class="headerlink" title="表锁操作"></a>表锁操作</h5><p>共享锁加锁释放锁语法:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> <span class="keyword">users</span> <span class="keyword">WHERE</span> <span class="keyword">id</span>=<span class="number">1</span> <span class="keyword">LOCK</span> <span class="keyword">IN</span> <span class="keyword">SHARE</span> <span class="keyword">MODE</span>;   </span><br><span class="line"><span class="keyword">commit</span>/<span class="keyword">rollback</span></span><br></pre></td></tr></table></figure>
+<p>排它锁加锁释锁方式:  </p>
+ <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">delete</span> / <span class="keyword">update</span> / <span class="keyword">insert</span> 默认加上X锁  </span><br><span class="line"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> table_name <span class="keyword">WHERE</span> ... <span class="keyword">FOR</span> <span class="keyword">UPDATE</span>  </span><br><span class="line"><span class="keyword">commit</span>/<span class="keyword">rollback</span></span><br></pre></td></tr></table></figure>
+<p>行锁的算法：</p>
+<ul>
+<li>记录锁 Record Locks  </li>
+<li>间隙锁 Gap Locks  </li>
+<li>临键锁 Next-key Locks</li>
+</ul>
+<h5 id="行锁"><a href="#行锁" class="headerlink" title="行锁"></a>行锁</h5><ul>
+<li>InnoDB的行锁是通过<strong>给索引上的索引项加锁</strong>来实现的。   </li>
+<li><strong>只有通过索引条件进行数据检索，InnoDB才使用行级锁，</strong>否则，InnoDB 将使用表锁(锁住索引的所有记录)</li>
+<li><p><strong>使用二级索引(辅助索引)去更新数据，会把二级索引和聚集索引都上锁</strong>。  </p>
+</li>
+<li><p>意向共享锁(IS)  ：表示事务<strong>准备</strong>给数据行加入共享锁，即<strong>一个数据行加共享锁前必须先取得该表的IS锁，意向共享锁之间是可以相互兼容的。</strong>  </p>
+</li>
+<li>意向排它锁(IX)  ：表示事务准备给数据行加入排他锁，即一个数据行加排他锁前必须先取得该表的IX锁，意向排它锁之间是可以相互兼容的。</li>
+</ul>
+<p>意向锁(IS、IX)是InnoDB数据操作之前<strong>自动加</strong>的，<strong>不需要用户干预</strong>。  </p>
+<p>意义：当事务想去进行锁表时，可以先判断意向锁是否存在，存在时则可快速返回该表不能启用表锁。 </p>
+<h5 id="自增锁-AUTO-INC-Locks"><a href="#自增锁-AUTO-INC-Locks" class="headerlink" title="自增锁:AUTO-INC Locks"></a>自增锁:AUTO-INC Locks</h5><ul>
+<li>针对<strong>自增列自增长</strong>的一个特殊的<strong>表级</strong>别锁  </li>
+<li><code>show variables like &#39;innodb_autoinc_lock_mode&#39;;</code></li>
+<li><strong>默认取值1，代表连续，事务未提交ID永久丢失</strong></li>
+</ul>
+<h5 id="临键锁Next-key-locks"><a href="#临键锁Next-key-locks" class="headerlink" title="临键锁Next-key locks"></a>临键锁Next-key locks</h5><p><img src="https://api2.mubu.com/v3/document_image/efa963f1-d97a-41c2-9151-53d963a0b882-11197877.jpg" alt="临键锁"></p>
+<ul>
+<li>锁住记录+区间(左开右闭)  </li>
+<li><strong>当sql执行按照索引进行数据的检索时,查询条件为范围查找(between and、&lt;、&gt;等)并有数据命中则此时SQL语句加上的锁为Next-key locks，锁住索引的记录+区间(左开右闭)</strong> </li>
+</ul>
+<h5 id="间隙锁Gap-locks"><a href="#间隙锁Gap-locks" class="headerlink" title="间隙锁Gap locks"></a>间隙锁Gap locks</h5><p><img src="https://api2.mubu.com/v3/document_image/7a70a939-fb7c-4389-8bb2-ec5fb753a9d1-11197877.jpg" alt="间隙锁"></p>
+<ul>
+<li><strong>锁住数据不存在的区间</strong>(左开右开)  </li>
+<li>当sql执行按照索引进行数据的检索时，<strong>查询条件的数据不存在，这时SQL语句加上的锁即为 Gap locks，锁住索引不存在的区间(左开右开)</strong>  </li>
+</ul>
+<h5 id="记录锁Record-locks"><a href="#记录锁Record-locks" class="headerlink" title="记录锁Record locks"></a>记录锁Record locks</h5><p><img src="https://api2.mubu.com/v3/document_image/bed5f5dc-376c-44a6-9022-d45a8da2b91c-11197877.jpg" alt="记录锁"></p>
+<ul>
+<li>锁住<strong>具体的索引项</strong>  </li>
+<li>当sql执行<strong>按照唯一性(Primary key、Unique key)索引进行数据的检索</strong>时，查询条件等值匹 配且查询的数据存在，这时SQL语句加上的锁即为记录锁Record locks，<strong>锁住具体的索引项</strong>  </li>
+</ul>
+<h4 id="利用锁解决并发问题"><a href="#利用锁解决并发问题" class="headerlink" title="利用锁解决并发问题"></a>利用锁解决并发问题</h4><p>解决脏读 :</p>
+<p><img src="https://api2.mubu.com/v3/document_image/e2cf51fb-3076-418d-a9dd-5316ed372267-11197877.jpg" alt="解决脏读"></p>
+<p>解决不可重复读  :</p>
+<p><img src="https://api2.mubu.com/v3/document_image/632f11ea-acd7-4adc-b2d3-819bb46c924c-11197877.jpg" alt="解决不可重复读"></p>
+<p>解决幻读:</p>
+<p><img src="https://api2.mubu.com/v3/document_image/cf157ef6-11cd-4f0c-befe-00c8ac992a70-11197877.jpg" alt="解决幻读"></p>
+<h4 id="死锁"><a href="#死锁" class="headerlink" title="死锁"></a>死锁</h4><ul>
+<li>多个并发事务(2个或者以上);  </li>
+<li>每个事务都持有锁(或者是已经在等待锁);  </li>
+<li>每个事务都需要再继续持有锁;  </li>
+<li><strong>事务之间产生加锁的循环等待，形成死锁</strong>。</li>
+</ul>
+<h4 id="死锁的避免"><a href="#死锁的避免" class="headerlink" title="死锁的避免"></a>死锁的避免</h4><ul>
+<li>类似的业务逻辑以<strong>固定的顺序访问表和行</strong>。  </li>
+<li>大事务拆小。大事务更倾向于死锁，如果业务允许，<strong>将大事务拆小</strong>。  </li>
+<li>在<strong>同一个事务中，尽可能做到一次锁定所需要的所有资源，减少死锁概率。</strong>  </li>
+<li><strong>降低隔离级别</strong>，如果业务允许，将隔离级别调低也是较好的选择  </li>
+<li>为表添加<strong>合理的索引</strong>。可以看到<strong>如果不走索引将会为表的每一行记录添 加上锁(或者说是表锁)</strong>  </li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/14/mysql-3mysql%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90-%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E5%8F%8A%E8%BF%90%E8%A1%8C%E6%9C%BA%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/12/14/mysql-3mysql%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90-%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E5%8F%8A%E8%BF%90%E8%A1%8C%E6%9C%BA%E7%90%86/" class="post-title-link" itemprop="url">mysql性能分析-体系结构及运行机理</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-12-14 09:38:25" itemprop="dateCreated datePublished" datetime="2020-12-14T09:38:25+08:00">2020-12-14</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-17 21:23:07" itemprop="dateModified" datetime="2021-03-17T21:23:07+08:00">2021-03-17</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mysql/" itemprop="url" rel="index">
+                    <span itemprop="name">mysql</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="Mysql体系结构"><a href="#Mysql体系结构" class="headerlink" title="Mysql体系结构"></a>Mysql体系结构</h3><p><img src="https://api2.mubu.com/v3/document_image/a1619f89-f86a-4530-ab7c-6db518222e98-11197877.jpg" alt="mysql体系结构"></p>
+<ul>
+<li><p>Client Connectors  </p>
+<ul>
+<li>接入方 支持协议很多  </li>
+<li>Management Serveices &amp; Utilities 系统管理和控制工具，mysql dump、 mysql复制集群、分区管理等  </li>
+</ul>
+</li>
+<li><p>Connection Pool  </p>
+<ul>
+<li>连接池:管理缓冲用户连接、用户名、<strong>密码、权限校验</strong>、线程处理等需要缓存的需求  </li>
+</ul>
+</li>
+<li><p>SQL Interface  </p>
+<ul>
+<li>SQL接口:接受用户的SQL命令，并且返回用户需要查询的结果  </li>
+</ul>
+</li>
+<li><p>Parser  </p>
+<ul>
+<li>解析器，SQL命令传递到解析器的时候会被<strong>解析器验证和解析</strong>。解析器是由Lex和YACC实现的  </li>
+</ul>
+</li>
+<li><p>Optimizer  </p>
+<ul>
+<li>查询优化器，<strong>SQL语句在查询之前会使用查询优化器对查询进行优化</strong>  </li>
+</ul>
+</li>
+<li><p>Cache和Buffer(高速缓存区)  </p>
+<ul>
+<li>查询缓存，如果<strong>查询缓存有命中的查询结果，查询语句就可以直接去查询缓存中取数据</strong>  </li>
+</ul>
+</li>
+<li><p>pluggable storage Engines </p>
+<ul>
+<li>插件式存储引擎。<strong>存储引擎是MySql中具体的与文件打交道的子系统</strong>  </li>
+</ul>
+</li>
+<li><p>file system  </p>
+<ul>
+<li>文件系统，数据、日志(redo，undo)、索引、错误日志、查询记录、慢查询等</li>
+</ul>
+</li>
+</ul>
+<h3 id="Mysql查询优化"><a href="#Mysql查询优化" class="headerlink" title="Mysql查询优化"></a>Mysql查询优化</h3><p><img src="https://api2.mubu.com/v3/document_image/38b5c5c9-ec61-4671-80ff-2eb68bbd83f1-11197877.jpg" alt="查询过程"></p>
+<h4 id="client-server通信"><a href="#client-server通信" class="headerlink" title="client/server通信"></a>client/server通信</h4><p>Mysql客户端与服务端的通信方式是<strong>“半双工”;</strong>  </p>
+<ul>
+<li>全双工:双向通信，发送同时也可以接收(tcp握手过程)  </li>
+<li>半双工:<strong>双向通信，同时只能接收或者是发送，无法同时做操作</strong>  <ul>
+<li>半双工通信: 在任何一个时刻，要么是有服务器向客户端发送数据，要么是客户端向服务端发送数据，这<strong>两个动作不能同时发生</strong>。所以我们无法也无需将一个消息切成小块进行传输。  </li>
+<li>特点和限制: 客户端一旦开始发送消息，另一端要接收完整个消息才能响应。  </li>
+<li>客户端一旦开始接收数据没法停下来发送指令。  </li>
+</ul>
+</li>
+<li>单工:只能单一方向传送  </li>
+</ul>
+<h4 id="查询状态"><a href="#查询状态" class="headerlink" title="查询状态"></a>查询状态</h4><p>对于一个mysql连接，或者说一个线程，时刻都有一个状态来标识这个连接正在做什么。</p>
+<p>查看命令 <code>show full processlist / show processlist</code>  </p>
+<p><img src="https://api2.mubu.com/v3/document_image/4e83270b-5e57-4839-8470-5e4141670dfc-11197877.jpg" alt="查询参数"></p>
+<ul>
+<li>Sleep:线程正在等待客户端发送数据  </li>
+<li>Query:连接线程正在执行查询</li>
+<li>Locked:线程正在等待表锁的释放  </li>
+<li>Sorting result:线程正在对结果进行排序  </li>
+<li>Sending data:向请求端返回数据</li>
+</ul>
+<p>可通过<code>kill {id}</code>的方式进行连接的杀掉 </p>
+<h4 id="查询缓存"><a href="#查询缓存" class="headerlink" title="查询缓存"></a>查询缓存</h4><ul>
+<li>工作原理:<ul>
+<li>缓存SELECT操作的结果集和SQL语句</li>
+<li>新的SELECT语句，先去查询缓存，判断是否存在可用的记录集</li>
+</ul>
+</li>
+<li>判断标准: <ul>
+<li>与缓存的SQL语句，<strong>是否完全一样</strong>，区分大小写(简单认为存储了一个key-value结构，<strong>key为sql，value为sql查询结果集</strong>)。</li>
+</ul>
+</li>
+<li>几个关键字<ul>
+<li>query_cache_type<ul>
+<li>值:0 -– <strong>不启用</strong>查询缓存，<strong>默认值</strong></li>
+<li>值:1 -– 启用查询缓存，<strong>只要符合查询缓存的要求，客户端的查询语句和记录集都可以缓存起来，供其他客户端使用，加上SQL_NO_CACHE将不缓存</strong></li>
+<li>值:2 -– 启用查询缓存，只要<strong>查询语句中添加了参数:SQL_CACHE，且符合查询缓存的要求</strong>，客户端的查询语句和记录集，则可以缓存起来，供其他客户端使用</li>
+</ul>
+</li>
+<li>query_cache_size  <ul>
+<li>允许设置query_cache_size的值最小为40K，默认1M，推荐设置为:64M/128M</li>
+</ul>
+</li>
+<li>query_cache_limit <ul>
+<li>限制查询缓存区最大能缓存的查询记录集，默认设置为1M </li>
+<li><code>show status like &#39;Qcache%&#39;</code>命令可查看缓存情况。  </li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>不会缓存的情况</p>
+<ul>
+<li>当查询语句中有一些不确定的数据时，则不会被缓存。如包含函数NOW()，CURRENT_DATE()等类似的函数，或者用户自定义的函数，存储函数，用户变量等都不会被缓存。</li>
+<li>当查询的结果大于query_cache_limit设置的值时，结果不会被缓存。</li>
+<li>对于InnoDB引擎来说，<strong>当一个语句在事务中修改了某个表，那么在这个事务提交之前，所有与这个表相关的查询都无法被缓存。因此长时间执行事务，会大大降低缓存命中率。</strong>  </li>
+<li>查询的表是系统表  </li>
+<li>查询语句不涉及到表</li>
+</ul>
+</li>
+<li><p>为什么mysql默认关闭了缓存开启  </p>
+<ul>
+<li>在查询之前必须<strong>先检查是否命中缓存,浪费计算资源。</strong></li>
+<li>如果这个查询可以被缓存，那么执行完成后，MySQL发现查询缓存中没有这个查询，则会将结果存入查询缓存，这会带来额外的系统消耗。</li>
+<li>针对表进行<strong>写入或更新数据时，将对应表的所有缓存都设置失效。</strong> </li>
+<li>如果<strong>查询缓存很大或者碎片很多</strong>时，这个操作可能带来很大的系统消耗。</li>
+</ul>
+</li>
+<li><p>缓存适用业务场景</p>
+<ul>
+<li>以<strong>读为主的业务</strong>，数据生成之后就不常改变的业务</li>
+<li>比如门户类、新闻类、报表类、论坛类等  </li>
+</ul>
+</li>
+</ul>
+<h4 id="查询优化处理"><a href="#查询优化处理" class="headerlink" title="查询优化处理"></a>查询优化处理</h4><p>查询优化处理的三个阶段:  </p>
+<ul>
+<li>解析:解析sql通过lex<strong>词法分析</strong>，yacc语法分析将sql语句解析成<strong>解析树</strong>。</li>
+<li>预处理阶段：根据mysql的语法的规则<strong>进一步检查解析树的合法性</strong>，如：<strong>检查数据的表和列是否存在，解析名字和别名的设置，还会进行权限的验证</strong>。</li>
+<li>查询优化器 ：优化器的主要作用就是<strong>找到最优的执行计划</strong>。</li>
+</ul>
+<p>查询优化器如何找到最优执行计划：</p>
+<ul>
+<li>使用等价变化规则  <ul>
+<li>数据表的关联并不总是按照查询语句的顺序进行。 </li>
+<li>5=5 and a&gt;5 改写成 a&gt;5  ，a<b and a=5 改写成 b>5 and a=5  </li>
+</ul>
+</li>
+<li>将外连接转化为内连接 <ul>
+<li>并不是所有的OUTER JOIN都必须以外链接的方式进行。  </li>
+</ul>
+</li>
+<li>优化count 、min、max等函数<ul>
+<li>min函数只需找索引<strong>最左边</strong></li>
+<li>max函数只需找索引最右边 </li>
+<li>myisam引擎count(*)  </li>
+</ul>
+</li>
+<li>覆盖索引扫描  </li>
+<li>子查询优化</li>
+<li>提前终止查询  <ul>
+<li>用了<strong>limit关键字</strong>或者使用<strong>不存在的条件</strong></li>
+</ul>
+</li>
+<li>IN的优化<ul>
+<li>先进行<strong>排序</strong>，再采用<strong>二分查找</strong>的方式</li>
+</ul>
+</li>
+</ul>
+<p>Mysql的查询优化器基于<strong>成本计算</strong>的原则，会尝试各种执行计划，<strong>以数据抽样的方式进行试验(随机的读取一个4K的数据块进行分析)。</strong>可用explain来进行分析。</p>
+<h4 id="查询执行引擎"><a href="#查询执行引擎" class="headerlink" title="查询执行引擎"></a>查询执行引擎</h4><p>调用插件式的存储引擎的原子API的功能进行执行计划的执行。 </p>
+<h4 id="返回客户端"><a href="#返回客户端" class="headerlink" title="返回客户端"></a>返回客户端</h4><ul>
+<li>有需要做缓存的，执行缓存操作。  </li>
+<li>增量的返回结果：<strong>开始生成第一条结果时，mysql就开始往请求方逐步返回数据</strong>。  <ul>
+<li>好处: mysql服务器无须保存过多的数据，浪费内存；用户体验好，马上就拿到了数据。 </li>
+</ul>
+</li>
+</ul>
+<h4 id="慢SQL"><a href="#慢SQL" class="headerlink" title="慢SQL"></a>慢SQL</h4><p>定位慢SQL:</p>
+<ul>
+<li>业务驱动  </li>
+<li>测试驱动  </li>
+<li>慢查询日志  </li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">show variables like 'slow_query_log';</span><br><span class="line">set global slow_query_log = on;</span><br><span class="line">set global slow_query_log_file = '/var/lib/mysql/test-slow.log';   </span><br><span class="line">set global log_queries_not_using_indexes = on;</span><br><span class="line">set global long_query_time = 0.1;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>慢查询日志分析</li>
+</ul>
+<p><img src="https://api2.mubu.com/v3/document_image/b4851df7-e19f-44fa-8b14-87d44517f53e-11197877.jpg" alt="慢查询日志分析"></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Time :日志记录的时间  </span><br><span class="line">User@Host:执行的用户及主机  </span><br><span class="line">Query_time:查询耗费时间  </span><br><span class="line">Lock_time 锁表时间  </span><br><span class="line">Rows_sent 发送给请求方的记录条数  </span><br><span class="line">Rows_examined 语句扫描的记录条数  </span><br><span class="line"><span class="keyword">SET</span> <span class="built_in">timestamp</span> 语句执行的时间点  </span><br><span class="line"><span class="keyword">select</span> .... 执行的具体语句</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysqldumpslow -t 10 -s at /var/lib/mysql/test-slow.log</span><br></pre></td></tr></table></figure>
+<p><img src="https://api2.mubu.com/v3/document_image/e937e8cb-5a7b-4587-89ba-fba600203b88-11197877.jpg" alt="慢查询工具"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/12/12/mysql-2mysql%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -671,6 +1346,159 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/10/tcp-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/06/10/tcp-2/" class="post-title-link" itemprop="url">TCP可靠传输</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-06-10 19:29:16" itemprop="dateCreated datePublished" datetime="2020-06-10T19:29:16+08:00">2020-06-10</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-05-13 09:48:31" itemprop="dateModified" datetime="2021-05-13T09:48:31+08:00">2021-05-13</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index">
+                    <span itemprop="name">网络</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="TCP可靠传输保障"><a href="#TCP可靠传输保障" class="headerlink" title="TCP可靠传输保障"></a>TCP可靠传输保障</h3><p>TCP 通过序列号、确认应答、重发控制、连接管理以及窗口控制等机制实现可靠性传输。</p>
+<h3 id="重传机制"><a href="#重传机制" class="headerlink" title="重传机制"></a>重传机制</h3><p>在 TCP 中，当发送端的数据到达接收主机时，接收端主机会返回一个确认应答消息，表示已收到消息。但在错综复杂的网络，并不一定能顺利、正常的传输数据，万一数据在传输过程中丢失(也即出现TCP数据包丢失)，此时可用<strong>重传机制</strong>解决：</p>
+<ul>
+<li>超时重传</li>
+<li>快速重传</li>
+<li>SACK</li>
+<li>D-SACK</li>
+</ul>
+<h4 id="超时重传"><a href="#超时重传" class="headerlink" title="超时重传"></a>超时重传</h4><p>重传机制的其中一个方式，就是在发送数据时，设定一个<strong>定时器</strong>，当<strong>超过指定的时间后，没有收到对方的 <code>ACK</code> 确认应答报文，就会重发该数据</strong>，也就是我们常说的<strong>超时重传</strong>。</p>
+<p>TCP 会在以下两种情况发生超时重传：</p>
+<ul>
+<li>数据包丢失</li>
+<li>确认应答丢失</li>
+</ul>
+<h5 id="超时时间的设置"><a href="#超时时间的设置" class="headerlink" title="超时时间的设置"></a>超时时间的设置</h5><p>RTT：<strong>数据从网络一端传送到另一端所需的时间</strong>，也就是包的<strong>往返</strong>时间。超时重传时间以 <code>RTO</code> （Retransmission Timeout 超时重传时间）表示。</p>
+<p>两种超时时间不同的情况：</p>
+<ul>
+<li>当超时时间 <strong>RTO 较大</strong>时，网络的空隙时间增大，重发就慢，丢了很长时间才重发，没有效率，性能差；</li>
+<li>当超时时间 <strong>RTO 较小</strong>时，会导致可能并没有丢就重发从而造成不必要的重传，虽然重发的快，但会增加网络拥塞，导致更多的超时，更多的超时导致更多的重发。</li>
+</ul>
+<p><strong>超时重传时间 RTO 的值应该略大于报文往返  RTT 的值</strong>。但报文往返 RTT 的值是经常变化的，因为网络也是时常变化的。也就因为报文往返 RTT 的值 是经常波动变化的，所以超时重传时间 RTO 的值应该是一个<strong>动态变化的值</strong>。</p>
+<h5 id="linux下RTO的计算"><a href="#linux下RTO的计算" class="headerlink" title="linux下RTO的计算"></a>linux下RTO的计算</h5><p>估计往返时间，通常需要采样以下两个：</p>
+<ul>
+<li>需要 TCP 通过采样 RTT 的时间，然后进行加权平均，算出一个<strong>平滑 RTT 的值</strong>，而且这个值还是要不断变化的，因为网络状况不断地变化。</li>
+<li>除了采样 RTT，还要采样 <strong>RTT 的波动范围</strong>，这样就避免如果 RTT 有一个大的波动的话，很难被发现的情况。</li>
+</ul>
+<p>如果超时重发的数据，再次超时又需要重传的时候，TCP 的策略是<strong>超时间隔加倍。</strong>也就是<strong>每当遇到一次超时重传的时候，都会将下一次超时时间间隔设为先前值的两倍。两次超时，就说明网络环境差，不宜频繁反复发送。</strong></p>
+<h4 id="快速重传"><a href="#快速重传" class="headerlink" title="快速重传"></a>快速重传</h4><p>超时触发重传存在的问题是，超时周期可能相对较长。TCP 还有另外一种<strong>快速重传（Fast Retransmit）机制</strong>，它<strong>不以时间为驱动，而是以数据驱动重传</strong>。</p>
+<p><img src="https://api2.mubu.com/v3/document_image/2ef91143-7ab8-4f5d-9985-d36c801b433b-11197877.jpg" alt="快速重传"></p>
+<p>在上图，发送方发出了 1，2，3，4，5 份数据：</p>
+<ul>
+<li>第一份 Seq1 先送到了，于是就 Ack 回 2；</li>
+<li>结果 Seq2 因为某些原因没收到，Seq3 到达了，于是还是 Ack 回 2；</li>
+<li>后面的 Seq4 和 Seq5 都到了，但还是 Ack 回 2，因为 Seq2 还是没有收到；</li>
+<li><strong>发送端收到了三个 Ack = 2 的确认，知道了 Seq2 还没有收到，就会在定时器过期之前，重传丢失的 Seq2。</strong></li>
+<li>最后，接收到收到了 Seq2，此时因为 Seq3，Seq4，Seq5 都收到了，于是 Ack 回 6 。</li>
+</ul>
+<p>所以，<strong>快速重传的工作方式是当收到三个相同的 ACK 报文时，会在定时器过期之前，重传丢失的报文段。</strong></p>
+<p>快速重传机制只解决了一个问题，就是超时时间的问题，但是它依然面临着另外一个问题。就是<strong>重传的时候，是重传之前的一个，还是重传所有的问题。</strong></p>
+<p>比如对于上面的例子，是重传 Seq2 呢？还是重传 Seq2、Seq3、Seq4、Seq5 呢？因为发送端并不清楚这连续的三个 Ack 2 是谁传回来的。</p>
+<p>根据 TCP 不同的实现，以上两种情况都是有可能的。可见，这是一把双刃剑。</p>
+<h4 id="SACK方法"><a href="#SACK方法" class="headerlink" title="SACK方法"></a>SACK方法</h4><p>为了解决不知道该重传哪些 TCP 报文，于是就有 <code>SACK Selective Acknowledgment 选择性确认）</code> 方法。</p>
+<p>这种方式需要在 TCP 头部选项字段里加一个 <code>SACK</code> 的东西，它<strong>可以将缓存的数据区间发送给发送方</strong>，这样发送方就可以知道哪些数据收到了，哪些数据没收到，知道了这些信息，就可以<strong>只重传丢失的数据</strong>。</p>
+<p>如下图，发送方收到了三次同样的 ACK 确认报文，于是就会触发快速重发机制，通过 <code>SACK</code> 信息发现只有 <code>200~299</code> 这段数据丢失，则重发时，就只选择了这个 TCP 段进行重复。</p>
+<p><img src="https://api2.mubu.com/v3/document_image/9449c55b-c8fb-45bf-95c7-3b1d35ae3ca3-11197877.jpg" alt="选择性确认"></p>
+<p>如果要支持 <code>SACK</code>，必须双方都要支持。在 Linux 下，可以通过 <code>net.ipv4.tcp_sack</code> 参数打开这个功能（Linux 2.4 后默认打开）。</p>
+<h4 id="Duplicate-SACK"><a href="#Duplicate-SACK" class="headerlink" title="Duplicate SACK"></a>Duplicate SACK</h4><p>Duplicate SACK 又称 <code>D-SACK</code>，其主要<strong>使用了 SACK 来告诉发送方有哪些数据被重复接收了。</strong>下面举例两个例子，来说明 <code>D-SACK</code> 的作用。</p>
+<p>例子1： ACK丢包</p>
+<p><img src="https://api2.mubu.com/v3/document_image/e0401e31-c9ae-428a-aa62-02cf22da70ab-11197877.jpg" alt=" ACK丢包"></p>
+<ul>
+<li>接收方发给发送方的两个 ACK 确认应答都丢失了，所以发送方超时后，重传第一个数据包（3000 ~ 3499）</li>
+<li><strong>于是接收方发现数据是重复收到的，于是回了一个 SACK = 3000~3500</strong>，告诉发送方3000~3500 的数据早已被接收了，因为 ACK 都到了 4000 了，已经意味着 4000 之前的所有数据都已收到，所以这个 SACK 就代表着 <code>D-SACK</code>。</li>
+<li>这样发送方就知道了，数据没有丢，是接收方的 ACK 确认报文丢了。</li>
+</ul>
+<p>例子二：网络延时</p>
+<p><img src="https://api2.mubu.com/v3/document_image/db55cd10-03f8-4ba1-b9db-54eb8f2e07fd-11197877.jpg" alt="网络延时"></p>
+<ul>
+<li>数据包（1000~1499） 被网络延迟，导致发送方没有收到 Ack 1500 的确认报文。</li>
+<li>而后面报文到达的三个相同的 ACK 确认报文，就触发了快速重传机制，但是在重传后，被延迟的数据包（1000~1499）又到了接收方；</li>
+<li><strong>所以接收方回了一个 SACK=1000~1500，因为 ACK 已经到了 3000，所以这个 SACK 是 D-SACK，表示收到了重复的包。</strong></li>
+<li>这样发送方就知道快速重传触发的原因不是发出去的包丢了，也不是因为回应的 ACK 包丢了，而是因为网络延迟了。</li>
+</ul>
+<p>可见，<code>D-SACK</code> 有这么几个好处：</p>
+<ol>
+<li><strong>可以让发送方知道，是发出去的包丢了，还是接收方回应的 ACK 包丢了;</strong></li>
+<li><strong>可以知道是不是发送方的数据包被网络延迟了;</strong></li>
+<li><strong>可以知道网络中是不是把发送方的数据包给复制了;</strong></li>
+</ol>
+<p>在 Linux 下可以通过 <code>net.ipv4.tcp_dsack</code> 参数开启/关闭这个功能（Linux 2.4 后默认打开）。</p>
+<h3 id="滑动窗口"><a href="#滑动窗口" class="headerlink" title="滑动窗口"></a>滑动窗口</h3><p>TCP 是<strong>每发送一个数据，都要进行一次确认应答。当上一个数据包收到了应答了， 再发送下一个。</strong>但这样的传输方式有一个缺点：数据包的<strong>往返时间越长，通信的效率就越低</strong>。</p>
+<p>为解决这个问题，TCP 引入了<strong>窗口</strong>这个概念。<strong>即使在往返时间较长的情况下，它也不会降低网络通信的效率。</strong>有了窗口，就可以指定窗口大小，窗口大小就是指<strong>无需等待确认应答，而可以继续发送数据的最大值</strong>。</p>
+<p>窗口的实现实际上是操作系统开辟的一个<strong>缓存空间</strong>，<strong>发送方主机在等到确认应答返回之前，必须在缓冲区中保留已发送的数据。如果按期收到确认应答，此时数据就可以从缓存区清除。</strong></p>
+<p><strong>假设窗口大小为 <code>3</code> 个 TCP 段，那么发送方就可以连续发送 <code>3</code> 个 TCP 段，并且中途若有 ACK 丢失，可以通过下一个确认应答进行确认</strong>。如下图：</p>
+<p><img src="https://api2.mubu.com/v3/document_image/b1fb9943-9efc-4297-927b-894047c329ac-11197877.jpg" alt="滑动窗口方式并行处理"></p>
+<p>图中的 ACK 600 确认应答报文丢失，也没关系，因为<strong>可以通话下一个确认应答进行确认，只要发送方收到了 ACK 700 确认应答，就意味着 700 之前的所有数据接收方都收到了</strong>。这个模式就叫<strong>累计确认</strong>或者<strong>累计应答</strong>。</p>
+<h4 id="窗口大小的决定方"><a href="#窗口大小的决定方" class="headerlink" title="窗口大小的决定方"></a>窗口大小的决定方</h4><p>TCP 头里有一个字段叫 <code>Window</code>，也就是窗口大小。<strong>这个字段是接收端告诉发送端自己还有多少缓冲区可以接收数据。于是发送端就可以根据这个接收端的处理能力来发送数据，而不会导致接收端处理不过来。</strong></p>
+<p>所以，<strong>通常窗口的大小是由接收方的决定的</strong>。发送方发送的数据大小不能超过接收方的窗口大小，否则接收方就无法正常接收到数据。</p>
+<h4 id="发送方的滑动窗口"><a href="#发送方的滑动窗口" class="headerlink" title="发送方的滑动窗口"></a>发送方的滑动窗口</h4><h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a href="https://mp.weixin.qq.com/s/Tc09ovdNacOtnMOMeRc_uA" target="_blank" rel="noopener">https://mp.weixin.qq.com/s/Tc09ovdNacOtnMOMeRc_uA</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/09/Go_%E6%8E%A5%E5%8F%A3_8%E7%BC%96%E8%AF%91%E5%99%A8%E8%87%AA%E5%8A%A8%E6%A3%80%E6%B5%8B%E7%B1%BB%E5%9E%8B%E6%98%AF%E5%90%A6%E5%AE%9E%E7%8E%B0%E6%8E%A5%E5%8F%A3/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -892,791 +1720,11 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/07/Go%20%E6%8E%A5%E5%8F%A3_6%E6%8E%A5%E5%8F%A3%E8%BD%AC%E6%8D%A2%E7%9A%84%E5%8E%9F%E7%90%86/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/06/07/Go%20%E6%8E%A5%E5%8F%A3_6%E6%8E%A5%E5%8F%A3%E8%BD%AC%E6%8D%A2%E7%9A%84%E5%8E%9F%E7%90%86/" class="post-title-link" itemprop="url">Go 接口转换原理</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-06-07 22:29:16" itemprop="dateCreated datePublished" datetime="2020-06-07T22:29:16+08:00">2020-06-07</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-04-08 10:59:32" itemprop="dateModified" datetime="2021-04-08T10:59:32+08:00">2021-04-08</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Go/" itemprop="url" rel="index">
-                    <span itemprop="name">Go</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="Go-接口转换原理"><a href="#Go-接口转换原理" class="headerlink" title="Go 接口转换原理"></a>Go 接口转换原理</h3><p>通过前面提到的 <code>iface</code> 的源码可以看到，实际上它包含接口的类型 <code>*interface type</code> 和 实体类型的类型 <code>*_type</code>，这两者都是 <code>iface</code> 的字段 <code>*itab</code> 的成员。也就是说<strong>生成一个 <code>itab</code> 同时需要接口的类型和实体的类型。</strong></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;interface 类型， 实体类型&gt; -&gt;itable</span><br></pre></td></tr></table></figure>
-<p><strong>当判定一种类型是否满足某个接口时，Go 使用类型的方法集和接口所需要的方法集进行匹配，如果类型的方法集完全包含接口的方法集，则可认为该类型实现了该接口。</strong></p>
-<p>例如某类型有 <code>m</code> 个方法，某接口有 <code>n</code> 个方法，则很容易知道这种判定的时间复杂度为 <code>O(mn)</code>，<strong>Go 会对方法集的函数按照函数名的字典序进行排序，所以实际的时间复杂度为 <code>O(m+n)</code>。</strong></p>
-<p>探索将一个接口转换给另外一个接口背后的原理，当然<strong>，能转换的原因必然是类型兼容</strong>。</p>
-<p>直接来看一个例子：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> coder <span class="keyword">interface</span> &#123;</span><br><span class="line">	code()</span><br><span class="line">	run()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> runner <span class="keyword">interface</span> &#123;</span><br><span class="line">	run()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Gopher <span class="keyword">struct</span> &#123;</span><br><span class="line">	language <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(g Gopher)</span> <span class="title">code</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(g Gopher)</span> <span class="title">run</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> c coder = Gopher&#123;&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">var</span> r runner</span><br><span class="line">	r = c</span><br><span class="line">	fmt.Println(c, r)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>简单解释上述代码：定义了两个 <code>interface</code>: <code>coder</code> 和 <code>runner</code>。定义了一个实体类型 <code>Gopher</code>，类型 <code>Gopher</code> 实现了两个方法，分别是 <code>run()</code> 和 <code>code()</code>。<strong>main 函数里定义了一个接口变量 <code>c</code>，绑定了一个 <code>Gopher</code> 对象，之后将 <code>c</code> 赋值给另外一个接口变量 <code>r</code> 。赋值成功的原因是 <code>c</code> 中包含 <code>run()</code> 方法。这样，两个接口变量完成了转换。</strong></p>
-<p>执行命令：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">go tool compile -S ./src/main.go</span><br></pre></td></tr></table></figure>
-<p>得到 main 函数的汇编命令，可以看到： <strong><code>r = c</code> 这一行语句实际上是调用了 <code>runtime.convI2I(SB)</code>，也就是 <code>convI2I</code> 函数，从函数名来看，就是将一个 <code>interface</code> 转换成另外一个 <code>interface</code>，</strong>看下它的源代码：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">convI2I</span><span class="params">(inter *interfacetype, i iface)</span> <span class="params">(r iface)</span></span> &#123;</span><br><span class="line">	tab := i.tab</span><br><span class="line">	<span class="keyword">if</span> tab == <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> tab.inter == inter &#123;</span><br><span class="line">		r.tab = tab</span><br><span class="line">		r.data = i.data</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">	r.tab = getitab(inter, tab._type, <span class="literal">false</span>)</span><br><span class="line">	r.data = i.data</span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>代码比较简单，函数参数 <code>inter</code> 表示接口类型，<code>i</code> 表示绑定了实体类型的接口，<code>r</code> 则表示接口转换了之后的新的 <code>iface</code>。通过前面的分析，我们又知道， <code>iface</code> 是由 <code>tab</code> 和 <code>data</code> 两个字段组成。所以，<strong>实际上 <code>convI2I</code> 函数真正要做的事，找到新 <code>interface</code> 的 <code>tab</code> 和 <code>data</code>，就大功告成了。</strong></p>
-<h4 id="convI2I函数查找tab和data"><a href="#convI2I函数查找tab和data" class="headerlink" title="convI2I函数查找tab和data"></a>convI2I函数查找tab和data</h4><p><strong><code>tab</code> 包括接口类型 <code>interfacetype</code> 和 实体类型 <code>_type</code></strong>。所以最关键的语句是 <code>r.tab = getitab(inter, tab._type, false)</code>。</p>
-<p>因此，重点来看下 <code>getitab</code> 函数的源码，只看关键的地方：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">getitab</span><span class="params">(inter *interfacetype, typ *_type, canfail <span class="keyword">bool</span>)</span> *<span class="title">itab</span></span> &#123;</span><br><span class="line">	<span class="comment">// ……</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 根据 inter, typ 计算出 hash 值</span></span><br><span class="line">	h := itabhash(inter, typ)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// look twice - once without lock, once with.</span></span><br><span class="line">	<span class="comment">// common case will be no lock contention.</span></span><br><span class="line">	<span class="keyword">var</span> m *itab</span><br><span class="line">	<span class="keyword">var</span> locked <span class="keyword">int</span></span><br><span class="line">	<span class="keyword">for</span> locked = <span class="number">0</span>; locked &lt; <span class="number">2</span>; locked++ &#123;</span><br><span class="line">		<span class="keyword">if</span> locked != <span class="number">0</span> &#123;</span><br><span class="line">			lock(&amp;ifaceLock)</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 遍历哈希表的一个 slot</span></span><br><span class="line">		<span class="keyword">for</span> m = (*itab)(atomic.Loadp(unsafe.Pointer(&amp;hash[h]))); m != <span class="literal">nil</span>; m = m.link &#123;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 如果在 hash 表中已经找到了 itab（inter 和 typ 指针都相同）</span></span><br><span class="line">			<span class="keyword">if</span> m.inter == inter &amp;&amp; m._type == typ &#123;</span><br><span class="line">                <span class="comment">// ……</span></span><br><span class="line">                </span><br><span class="line">				<span class="keyword">if</span> locked != <span class="number">0</span> &#123;</span><br><span class="line">					unlock(&amp;ifaceLock)</span><br><span class="line">				&#125;</span><br><span class="line">				<span class="keyword">return</span> m</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 在 hash 表中没有找到 itab，那么新生成一个 itab</span></span><br><span class="line">	m = (*itab)(persistentalloc(unsafe.Sizeof(itab&#123;&#125;)+<span class="keyword">uintptr</span>(<span class="built_in">len</span>(inter.mhdr)<span class="number">-1</span>)*sys.PtrSize, <span class="number">0</span>, &amp;memstats.other_sys))</span><br><span class="line">	m.inter = inter</span><br><span class="line">    m._type = typ</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 添加到全局的 hash 表中</span></span><br><span class="line">	additab(m, <span class="literal">true</span>, canfail)</span><br><span class="line">	unlock(&amp;ifaceLock)</span><br><span class="line">	<span class="keyword">if</span> m.bad &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> m</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>简单总结：<strong>getitab 函数会根据 <code>interfacetype</code> 和 <code>_type</code> 去全局的 itab 哈希表中查找，如果能找到，则直接返回；否则，会根据给定的 <code>interfacetype</code> 和 <code>_type</code> 新生成一个 <code>itab</code>，并插入到 itab 哈希表，这样下一次就可以直接拿到 <code>itab</code>。</strong></p>
-<h4 id="写itab"><a href="#写itab" class="headerlink" title="写itab"></a>写itab</h4><p>这里查找了两次，<strong>并且第二次上锁了，这是因为如果第一次没找到，在第二次仍然没有找到相应的 <code>itab</code> 的情况下，需要新生成一个，并且写入哈希表，因此需要加锁</strong>。这样，<strong>其他协程在查找相同的 <code>itab</code> 并且也没有找到时，第二次查找时，会被挂住，之后，就会查到第一个协程写入哈希表的 <code>itab</code>。</strong> </p>
-<p>再来看一下 <code>additab</code> 函数的代码：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 检查 _type 是否符合 interface_type 并且创建对应的 itab 结构体 将其放到 hash 表中</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">additab</span><span class="params">(m *itab, locked, canfail <span class="keyword">bool</span>)</span></span> &#123;</span><br><span class="line">	inter := m.inter</span><br><span class="line">	typ := m._type</span><br><span class="line">	x := typ.uncommon()</span><br><span class="line"></span><br><span class="line">	<span class="comment">// both inter and typ have method sorted by name,</span></span><br><span class="line">	<span class="comment">// and interface names are unique,</span></span><br><span class="line">	<span class="comment">// so can iterate over both in lock step;</span></span><br><span class="line">    <span class="comment">// the loop is O(ni+nt) not O(ni*nt).</span></span><br><span class="line">    <span class="comment">// </span></span><br><span class="line">    <span class="comment">// inter 和 typ 的方法都按方法名称进行了排序</span></span><br><span class="line">    <span class="comment">// 并且方法名都是唯一的。所以循环的次数是固定的</span></span><br><span class="line">    <span class="comment">// 只用循环 O(ni+nt)，而非 O(ni*nt)</span></span><br><span class="line">	ni := <span class="built_in">len</span>(inter.mhdr)</span><br><span class="line">	nt := <span class="keyword">int</span>(x.mcount)</span><br><span class="line">	xmhdr := (*[<span class="number">1</span> &lt;&lt; <span class="number">16</span>]method)(add(unsafe.Pointer(x), <span class="keyword">uintptr</span>(x.moff)))[:nt:nt]</span><br><span class="line">	j := <span class="number">0</span></span><br><span class="line">	<span class="keyword">for</span> k := <span class="number">0</span>; k &lt; ni; k++ &#123;</span><br><span class="line">		i := &amp;inter.mhdr[k]</span><br><span class="line">		itype := inter.typ.typeOff(i.ityp)</span><br><span class="line">		name := inter.typ.nameOff(i.name)</span><br><span class="line">		iname := name.name()</span><br><span class="line">		ipkg := name.pkgPath()</span><br><span class="line">		<span class="keyword">if</span> ipkg == <span class="string">""</span> &#123;</span><br><span class="line">			ipkg = inter.pkgpath.name()</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">for</span> ; j &lt; nt; j++ &#123;</span><br><span class="line">			t := &amp;xmhdr[j]</span><br><span class="line">            tname := typ.nameOff(t.name)</span><br><span class="line">            <span class="comment">// 检查方法名字是否一致</span></span><br><span class="line">			<span class="keyword">if</span> typ.typeOff(t.mtyp) == itype &amp;&amp; tname.name() == iname &#123;</span><br><span class="line">				pkgPath := tname.pkgPath()</span><br><span class="line">				<span class="keyword">if</span> pkgPath == <span class="string">""</span> &#123;</span><br><span class="line">					pkgPath = typ.nameOff(x.pkgpath).name()</span><br><span class="line">				&#125;</span><br><span class="line">				<span class="keyword">if</span> tname.isExported() || pkgPath == ipkg &#123;</span><br><span class="line">					<span class="keyword">if</span> m != <span class="literal">nil</span> &#123;</span><br><span class="line">                        <span class="comment">// 获取函数地址，并加入到itab.fun数组中</span></span><br><span class="line">						ifn := typ.textOff(t.ifn)</span><br><span class="line">						*(*unsafe.Pointer)(add(unsafe.Pointer(&amp;m.fun[<span class="number">0</span>]), <span class="keyword">uintptr</span>(k)*sys.PtrSize)) = ifn</span><br><span class="line">					&#125;</span><br><span class="line">					<span class="keyword">goto</span> nextimethod</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">        <span class="comment">// ……</span></span><br><span class="line">        </span><br><span class="line">		m.bad = <span class="literal">true</span></span><br><span class="line">		<span class="keyword">break</span></span><br><span class="line">	nextimethod:</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> !locked &#123;</span><br><span class="line">		throw(<span class="string">"invalid itab locking"</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 计算 hash 值</span></span><br><span class="line">    h := itabhash(inter, typ)</span><br><span class="line">    <span class="comment">// 加到Hash Slot链表中</span></span><br><span class="line">	m.link = hash[h]</span><br><span class="line">	m.inhash = <span class="literal">true</span></span><br><span class="line">	atomicstorep(unsafe.Pointer(&amp;hash[h]), unsafe.Pointer(m))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><strong><code>additab</code> 会检查 <code>itab</code> 持有的 <code>interfacetype</code> 和 <code>_type</code> 是否符合，就是看 <code>_type</code> 是否完全实现了 <code>interfacetype</code> 的方法，也就是看两者的方法列表重叠的部分就是 <code>interfacetype</code> 所持有的方法列表。注意到其中有一个双层循环，乍一看，循环次数是 <code>ni * nt</code>，但由于两者的函数列表都按照函数名称进行了排序，因此最终只执行了 <code>ni + nt</code> 次，代码里通过一个小技巧来实现：第二层循环并没有从 0 开始计数，而是从上一次遍历到的位置开始。</strong></p>
-<p>求 hash 值的函数比较简单：</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">itabhash</span><span class="params">(inter *interfacetype, typ *_type)</span> <span class="title">uint32</span></span> &#123;</span><br><span class="line">	h := inter.typ.hash</span><br><span class="line">	h += <span class="number">17</span> * typ.hash</span><br><span class="line">	<span class="keyword">return</span> h % hashSize</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><code>hashSize</code> 的值是 1009。</p>
-<p>更一般的，当把实体类型赋值给接口的时候，会调用 <code>conv</code> 系列函数，例如空接口调用 <code>convT2E</code> 系列、非空接口调用 <code>convT2I</code> 系列。这些函数比较相似：</p>
-<blockquote>
-<ol>
-<li><strong>具体类型转空接口时，_type 字段直接复制源类型的 _type；调用 mallocgc 获得一块新内存，把值复制进去，data 再指向这块新内存。</strong></li>
-<li><strong>具体类型转非空接口时，入参 tab 是编译器在编译阶段预先生成好的，新接口 tab 字段直接指向入参 tab 指向的 itab；调用 mallocgc 获得一块新内存，把值复制进去，data 再指向这块新内存。</strong></li>
-<li><strong>而对于接口转接口，itab 调用 getitab 函数获取。只用生成一次，之后直接从 hash 表中获取。</strong></li>
-</ol>
-</blockquote>
-<h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><p>【接口赋值、反射】<a href="http://wudaijun.com/2018/01/go-interface-implement/" target="_blank" rel="noopener">http://wudaijun.com/2018/01/go-interface-implement/</a></p>
-<p>【itab】<a href="http://legendtkl.com/2017/07/01/golang-interface-implement/" target="_blank" rel="noopener">http://legendtkl.com/2017/07/01/golang-interface-implement/</a></p>
-<p>【和 C++ 的对比】<a href="https://www.jianshu.com/p/b38b1719636e" target="_blank" rel="noopener">https://www.jianshu.com/p/b38b1719636e</a></p>
-<p>【getitab源码说明】<a href="https://www.twblogs.net/a/5c245d59bd9eee16b3db561d" target="_blank" rel="noopener">https://www.twblogs.net/a/5c245d59bd9eee16b3db561d</a></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/04/Go%20%E6%8E%A5%E5%8F%A3_5%E6%8E%A5%E5%8F%A3%E7%9A%84%E6%9E%84%E9%80%A0%E8%BF%87%E7%A8%8B%E6%98%AF%E6%80%8E%E6%A0%B7%E7%9A%84/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/06/04/Go%20%E6%8E%A5%E5%8F%A3_5%E6%8E%A5%E5%8F%A3%E7%9A%84%E6%9E%84%E9%80%A0%E8%BF%87%E7%A8%8B%E6%98%AF%E6%80%8E%E6%A0%B7%E7%9A%84/" class="post-title-link" itemprop="url">Go 接口的构造过程</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-06-04 22:29:16" itemprop="dateCreated datePublished" datetime="2020-06-04T22:29:16+08:00">2020-06-04</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-04-08 10:59:24" itemprop="dateModified" datetime="2021-04-08T10:59:24+08:00">2021-04-08</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Go/" itemprop="url" rel="index">
-                    <span itemprop="name">Go</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="Go-接口的构造过程"><a href="#Go-接口的构造过程" class="headerlink" title="Go 接口的构造过程"></a>Go 接口的构造过程</h3><p>博客<a href="https://dongshifu.github.io/2020/01/03/Go%20%E6%8E%A5%E5%8F%A3_3iface%20%E5%92%8C%20eface%20%E7%9A%84%E5%8C%BA%E5%88%AB%E6%98%AF%E4%BB%80%E4%B9%88/" target="_blank" rel="noopener">Go接口的底层实现</a>源码分析可以看到 <code>iface</code> 和 <code>eface</code> 的源码，知道 <code>iface</code> 最重要的是 <code>itab</code> 和 <code>_type</code>。</p>
-<p>为了研究清楚接口是如何构造的，接下来利用汇编还原背后的真相。</p>
-<p>示例代码：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Person <span class="keyword">interface</span> &#123;</span><br><span class="line">	growUp()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Student <span class="keyword">struct</span> &#123;</span><br><span class="line">	age <span class="keyword">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p Student)</span> <span class="title">growUp</span><span class="params">()</span></span> &#123;</span><br><span class="line">	p.age += <span class="number">1</span></span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> qcrao = Person(Student&#123;age: <span class="number">18</span>&#125;)</span><br><span class="line"></span><br><span class="line">	fmt.Println(qcrao)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>执行命令：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">go tool compile -S main.go</span><br></pre></td></tr></table></figure>
-<p>得到 main 函数的汇编代码如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">0x0000 00000 (./src/main.go:30) TEXT    &quot;&quot;.main(SB), $80-0</span><br><span class="line">0x0000 00000 (./src/main.go:30) MOVQ    (TLS), CX</span><br><span class="line">0x0009 00009 (./src/main.go:30) CMPQ    SP, 16(CX)</span><br><span class="line">0x000d 00013 (./src/main.go:30) JLS     157</span><br><span class="line">0x0013 00019 (./src/main.go:30) SUBQ    $80, SP</span><br><span class="line">0x0017 00023 (./src/main.go:30) MOVQ    BP, 72(SP)</span><br><span class="line">0x001c 00028 (./src/main.go:30) LEAQ    72(SP), BP</span><br><span class="line">0x0021 00033 (./src/main.go:30) FUNCDATA$0, gclocals·69c1753bd5f81501d95132d08af04464(SB)</span><br><span class="line">0x0021 00033 (./src/main.go:30) FUNCDATA$1, gclocals·e226d4ae4a7cad8835311c6a4683c14f(SB)</span><br><span class="line">0x0021 00033 (./src/main.go:31) MOVQ    $18, &quot;&quot;..autotmp_1+48(SP)</span><br><span class="line">0x002a 00042 (./src/main.go:31) LEAQ    go.itab.&quot;&quot;.Student,&quot;&quot;.Person(SB), AX</span><br><span class="line">0x0031 00049 (./src/main.go:31) MOVQ    AX, (SP)</span><br><span class="line">0x0035 00053 (./src/main.go:31) LEAQ    &quot;&quot;..autotmp_1+48(SP), AX</span><br><span class="line">0x003a 00058 (./src/main.go:31) MOVQ    AX, 8(SP)</span><br><span class="line">0x003f 00063 (./src/main.go:31) PCDATA  $0, $0</span><br><span class="line">0x003f 00063 (./src/main.go:31) CALL    runtime.convT2I64(SB)</span><br><span class="line">0x0044 00068 (./src/main.go:31) MOVQ    24(SP), AX</span><br><span class="line">0x0049 00073 (./src/main.go:31) MOVQ    16(SP), CX</span><br><span class="line">0x004e 00078 (./src/main.go:33) TESTQ   CX, CX</span><br><span class="line">0x0051 00081 (./src/main.go:33) JEQ     87</span><br><span class="line">0x0053 00083 (./src/main.go:33) MOVQ    8(CX), CX</span><br><span class="line">0x0057 00087 (./src/main.go:33) MOVQ    $0, &quot;&quot;..autotmp_2+56(SP)</span><br><span class="line">0x0060 00096 (./src/main.go:33) MOVQ    $0, &quot;&quot;..autotmp_2+64(SP)</span><br><span class="line">0x0069 00105 (./src/main.go:33) MOVQ    CX, &quot;&quot;..autotmp_2+56(SP)</span><br><span class="line">0x006e 00110 (./src/main.go:33) MOVQ    AX, &quot;&quot;..autotmp_2+64(SP)</span><br><span class="line">0x0073 00115 (./src/main.go:33) LEAQ    &quot;&quot;..autotmp_2+56(SP), AX</span><br><span class="line">0x0078 00120 (./src/main.go:33) MOVQ    AX, (SP)</span><br><span class="line">0x007c 00124 (./src/main.go:33) MOVQ    $1, 8(SP)</span><br><span class="line">0x0085 00133 (./src/main.go:33) MOVQ    $1, 16(SP)</span><br><span class="line">0x008e 00142 (./src/main.go:33) PCDATA  $0, $1</span><br><span class="line">0x008e 00142 (./src/main.go:33) CALL    fmt.Println(SB)</span><br><span class="line">0x0093 00147 (./src/main.go:34) MOVQ    72(SP), BP</span><br><span class="line">0x0098 00152 (./src/main.go:34) ADDQ    $80, SP</span><br><span class="line">0x009c 00156 (./src/main.go:34) RET</span><br><span class="line">0x009d 00157 (./src/main.go:34) NOP</span><br><span class="line">0x009d 00157 (./src/main.go:30) PCDATA  $0, $-1</span><br><span class="line">0x009d 00157 (./src/main.go:30) CALL    runtime.morestack_noctxt(SB)</span><br><span class="line">0x00a2 00162 (./src/main.go:30) JMP     0</span><br></pre></td></tr></table></figure>
-<p>从第 10 行开始看：</p>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>汇编行数</th>
-<th>操作</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>10-14</td>
-<td>构造调用 <code>runtime.convT2I64(SB)</code> 的<strong>参数</strong></td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>函数的参数形式：</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">convT2I64</span><span class="params">(tab *itab, elem unsafe.Pointer)</span> <span class="params">(i iface)</span></span> &#123;</span><br><span class="line">	<span class="comment">// ……</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><strong><code>convT2I64</code> 会构造出一个 <code>inteface</code>，也就是我们的 <code>Person</code> 接口。</strong></p>
-<p><strong>第一个参数的位置是 <code>(SP)</code>，这里被赋上了 <code>go.itab.&quot;&quot;.Student,&quot;&quot;.Person(SB)</code> 的地址。</strong></p>
-<p>我们从生成的汇编找到：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">go.itab.&quot;&quot;.Student,&quot;&quot;.Person SNOPTRDATA dupok size=40</span><br><span class="line">        0x0000 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  </span><br><span class="line">        0x0010 00 00 00 00 00 00 00 00 da 9f 20 d4              </span><br><span class="line">        rel 0+8 t=1 type.&quot;&quot;.Person+0</span><br><span class="line">        rel 8+8 t=1 type.&quot;&quot;.Student+0</span><br></pre></td></tr></table></figure>
-<p><code>size=40</code> 大小为40字节，回顾一下：</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> itab <span class="keyword">struct</span> &#123;</span><br><span class="line">	inter  *interfacetype <span class="comment">// 8字节</span></span><br><span class="line">	_type  *_type <span class="comment">// 8字节</span></span><br><span class="line">	link   *itab <span class="comment">// 8字节</span></span><br><span class="line">	hash   <span class="keyword">uint32</span> <span class="comment">// 4字节</span></span><br><span class="line">	bad    <span class="keyword">bool</span>   <span class="comment">// 1字节</span></span><br><span class="line">	inhash <span class="keyword">bool</span>   <span class="comment">// 1字节</span></span><br><span class="line">	unused [<span class="number">2</span>]<span class="keyword">byte</span> <span class="comment">// 2字节</span></span><br><span class="line">	fun    [<span class="number">1</span>]<span class="keyword">uintptr</span> <span class="comment">// variable sized // 8字节</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><strong>把每个字段的大小相加，<code>itab</code> 结构体的大小就是 40 字节。上面那一串数字实际上是 <code>itab</code> 序列化后的内容</strong>，注意到大部分数字是 0，从 24 字节开始的 4 个字节 <code>da 9f 20 d4</code> 实际上是 <code>itab</code> 的 <code>hash</code> 值，这在<strong>判断两个类型是否相同的时候会用到。</strong></p>
-<p>下面两行是<strong>链接指令，简单说就是将所有源文件综合起来，给每个符号赋予一个全局的位置值。这里的意思也比较明确：前8个字节最终存储的是 <code>type.&quot;&quot;.Person</code> 的地址，对应 <code>itab</code> 里的 <code>inter</code> 字段，表示接口类型；8-16 字节最终存储的是 <code>type.&quot;&quot;.Student</code> 的地址，对应 <code>itab</code> 里 <code>_type</code> 字段，表示具体类型。</strong></p>
-<p>第二个参数就比较简单了，它就是数字 <code>18</code> 的地址，这也是初始化 <code>Student</code> 结构体的时候会用到。</p>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>汇编行数</th>
-<th>操作</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>15</td>
-<td>调用 <code>runtime.convT2I64(SB)</code></td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>具体看下代码：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">convT2I64</span><span class="params">(tab *itab, elem unsafe.Pointer)</span> <span class="params">(i iface)</span></span> &#123;</span><br><span class="line">	t := tab._type</span><br><span class="line">	</span><br><span class="line">	<span class="comment">//...</span></span><br><span class="line">	</span><br><span class="line">	<span class="keyword">var</span> x unsafe.Pointer</span><br><span class="line">	<span class="keyword">if</span> *(*<span class="keyword">uint64</span>)(elem) == <span class="number">0</span> &#123;</span><br><span class="line">		x = unsafe.Pointer(&amp;zeroVal[<span class="number">0</span>])</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		x = mallocgc(<span class="number">8</span>, t, <span class="literal">false</span>)</span><br><span class="line">		*(*<span class="keyword">uint64</span>)(x) = *(*<span class="keyword">uint64</span>)(elem)</span><br><span class="line">	&#125;</span><br><span class="line">	i.tab = tab</span><br><span class="line">	i.data = x</span><br><span class="line">	<span class="keyword">return</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这块代码比较简单，<strong>把 <code>tab</code> 赋给了 <code>iface</code> 的 <code>tab</code> 字段；<code>data</code> 部分则是在堆上申请了一块内存，然后将 <code>elem</code> 指向的 <code>18</code> 拷贝过去。这样 <code>iface</code> 就组装好了。</strong></p>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>汇编行数</th>
-<th>操作</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>17</td>
-<td>把 <code>i.tab</code> 赋给 <code>CX</code></td>
-</tr>
-<tr>
-<td>18</td>
-<td>把 <code>i.data</code> 赋给 <code>AX</code></td>
-</tr>
-<tr>
-<td>19-21</td>
-<td><strong>检测 <code>i.tab</code> 是否是 nil，如果不是的话，把 CX 移动 8 个字节，也就是把 <code>itab</code> 的 <code>_type</code> 字段赋给了 CX，这也是接口的实体类型，最终要作为 <code>fmt.Println</code> 函数的参数</strong></td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>后面，就是调用 <code>fmt.Println</code> 函数及之前的参数准备工作了.</p>
-<p>这样，我们就把一个 <code>interface</code> 的构造过程说完了。</p>
-<p>【引申1】<br>如何打印出接口类型的 <code>Hash</code> 值？</p>
-<p>这里参考一篇文章<a href="https://xargin.com/go-and-interface/#reconstructing-an-itab-from-an-executable" target="_blank" rel="noopener">Go和interface探究</a>。具体做法如下：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> iface <span class="keyword">struct</span> &#123;</span><br><span class="line">	tab  *itab</span><br><span class="line">	data unsafe.Pointer</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">type</span> itab <span class="keyword">struct</span> &#123;</span><br><span class="line">	inter <span class="keyword">uintptr</span></span><br><span class="line">	_type <span class="keyword">uintptr</span></span><br><span class="line">	link <span class="keyword">uintptr</span></span><br><span class="line">	hash  <span class="keyword">uint32</span></span><br><span class="line">	_     [<span class="number">4</span>]<span class="keyword">byte</span></span><br><span class="line">	fun   [<span class="number">1</span>]<span class="keyword">uintptr</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> qcrao = Person(Student&#123;age: <span class="number">18</span>&#125;)</span><br><span class="line"></span><br><span class="line">	iface := (*iface)(unsafe.Pointer(&amp;qcrao))</span><br><span class="line">	fmt.Printf(<span class="string">"iface.tab.hash = %#x\n"</span>, iface.tab.hash)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>定义了一个<code>山寨版</code>的 <code>iface</code> 和 <code>itab</code>，说它<code>山寨</code>是因为 <code>itab</code> 里的一些关键数据结构都不具体展开了，比如 <code>_type</code>，对比一下正宗的定义就可以发现，但是<code>山寨版</code>依然能工作，因为 <code>_type</code> 就是一个指针而已嘛。</p>
-<p>在 <code>main</code> 函数里，先构造出一个接口对象 <code>qcrao</code>，然后强制类型转换，最后读取出 <code>hash</code> 值！</p>
-<p>运行结果：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iface.tab.hash = 0xd4209fda</span><br></pre></td></tr></table></figure>
-<p>值得一提的是，构造接口 <code>qcrao</code> 的时候，即使把 <code>age</code> 写成其他值，得到的 <code>hash</code> 值依然不变的，这应该是可以预料的，<strong><code>hash</code> 值只和他的字段、方法相关。</strong></p>
-<h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><p><a href="http://xargin.com/go-and-interface/#reconstructing-an-itab-from-an-executable" target="_blank" rel="noopener">http://xargin.com/go-and-interface/#reconstructing-an-itab-from-an-executable</a></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/04/Go%20%E6%8E%A5%E5%8F%A3_4%E6%8E%A5%E5%8F%A3%E7%9A%84%E5%8A%A8%E6%80%81%E7%B1%BB%E5%9E%8B%E5%92%8C%E5%8A%A8%E6%80%81%E5%80%BC/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/06/04/Go%20%E6%8E%A5%E5%8F%A3_4%E6%8E%A5%E5%8F%A3%E7%9A%84%E5%8A%A8%E6%80%81%E7%B1%BB%E5%9E%8B%E5%92%8C%E5%8A%A8%E6%80%81%E5%80%BC/" class="post-title-link" itemprop="url">Go 接口的动态类型和动态值</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-06-04 21:29:16" itemprop="dateCreated datePublished" datetime="2020-06-04T21:29:16+08:00">2020-06-04</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-04-08 10:59:14" itemprop="dateModified" datetime="2021-04-08T10:59:14+08:00">2021-04-08</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Go/" itemprop="url" rel="index">
-                    <span itemprop="name">Go</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="Go-接口的动态类型和动态值"><a href="#Go-接口的动态类型和动态值" class="headerlink" title="Go 接口的动态类型和动态值"></a>Go 接口的动态类型和动态值</h3><p>从上一篇博客<a href="https://dongshifu.github.io/2020/01/03/Go%20%E6%8E%A5%E5%8F%A3_3iface%20%E5%92%8C%20eface%20%E7%9A%84%E5%8C%BA%E5%88%AB%E6%98%AF%E4%BB%80%E4%B9%88/" target="_blank" rel="noopener">Go接口的底层实现</a>源码分析里可以看到：<code>iface</code>包含两个字段：<code>tab</code> 是接口表指针，指向类型信息；<code>data</code> 是数据指针，则指向具体的数据。它们分别被称为<strong><code>动态类型</code>和<code>动态值</code></strong>。而接口值包括<code>动态类型</code>和<code>动态值</code>。</p>
-<p>【引申1】接口类型和 <code>nil</code> 作比较</p>
-<p><strong>接口值的零值是指<code>动态类型</code>和<code>动态值</code>都为 <code>nil</code>。当仅且当这两部分的值都为 <code>nil</code> 的情况下，这个接口值就才会被认为 <code>接口值 == nil</code>。</strong></p>
-<p>来看个例子：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Coder <span class="keyword">interface</span> &#123;</span><br><span class="line">	code()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Gopher <span class="keyword">struct</span> &#123;</span><br><span class="line">	name <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(g Gopher)</span> <span class="title">code</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Printf(<span class="string">"%s is coding\n"</span>, g.name)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> c Coder</span><br><span class="line">	fmt.Println(c == <span class="literal">nil</span>)</span><br><span class="line">	fmt.Printf(<span class="string">"c: %T, %v\n"</span>, c, c)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">var</span> g *Gopher</span><br><span class="line">	fmt.Println(g == <span class="literal">nil</span>)</span><br><span class="line"></span><br><span class="line">	c = g</span><br><span class="line">	fmt.Println(c == <span class="literal">nil</span>)</span><br><span class="line">	fmt.Printf(<span class="string">"c: %T, %v\n"</span>, c, c)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>输出：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">true</span><br><span class="line">c: &lt;nil&gt;, &lt;nil&gt;</span><br><span class="line">true</span><br><span class="line">false</span><br><span class="line">c: *main.Gopher, &lt;nil&gt;</span><br></pre></td></tr></table></figure>
-<p>一开始，<strong><code>c</code> 的 动态类型和动态值都为 <code>nil</code>，<code>g</code> 也为 <code>nil</code>，当把 <code>g</code> 赋值给 <code>c</code> 后，<code>c</code> 的动态类型变成了 <code>*main.Gopher</code>，仅管 <code>c</code> 的动态值仍为 <code>nil</code>，但是当 <code>c</code> 和 <code>nil</code> 作比较的时候，结果就是 <code>false</code> 了。</strong></p>
-<p>【引申2】</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> MyError <span class="keyword">struct</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(i MyError)</span> <span class="title">Error</span><span class="params">()</span> <span class="title">string</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="string">"MyError"</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	err := Process()</span><br><span class="line">	fmt.Println(err)</span><br><span class="line"></span><br><span class="line">	fmt.Println(err == <span class="literal">nil</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Process</span><span class="params">()</span> <span class="title">error</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> err *MyError = <span class="literal">nil</span></span><br><span class="line">	<span class="keyword">return</span> err</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>函数运行结果：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;nil&gt;</span><br><span class="line">false</span><br></pre></td></tr></table></figure>
-<p><strong>这里先定义了一个 <code>MyError</code> 结构体，实现了 <code>Error</code> 函数，也就实现了 <code>error</code> 接口。<code>Process</code> 函数返回了一个 <code>error</code> 接口，这块隐含了类型转换。所以，虽然它的值是 <code>nil</code>，其实它的类型是 <code>*MyError</code>，最后和 <code>nil</code> 比较的时候，结果为 <code>false</code>。</strong></p>
-<p>【引申3】如何打印出接口的动态类型和值？</p>
-<p>直接看代码：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"unsafe"</span></span><br><span class="line">	<span class="string">"fmt"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> iface <span class="keyword">struct</span> &#123;</span><br><span class="line">	itab, data <span class="keyword">uintptr</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> a <span class="keyword">interface</span>&#123;&#125; = <span class="literal">nil</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">var</span> b <span class="keyword">interface</span>&#123;&#125; = (*<span class="keyword">int</span>)(<span class="literal">nil</span>)</span><br><span class="line"></span><br><span class="line">	x := <span class="number">5</span></span><br><span class="line">	<span class="keyword">var</span> c <span class="keyword">interface</span>&#123;&#125; = (*<span class="keyword">int</span>)(&amp;x)</span><br><span class="line">	</span><br><span class="line">	ia := *(*iface)(unsafe.Pointer(&amp;a))</span><br><span class="line">	ib := *(*iface)(unsafe.Pointer(&amp;b))</span><br><span class="line">	ic := *(*iface)(unsafe.Pointer(&amp;c))</span><br><span class="line"></span><br><span class="line">	fmt.Println(ia, ib, ic)</span><br><span class="line"></span><br><span class="line">	fmt.Println(*(*<span class="keyword">int</span>)(unsafe.Pointer(ic.data)))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>代码里直接定义了一个 <code>iface</code> 结构体，<strong>用两个指针来描述 <code>itab</code> 和 <code>data</code>，之后将 a, b, c 在内存中的内容强制解释成我们自定义的 <code>iface</code>。最后就可以打印出动态类型和动态值的地址。</strong></p>
-<p>运行结果如下：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#123;0 0&#125; &#123;4843168 0&#125; &#123;4843168 824634355376&#125;</span><br><span class="line">5</span><br></pre></td></tr></table></figure>
-<p>a 的动态类型和动态值的地址均为 0，也就是 nil；<strong>b 的动态类型和 c 的动态类型一致，都是 <code>*int</code></strong>；最后，c 的动态值为 5。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/03/Go%20%E6%8E%A5%E5%8F%A3_3iface%20%E5%92%8C%20eface%20%E7%9A%84%E5%8C%BA%E5%88%AB%E6%98%AF%E4%BB%80%E4%B9%88/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/06/03/Go%20%E6%8E%A5%E5%8F%A3_3iface%20%E5%92%8C%20eface%20%E7%9A%84%E5%8C%BA%E5%88%AB%E6%98%AF%E4%BB%80%E4%B9%88/" class="post-title-link" itemprop="url">Go 接口的底层实现</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-06-03 21:29:16" itemprop="dateCreated datePublished" datetime="2020-06-03T21:29:16+08:00">2020-06-03</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-04-08 10:59:03" itemprop="dateModified" datetime="2021-04-08T10:59:03+08:00">2021-04-08</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Go/" itemprop="url" rel="index">
-                    <span itemprop="name">Go</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="Go-接口的底层实现"><a href="#Go-接口的底层实现" class="headerlink" title="Go 接口的底层实现"></a>Go 接口的底层实现</h3><p><code>iface</code> 和 <code>eface</code> 都是 Go 中<strong>描述接口的底层结构体</strong>，区别在于 <strong><code>iface</code> 描述的接口包含方法</strong>，<strong>而 <code>eface</code> 则是不包含任何方法的空接口：<code>interface{}</code>。</strong></p>
-<p>从源码层面：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> iface <span class="keyword">struct</span> &#123;</span><br><span class="line">	tab  *itab</span><br><span class="line">	data unsafe.Pointer</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> itab <span class="keyword">struct</span> &#123;</span><br><span class="line">	inter  *interfacetype</span><br><span class="line">	_type  *_type</span><br><span class="line">	link   *itab</span><br><span class="line">	hash   <span class="keyword">uint32</span> <span class="comment">// copy of _type.hash. Used for type switches.</span></span><br><span class="line">	bad    <span class="keyword">bool</span>   <span class="comment">// type does not implement interface</span></span><br><span class="line">	inhash <span class="keyword">bool</span>   <span class="comment">// has this itab been added to hash?</span></span><br><span class="line">	unused [<span class="number">2</span>]<span class="keyword">byte</span></span><br><span class="line">	fun    [<span class="number">1</span>]<span class="keyword">uintptr</span> <span class="comment">// variable sized</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><strong><code>iface</code> 内部维护两个指针，<code>tab</code> 指向一个 <code>itab</code> 实体， 它表示接口的类型以及赋给这个接口的实体类型。<code>data</code> 则指向接口具体的值，一般而言是一个指向堆内存的指针。</strong></p>
-<p>再来仔细看一下 <code>itab</code> 结构体：</p>
-<ul>
-<li><code>_type</code> 字段描述了<strong>实体的类型</strong>，包括内存对齐方式，大小等；</li>
-<li><code>inter</code> 字段则描述了<strong>接口的类型</strong>。</li>
-<li><code>fun</code> 字段<strong>放置和接口方法对应的具体数据类型的方法地址，实现接口调用方法的动态分派，一般在每次给接口赋值发生转换时会更新此表，或者直接拿缓存的 itab。</strong></li>
-</ul>
-<p>为什么 <code>fun</code> 数组的大小为 1，要是接口定义了多个方法可怎么办？<strong>实际上，这里存储的是第一个方法的函数指针，如果有更多的方法，在它之后的内存空间里继续存储。从汇编角度来看，通过增加地址就能获取到这些函数指针，没什么影响</strong>。<strong>这些方法是按照函数名称的字典序进行排列的。</strong></p>
-<p>再看一下 <code>interfacetype</code> 类型，它描述的是<strong>接口的类型</strong>：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> interfacetype <span class="keyword">struct</span> &#123;</span><br><span class="line">	typ     _type</span><br><span class="line">	pkgpath name</span><br><span class="line">	mhdr    []imethod</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>可以看到，它<strong>包装了 <code>_type</code> 类型，<code>_type</code> 实际上是描述 Go 语言中各种数据类型的结构体</strong>。这里还包含一个 <strong><code>mhdr</code> 字段，表示接口所定义的函数列表， <code>pkgpath</code> 记录定义了接口的包名。</strong></p>
-<p>这里通过一张图来看下 <code>iface</code> 结构体的全貌：</p>
-<p><img src="https://api2.mubu.com/v3/document_image/69ac725b-819d-492f-8fc1-09539aecd84d-11197877.jpg" style="zoom:50%;" /></p>
-<p><code>eface</code> 的源码：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> eface <span class="keyword">struct</span> &#123;</span><br><span class="line">    _type *_type</span><br><span class="line">    data  unsafe.Pointer</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>相比 <code>iface</code>，<code>eface</code> 比较简单。只维护了一个 <code>_type</code> 字段，<strong>表示空接口所承载的具体的实体类型</strong>。<code>data</code> 描述了具体的值。</p>
-<p><img src="https://api2.mubu.com/v3/document_image/c5f9654b-4bc8-4be2-9dd5-96a8cf27543b-11197877.jpg" alt="eface 结构体" style="zoom:50%;" /></p>
-<p>例子：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> <span class="string">"fmt"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	x := <span class="number">200</span></span><br><span class="line">	<span class="keyword">var</span> any <span class="keyword">interface</span>&#123;&#125; = x</span><br><span class="line">	fmt.Println(any)</span><br><span class="line"></span><br><span class="line">	g := Gopher&#123;<span class="string">"Go"</span>&#125;</span><br><span class="line">	<span class="keyword">var</span> c coder = g</span><br><span class="line">	fmt.Println(c)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> coder <span class="keyword">interface</span> &#123;</span><br><span class="line">	code()</span><br><span class="line">	debug()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Gopher <span class="keyword">struct</span> &#123;</span><br><span class="line">	language <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p Gopher)</span> <span class="title">code</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Printf(<span class="string">"I am coding %s language\n"</span>, p.language)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(p Gopher)</span> <span class="title">debug</span><span class="params">()</span></span> &#123;</span><br><span class="line">	fmt.Printf(<span class="string">"I am debuging %s language\n"</span>, p.language)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>执行命令，打印出汇编语言：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">go tool compile -S ./src/main.go</span><br></pre></td></tr></table></figure>
-<p>可以看到，main 函数里调用了两个函数：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">func convT2E64(t *_type, elem unsafe.Pointer) (e eface)</span><br><span class="line">func convT2I(tab *itab, elem unsafe.Pointer) (i iface)</span><br></pre></td></tr></table></figure>
-<p>上面两个函数的参数和 <code>iface</code> 及 <code>eface</code> 结构体的字段是可以联系起来的：两个函数都是将参数<code>组装</code>一下，形成最终的接口。</p>
-<p>作为补充，最后再来看下 <code>_type</code> 结构体：</p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> _type <span class="keyword">struct</span> &#123;</span><br><span class="line">    <span class="comment">// 类型大小</span></span><br><span class="line">	size       <span class="keyword">uintptr</span></span><br><span class="line">    ptrdata    <span class="keyword">uintptr</span></span><br><span class="line">    <span class="comment">// 类型的 hash 值</span></span><br><span class="line">    hash       <span class="keyword">uint32</span></span><br><span class="line">    <span class="comment">// 类型的 flag，和反射相关</span></span><br><span class="line">    tflag      tflag</span><br><span class="line">    <span class="comment">// 内存对齐相关</span></span><br><span class="line">    align      <span class="keyword">uint8</span></span><br><span class="line">    fieldalign <span class="keyword">uint8</span></span><br><span class="line">    <span class="comment">// 类型的编号，有bool, slice, struct 等等等等</span></span><br><span class="line">	kind       <span class="keyword">uint8</span></span><br><span class="line">	alg        *typeAlg</span><br><span class="line">	<span class="comment">// gc 相关</span></span><br><span class="line">	gcdata    *<span class="keyword">byte</span></span><br><span class="line">	str       nameOff</span><br><span class="line">	ptrToThis typeOff</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><strong>Go 语言各种数据类型都是在 <code>_type</code> 字段的基础上，增加一些额外的字段来进行管理的：</strong></p>
-<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> arraytype <span class="keyword">struct</span> &#123;</span><br><span class="line">	typ   _type</span><br><span class="line">	elem  *_type</span><br><span class="line">	slice *_type</span><br><span class="line">	<span class="built_in">len</span>   <span class="keyword">uintptr</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> chantype <span class="keyword">struct</span> &#123;</span><br><span class="line">	typ  _type</span><br><span class="line">	elem *_type</span><br><span class="line">	dir  <span class="keyword">uintptr</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> slicetype <span class="keyword">struct</span> &#123;</span><br><span class="line">	typ  _type</span><br><span class="line">	elem *_type</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> structtype <span class="keyword">struct</span> &#123;</span><br><span class="line">	typ     _type</span><br><span class="line">	pkgPath name</span><br><span class="line">	fields  []structfield</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这些数据类型的结构体定义，是反射实现的基础。</p>
-<h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><p>【Go Interface 源码剖析 】<a href="http://legendtkl.com/2017/07/01/golang-interface-implement/" target="_blank" rel="noopener">http://legendtkl.com/2017/07/01/golang-interface-implement/</a></p>
-<p>【interface 源码解读 包含反射】<a href="http://wudaijun.com/2018/01/go-interface-implement/" target="_blank" rel="noopener">http://wudaijun.com/2018/01/go-interface-implement/</a></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/03/tcp-1/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/06/03/tcp-1/" class="post-title-link" itemprop="url">TCP需要注意的知识点</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-06-03 19:29:16" itemprop="dateCreated datePublished" datetime="2020-06-03T19:29:16+08:00">2020-06-03</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-04-15 13:35:29" itemprop="dateModified" datetime="2021-04-15T13:35:29+08:00">2021-04-15</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%BD%91%E7%BB%9C/" itemprop="url" rel="index">
-                    <span itemprop="name">网络</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="TCP基础知识"><a href="#TCP基础知识" class="headerlink" title="TCP基础知识"></a>TCP基础知识</h3><h4 id="为什么需要TCP"><a href="#为什么需要TCP" class="headerlink" title="为什么需要TCP"></a>为什么需要TCP</h4><p><code>IP</code> 层是不可靠的，它<strong>不保证网络包的交付、不保证网络包的按序交付、也不保证网络包中的数据的完整性</strong>。</p>
-<p>如果需要<strong>保障网络数据包的可靠性</strong>，那么就需要由上层（传输层）的 <code>TCP</code> 协议来负责。因为 TCP 是一个工作在<strong>传输层</strong>的<strong>可靠</strong>数据传输的服务，它能确保接收端接收的网络包是<strong>无损坏、无间隔、非冗余和按序的。</strong></p>
-<h4 id="TCP是什么"><a href="#TCP是什么" class="headerlink" title="TCP是什么"></a>TCP是什么</h4><p>TCP 是<strong>面向连接的、可靠的、基于字节流</strong>的传输层通信协议。</p>
-<ul>
-<li>面向连接：一定是<strong>一对一</strong>才能连接，不能像<code>UDP</code>协议可以一个主机同时向多个主机发送消息，也即无法做到一对多。</li>
-<li>可靠的：无论的网络链路中出现了怎样的链路变化，TCP 都可以保证一个报文一定能够到达接收端。</li>
-<li>字节流：消息是没有边的，所以<strong>无论消息有多大都可以进行传输</strong>。并且<strong>消息是有序的，当前一个消息没有收到的时候，即使它先收到了后面的字节已经收到，那么也不能扔给应用层去处理，同时对重复的报文会自动丢弃。</strong></li>
-</ul>
-<h4 id="TCP头部中比较重要的字段："><a href="#TCP头部中比较重要的字段：" class="headerlink" title="TCP头部中比较重要的字段："></a>TCP头部中比较重要的字段：</h4><ul>
-<li><strong>序列号</strong>：在建立连接时由计算机生成的<strong>随机数</strong>作为其初始值，通过 <code>SYN</code> 包传给接收端主机，每发送一次数据，就累加一次该数据字节数的大小。<strong>用来解决网络包乱序问题。</strong></li>
-<li><strong>确认应答号</strong>：指下一次期望收到的数据的序列号，发送端收到这个确认应答以后可以认为在<strong>这个序号以前的数据都已经被正常接收</strong>。<strong>用来解决不丢包的问题。</strong></li>
-<li><strong>控制位：</strong><ul>
-<li><em>ACK</em>：该位为 <code>1</code> 时，确认应答的字段变为有效，TCP 规定除了最初建立连接时的 <code>SYN</code> 包之外该位必须设置为 <code>1</code> 。</li>
-<li><em>RST</em>：该位为 <code>1</code> 时，表示 TCP 连接中<strong>出现异常必须强制断开连接</strong>。</li>
-<li><em>SYN</em>：该位为 <code>1</code> 时，表示希<strong>望建立连，并在其序列号的字段进行序列号初始值的设定。</strong></li>
-<li><em>FIN</em>：该位为 <code>1</code> 时，表示<strong>今后不会再有数据发送，希望断开连接</strong>。当通信结束希望断开连接时，通信双方的主机之间就可以相互交换 <code>FIN</code> 位置为 1 的 TCP 段。</li>
-</ul>
-</li>
-</ul>
-<h3 id="TCP建立连接"><a href="#TCP建立连接" class="headerlink" title="TCP建立连接"></a>TCP建立连接</h3><h4 id="什么是TCP连接"><a href="#什么是TCP连接" class="headerlink" title="什么是TCP连接"></a>什么是TCP连接</h4><p><strong>用于保证可靠性和流量控制维护的某些状态信息，这些信息的组合，包括Socket、序列号和窗口大小称为连接。</strong></p>
-<p>建立一个 TCP 连接是需要客户端与服务器端达成三个信息的共识。</p>
-<ul>
-<li><strong>Socket</strong>：由 <strong>IP 地址和端口号</strong>组成</li>
-<li><strong>序列号</strong>：用来解决<strong>乱序</strong>问题等</li>
-<li><strong>窗口大小</strong>：用来做<strong>流量控制</strong></li>
-</ul>
-<h4 id="如何唯一确定一个TCP连接"><a href="#如何唯一确定一个TCP连接" class="headerlink" title="如何唯一确定一个TCP连接"></a>如何唯一确定一个TCP连接</h4><p>TCP 四元组可以唯一的确定一个连接，四元组包括如下：</p>
-<ul>
-<li>源地址</li>
-<li>源端口</li>
-<li>目的地址</li>
-<li>目的端口</li>
-</ul>
-<p>源地址和目的地址的字段（32位）是在 IP 头部中，作用是通过 IP 协议发送报文给对方<strong>主机</strong>。</p>
-<p>源端口和目的端口的字段（16位）是在 TCP 头部中，作用是告诉 TCP 协议应该把报文发给哪个<strong>进程</strong>。</p>
-<h4 id="TCP-的最大连接数是多少"><a href="#TCP-的最大连接数是多少" class="headerlink" title="TCP 的最大连接数是多少"></a>TCP 的最大连接数是多少</h4><p>服务器通常固定在某个本地端口上监听，等待客户端的连接请求。</p>
-<p>因此，客户端 IP 和 端口是可变的，其理论值计算公式如下:</p>
-<script type="math/tex; mode=display">
-最大TCP连接数 = 客户端的IP数 * 客户端的端口数</script><p>对 IPv4，客户端的 IP 数最多为 <code>2</code> 的 <code>32</code> 次方，客户端的端口数最多为 <code>2</code> 的 <code>16</code> 次方，也就是<strong>服务端单机最大 TCP 连接数，约为 <code>2</code> 的 <code>48</code> 次方</strong>。</p>
-<p>当然，服务端最大并发 TCP 连接数远不能达到理论上限。</p>
-<ul>
-<li>首先主要是<strong>文件描述符限制</strong>，Socket 都是文件，所以首先要通过 <code>ulimit</code> 配置文件描述符的数目</li>
-<li>另一个是<strong>内存限制</strong>，每个 TCP 连接都要占用一定内存，操作系统是有限的。</li>
-</ul>
-<h4 id="TCP三次握手过程和状态变迁"><a href="#TCP三次握手过程和状态变迁" class="headerlink" title="TCP三次握手过程和状态变迁"></a>TCP三次握手过程和状态变迁</h4><ul>
-<li>一开始，客户端和服务端都处于 <code>CLOSED</code> 状态。先是服务端主动监听某个端口，处于 <code>LISTEN</code> 状态</li>
-<li><strong>第一次握手</strong>：客户端会随机初始化序号（<code>client_isn</code>），将此序号置于 TCP 首部的序号字段中，同时把 <code>SYN</code> 标志位置为 <code>1</code> ，表示 <code>SYN</code> 报文。接着把第一个 SYN 报文发送给服务端，表示向服务端发起连接，<strong>该报文不包含应用层数据</strong>，之后客户端处于 <code>SYN-SENT</code> 状态</li>
-<li><strong>第二次握手</strong>:服务端收到客户端的 <code>SYN</code> 报文后，首先服务端也随机初始化自己的序号（<code>server_isn</code>），将此序号填入 TCP 首部的序号字段中，其次把 TCP 首部的确认应答号字段填入 <code>client_isn + 1</code>, 接着把 <code>SYN</code> 和 <code>ACK</code> 标志位置为 <code>1</code>。最后把该报文发给客户端，该报文也不包含应用层数据，之后服务端处于 <code>SYN-RCVD</code> 状态。</li>
-<li><strong>第三次握手</strong>：客户端收到服务端报文后，还要向服务端<strong>回应最后一个应答报文</strong>，首先该应答报文 TCP 首部 <code>ACK</code> 标志位置为 <code>1</code> ，其次「确认应答号」字段填入 <code>server_isn + 1</code> ，最后把报文发送给服务端，<strong>这次报文可以携带客户到服务器的数据，之后客户端处于 <code>ESTABLISHED</code> 状态。</strong></li>
-<li>服务器收到客户端的应答报文后，也进入 <code>ESTABLISHED</code> 状态。</li>
-</ul>
-<h4 id="查看tcp的连接状态"><a href="#查看tcp的连接状态" class="headerlink" title="查看tcp的连接状态"></a>查看tcp的连接状态</h4><p><code>netstat -napt</code></p>
-<h4 id="为什么需要三次握手，两次或者四次是否可以？"><a href="#为什么需要三次握手，两次或者四次是否可以？" class="headerlink" title="为什么需要三次握手，两次或者四次是否可以？"></a>为什么需要三次握手，两次或者四次是否可以？</h4><ul>
-<li>避免历史连接：<strong>防止旧的重复连接初始化造成混乱。</strong>网络环境是错综复杂的，往往并不是如期望的一样，先发送的数据包，就先到达目标主机，可能会由于网络拥堵等乱七八糟的原因，<strong>会使得旧的数据包，先到达目标主机</strong>，那么这种情况下 TCP 三次握手是如何避免的呢？<ul>
-<li>客户端连续发送多次 SYN 建立连接的报文，在网络拥堵等情况下<ul>
-<li>一个旧 SYN 报文比最新的 SYN 报文早到达了服务端</li>
-<li>此时服务端就会回一个 <code>SYN + ACK</code> 报文给客户端</li>
-<li>客户端收到后可以<strong>根据自身的上下文，判断这是一个历史连接（序列号过期或超时），那么客户端就会发送 <code>RST</code> 报文给服务端，表示中止这一次连接。</strong></li>
-</ul>
-</li>
-<li>如果是<strong>两次握手连接，就不能判断当前连接是否是历史连接，三次握手则可以在客户端（发送方）准备发送第三次报文时，客户端因有足够的上下文来判断当前连接是否是历史连接</strong>：<ul>
-<li>如果是历史连接（序列号过期或超时），则第三次握手发送的报文是 <code>RST</code> 报文，以此<strong>中止历史连接</strong></li>
-<li>如果不是历史连接，则第三次发送的报文是 <code>ACK</code> 报文，通信双方就会成功建立连接</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>同步双方初始序列号。TCP 协议的通信双方， 都<strong>必须维护一个序列号</strong>， 序列号是可靠传输的一个关键因素，它的作用：<ul>
-<li>接收方可以<strong>去除重复的数据</strong></li>
-<li>接收方可以根据数据包的序列号<strong>按序接收</strong></li>
-<li>可以<strong>标识发送出去的数据包中， 哪些是已经被对方收到的</strong></li>
-<li>客户端和服务器双发使用序列号保证在来回通信过程中<strong>初始序列号能被可靠的同步。</strong></li>
-</ul>
-</li>
-<li>避免资源浪费。如果只有「两次握手」，当客户端的 <code>SYN</code> 请求连接在网络中阻塞，客户端没有接收到 <code>ACK</code> 报文，就会重新发送 <code>SYN</code> ，由于没有第三次握手，服务器不清楚客户端是否收到了自己发送的建立连接的 <code>ACK</code> 确认信号，所以每收到一个 <code>SYN</code> 就只能先主动建立一个连接，这会造成重复发送多次 <code>SYN</code> 报文，那么服务器在收到请求后就会<strong>建立多个冗余的无效链接，造成不必要的资源浪费。</strong></li>
-</ul>
-<h4 id="为什么客户端和服务器端的初始序列号ISN是不相同的"><a href="#为什么客户端和服务器端的初始序列号ISN是不相同的" class="headerlink" title="为什么客户端和服务器端的初始序列号ISN是不相同的"></a>为什么客户端和服务器端的初始序列号ISN是不相同的</h4><p>网络中的报文<strong>会延迟、会复制重发、也有可能丢失</strong>，这样会造成的不同连接之间产生互相影响，所以为了避免互相影响，客户端和服务端的初始序列号是随机且不同的。</p>
-<h4 id="IP层会分片，为什么TCP层还需要MSS"><a href="#IP层会分片，为什么TCP层还需要MSS" class="headerlink" title="IP层会分片，为什么TCP层还需要MSS"></a>IP层会分片，为什么TCP层还需要MSS</h4><ul>
-<li><code>MTU(maximum transmission unit)</code>：一个网络包的最大长度，以太网中一般为 <code>1500</code> 字节</li>
-<li><code>MSS(maximum segment size)</code>：除去 IP 和 TCP 头部之后，一个网络包所能容纳的 TCP 数据的最大长度</li>
-</ul>
-<p>如果TCP 的整个报文（头部 + 数据）交给 IP 层进行分片，会有什么异常？</p>
-<p>当 IP 层有一个超过 <code>MTU</code> 大小的数据（TCP 头部 + TCP 数据）要发送，那么 IP 层就要进行分片，把数据分片成若干片，保证每一个分片都小于 MTU。把一份 IP 数据报进行分片以后，由目标主机的 IP 层来进行重新组装后，在交给上一层 TCP 传输层。</p>
-<p>这看起来井然有序，但这存在隐患的，<strong>那么当如果一个 IP 分片丢失，整个 IP 报文的所有分片都得重传</strong>。因为 IP 层本身没有超时重传机制，它由传输层的 TCP 来负责超时和重传。当接收方发现 TCP 报文（头部 + 数据）的某一片丢失后，不会响应 ACK 给对方，<strong>那么发送方的 TCP 在超时后，就会重发整个 TCP 报文（头部 + 数据）</strong>。因此，可以得知<strong>由 IP 层进行分片传输，是非常没有效率的</strong>。</p>
-<p>所以，为了达到最佳的传输效能 TCP 协议在<strong>建立连接的时候通常要协商双方的 MSS 值</strong>，<strong>当 TCP 层发现数据超过 MSS 时，则就先会进行分片，当然由它形成的 IP 包的长度也就不会大于 MTU ，自然也就不用 IP 分片了。</strong>经过 TCP 层分片后，如果一个 TCP 分片丢失后，<strong>进行重发时也是以 MSS 为单位</strong>，<strong>而不用重传所有的分片，大大增加了重传的效率。</strong></p>
-<h4 id="SYN攻击"><a href="#SYN攻击" class="headerlink" title="SYN攻击"></a>SYN攻击</h4><p>TCP 连接建立是需要三次握手，假设攻击者短时间伪造不同 IP 地址的 <code>SYN</code> 报文，服务端每接收到一个 <code>SYN</code> 报文，就进入<code>SYN_RCVD</code> 状态，但服务端发送出去的 <code>ACK + SYN</code> 报文，无法得到未知 IP 主机的 <code>ACK</code> 应答，久而久之就会<strong>占满服务端的 SYN 接收队列（未连接队列）</strong>，使得服务器不能为正常用户服务。</p>
-<h4 id="SYN攻击的避免"><a href="#SYN攻击的避免" class="headerlink" title="SYN攻击的避免"></a>SYN攻击的避免</h4><p>方式一：通过<strong>修改 Linux 内核参数，控制队列大小和当队列满时应做什么处理</strong>。</p>
-<ul>
-<li>当<strong>网卡接收数据包的速度大于内核处理的速度时，会有一个队列保存这些数据包。控制该队列的最大值</strong>参数：<code>net.core.netdev_max_backlog</code></li>
-<li><code>SYN_RCVD</code> 状态连接的最大个数：<code>net.ipv4.tcp_max_syn_backlog</code></li>
-<li>超出处理能时，对新的 SYN 直接回 RST，丢弃连接：<code>net.ipv4.tcp_abort_on_overflow</code></li>
-</ul>
-<p>Linux <strong>内核的 <code>SYN</code> （未完成连接建立）队列与 <code>Accpet</code> （已完成连接建立）队列</strong>是如何工作的:</p>
-<p><img src="https://api2.mubu.com/v3/document_image/eee8b186-13ee-47a9-9a36-e78bd9b561fd-11197877.jpg" alt="SYN_ACCPET队列工作原理"></p>
-<p>正常流程：</p>
-<ul>
-<li>当服务端接收到客户端的 SYN 报文时，会将其加入到<strong>内核的SYN 队列</strong></li>
-<li>接着发送 SYN + ACK 给客户端，等待客户端回应 ACK 报文</li>
-<li>服务端接收到 ACK 报文后，从 SYN 队列移除放入到 Accept 队列</li>
-<li><strong>应用通过调用 <code>accpet()</code> socket 接口，从Accept 队列取出连接。</strong></li>
-</ul>
-<p><img src="https://api2.mubu.com/v3/document_image/6a228333-dec9-45fb-8c1d-76ad93064551-11197877.jpg" alt="应用程序过慢"></p>
-<p>如果应用程序过慢时，就会<strong>导致Accept 队列被占满。</strong></p>
-<p><img src="https://api2.mubu.com/v3/document_image/2bd8a8b8-b62c-45f2-9a78-645082d3352a-11197877.jpg" alt="受到SYN攻击"></p>
-<ul>
-<li>如果不断受到 SYN 攻击，就会导致「 SYN 队列」被占满。<code>tcp_syncookies</code> 的方式可以应对 SYN 攻击的方法：<code>net.ipv4.tcp_syncookies = 1</code></li>
-</ul>
-<p><img src="https://api2.mubu.com/v3/document_image/d0d675fa-c7be-4221-ba70-d001cd098a66-11197877.jpg" alt="cookie启动"></p>
-<ul>
-<li>当 <strong>SYN 队列满之后，后续服务器收到 SYN 包，不进入SYN 队列</strong></li>
-<li>计算出一个 <code>cookie</code> 值，再以 SYN + ACK 中的序列号返回客户端</li>
-<li>服务端接收到客户端的应答报文时，<strong>服务器会检查这个 ACK 包的合法性。如果合法，直接放入到 Accept 队列</strong>。</li>
-<li>最后应用<strong>通过调用 <code>accpet()</code> socket 接口，从 Accept 队列取出的连接</strong>。</li>
-</ul>
-<h3 id="TCP断开连接"><a href="#TCP断开连接" class="headerlink" title="TCP断开连接"></a>TCP断开连接</h3><h4 id="TCP四次挥手过程及状态变迁"><a href="#TCP四次挥手过程及状态变迁" class="headerlink" title="TCP四次挥手过程及状态变迁"></a>TCP四次挥手过程及状态变迁</h4><p><strong>双方都可以主动断开连接，断开连接后主机中的资源将被释放</strong>。</p>
-<ul>
-<li>客户端打算关闭连接，此时会发送一个 TCP 首部 <code>FIN</code> 标志位被置为 <code>1</code> 的报文，也即 <code>FIN</code> 报文，之后客户端进入 <strong><code>FIN_WAIT_1</code> 状态</strong>。</li>
-<li>服务端收到该报文后，就向客户端发送 <code>ACK</code> 应答报文，接着服务端进入 <strong><code>CLOSED_WAIT</code> 状态。</strong></li>
-<li>客户端收到服务端的 <code>ACK</code> 应答报文后，之后进入 <strong><code>FIN_WAIT_2</code> 状态</strong>。</li>
-<li>等待服务端处理完数据后，也向客户端发送 <code>FIN</code> 报文，之后服务端进入 <strong><code>LAST_ACK</code> 状态。</strong></li>
-<li>客户端收到服务端的 <code>FIN</code> 报文后，回一个 <code>ACK</code> 应答报文，之后进入 <strong><code>TIME_WAIT</code> 状态</strong></li>
-<li>服务器收到了 <code>ACK</code> 应答报文后，就进入了 <code>CLOSE</code> 状态，至此服务端已经完成连接的关闭。</li>
-<li>客户端在经过 <code>2MSL</code> 一段时间后，自动进入 <code>CLOSE</code> 状态，至此客户端也完成连接的关闭。</li>
-</ul>
-<p>每个方向都需要<strong>一个 FIN 和一个 ACK</strong>，因此通常被称为<strong>四次挥手</strong>。</p>
-<h4 id="为什么需要四次挥手"><a href="#为什么需要四次挥手" class="headerlink" title="为什么需要四次挥手"></a>为什么需要四次挥手</h4><ul>
-<li>关闭连接时，客户端向服务端发送 <code>FIN</code> 时，<strong>仅仅表示客户端不再发送数据了但是还能接收数据。</strong></li>
-<li>服务器收到客户端的 <code>FIN</code> 报文时，先回一个 <code>ACK</code> 应答报文，而<strong>服务端可能还有数据需要处理和发送，等服务端不再发送数据时，才发送 <code>FIN</code> 报文给客户端来表示同意现在关闭连接。</strong></li>
-</ul>
-<p>从上面过程可知，服务端通常需要等待完成数据的发送和处理，所以服务端的 <code>ACK</code> 和 <code>FIN</code> 一般都会分开发送，从而比三次握手导致多了一次。</p>
-<h4 id="为什么需要-TIME-WAIT-状态"><a href="#为什么需要-TIME-WAIT-状态" class="headerlink" title="为什么需要 TIME_WAIT 状态"></a>为什么需要 TIME_WAIT 状态</h4><p><strong>主动发起关闭连接的一方，才会有 <code>TIME-WAIT</code> 状态。</strong></p>
-<p>需要 TIME-WAIT 状态，主要是两个原因：</p>
-<ul>
-<li>防止具有相同四元组的旧数据包被收到<ul>
-<li>假设 TIME-WAIT 没有等待时间或时间过短，<strong>有相同端口的 TCP 连接可能被复用，</strong>被延迟的数据包抵达后会：有可能正常接收这个过期的报文，这就会产生<strong>数据错乱</strong>等严重的问题</li>
-<li>经过 <code>2MSL</code> 时间，<strong>足以让两个方向上的数据包都被丢弃，使得原来连接的数据包在网络中都自然消失，再出现的数据包一定都是新建立连接所产生的。</strong></li>
-</ul>
-</li>
-<li>保证<strong>被动关闭连接的一方能被正确的关闭</strong>，即<strong>保证最后的 ACK 能让被动关闭方接收，从而帮助其正常关闭</strong>。<ul>
-<li>假设 TIME-WAIT 没有等待时间或时间过短，客户端四次挥手的最后一个 <code>ACK</code> 报文如果在网络中被丢失了，此时<strong>如果客户端 <code>TIME-WAIT</code> 过短或没有，则就直接进入了 <code>CLOSE</code> 状态了，那么服务端则会一直处在 <code>LASE-ACK</code> 状态。</strong></li>
-<li>当客户端发起建立连接的 <code>SYN</code> 请求报文后，服务端会发送 <code>RST</code> 报文给客户端，连接建立的过程就会被终止。</li>
-</ul>
-</li>
-</ul>
-<h4 id="为什么-TIME-WAIT-等待的时间是-2MSL"><a href="#为什么-TIME-WAIT-等待的时间是-2MSL" class="headerlink" title="为什么 TIME_WAIT 等待的时间是 2MSL"></a>为什么 TIME_WAIT 等待的时间是 2MSL</h4><p><code>MSL</code> 是 Maximum Segment Lifetime，<strong>报文最大生存时间</strong>，它是<strong>任何报文在网络上存在的最长时间，超过这个时间报文将被丢弃。</strong>因为 TCP 报文基于是 IP 协议的，而 IP 头中有一个 <code>TTL</code> 字段，是 IP 数据报可以经过的最大路由数，每经过一个处理他的路由器此值就减 1，当此值为 0 则数据报将被丢弃，同时发送 ICMP 报文通知源主机。</p>
-<p>MSL 与 TTL 的区别：MSL 的单位是时间，而 TTL 是经过路由跳数。所以 <strong>MSL 应该要大于等于 TTL 消耗为 0 的时间</strong>，以确保报文已被自然消亡。</p>
-<p>TIME_WAIT 等待 2 倍的 MSL，比较合理的解释是：<strong>网络中可能存在来自发送方的数据包，当这些发送方的数据包被接收方处理后又会向对方发送响应，所以一来一回需要等待 2 倍的时间。</strong>比如，如果被动关闭方没有收到断开连接的最后的 ACK 报文，就会触发超时重发 FIN 报文，另一方接收到 FIN 后，会重发 ACK 给被动关闭方， 一来一去正好 2 个 MSL。</p>
-<p><code>2MSL</code> 的时间是从<strong>客户端接收到 FIN 后发送 ACK 开始计时的</strong>。如果在 TIME-WAIT 时间内，因为客户端的 ACK 没有传输到服务端，客户端又接收到了服务端重发的 FIN 报文，那么 <strong>2MSL 时间将重新计时</strong>。</p>
-<p>在 Linux 系统里 <code>2MSL</code> 默认是 <code>60</code> 秒，那么一个 <code>MSL</code> 也就是 <code>30</code> 秒。<strong>Linux 系统停留在 TIME_WAIT 的时间为固定的 60 秒</strong>。</p>
-<p>其定义在 Linux 内核代码里的名称为 TCP_TIMEWAIT_LEN：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#define TCP_TIMEWAIT_LEN (60*HZ) /* how long to wait to destroy TIME-WAIT state, about 60 seconds  */</span><br></pre></td></tr></table></figure>
-<p><strong>如果要修改 TIME_WAIT 的时间长度，只能修改 Linux 内核代码里<code>TCP_TIMEWAIT_LEN</code>的值，并重新编译 Linux 内核。</strong></p>
-<h4 id="TIME-WAIT-过多有什么危害"><a href="#TIME-WAIT-过多有什么危害" class="headerlink" title="TIME_WAIT 过多有什么危害"></a>TIME_WAIT 过多有什么危害</h4><p>如果服务器有处于 TIME-WAIT 状态的 TCP，则说明是由服务器方主动发起的断开请求。</p>
-<p>过多的 TIME-WAIT 状态主要的危害有两种：</p>
-<ul>
-<li>第一是<strong>内存资源占用</strong></li>
-<li>第二是对<strong>端口资源的占用</strong>，一个 TCP 连接至少消耗一个本地端口</li>
-</ul>
-<p>第二个危害是会造成严重的后果的，端口资源是有限的，一般可以开启的端口为 <code>32768～61000</code>，也可以通过如下参数设置指定</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">net.ipv4.ip_local_port_range</span><br></pre></td></tr></table></figure>
-<p><strong>如果服务端 TIME_WAIT 状态过多，占满了所有端口资源，则会导致无法创建新连接。</strong></p>
-<h4 id="如何优化-TIME-WAIT？"><a href="#如何优化-TIME-WAIT？" class="headerlink" title="如何优化 TIME_WAIT？"></a>如何优化 TIME_WAIT？</h4><p>优化 TIME-WAIT 的几个方式，都是有利有弊：</p>
-<ul>
-<li><p>打开 <code>net.ipv4.tcp_tw_reuse</code> 和<code>net.ipv4.tcp_timestamps</code>选项</p>
-<ul>
-<li><strong>复用处于 TIME_WAIT 的 socket 为新的连接所用</strong></li>
-<li><code>net.ipv4.tcp_tw_reuse = 1</code>,使用前提：打开对 TCP 时间戳的支持:<code>net.ipv4.tcp_timestamps=1（默认即为 1）</code>(这个时间戳的字段是在 TCP 头部的选项里，用于记录 TCP 发送方的当前时间戳和从对端接收到的最新时间戳。由于引入了时间戳，前面提到的 <code>2MSL</code> 问题就不复存在了，因为<strong>重复的数据包会因为时间戳过期被自然丢弃</strong>)</li>
-<li>注意：<strong><code>net.ipv4.tcp_tw_reuse</code>要慎用，因为使用了它就必然要打开时间戳的支持 <code>net.ipv4.tcp_timestamps</code>，当客户端与服务端主机时间不同步时，客户端的发送的消息会被直接拒绝掉。</strong></li>
-</ul>
-</li>
-<li><p><code>net.ipv4.tcp_max_tw_buckets</code></p>
-<ul>
-<li>这个值默认为 18000，当系统中处于 TIME_WAIT 的连接<strong>一旦超过这个值时，系统就会将所有的 TIME_WAIT 连接状态重置。</strong>这个方法过于暴力，而且治标不治本，<strong>带来的问题远比解决的问题多</strong>。</li>
-</ul>
-</li>
-<li><p>程序中使用 <code>SO_LINGER</code> ，应用强制使用 <code>RST</code> 关闭</p>
-<ul>
-<li>可以通过设置 socket 选项，来设置调用 close 关闭连接行为。</li>
-</ul>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">linger</span> <span class="title">so_linger</span>;</span></span><br><span class="line">so_linger.l_onoff = <span class="number">1</span>;</span><br><span class="line">so_linger.l_linger = <span class="number">0</span>;</span><br><span class="line">setsockopt(s, SOL_SOCKET, SO_LINGER, &amp;so_linger,<span class="keyword">sizeof</span>(so_linger));</span><br></pre></td></tr></table></figure>
-<ul>
-<li>如果<code>l_onoff</code>为非 0， 且<code>l_linger</code>值为 0，那么调用<code>close</code>后，会立该发送一个<code>RST</code>标志给对端，<strong>该 TCP 连接将跳过四次挥手，也就跳过了<code>TIME_WAIT</code>状态，直接关闭。</strong>但这为跨越<code>TIME_WAIT</code>状态提供了一个可能，不过是一个非常危险的行为。</li>
-</ul>
-</li>
-</ul>
-<h4 id="如果已经建立了连接，但是客户端突然出现故障了怎么办"><a href="#如果已经建立了连接，但是客户端突然出现故障了怎么办" class="headerlink" title="如果已经建立了连接，但是客户端突然出现故障了怎么办"></a>如果已经建立了连接，但是客户端突然出现故障了怎么办</h4><p>TCP 有一个机制是<strong>保活机制</strong>。该机制的原理为：</p>
-<p>定义一个时间段，<strong>在这个时间段内，如果没有任何连接相关的活动，TCP 保活机制会开始作用，每隔一个时间间隔，发送一个探测报文，该探测报文包含的数据非常少，如果连续几个探测报文都没有得到响应，则认为当前的 TCP 连接已经死亡</strong>，系统内核将错误信息通知给上层应用程序。</p>
-<p>在 Linux 内核可以有对应的参数可以设置保活时间、保活探测的次数、保活探测的时间间隔，以下都为默认值：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">net.ipv4.tcp_keepalive_time=7200</span><br><span class="line">net.ipv4.tcp_keepalive_intvl=75  </span><br><span class="line">net.ipv4.tcp_keepalive_probes=9</span><br></pre></td></tr></table></figure>
-<ul>
-<li><code>tcp_keepalive_time=7200</code>：表示保活时间是 7200 秒（2小时），也就 2 小时内如果没有任何连接相关的活动，则会启动保活机制</li>
-<li><code>tcp_keepalive_intvl=75</code>：表示每次检测间隔 75 秒；</li>
-<li><code>tcp_keepalive_probes=9</code>：表示检测 9 次无响应，认为对方是不可达的，从而中断本次的连接。</li>
-</ul>
-<p>也就是说在 Linux 系统中，最少需要经过 2 小时 11 分 15 秒才可以发现一个死亡连接。这个时间可以根据实际的需求，对以上的保活相关的参数进行设置。</p>
-<p>如果开启了 TCP 保活，需要考虑以下几种情况：</p>
-<ul>
-<li><p>对端程序是<strong>正常工作</strong>的。当 TCP 保活的探测报文发送给对端, 对端会正常响应，这样 <strong>TCP 保活时间会被重置</strong>，等待下一个 TCP 保活时间的到来。</p>
-</li>
-<li><p>对端程序<strong>崩溃并重启</strong>。当 TCP 保活的探测报文发送给对端后，对端是可以响应的，但由于没有该连接的有效信息，<strong>会产生一个 RST 报文</strong>，这样很快就会发现 TCP 连接已经被重置。</p>
-</li>
-<li><p>是对端程序<strong>崩溃</strong>，或对端由于其他原因导致报文不可达。当 TCP 保活的探测报文发送给对端后，石沉大海，没有响应，连续几次，达到保活探测次数后，<strong>TCP 会报告该 TCP 连接已经死亡</strong>。</p>
-</li>
-</ul>
-<h3 id="socket编程"><a href="#socket编程" class="headerlink" title="socket编程"></a>socket编程</h3><p>socket编程与TCP状态的对应图：</p>
-<p><img src="https://api2.mubu.com/v3/document_image/f6c51f91-0005-44c9-8010-64d523fe5e12-11197877.jpg" alt="socket编程与通信过程的对应"></p>
-<h4 id="listen-时候参数-backlog-的意义"><a href="#listen-时候参数-backlog-的意义" class="headerlink" title="listen 时候参数 backlog 的意义"></a>listen 时候参数 backlog 的意义</h4><p>Linux内核中会维护两个队列：</p>
-<ul>
-<li><strong>未完成连接队列（SYN 队列）</strong>：接收到一个 SYN 建立连接请求，处于<code>SYN_RCVD</code> 状态</li>
-<li><strong>已完成连接队列（Accpet 队列）</strong>：已完成 TCP 三次握手过程，处于 <code>ESTABLISHED</code>状态</li>
-</ul>
-<p><img src="https://api2.mubu.com/v3/document_image/1b6c4373-b894-4e5d-a81f-de6e00f83d65-11197877.jpg" alt="backlog"></p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">listen</span> <span class="params">(<span class="keyword">int</span> socketfd, <span class="keyword">int</span> backlog)</span></span></span><br><span class="line"><span class="function"><span class="comment">// 参数一 socketfd 为 socketfd 文件描述符</span></span></span><br><span class="line"><span class="function"><span class="comment">// 参数二 backlog，这参数在历史有一定的变化</span></span></span><br></pre></td></tr></table></figure>
-<p>在早期 Linux 内核 backlog 是 SYN 队列大小，也就是未完成的队列大小。</p>
-<p>在 Linux 内核 2.2 之后，backlog 变成 accept 队列，也就是已完成连接建立的队列长度，<strong>所以现在通常认为 backlog 是 accept 队列。</strong></p>
-<h4 id="accept-发送在三次握手的哪一步"><a href="#accept-发送在三次握手的哪一步" class="headerlink" title="accept 发送在三次握手的哪一步"></a>accept 发送在三次握手的哪一步</h4><p>第三次握手的包到达服务器端后，<strong>服务器端协议栈使得 <code>accept</code> 阻塞调用返回</strong>，这个时候服务器端到客户端的单向连接也建立成功，服务器端也进入 ESTABLISHED 状态。<strong>客户端 connect 成功返回是在第二次握手，服务端 accept 成功返回是在三次握手成功之后</strong></p>
-<h4 id="客户端调用-close-了，连接是断开的流程是什么"><a href="#客户端调用-close-了，连接是断开的流程是什么" class="headerlink" title="客户端调用 close 了，连接是断开的流程是什么"></a>客户端调用 close 了，连接是断开的流程是什么</h4><ul>
-<li>客户端调用 <code>close</code>，表明客户端没有数据需要发送了，则此时会向服务端发送 FIN 报文，进入 FIN_WAIT_1 状态</li>
-<li>服务端接收到了 FIN 报文，<strong>TCP 协议栈会为 FIN 包插入一个文件结束符 <code>EOF</code> 到接收缓冲区中，应用程序可以通过 <code>read</code> 调用来感知这个 FIN 包。这个 <code>EOF</code> 会被放在已排队等候的其他已接收的数据之后，这就意味着服务端需要处理这种异常情况，因为 EOF 表示在该连接上再无额外数据到达。此时，服务端进入 CLOSE_WAIT 状态</strong></li>
-<li>接着，<strong>当处理完数据后，自然就会读到 <code>EOF</code>，于是也调用 <code>close</code> 关闭它的套接字，这会使得会发出一个 FIN 包，之后处于 LAST_ACK 状态</strong></li>
-<li>客户端接收到服务端的 FIN 包，并发送 ACK 确认包给服务端，此时客户端将进入 TIME_WAIT 状态</li>
-<li>服务端收到 ACK 确认包后，就进入了最后的 CLOSE 状态</li>
-<li>客户端进过 <code>2MSL</code> 时间之后，也进入 CLOSED 状态</li>
-</ul>
-<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a href="https://mp.weixin.qq.com/s/tH8RFmjrveOmgLvk9hmrkw" target="_blank" rel="noopener">https://mp.weixin.qq.com/s/tH8RFmjrveOmgLvk9hmrkw</a></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1722,20 +1770,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">67</span>
+          <span class="site-state-item-count">78</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-count">13</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-count">30</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

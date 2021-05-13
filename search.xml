@@ -559,6 +559,312 @@
       </tags>
   </entry>
   <entry>
+    <title>服务器客户端的最大TCP连接数</title>
+    <url>/2021/03/01/os-%E7%BD%91%E7%BB%9C-4/</url>
+    <content><![CDATA[<h3 id="一台服务器最大可以支持的TCP连接"><a href="#一台服务器最大可以支持的TCP连接" class="headerlink" title="一台服务器最大可以支持的TCP连接"></a>一台服务器最大可以支持的TCP连接</h3><h4 id="理论情况"><a href="#理论情况" class="headerlink" title="理论情况"></a>理论情况</h4><p><strong>TCP连接四元组是源IP地址、源端口、目的IP地址和目的端口。任意一个元素发生了改变，那么就代表的是一条完全不同的连接了。对任意一个网络服务来说，它的端口是固定。另外IP也是固定的，这样目的IP地址、目的端口都是固定的。剩下源IP地址、源端口是可变的。所以理论上该服务最多可以建立2的32次方（ip数）×2的16次方（port数）个连接。这是两百多万亿的一个大数字！！</strong></p>
+<h4 id="实际情况"><a href="#实际情况" class="headerlink" title="实际情况"></a>实际情况</h4><p>进程每打开一个文件（linux下一切皆文件，包括socket），都会消耗一定的内存资源。如果有不怀好心的人启动一个进程来无限的创建和打开新的文件，会让服务器崩溃。所以linux系统出于安全角度的考虑，在多个位置都限制了可打开的文件描述符的数量，包括系统级、用户级、进程级。这三个限制的含义和修改方式如下：</p>
+<ul>
+<li>系统级：当前系统可打开的最大数量，通过<code>fs.file-max</code>参数可修改</li>
+<li>用户级：指定用户可打开的最大数量，修改<code>/etc/security/limits.conf</code></li>
+<li>进程级：单个进程可打开的最大数量，通过<code>fs.nr_open</code>参数可修改</li>
+</ul>
+<p>修改以上内核参数后可以将文件句柄数据加大到100W，但是<strong>每一条TCP连接在服务器端都需要file, socket等内核对象。一条空TCP连接大概占用3.3KB内存。</strong></p>
+<p>接收区的缓存设置：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sudo sysctl -a | grep rmem</span><br><span class="line">net.ipv4.tcp_rmem = 4096	131072	629145</span><br><span class="line">net.core.rmem_default = 212992</span><br><span class="line">net.core.rmem_max = 212992</span><br></pre></td></tr></table></figure>
+<p>其中在<code>tcp_rmem</code>中的第一个值是为TCP连接所需分配的<strong>最少字节数。该值默认是4K，最大的话8MB之多。也就是说有数据发送的时候需要至少为对应的socket再分配4K内存，甚至可能更大。</strong></p>
+<p>TCP分配发送缓存区的大小受参数<code>net.ipv4.tcp_wmem</code>配置影响：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sudo sysctl -a | grep wmem</span><br><span class="line">net.ipv4.tcp_wmem = 4096	16384	4194304</span><br><span class="line">net.core.wmem_default = 212992</span><br><span class="line">net.core.wmem_max = 212992</span><br></pre></td></tr></table></figure>
+<p>在<code>net.ipv4.tcp_wmem</code>中的第一个值是发送缓存区的最小值，默认也是4K。如果数据很大的话，该缓存区实际分配的也会比默认值大。</p>
+<h4 id="查询实际消耗"><a href="#查询实际消耗" class="headerlink" title="查询实际消耗"></a>查询实际消耗</h4><p>活动连接数量查询：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ ss -n | grep ESTAB | wc -l</span><br></pre></td></tr></table></figure>
+<p>查看内存开销：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ cat /proc/meminfo</span><br></pre></td></tr></table></figure>
+<p>通过<code>slabtop</code>命令可以查看到<code>densty、flip、sock_inode_cache、TCP</code>四个内核对象.</p>
+<h3 id="客户端最大建立的TCP连接数"><a href="#客户端最大建立的TCP连接数" class="headerlink" title="客户端最大建立的TCP连接数"></a>客户端最大建立的TCP连接数</h3><h4 id="修改ip-local-port-range和文件描述符"><a href="#修改ip-local-port-range和文件描述符" class="headerlink" title="修改ip_local_port_range和文件描述符"></a>修改<code>ip_local_port_range</code>和文件描述符</h4><p>修改该值可以使客户端可用的端口号范围变大：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">echo</span> <span class="string">"5000 65000"</span> &gt; /proc/sys/net/ipv4/ip_local_port_range</span><br></pre></td></tr></table></figure>
+<p>还可以通过给主机增加多个IP地址来实现客户端的并发提高，但还需要修改文件描述符。</p>
+<p>文件描述符修改：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">//修改整个系统能打开的文件描述符为20W</span><br><span class="line"><span class="built_in">echo</span> 200000 &gt; /proc/sys/fs/file-max</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">//修改所有用户每个进程可打开文件描述符为20W</span><br><span class="line"><span class="comment">#vi /etc/sysctl.conf</span></span><br><span class="line">fs.nr_open=210000</span><br><span class="line"><span class="comment">#sysctl -p</span></span><br><span class="line"><span class="comment">#vi /etc/security/limits.conf</span></span><br><span class="line">*  soft  nofile  200000</span><br><span class="line">*  hard  nofile  200000</span><br></pre></td></tr></table></figure>
+<p>注意: <code>limits</code>中的<code>hard limit</code>不能超过<code>nr_open</code>, 所以要先改<code>nr_open</code>。而且最好是在<code>sysctl.conf</code>中改。避免重启的时候 <code>hard limit</code>生效了，<code>nr_open</code>不生效导致启动问题。</p>
+<h4 id="连接多个服务进行端口复用"><a href="#连接多个服务进行端口复用" class="headerlink" title="连接多个服务进行端口复用"></a>连接多个服务进行端口复用</h4><p>TCP连接的本质是客户端和服务器分别在内存维护一堆socket内核对象，它们只要能找到对方就算一条连接。在连接过程中，端口只是socket对象找到另一半的信物之一。</p>
+<p>源码分析：</p>
+<p>socket中有一个主要的数据结构<code>sock_common</code>，在它里面有两个联合体:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// file: include/net/sock.h</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sock_common</span> &#123;</span></span><br><span class="line"> <span class="keyword">union</span> &#123;</span><br><span class="line">  __addrpair skc_addrpair; <span class="comment">//TCP连接IP对</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">   __be32 skc_daddr;</span><br><span class="line">   __be32 skc_rcv_saddr;</span><br><span class="line">  &#125;;</span><br><span class="line"> &#125;; </span><br><span class="line"> <span class="keyword">union</span> &#123;</span><br><span class="line">  __portpair skc_portpair; <span class="comment">//TCP连接端口对</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">   __be16 skc_dport;</span><br><span class="line">   __u16 skc_num;</span><br><span class="line">  &#125;;</span><br><span class="line"> &#125;;</span><br><span class="line"> ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中<code>skc_addrpair</code>记录的是TCP连接里的IP对，<code>skc_portpair</code>记录的是端口对。</p>
+<p>当客户端的两个连接使用一个端口和服务器的两个服务进行连接时，如何区分服务器给客户端发送的数据属于哪条连接？</p>
+<p>在网络包到达网卡之后，依次经历DMA、硬中断、软中断等处理，最后被送到socket的接收队列中。该过程设计到协议层对网络帧的处理，主要的<code>tcp_v4_rcv</code>代码如下：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// file: net/ipv4/tcp_ipv4.c</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">tcp_v4_rcv</span><span class="params">(struct sk_buff *skb)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"> ......</span><br><span class="line"> th = tcp_hdr(skb); <span class="comment">//获取tcp header</span></span><br><span class="line"> iph = ip_hdr(skb); <span class="comment">//获取ip header</span></span><br><span class="line"></span><br><span class="line"> sk = __inet_lookup_skb(&amp;tcp_hashinfo, skb, th-&gt;source, th-&gt;dest); <span class="comment">// 返回socket，这里设计到连接</span></span><br><span class="line"> ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>连接的具体实现：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// file: include/net/inet_hashtables.h</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="class"><span class="keyword">struct</span> <span class="title">sock</span> *__<span class="title">inet_lookup</span>(<span class="title">struct</span> <span class="title">net</span> *<span class="title">net</span>,</span></span><br><span class="line"><span class="class">      <span class="title">struct</span> <span class="title">inet_hashinfo</span> *<span class="title">hashinfo</span>,</span></span><br><span class="line"><span class="class">      <span class="title">const</span> __<span class="title">be32</span> <span class="title">saddr</span>, <span class="title">const</span> __<span class="title">be16</span> <span class="title">sport</span>,</span></span><br><span class="line"><span class="class">      <span class="title">const</span> __<span class="title">be32</span> <span class="title">daddr</span>, <span class="title">const</span> __<span class="title">be16</span> <span class="title">dport</span>,</span></span><br><span class="line"><span class="class">      <span class="title">const</span> <span class="title">int</span> <span class="title">dif</span>)</span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"> u16 hnum = ntohs(dport);</span><br><span class="line"> <span class="class"><span class="keyword">struct</span> <span class="title">sock</span> *<span class="title">sk</span> = __<span class="title">inet_lookup_established</span>(<span class="title">net</span>, <span class="title">hashinfo</span>,</span></span><br><span class="line"><span class="class">    <span class="title">saddr</span>, <span class="title">sport</span>, <span class="title">daddr</span>, <span class="title">hnum</span>, <span class="title">dif</span>);</span></span><br><span class="line"></span><br><span class="line"> <span class="keyword">return</span> sk ? : __inet_lookup_listener(net, hashinfo, saddr, sport,</span><br><span class="line">          daddr, hnum, dif);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>先判断有没有连接状态的socket，这会走到<code>__inet_lookup_established</code>函数中：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sock</span> *__<span class="title">inet_lookup_established</span>(<span class="title">struct</span> <span class="title">net</span> *<span class="title">net</span>,</span></span><br><span class="line"><span class="class">      <span class="title">struct</span> <span class="title">inet_hashinfo</span> *<span class="title">hashinfo</span>,</span></span><br><span class="line"><span class="class">      <span class="title">const</span> __<span class="title">be32</span> <span class="title">saddr</span>, <span class="title">const</span> __<span class="title">be16</span> <span class="title">sport</span>,</span></span><br><span class="line"><span class="class">      <span class="title">const</span> __<span class="title">be32</span> <span class="title">daddr</span>, <span class="title">const</span> <span class="title">u16</span> <span class="title">hnum</span>,</span></span><br><span class="line"><span class="class">      <span class="title">const</span> <span class="title">int</span> <span class="title">dif</span>)</span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"> <span class="comment">//将源端口、目的端口拼成一个32位int整数</span></span><br><span class="line"> <span class="keyword">const</span> __portpair ports = INET_COMBINED_PORTS(sport, hnum); </span><br><span class="line"> ......</span><br><span class="line"></span><br><span class="line"> <span class="comment">//内核用hash的方法加速socket的查找</span></span><br><span class="line"> <span class="keyword">unsigned</span> <span class="keyword">int</span> hash = inet_ehashfn(net, daddr, hnum, saddr, sport); </span><br><span class="line"> <span class="keyword">unsigned</span> <span class="keyword">int</span> slot = hash &amp; hashinfo-&gt;ehash_mask;</span><br><span class="line"> <span class="class"><span class="keyword">struct</span> <span class="title">inet_ehash_bucket</span> *<span class="title">head</span> = &amp;<span class="title">hashinfo</span>-&gt;<span class="title">ehash</span>[<span class="title">slot</span>];</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">begin</span>:</span><br><span class="line"> <span class="comment">//遍历链表，逐个对比直到找到</span></span><br><span class="line"> sk_nulls_for_each_rcu(sk, node, &amp;head-&gt;chain) &#123;</span><br><span class="line">  <span class="keyword">if</span> (sk-&gt;sk_hash != hash)</span><br><span class="line">   <span class="keyword">continue</span>;</span><br><span class="line">  <span class="keyword">if</span> (likely(INET_MATCH(sk, net, acookie,</span><br><span class="line">          saddr, daddr, ports, dif))) &#123;</span><br><span class="line">   <span class="keyword">if</span> (unlikely(!atomic_inc_not_zero(&amp;sk-&gt;sk_refcnt)))</span><br><span class="line">    <span class="keyword">goto</span> begintw;</span><br><span class="line">   <span class="keyword">if</span> (unlikely(!INET_MATCH(sk, net, acookie,</span><br><span class="line">       saddr, daddr, ports, dif))) &#123;</span><br><span class="line">    sock_put(sk);</span><br><span class="line">    <span class="keyword">goto</span> <span class="built_in">begin</span>;</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">goto</span> out;</span><br><span class="line">  &#125;</span><br><span class="line"> &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>内核使用hash+链表的方式来管理其维护的socket。服务器端计算完hash值以后找到对应的链表进行遍历。</p>
+<p>socket的对比函数(宏)<code>INET_MATCH</code>:</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="comment">// include/net/inet_hashtables.h</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> INET_MATCH(__sk, __net, __cookie, __saddr, __daddr, __ports, __dif) \</span></span><br><span class="line"> ((inet_sk(__sk)-&gt;inet_portpair == (__ports)) &amp;&amp;  \</span><br><span class="line">  (inet_sk(__sk)-&gt;inet_daddr == (__saddr)) &amp;&amp;  \</span><br><span class="line">  (inet_sk(__sk)-&gt;inet_rcv_saddr == (__daddr)) &amp;&amp;  \</span><br><span class="line">  (!(__sk)-&gt;sk_bound_dev_if ||    \</span><br><span class="line">    ((__sk)-&gt;sk_bound_dev_if == (__dif)))  &amp;&amp;  \</span><br><span class="line">  net_eq(sock_net(__sk), (__net)))</span><br></pre></td></tr></table></figure>
+<p><strong>在<code>INET_MATCH</code>中将网络包<code>tcp  header</code>中的<code>__saddr、__daddr、__ports</code>和Linux中的socket中<code>inet_portpair、inet_daddr、inet_rcv_saddr</code>进行对比。如果匹配socket就找到了。</strong>当然除了ip和端口，<code>INET_MATCH</code>还比较了其它一些东西，所以TCP还有五元组、七元组之类的说法。</p>
+<p>由此：<strong>可以把同一个端口用于两条连接，只要server端的ip或两者端口不一样就能正确找到socket,而不是串线。</strong></p>
+<p>所以在客户端增加TCP最大并发能力有两个方法<strong>。第一个办法，为客户端配置多个ip。第二个办法，连接多个不同的server。</strong></p>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a href="https://mp.weixin.qq.com/s?__biz=MjM5Njg5NDgwNA==&amp;mid=2247484207&amp;idx=1&amp;sn=50ae06628062bcdd5b2aff044f34fa80&amp;chksm=a6e3021491948b0287e4f856791e4d1880ddfb76a76c3de4ea7c8e59a0cb1f2312c49e9ff5ce&amp;cur_album_id=1532487451997454337&amp;scene=189#rd" target="_blank" rel="noopener">https://mp.weixin.qq.com/s?__biz=MjM5Njg5NDgwNA==&amp;mid=2247484207&amp;idx=1&amp;sn=50ae06628062bcdd5b2aff044f34fa80&amp;chksm=a6e3021491948b0287e4f856791e4d1880ddfb76a76c3de4ea7c8e59a0cb1f2312c49e9ff5ce&amp;cur_album_id=1532487451997454337&amp;scene=189#rd</a></p>
+<p><a href="https://mp.weixin.qq.com/s?__biz=MjM5Njg5NDgwNA==&amp;mid=2247484310&amp;idx=1&amp;sn=025f7787f39a9eef322ab73c4687b910&amp;chksm=a6e302ad91948bbb17479890b03b47b93cc33af7db4ce5f22d63de83c498c424b71da7bc884b&amp;cur_album_id=1532487451997454337&amp;scene=189#rd" target="_blank" rel="noopener">https://mp.weixin.qq.com/s?__biz=MjM5Njg5NDgwNA==&amp;mid=2247484310&amp;idx=1&amp;sn=025f7787f39a9eef322ab73c4687b910&amp;chksm=a6e302ad91948bbb17479890b03b47b93cc33af7db4ce5f22d63de83c498c424b71da7bc884b&amp;cur_album_id=1532487451997454337&amp;scene=189#rd</a></p>
+]]></content>
+      <categories>
+        <category>网络</category>
+      </categories>
+      <tags>
+        <tag>网络</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>TCP连接耗时</title>
+    <url>/2021/02/25/os-%E7%BD%91%E7%BB%9C-3/</url>
+    <content><![CDATA[<h3 id="TCP连接耗时"><a href="#TCP连接耗时" class="headerlink" title="TCP连接耗时"></a>TCP连接耗时</h3><p>开发过程中调用mysql, redis等组件获取数据或者执行rpc远程调用以及调用restful api的时候底层使用的是TCP协议。这是因为在传输层协议中，TCP协议具备可靠的连接，错误重传，拥塞控制等优点。</p>
+<h4 id="正常的TCP连接建立过程"><a href="#正常的TCP连接建立过程" class="headerlink" title="正常的TCP连接建立过程"></a>正常的TCP连接建立过程</h4><p>在软中断中，当一个包被内核从<code>RingBuffer</code>中摘下来的时候，在内核中是用<code>struct sk_buff</code>结构体来表示的(参见内核代码<code>include/linux/skbuff.h</code>)。其中的data成员是接收到的数据，<strong>在协议栈逐层被处理的时候，通过修改指针指向data的不同位置，来找到每一层协议关心的数据。</strong></p>
+<p><img src="https://api2.mubu.com/v3/document_image/c89a0e92-adb3-4685-97f9-8e3ac4553a12-11197877.jpg" alt="网络包读取过程"></p>
+<p>对于TCP协议包来说，它的Header中有一个重要的字段:flags,也就是<strong>标志位</strong>。</p>
+<p>通过设置不同的标记为，可以将TCP包分成<code>SYNC、FIN、ACK、RST</code>等类型。客户端通过<code>connect</code>系统调用命令内核发出<code>SYNC、ACK</code>等包来实现和服务器TCP连接的建立。在服务器端，可能会接收许许多多的连接请求，内核还需要借助一些辅助数据结构-<strong>半连接队列和全连接队列</strong>。看一下整个连接过程：</p>
+<p><img src="https://api2.mubu.com/v3/document_image/1b6c4373-b894-4e5d-a81f-de6e00f83d65-11197877.jpg" alt="TCP三次握手具体过程"></p>
+<p>简单分析每一步的耗时：</p>
+<ul>
+<li>客户端发出SYNC包：客户端一般是通过<strong>connect系统调用</strong>来发出SYN的，这里牵涉到<strong>本机的系统调用和软中断的CPU耗时开销</strong></li>
+<li><strong>SYN传到服务器</strong>：SYN从客户端网卡被发出，开始长途远距离的网络传输</li>
+<li>服务器处理SYN包：<strong>内核通过软中断来收包，然后放到半连接队列中，然后再发出SYN/ACK响应。又是CPU耗时开销</strong></li>
+<li><strong>SYC/ACK传到客户端</strong>：SYN/ACK从服务器端被发出后，同样进行一次长途网络跋涉</li>
+<li>客户端处理SYN/ACK：客户端内核收包并处理SYN后，经过几us的CPU处理，接着发出ACK。同样是软中断处理开销</li>
+<li><strong>ACK传到服务器</strong>：和SYN包，一样，再经过几乎同样远的路，传输一遍。 又一次长途网络跋涉</li>
+<li>服务端收到ACK：<strong>服务器端内核收到并处理ACK，然后把对应的连接从半连接队列中取出来，然后放到全连接队列中。一次软中断CPU开销</strong></li>
+<li>服务器端用户进程唤醒：<strong>正在被accpet系统调用阻塞的用户进程被唤醒，然后从全连接队列中取出来已经建立好的连接。一次上下文切换的CPU开销</strong></li>
+</ul>
+<p>以上操作主要可以分为两类：</p>
+<ul>
+<li>第一类是内核消耗CPU进行接收、发送或者是处理，包括系统调用、软中断和上下文切换。它们的耗时基本都是几个us左右</li>
+<li>第二类是网络传输，当包被从一台机器上发出以后，中间要经过各式各样的网线、各种交换机路由器。所以<strong>网络传输的耗时相比本机的CPU处理，就要高的多了。根据网络远近一般在几ms~到几百ms不等。</strong></li>
+</ul>
+<p>1ms等于1000us，因此网络传输耗时比双端的CPU开销要高1000倍左右，甚至更高可能还到100000倍。所以，<strong>在正常的TCP连接的建立过程中，一般可以考虑网络延时即可</strong>。一个RTT指的是包从一台服务器到另外一台服务器的一个来回的延迟时间。所以从全局来看，TCP连接建立的网络耗时大约需要三次传输，再加上少许的双方CPU开销，总共大约比1.5倍RTT大一点点。不过从客户端视角来看，只要ACK包发出了，内核就认为连接是建立成功了。所以如果在客户端打点统计TCP连接建立耗时的话，只需要两次传输耗时-既1个RTT多一点的时间。（对于服务器端视角来看同理，从SYN包收到开始算，到收到ACK，中间也是一次RTT耗时）</p>
+<h4 id="TCP连接建立时的异常情况"><a href="#TCP连接建立时的异常情况" class="headerlink" title="TCP连接建立时的异常情况"></a>TCP连接建立时的异常情况</h4><p>在正常情况下一次TCP连接总的耗时也就就大约是一次网络RTT的耗时。但在某些情况下，可能会导致连接时的网络传输耗时上涨、CPU处理开销增加、甚至是连接失败。</p>
+<h5 id="客户端connect系统调用耗时失控"><a href="#客户端connect系统调用耗时失控" class="headerlink" title="客户端connect系统调用耗时失控"></a>客户端connect系统调用耗时失控</h5><p>正常一个系统调用的耗时也就是几个us（微秒）左右。但当TCP客户端TIME_WAIT有30000左右，<strong>导致可用端口不是特别充足的时候，connect系统调用的CPU开销直接上涨了100多倍，会达到毫秒级别。</strong></p>
+<p>查看<strong>本机的端口内核参数配置</strong>：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sudo sysctl -a | grep ip_local_port_range</span><br><span class="line">net.ipv4.ip_local_port_range = 32768	60999</span><br></pre></td></tr></table></figure>
+<p>可以看到内核分配的端口其实就3万个左右，<strong>当端口快占满的时候(TIME_WAIT过多)，端口的选择会十分耗时,且该段时间内cpu一直处于找空闲端口阶段，一直在占用CPU。</strong></p>
+<p><strong>主要原因：临时端口选择过程是生成一个随机数，利用随机数在<code>ip_local_port_range</code>范围内取值，如果取到的值在<code>ip_local_reserved_ports</code>范围内 ，那就再依次取下一个值，直到不在<code>ip_local_reserved_ports</code>范围内为止。原来临时端口竟然是随机撞出来的。也就是说假如就有range里配置了5W个端口可以用，已经使用掉了49999个。那么新建立连接的时候，可能需要调用这个随机函数5W次才能撞到这个没用的端口身上。</strong></p>
+<h5 id="解决办法"><a href="#解决办法" class="headerlink" title="解决办法"></a>解决办法</h5><ul>
+<li><p><strong>保证可用临时端口的充裕，避免你的connect系统调用进入反复查找模式。正常端口充足的时候，只需要微秒几倍。但是一旦出现端口紧张，则一次系统调用耗时会上升到毫秒几倍，整整多出100倍。这个开销比正常tcp连接的建立吃掉的cpu时间（每个30usec左右）的开销要大的多。</strong></p>
+<ul>
+<li><p>修改方法：</p>
+</li>
+<li><p>```bash</p>
+<h1 id="vim-etc-sysctl-conf"><a href="#vim-etc-sysctl-conf" class="headerlink" title="vim /etc/sysctl.conf"></a>vim /etc/sysctl.conf</h1><p>net.ipv4.ip_local_port_range = 10000 65000</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">- **可以考虑设置net.ipv4.tcp_tw_recycle和net.ipv4.tcp_tw_reuse这两个参数，避免端口长时间保守地等待2MSL时间。**</span><br><span class="line">- 参考https://blog.csdn.net/enweitech/article/details/79261439</span><br><span class="line"></span><br><span class="line">##### 半/全连接队列全满</span><br><span class="line"></span><br><span class="line">如果连接建立的过程中，**任意一个队列满了，那么客户端发送过来的syn或者ack就会被丢弃。客户端等待很长一段时间无果后，然后会发出TCP Retransmission重传。**</span><br><span class="line"></span><br><span class="line">TCP**握手超时重传的时间是秒级别的**。也就是说一旦server端的连接队列导致连接建立不成功，那么光建立连接就至少需要秒级以上。而正常的在同机房的情况下只是不到1毫秒的事情，整整高了1000倍左右。尤其是对于给用户提供实时服务的程序来说，用户体验将会受到较大影响。如果连重传也没有握手成功的话，很可能等不及二次重试，这个用户访问直接就超时了。</span><br><span class="line"></span><br><span class="line">更坏的情况是，它还有可能会影响其它的用户。假如使用的是进程/线程池这种模型提供服务，比如php-fpm。**fpm进程是阻塞的，当它响应一个用户请求的时候，该进程是没有办法再响应其它请求的**。假如开了100个进程/线程，而某一段时间内有50个进程/线程卡在和redis或者mysql服务器的握手连接上了（**注意：这个时候服务器是TCP连接的客户端一方**）。这一段时间内相当于可以用的正常工作的进程/线程只有50个了。而这个50个worker可能根本处理不过来，这时**候服务可能就会产生拥堵。再持续稍微时间长一点的话，可能就产生雪崩了，整个服务都有可能会受影响。**</span><br><span class="line"></span><br><span class="line">##### 解决办法</span><br><span class="line"></span><br><span class="line">查看服务是否有因为半/全连接队列满的情况发生。**在客户端，可以抓包查看是否有SYN的TCP Retransmission。如果有偶发的TCP Retransmission，那就说明对应的服务端连接队列可能有问题了。**</span><br><span class="line"></span><br><span class="line">在服务端的话，查看起来就更方便一些。**`netstat -s`可查看到当前系统半连接队列满导致的丢包统计，但该数字记录的是总丢包数。需要再借助`watch`命令动态监控。**如果下面的数字在监控的过程中变了，那说明当前服务器有因为半连接队列满而产生的丢包。可能需要加大半连接队列的长度。</span><br><span class="line"></span><br><span class="line">```bash</span><br><span class="line">$ watch &apos;netstat -s | grep LISTEN&apos;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+<p>对于全连接队列来说，查看方法也类似：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ watch <span class="string">'netstat -s  | grep overflowed'</span></span><br></pre></td></tr></table></figure>
+<p><strong>如果服务因为队列满产生丢包，其中一个做法就是加大半/全连接队列的长度。 半连接队列长度Linux内核中，主要受<code>tcp_max_syn_backlog</code>影响 加大它到一个合适的值就可以。</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># cat /proc/sys/net/ipv4/tcp_max_syn_backlog</span></span><br><span class="line">512</span><br><span class="line"><span class="comment"># echo "2048" &gt; /proc/sys/net/ipv4/tcp_max_syn_backlog</span></span><br></pre></td></tr></table></figure>
+<p><strong>全连接队列长度是应用程序调用<code>listen</code>时传入的<code>backlog</code>以及内核参数<code>net.core.somaxconn</code>二者之中较小的那个。可能需要同时调整应用程序和该内核参数</strong>。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># cat /proc/sys/net/core/somaxconn</span></span><br><span class="line">128</span><br><span class="line"><span class="comment"># echo "256" &gt; /proc/sys/net/core/somaxconn</span></span><br></pre></td></tr></table></figure>
+<p>改完之后可以通过<code>ss</code>命令输出的<code>Send-Q</code>确认最终生效长度：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">$ ss -nlt</span><br><span class="line">Recv-Q Send-Q Local Address:Port Address:Port</span><br><span class="line">0      128    *:80               *:*</span><br></pre></td></tr></table></figure>
+<p><code>Recv-Q</code>告知<strong>当前该进程的全连接队列使用长度情况</strong>。<strong>如果<code>Recv-Q</code>已经逼近了<code>Send-Q</code>,那么可能不需要等到丢包也应该准备加大全连接队列。</strong></p>
+<p>如果加大队列后仍然有非常偶发的队列溢出的话，可以暂且容忍。如果仍然有较长时间处理不过来怎么办？另外一个做法就是<strong>直接报错，不要让客户端超时等待。例如将Redis、Mysql等后端接口的内核参数<code>tcp_abort_on_overflow</code>为1。如果队列满了，直接发reset给client。告诉后端进程/线程不要痴情地傻等</strong>。这时候client会收到错误“connection reset by peer”。<strong>牺牲一个用户的访问请求，要比把整个站都搞崩了还是要强的。</strong></p>
+<h4 id="实际测试"><a href="#实际测试" class="headerlink" title="实际测试"></a>实际测试</h4><p>参考<a href="https://mp.weixin.qq.com/s?__biz=MjM5Njg5NDgwNA==&amp;mid=2247484126&amp;idx=1&amp;sn=4c35ea42477ffd5db5f05fe8bc850cdb&amp;chksm=a6e303e591948af3cc31b1db349958c8a879b9eb7100ebd138dc361aaf04ba5878f602a16365&amp;cur_album_id=1532487451997454337&amp;scene=189#rd" target="_blank" rel="noopener">张彦飞的博客</a>.可以得出的结论主要有：</p>
+<p>TCP连接建立异常情况下，可能需要好几秒，一个坏处就是会影响用户体验，甚至导致当前用户访问超时都有可能。另外一个坏处是可能会诱发雪崩。所以当服务器使用短连接的方式访问数据的时候，一定要学会要监控服务器的连接建立是否有异常状态发生。如果有，学会优化掉它。当然可以采用本机内存缓存，或者使用连接池来保持长连接，通过这两种方式直接避免掉TCP握手挥手的各种开销也可以。</p>
+<p>当连接队列溢出时需要特别注意：<strong>一旦发生队列满，当时撞上的那个连接请求就得需要长时间的连接建立延时。</strong></p>
+<p>正常情况下，TCP建立的延时大约就是两台机器之间的一个RTT耗时，这是避免不了的。但是可以控制<strong>两台机器之间的物理距离</strong>来降低这个RTT，比如把要访问的redis尽可能地部署的离后端接口机器近一点，这样RTT也能从几十ms削减到最低可能零点几ms。</p>
+<p><strong>线上部署时，理想的方案是将自己服务依赖的各种mysql、redis等服务和自己部署在同一个地区、同一个机房（再变态一点，甚至可以是甚至是同一个机架）。因为这样包括TCP链接建立啥的各种网络包传输都要快很多。要尽可能避免长途跨地区机房的调用情况出现。</strong></p>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a href="https://mp.weixin.qq.com/s?__biz=MjM5Njg5NDgwNA==&amp;mid=2247484126&amp;idx=1&amp;sn=4c35ea42477ffd5db5f05fe8bc850cdb&amp;chksm=a6e303e591948af3cc31b1db349958c8a879b9eb7100ebd138dc361aaf04ba5878f602a16365&amp;cur_album_id=1532487451997454337&amp;scene=189#rd" target="_blank" rel="noopener">https://mp.weixin.qq.com/s?__biz=MjM5Njg5NDgwNA==&amp;mid=2247484126&amp;idx=1&amp;sn=4c35ea42477ffd5db5f05fe8bc850cdb&amp;chksm=a6e303e591948af3cc31b1db349958c8a879b9eb7100ebd138dc361aaf04ba5878f602a16365&amp;cur_album_id=1532487451997454337&amp;scene=189#rd</a></p>
+<p><a href="https://mp.weixin.qq.com/s/tH8RFmjrveOmgLvk9hmrkw" target="_blank" rel="noopener">https://mp.weixin.qq.com/s/tH8RFmjrveOmgLvk9hmrkw</a></p>
+<p><a href="https://blog.csdn.net/enweitech/article/details/79261439" target="_blank" rel="noopener">https://blog.csdn.net/enweitech/article/details/79261439</a></p>
+]]></content>
+      <categories>
+        <category>网络</category>
+      </categories>
+      <tags>
+        <tag>网络</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>RabbitMQ简介</title>
+    <url>/2021/02/22/rabbitmq-1/</url>
+    <content><![CDATA[<h3 id="RabbitMQ简介"><a href="#RabbitMQ简介" class="headerlink" title="RabbitMQ简介"></a>RabbitMQ简介</h3><h4 id="Message-Broker（消息代理）"><a href="#Message-Broker（消息代理）" class="headerlink" title="Message Broker（消息代理）"></a>Message Broker（消息代理）</h4><p>RabbitMQ 官网对 Message broker 的定义：Message broker <strong>接收来自发布者的消息并将其路由到消费者。</strong></p>
+<p>RabbitMQ 实现了一个加  AMQP（Advanced Message Queuing Protocol）的协议，AMQP 就如互联网的 HTTP 协议，它<strong>更注重于如何传输数据，并不关心发送的数据是什么</strong>。这也就意味着<strong>需要消息的发送者和接收者来协调消息的格式。</strong></p>
+<h4 id="Message-Broker的作用"><a href="#Message-Broker的作用" class="headerlink" title="Message Broker的作用"></a>Message Broker的作用</h4><p>有这样一个应用，客户端需要与服务器进行通信，传递数据。最简单的情况就是客户端通过 HTTP 类协议直接与服务器连接，并发送数据。看似非常简单，但如果服务器因为维护或其它原因发生了停机，或者想对其横向扩展，添加更多的服务器来进行响应。那么问题就来了，<strong>客户端目前是与这台服务器紧密的耦合在一起了，而随着系统的增长和进化，这种紧耦合就开始让人头疼。</strong></p>
+<p>此时，如果在客户端和服务器之间放置一个Message broker则不一样：</p>
+<p><img src="https://i0.hdslb.com/bfs/article/99b7a06fd5309c70c18e23d9e70b31af2d7e0e43.png@1248w_504h.png" alt="在客户端和服务器之间添加Message broker"></p>
+<p><strong>客户端首先将数据发送给 Message broker。Message broker 会对数据进行检验，并将其发送给服务器。</strong>但是在这种简单的情景下，似乎没带来什么好处。然而，Message broker 可以通过简单的设置来允许多种场景，从而让<strong>后端服务器的横向扩展或停机维护</strong>等工作变得轻松，并且<strong>客户端并不会感知到任何的变化。</strong></p>
+<h4 id="Exchange和Queue"><a href="#Exchange和Queue" class="headerlink" title="Exchange和Queue"></a>Exchange和Queue</h4><p>在最简单的场景下，RabbitMQ 的架构示意图大致如下：</p>
+<p><img src="https://i0.hdslb.com/bfs/article/bf0f6ae284810963816540237726112522acad3b.png@1248w_396h.png" alt="Rabbitmq架构"></p>
+<ul>
+<li>首先某个消息从发布者那里发往 RabbitMQ</li>
+<li>这个<strong>消息需要声明一个 Exchange（交换机）</strong>，并被发往这个 Exchange<ul>
+<li>Exchange 有点类似<strong>“暂存区”</strong>，消息都会发往 Exchange。用个类比来说：Exchange 就像邮箱一样，写的信件首先都要放到邮箱里才能进行发送。</li>
+</ul>
+</li>
+<li>然后，Exchange 将使用消息内的一些<strong>信息</strong>以及它自己的<strong>配置</strong>来决定<strong>一条或多条发送消息的路由。</strong></li>
+<li>这些路由都通向一个 Queue（队列），<strong>消息会存储在这个 Queue 里，等待消息的接收者来进行使用。</strong></li>
+<li>一个消息的接收者可以使用 Queue 中的信息。<strong>一旦确认这个消息被传递成功，那么它将从 Queue 中被删除。</strong><ul>
+<li>RabbitMQ 所提供的<strong>松耦合</strong>的特性，主要是因为 <strong>Exchange 和 Queue 的分离</strong>。</li>
+<li>继续使用邮箱的类比，<strong>Queue 就相当于是接收信件的邮箱。而根据邮件地址，邮件系统会选择不同的邮箱来接收邮件。</strong></li>
+</ul>
+</li>
+</ul>
+<p>RabbitMQ的4种Exchange:</p>
+<ul>
+<li><p>Direct Exchange。是默认的 Exchange ，<strong>会把消息发送到一个接收者。如果注册了多个接收者来监听同样的路由 Key，那么 RabbitMQ 将会向每个 Queue 轮流发送一条消息，相当于提供了一个简单的负载均衡</strong></p>
+</li>
+<li><p>Fanout Exchange。 把消息的<strong>副本</strong>发送到<strong>每个绑定到该 Exchange 的 Queue 上面</strong>。而这里的 <strong>Queue 没有办法对消息进行过滤，如果需要过滤，则需要在消息接收者那里实现。</strong></p>
+</li>
+<li><p>Topic Exchange。和 Direct Exchange 类似，但不同的是：<strong>每个消息接收者监听特定的路由 Key，它们会收到消息的副本。</strong></p>
+<ul>
+<li>例如聊天室就可以使用 Topic Exchange。每个聊天室的 ID 可以作为路由 Key，这样就可以<strong>保证消息只会发送给同一个聊天室的其他参与者。</strong></li>
+</ul>
+</li>
+<li><p>Headers Exchange。<strong>这类 Exchange 会忽略路由 Key，取而代之的是，它们会查看消息的 Header，并由此来决定消息应该发往哪个 Queue。Queue 可以有一个或多个 Header 用来进行匹配。这也就开启了复杂的路由场景</strong>，例如某个 Queue 有时可以接收到某类消息而有时则不行。</p>
+</li>
+</ul>
+<h4 id="Fanout-Exchange"><a href="#Fanout-Exchange" class="headerlink" title="Fanout Exchange"></a>Fanout Exchange</h4><p>当消息被发往 RabbitMQ 的时候，需要<strong>指明它需要发送到哪个 Exchange。而这个 Exchange 就可以被设置成为所谓的 Fanout Exchange。</strong>使用 Fanout Exchange，<strong>消息会被克隆，并被发送到所有与这个 Exchange 绑定的 Queue 上</strong>.</p>
+<p><img src="https://i0.hdslb.com/bfs/article/f1d5f471ddcf9493a2a3a4f0d28ad843e01ea3c4.png@1248w_716h.png" alt="fanout exchange"></p>
+<p>这里每一个 Queue 都会得到属于自己的消息的副本，这些消息副本就可以被消息的接收者所使用。</p>
+<ul>
+<li>在很多大规模多人游戏的场景中，经常使用这种方式来同步玩家的数据：每个玩家都订阅到一个 Fanout Exchange，游戏的实例只需要将数据发送到一个地方即可，游戏中其他的玩家就会获得更新，而游戏实例就不需要知道如何数据发往每一个玩家了。</li>
+</ul>
+<h4 id="基本管理命令"><a href="#基本管理命令" class="headerlink" title="基本管理命令"></a>基本管理命令</h4><p>基本安装和配置参考RabbitMQ官网。</p>
+<ul>
+<li>获取RabbitMQ Server状态: <code>rabbitmqctl status</code> 得到大量关于RabbitMQ运行的消息</li>
+<li>获取所有Queue队列： <code>rabbitmqctl list_queues</code></li>
+<li>获取当前集群的server信息： <code>rabbitmqctl cluster_status</code></li>
+<li>使用<code>service rabbitmq-server start/stop/restart/status</code>也可以进行服务管理</li>
+</ul>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a href="https://www.bilibili.com/read/cv10512424?from=search" target="_blank" rel="noopener">https://www.bilibili.com/read/cv10512424?from=search</a></p>
+]]></content>
+      <categories>
+        <category>RabbitMQ</category>
+      </categories>
+      <tags>
+        <tag>RabbitMQ</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>网络调优工具使用</title>
+    <url>/2021/02/20/os-%E7%BD%91%E7%BB%9C-2/</url>
+    <content><![CDATA[<p><img src="https://api2.mubu.com/v3/document_image/be5fa6e0-26bb-4ba7-8337-6a6991d28593-11197877.jpg" alt="linux内核接收网络包的过程"></p>
+<p>linux内核对网络包的接收过程大致分为：硬中断处理、接收数据到RingBuffer、ksoftirqd软中断处理几个过程。在软中断处理中，将数据包从RingBuffer中获取送到协议栈进行处理，之后再送到用户进程socket的接收队列中。</p>
+<h3 id="几个工具"><a href="#几个工具" class="headerlink" title="几个工具"></a>几个工具</h3><p>监控网卡的工具：</p>
+<h4 id="ethtool"><a href="#ethtool" class="headerlink" title="ethtool"></a>ethtool</h4><p>该工具用来<strong>查看和设置网卡参数</strong>。这个工具其实本身只是提供几个通用接口，<strong>真正的实现是都是在网卡驱动中</strong>。几个选项：</p>
+<ul>
+<li><code>-i</code> 显示<strong>网卡驱动</strong>的信息，如驱动的名称、版本等</li>
+<li><code>-S</code> 查看网卡<strong>收发包</strong>的统计情况</li>
+<li><code>-g/-G</code> <strong>查看或者修改RingBuffer的大小</strong></li>
+<li><code>-l/-L</code> 查看或者修改<strong>网卡队列</strong>数</li>
+<li><code>-c/-C</code> 查看或者修改<strong>硬中断合并策略</strong></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 查看网卡驱动：</span></span><br><span class="line"><span class="variable">$ethtool</span> -i eno1</span><br><span class="line"></span><br><span class="line">driver: e1000e</span><br><span class="line">version: 3.2.6-k</span><br><span class="line">firmware-version: 0.13-4</span><br></pre></td></tr></table></figure>
+<h4 id="ifconfig"><a href="#ifconfig" class="headerlink" title="ifconfig"></a>ifconfig</h4><p>网络管理工具ifconfig不只是可以为网卡配置ip，启动或者禁用网卡，也包含了一<strong>些网卡的统计信息</strong>。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">eno1      Link encap:以太网  硬件地址 98:90:96:a5:4c:a7  </span><br><span class="line">          inet 地址:172.27.229.18  广播:172.27.255.255  掩码:255.255.0.0</span><br><span class="line">          inet6 地址: fe80::aea1:731a:3687:7f4a/64 Scope:Link</span><br><span class="line">          UP BROADCAST RUNNING MULTICAST  MTU:1500  跃点数:1</span><br><span class="line">          接收数据包:10938370 错误:0 丢弃:0 过载:0 帧数:0</span><br><span class="line">          发送数据包:1479049 错误:0 丢弃:0 过载:0 载波:0</span><br><span class="line">          碰撞:0 发送队列长度:1000 </span><br><span class="line">          接收字节:2793457160 (2.7 GB)  发送字节:187860463 (187.8 MB)</span><br><span class="line">          中断:20 Memory:f7d00000-f7d20000 </span><br><span class="line">          </span><br><span class="line">中英文对应：      </span><br><span class="line">    RX packets：接收的总包数</span><br><span class="line">    RX bytes：接收的字节数</span><br><span class="line">    RX errors：表示总的收包的错误数量</span><br><span class="line">    RX dropped：数据包已经进入了 Ring Buffer，但是由于其它原因导致的丢包</span><br><span class="line">    RX overruns：表示了 fifo 的 overruns，这是由于 Ring Buffer不足导致的丢包</span><br></pre></td></tr></table></figure>
+<h4 id="伪文件系统-proc"><a href="#伪文件系统-proc" class="headerlink" title="伪文件系统/proc"></a>伪文件系统/proc</h4><p>Linux内核提供了<code>/proc</code>伪文件系统，通过<code>/proc</code>可以查看<strong>内核内部数据结构、改变内核设置</strong>。</p>
+<p>主要内容：</p>
+<ul>
+<li><code>/proc/sys</code>目录可以查看或修改<strong>内核参数</strong></li>
+<li><code>/proc/cpuinfo</code>可以查看CPU信息</li>
+<li><code>/proc/meminfo</code>可以查看内存信息</li>
+<li><code>/proc/interrupts</code>统计所有的<strong>硬中断</strong></li>
+<li><code>/proc/softirqs</code>统计的所有的<strong>软中断</strong>信息</li>
+<li><code>/proc/slabinfo</code>统计了内核数据结构的<strong>slab内存</strong>使用情况</li>
+<li><code>/proc/net/dev</code>可以看到一些<strong>网卡</strong>统计数据</li>
+</ul>
+<p>关注伪文件 <code>/proc/net/dev</code>查看内核中对网卡的相关统计，包含的主要信息：</p>
+<ul>
+<li>bytes: 发送或接收的数据的总<strong>字节</strong>数</li>
+<li>packets: 接口发送或接收的数据<strong>包</strong>总数</li>
+<li>errs: 由设备驱动程序检测到的发送或接收错误的总数</li>
+<li>drop: 设备驱动程序<strong>丢弃的数据包总数</strong></li>
+<li>fifo: FIFO<strong>缓冲区错误</strong>的数量</li>
+<li>frame: The number of packet framing errors.（分组帧错误的数量）</li>
+<li>colls: 接口上检测到的冲突数</li>
+</ul>
+<h4 id="伪文件系统sysfs"><a href="#伪文件系统sysfs" class="headerlink" title="伪文件系统sysfs"></a>伪文件系统sysfs</h4><p><code>sysfs</code>和<code>/proc</code>类似，也是一个伪文件系统，但是比<code>proc</code>更新，结构更清晰。其中的<code>/sys/class/net/eno1/statistics/</code>也包含了网卡的统计信息。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># cd /sys/class/net/eno1/statistics/ </span></span><br><span class="line"><span class="comment"># grep . * | grep tx</span></span><br><span class="line"></span><br><span class="line">tx_aborted_errors:0</span><br><span class="line">tx_bytes:193280753</span><br><span class="line">tx_carrier_errors:0</span><br><span class="line">tx_compressed:0</span><br><span class="line">tx_dropped:0</span><br><span class="line">tx_errors:0</span><br><span class="line">tx_fifo_errors:0</span><br><span class="line">tx_heartbeat_errors:0</span><br><span class="line">tx_packets:1513872</span><br><span class="line">tx_window_errors:0</span><br></pre></td></tr></table></figure>
+<h4 id="RingBuffer监控和调优"><a href="#RingBuffer监控和调优" class="headerlink" title="RingBuffer监控和调优"></a>RingBuffer监控和调优</h4><p>当网线中的数据帧到达网卡后，第一站就是RingBuffer（网卡通过DMA机制将数据帧送到RingBuffer中）。</p>
+<p>使用<code>ethtool</code>查看RingBuffer:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># ethtool -g eno1</span></span><br><span class="line"></span><br><span class="line">Ring parameters <span class="keyword">for</span> eno1:</span><br><span class="line">Pre-set maximums:</span><br><span class="line">RX:		4096</span><br><span class="line">RX Mini:	0</span><br><span class="line">RX Jumbo:	0</span><br><span class="line">TX:		4096</span><br><span class="line">Current hardware settings:</span><br><span class="line">RX:		256</span><br><span class="line">RX Mini:	0</span><br><span class="line">RX Jumbo:	0</span><br><span class="line">TX:		256</span><br></pre></td></tr></table></figure>
+<p>本机器的网卡设置RingBuffer最大允许到4096,实际设置为256。</p>
+<p>注意：ethtool查看到的是实际是<code>Rx bd</code>的大小。<strong><code>Rx bd</code>位于网卡中，相当于一个指针。<code>RingBuffer</code>在内存中，<code>Rx bd</code>指向<code>RingBuffer</code>。<code>Rx  bd</code>和<code>RingBuffer</code>中的元素是一一对应的关系</strong>。在网卡启动的时候，内核会为网卡的<code>Rx  bd</code>在内存中分配<code>RingBuffer</code>，并设置好对应关系。</p>
+<p>在Linux的整个网络栈中，<code>RingBuffer</code>起到一个任务的收发中转站的角色。<strong>对于接收过程来讲，网卡负责往<code>RingBuffer</code>中写入收到的数据帧，<code>ksoftirqd</code>内核线程负责从中取走处理。只要<code>ksoftirqd</code>线程工作的足够快，<code>RingBuffer</code>这个中转站就不会出现问题</strong>。但是设想一下，<strong>假如某一时刻，瞬间来了特别多的包，而<code>ksoftirqd</code>处理不过来了，会发生什么？这时<code>RingBuffer</code>可能瞬间就被填满了，后面再来的包网卡直接就会丢弃，不做任何处理！</strong></p>
+<p>查看机器上是否有因为RingBuffer设置导致的丢包：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># ethtool -S eno1</span></span><br><span class="line"></span><br><span class="line">rx_fifo_errors: 0 <span class="comment">#有的机器上不一定有</span></span><br><span class="line">tx_fifo_errors: 0</span><br></pre></td></tr></table></figure>
+<p><code>rx_fifo_errors</code>如果不为0的话（在 <code>ifconfig</code>中体现为<code>overruns</code>  指标增长），就表示有包因为<code>RingBuffer</code>装不下而被丢弃了。那么怎么解决这个问题呢？很自然首先想到的是，加大<code>RingBuffer</code>这个“中转仓库”的大小。通过<code>ethtool</code>就可以修改:</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># ethtool -G eth1 rx 512 tx 512</span></span><br></pre></td></tr></table></figure>
+<p>这样网卡会被分配更大一点的”中转站“，可以<strong>解决偶发的瞬时的丢包</strong>。不过这种方法有个<strong>小副作用，那就是排队的包过多会增加处理网络包的延时。</strong>所以另外一种解决思路更好，那就是<strong>让内核处理网络包的速度更快一些，而不是让网络包傻傻地在<code>RingBuffer</code>中排队。</strong>怎么加快内核消费RingBuffer中任务的速度?</p>
+<h4 id="硬中断监控与调优"><a href="#硬中断监控与调优" class="headerlink" title="硬中断监控与调优"></a>硬中断监控与调优</h4><h5 id="监控部分"><a href="#监控部分" class="headerlink" title="监控部分"></a>监控部分</h5><p>硬中断可以通过内核提供的伪文件<code>/proc/interrupts</code>来查看：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ cat /proc/interrupts</span><br><span class="line"></span><br><span class="line">           CPU0       CPU1       CPU2       CPU3       CPU4       CPU5       CPU6       CPU7       </span><br><span class="line"> 31:          0          0          0          0          0        536          0    4507261  IR-PCI-MSI 409600-edge      eno1</span><br></pre></td></tr></table></figure>
+<p>分析：</p>
+<ul>
+<li>网卡的输入队列<code>eno1</code>的中断号是31</li>
+<li>31号中断由CPU5和CPU7来处理</li>
+</ul>
+<p>注意：</p>
+<ul>
+<li>为什么输入队列的中断在CPU5和CPU7上？</li>
+</ul>
+<p>这是因为内核的一个配置，在伪文件系统中可以查看到：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment">#cat /proc/irq/31/smp_affinity</span></span><br><span class="line">80</span><br></pre></td></tr></table></figure>
+<p><code>smp_affinity</code>里是CPU的亲和性的绑定，80是二进制的<code>01010000</code>,第5位和第7位都为1，代表的就是第5和第7个CPU核心CPU5和CPU7。</p>
+<ul>
+<li>对于收包来过程来讲，硬中断的总次数表示的是Linux收包总数吗？</li>
+</ul>
+<p>不是，<strong>硬件中断次数不代表总的网络包数。第一网卡可以设置中断合并，多个网络帧可以只发起一次中断。第二NAPI 运行的时候会关闭硬中断，通过poll来收包。</strong></p>
+<h5 id="多队列网络调优"><a href="#多队列网络调优" class="headerlink" title="多队列网络调优"></a>多队列网络调优</h5><p>现在的主流网卡基本上都是支持多队列的，可以<strong>通过将不同的队列分给不同的CPU核心来处理，从而加快Linux内核处理网络包的速度。这是最为有用的一个优化手段</strong>。</p>
+<p><strong>每一个队列都有一个中断号，可以独立向某个CPU核心发起硬中断请求，让CPU来<code>poll</code>包。通过将接收进来的包被放到不同的内存队列里，多个CPU就可以同时分别向不同的队列发起消费了。这个特性叫做RSS（Receive Side Scaling，接收端扩展）</strong>。通过<code>ethtool</code>工具可以查看网卡的队列情况。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># ethtool -l eth0 # 本人网卡不支持该操作，参考开发内功修炼</span></span><br><span class="line">Channel parameters <span class="keyword">for</span> eth0:</span><br><span class="line">Pre-set maximums:</span><br><span class="line">RX:     0</span><br><span class="line">TX:     0</span><br><span class="line">Other:      1</span><br><span class="line">Combined:   63</span><br><span class="line">Current hardware settings:</span><br><span class="line">RX:     0</span><br><span class="line">TX:     0</span><br><span class="line">Other:      1</span><br><span class="line">Combined:   8</span><br></pre></td></tr></table></figure>
+<p>上述结果表示当前网卡支持的最大队列数是63，当前开启的队列数是8。对于这个配置来讲，最多同时可以有8个核心来参与网络收包。<strong>如果想提高内核收包的能力，直接简单加大队列数就可以了，这比加大RingBuffer更为有用。因为加大RingBuffer只是给个更大的空间让网络帧能继续排队，而加大队列数则能让包更早地被内核处理</strong>。<code>ethtool</code>修改队列数量方法如下：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment">#ethtool -L eth0 combined 32</span></span><br></pre></td></tr></table></figure>
+<p><strong>硬中断发生在哪一个核上，它发出的软中断就由哪个核来处理。所有通过加大网卡队列数，这样硬中断工作、软中断工作都会有更多的核心参与进来。</strong></p>
+<p>每一个队列都有一个中断号，每一个中断号都是绑定在特定的CPU上。如果不满意某一个中断的CPU绑定，可以通过修改<code>/proc/irq/{中断号}/smp_affinity</code>来实现。</p>
+<h5 id="硬中断合并"><a href="#硬中断合并" class="headerlink" title="硬中断合并"></a>硬中断合并</h5><p>一个实际中的例子，假如你是一位开发同学，和你对口的产品经理一天有10个小需求需要让你帮忙来处理。她对你有两种中断方式：</p>
+<ul>
+<li>第一种：产品经理想到一个需求，就过来找你，和你描述需求细节，然后让你帮你来改</li>
+<li>第二种：产品经理想到需求后，不来打扰你，等攒够5个来找你一次，你集中处理</li>
+</ul>
+<p>现在不考虑及时性，<strong>只考虑工作整体效率</strong>，哪种方案下你的工作效率会高呢？或者换句话说，你更喜欢哪一种工作状态呢？很明显，只要你是一个正常的开发，都会觉得第二种方案更好。对人脑来讲，频繁的中断会打乱你的计划，你脑子里刚才刚想到一半技术方案可能也就废了。当产品经理走了以后，你再想捡起来刚被中断之的工作的时候，很可能得花点时间回忆一会儿才能继续工作。</p>
+<p>对于CPU来讲也是一样，<strong>CPU要做一件新的事情之前，要加载该进程的地址空间，load进程代码，读取进程数据，各级别cache要慢慢热身。因此如果能适当降低中断的频率，多攒几个包一起发出中断，对提升CPU的工作效率是有帮助的</strong>。所以，网卡允许我们对硬中断进行合并。</p>
+<p>现在看一下网卡的硬中断合并配置：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># ethtool -c eno1</span></span><br><span class="line"></span><br><span class="line">Adaptive RX: off  TX: off</span><br><span class="line">...</span><br><span class="line">rx-usecs: 3</span><br><span class="line">rx-frames: 0</span><br><span class="line">rx-usecs-irq: 0</span><br><span class="line">rx-frames-irq: 0</span><br><span class="line">rx-usecs-low: 0</span><br><span class="line">rx-frame-low: 0</span><br><span class="line">rx-usecs-high: 0</span><br><span class="line">rx-frame-high: 0</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>参数的含义：</p>
+<ul>
+<li>Adaptive RX: <strong>自适应中断合并</strong>，网卡驱动自己判断啥时候该合并啥时候不合并</li>
+<li>rx-usecs：当过这么长时间过后，一个RX interrupt就会被产生</li>
+<li>rx-frames：当累计接收到这么多个帧后，一个RX interrupt就会被产生</li>
+</ul>
+<p>修改相关参数：接使用<code>ethtool -C</code>就可以</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># ethtool -C eno1 adaptive-rx on</span></span><br></pre></td></tr></table></figure>
+<p>需要注意的是，<strong>减少中断数量虽然能使得Linux整体吞吐更高，不过一些包的延迟也会增大，所以用的时候得适当注意。</strong></p>
+<h4 id="软中断监控和调优"><a href="#软中断监控和调优" class="headerlink" title="软中断监控和调优"></a>软中断监控和调优</h4><p><strong>软中断和它对应的硬中断是在同一个核心上处理的。因此，前面硬中断分散到多核上处理的时候，软中断的优化其实也就跟着做了，也会被多核处理。</strong>不过软中断也还有自己的可优化选项。</p>
+<h5 id="监控"><a href="#监控" class="headerlink" title="监控"></a>监控</h5><p>软中断的信息可以从<code>/proc/softirqs</code>读取：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ cat /proc/softirqs</span><br><span class="line"></span><br><span class="line">                    CPU0       CPU1       CPU2       CPU3       CPU4       CPU5       CPU6       CPU7       </span><br><span class="line">          HI:          0          0    1228152        865        360          7          0          0</span><br><span class="line">       TIMER:   27307279   27853788   27665421   31261338   27720654   27228264   27604399   29304702</span><br><span class="line">      NET_TX:      10611         21      33099       1480        103      39090         43         56</span><br><span class="line">      NET_RX:     936563     934954     932782     903383     896445     940357    1111527   11896810</span><br><span class="line">       BLOCK:        293    1850485      65944        395        365        332        354        333</span><br><span class="line">    IRQ_POLL:          0          0          0          0          0          0          0          0</span><br><span class="line">     TASKLET:         18          4     104755         75         25         84        748       8691</span><br><span class="line">       SCHED:   15801149   13822836   13336518   16738535   13374504   13423444   13224695   14819090</span><br><span class="line">     HRTIMER:          0          0          0          0          0          0          0          0</span><br><span class="line">         RCU:   23189803   22923131   23217378   25381785   22908760   22872174   23143036   24117847</span><br></pre></td></tr></table></figure>
+<h5 id="软中断budget调整"><a href="#软中断budget调整" class="headerlink" title="软中断budget调整"></a>软中断budget调整</h5><p>番茄工作法：大致意思就是要有一整段的不被打扰的时间，集中精力处理某一项作业。这一整段时间时长被建议是25分钟。<strong>对于Linux的处理软中断的ksoftirqd来说，它也和番茄工作法思路类似。一旦它被硬中断触发开始了工作，它会集中精力处理一波网络包（绝不只是1个），然后再去做别的事情。</strong></p>
+<p>处理一波是多少呢，策略略复杂。只说其中一个比较容易理解的，那就是<code>net.core.netdev_budget</code>内核参数：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># sysctl -a | grep core.netdev_budget </span></span><br><span class="line"></span><br><span class="line">net.core.netdev_budget = 300</span><br></pre></td></tr></table></figure>
+<p>这里的意思说的是，<strong>ksoftirqd一次最多处理300个包，处理够了就会把CPU主动让出来，以便Linux上其它的任务可以得到处理</strong>。那么假如说，<strong>现在想提高内核处理网络包的效率。那就可以让ksoftirqd进程多干一会儿网络包的接收，再让出CPU。至于怎么提高，直接修改不这个参数的值就行。</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># sysctl -w net.core.netdev_budget=600</span></span><br></pre></td></tr></table></figure>
+<p>如果<strong>要保证重启仍然生效，需要将这个配置写到<code>/etc/sysctl.conf</code></strong></p>
+<h5 id="软中断GRO合并"><a href="#软中断GRO合并" class="headerlink" title="软中断GRO合并"></a>软中断GRO合并</h5><p>GRO和硬中断合并的思想很类似，不过阶段不同。<strong>硬中断合并是在中断发起之前，而GRO已经到了软中断上下文中了。</strong></p>
+<p>如果应用中是大文件的传输，大部分包都是一段数据，不用GRO的话，会每次都将一个小包传送到协议栈（IP接收函数、TCP接收）函数中进行处理。<strong>开启GRO的话，Linux就会智能进行包的合并，之后将一个大包传给协议处理函数。这样CPU的效率也是就提高了。</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># ethtool -k eno1 | grep generic-receive-offload</span></span><br><span class="line">generic-receive-offload: on</span><br></pre></td></tr></table></figure>
+<p>如果网卡驱动没有打开GRO的话，可以通过如下方式打开。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># ethtool -K eno1  gro on</span><br></pre></td></tr></table></figure>
+<p>GRO说的仅仅只是包的接收阶段的优化方式，对于发送来说是GSO。</p>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a href="https://mp.weixin.qq.com/s?__biz=MjM5Njg5NDgwNA==&amp;mid=2247484065&amp;idx=1&amp;sn=ab0d3e11c472b845dedf6a87dcc38b25&amp;chksm=a6e3039a91948a8c23ec7d426469ebe30d70f59c7a58437e9ea8b8aac697aa1e2e29b4c47dec&amp;scene=178&amp;cur_album_id=1532487451997454337#rd" target="_blank" rel="noopener">https://mp.weixin.qq.com/s?__biz=MjM5Njg5NDgwNA==&amp;mid=2247484065&amp;idx=1&amp;sn=ab0d3e11c472b845dedf6a87dcc38b25&amp;chksm=a6e3039a91948a8c23ec7d426469ebe30d70f59c7a58437e9ea8b8aac697aa1e2e29b4c47dec&amp;scene=178&amp;cur_album_id=1532487451997454337#rd</a></p>
+]]></content>
+      <categories>
+        <category>网络</category>
+        <category>工具</category>
+      </categories>
+      <tags>
+        <tag>网络</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>元数据服务</title>
     <url>/2021/02/10/%E5%88%86%E5%B8%83%E5%BC%8F%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8-3%E5%85%83%E6%95%B0%E6%8D%AE%E6%9C%8D%E5%8A%A1/</url>
     <content><![CDATA[<h3 id="元数据服务"><a href="#元数据服务" class="headerlink" title="元数据服务"></a>元数据服务</h3><p>上一个版本的分布式对象存储实现了接口服务和数据服务的分离，对象的数据被保存在了专门的数据服务节点，而不是保存在接口服务的本地磁盘上。通过解耦后，可以往集群中添加新的接口服务结点或数据服务节点。</p>
@@ -1722,6 +2028,95 @@
       </categories>
       <tags>
         <tag>mysql语句执行</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>TCP可靠传输</title>
+    <url>/2020/06/10/tcp-2/</url>
+    <content><![CDATA[<h3 id="TCP可靠传输保障"><a href="#TCP可靠传输保障" class="headerlink" title="TCP可靠传输保障"></a>TCP可靠传输保障</h3><p>TCP 通过序列号、确认应答、重发控制、连接管理以及窗口控制等机制实现可靠性传输。</p>
+<h3 id="重传机制"><a href="#重传机制" class="headerlink" title="重传机制"></a>重传机制</h3><p>在 TCP 中，当发送端的数据到达接收主机时，接收端主机会返回一个确认应答消息，表示已收到消息。但在错综复杂的网络，并不一定能顺利、正常的传输数据，万一数据在传输过程中丢失(也即出现TCP数据包丢失)，此时可用<strong>重传机制</strong>解决：</p>
+<ul>
+<li>超时重传</li>
+<li>快速重传</li>
+<li>SACK</li>
+<li>D-SACK</li>
+</ul>
+<h4 id="超时重传"><a href="#超时重传" class="headerlink" title="超时重传"></a>超时重传</h4><p>重传机制的其中一个方式，就是在发送数据时，设定一个<strong>定时器</strong>，当<strong>超过指定的时间后，没有收到对方的 <code>ACK</code> 确认应答报文，就会重发该数据</strong>，也就是我们常说的<strong>超时重传</strong>。</p>
+<p>TCP 会在以下两种情况发生超时重传：</p>
+<ul>
+<li>数据包丢失</li>
+<li>确认应答丢失</li>
+</ul>
+<h5 id="超时时间的设置"><a href="#超时时间的设置" class="headerlink" title="超时时间的设置"></a>超时时间的设置</h5><p>RTT：<strong>数据从网络一端传送到另一端所需的时间</strong>，也就是包的<strong>往返</strong>时间。超时重传时间以 <code>RTO</code> （Retransmission Timeout 超时重传时间）表示。</p>
+<p>两种超时时间不同的情况：</p>
+<ul>
+<li>当超时时间 <strong>RTO 较大</strong>时，网络的空隙时间增大，重发就慢，丢了很长时间才重发，没有效率，性能差；</li>
+<li>当超时时间 <strong>RTO 较小</strong>时，会导致可能并没有丢就重发从而造成不必要的重传，虽然重发的快，但会增加网络拥塞，导致更多的超时，更多的超时导致更多的重发。</li>
+</ul>
+<p><strong>超时重传时间 RTO 的值应该略大于报文往返  RTT 的值</strong>。但报文往返 RTT 的值是经常变化的，因为网络也是时常变化的。也就因为报文往返 RTT 的值 是经常波动变化的，所以超时重传时间 RTO 的值应该是一个<strong>动态变化的值</strong>。</p>
+<h5 id="linux下RTO的计算"><a href="#linux下RTO的计算" class="headerlink" title="linux下RTO的计算"></a>linux下RTO的计算</h5><p>估计往返时间，通常需要采样以下两个：</p>
+<ul>
+<li>需要 TCP 通过采样 RTT 的时间，然后进行加权平均，算出一个<strong>平滑 RTT 的值</strong>，而且这个值还是要不断变化的，因为网络状况不断地变化。</li>
+<li>除了采样 RTT，还要采样 <strong>RTT 的波动范围</strong>，这样就避免如果 RTT 有一个大的波动的话，很难被发现的情况。</li>
+</ul>
+<p>如果超时重发的数据，再次超时又需要重传的时候，TCP 的策略是<strong>超时间隔加倍。</strong>也就是<strong>每当遇到一次超时重传的时候，都会将下一次超时时间间隔设为先前值的两倍。两次超时，就说明网络环境差，不宜频繁反复发送。</strong></p>
+<h4 id="快速重传"><a href="#快速重传" class="headerlink" title="快速重传"></a>快速重传</h4><p>超时触发重传存在的问题是，超时周期可能相对较长。TCP 还有另外一种<strong>快速重传（Fast Retransmit）机制</strong>，它<strong>不以时间为驱动，而是以数据驱动重传</strong>。</p>
+<p><img src="https://api2.mubu.com/v3/document_image/2ef91143-7ab8-4f5d-9985-d36c801b433b-11197877.jpg" alt="快速重传"></p>
+<p>在上图，发送方发出了 1，2，3，4，5 份数据：</p>
+<ul>
+<li>第一份 Seq1 先送到了，于是就 Ack 回 2；</li>
+<li>结果 Seq2 因为某些原因没收到，Seq3 到达了，于是还是 Ack 回 2；</li>
+<li>后面的 Seq4 和 Seq5 都到了，但还是 Ack 回 2，因为 Seq2 还是没有收到；</li>
+<li><strong>发送端收到了三个 Ack = 2 的确认，知道了 Seq2 还没有收到，就会在定时器过期之前，重传丢失的 Seq2。</strong></li>
+<li>最后，接收到收到了 Seq2，此时因为 Seq3，Seq4，Seq5 都收到了，于是 Ack 回 6 。</li>
+</ul>
+<p>所以，<strong>快速重传的工作方式是当收到三个相同的 ACK 报文时，会在定时器过期之前，重传丢失的报文段。</strong></p>
+<p>快速重传机制只解决了一个问题，就是超时时间的问题，但是它依然面临着另外一个问题。就是<strong>重传的时候，是重传之前的一个，还是重传所有的问题。</strong></p>
+<p>比如对于上面的例子，是重传 Seq2 呢？还是重传 Seq2、Seq3、Seq4、Seq5 呢？因为发送端并不清楚这连续的三个 Ack 2 是谁传回来的。</p>
+<p>根据 TCP 不同的实现，以上两种情况都是有可能的。可见，这是一把双刃剑。</p>
+<h4 id="SACK方法"><a href="#SACK方法" class="headerlink" title="SACK方法"></a>SACK方法</h4><p>为了解决不知道该重传哪些 TCP 报文，于是就有 <code>SACK Selective Acknowledgment 选择性确认）</code> 方法。</p>
+<p>这种方式需要在 TCP 头部选项字段里加一个 <code>SACK</code> 的东西，它<strong>可以将缓存的数据区间发送给发送方</strong>，这样发送方就可以知道哪些数据收到了，哪些数据没收到，知道了这些信息，就可以<strong>只重传丢失的数据</strong>。</p>
+<p>如下图，发送方收到了三次同样的 ACK 确认报文，于是就会触发快速重发机制，通过 <code>SACK</code> 信息发现只有 <code>200~299</code> 这段数据丢失，则重发时，就只选择了这个 TCP 段进行重复。</p>
+<p><img src="https://api2.mubu.com/v3/document_image/9449c55b-c8fb-45bf-95c7-3b1d35ae3ca3-11197877.jpg" alt="选择性确认"></p>
+<p>如果要支持 <code>SACK</code>，必须双方都要支持。在 Linux 下，可以通过 <code>net.ipv4.tcp_sack</code> 参数打开这个功能（Linux 2.4 后默认打开）。</p>
+<h4 id="Duplicate-SACK"><a href="#Duplicate-SACK" class="headerlink" title="Duplicate SACK"></a>Duplicate SACK</h4><p>Duplicate SACK 又称 <code>D-SACK</code>，其主要<strong>使用了 SACK 来告诉发送方有哪些数据被重复接收了。</strong>下面举例两个例子，来说明 <code>D-SACK</code> 的作用。</p>
+<p>例子1： ACK丢包</p>
+<p><img src="https://api2.mubu.com/v3/document_image/e0401e31-c9ae-428a-aa62-02cf22da70ab-11197877.jpg" alt=" ACK丢包"></p>
+<ul>
+<li>接收方发给发送方的两个 ACK 确认应答都丢失了，所以发送方超时后，重传第一个数据包（3000 ~ 3499）</li>
+<li><strong>于是接收方发现数据是重复收到的，于是回了一个 SACK = 3000~3500</strong>，告诉发送方3000~3500 的数据早已被接收了，因为 ACK 都到了 4000 了，已经意味着 4000 之前的所有数据都已收到，所以这个 SACK 就代表着 <code>D-SACK</code>。</li>
+<li>这样发送方就知道了，数据没有丢，是接收方的 ACK 确认报文丢了。</li>
+</ul>
+<p>例子二：网络延时</p>
+<p><img src="https://api2.mubu.com/v3/document_image/db55cd10-03f8-4ba1-b9db-54eb8f2e07fd-11197877.jpg" alt="网络延时"></p>
+<ul>
+<li>数据包（1000~1499） 被网络延迟，导致发送方没有收到 Ack 1500 的确认报文。</li>
+<li>而后面报文到达的三个相同的 ACK 确认报文，就触发了快速重传机制，但是在重传后，被延迟的数据包（1000~1499）又到了接收方；</li>
+<li><strong>所以接收方回了一个 SACK=1000~1500，因为 ACK 已经到了 3000，所以这个 SACK 是 D-SACK，表示收到了重复的包。</strong></li>
+<li>这样发送方就知道快速重传触发的原因不是发出去的包丢了，也不是因为回应的 ACK 包丢了，而是因为网络延迟了。</li>
+</ul>
+<p>可见，<code>D-SACK</code> 有这么几个好处：</p>
+<ol>
+<li><strong>可以让发送方知道，是发出去的包丢了，还是接收方回应的 ACK 包丢了;</strong></li>
+<li><strong>可以知道是不是发送方的数据包被网络延迟了;</strong></li>
+<li><strong>可以知道网络中是不是把发送方的数据包给复制了;</strong></li>
+</ol>
+<p>在 Linux 下可以通过 <code>net.ipv4.tcp_dsack</code> 参数开启/关闭这个功能（Linux 2.4 后默认打开）。</p>
+<h3 id="滑动窗口"><a href="#滑动窗口" class="headerlink" title="滑动窗口"></a>滑动窗口</h3><p>TCP 是<strong>每发送一个数据，都要进行一次确认应答。当上一个数据包收到了应答了， 再发送下一个。</strong>但这样的传输方式有一个缺点：数据包的<strong>往返时间越长，通信的效率就越低</strong>。</p>
+<p>为解决这个问题，TCP 引入了<strong>窗口</strong>这个概念。<strong>即使在往返时间较长的情况下，它也不会降低网络通信的效率。</strong>有了窗口，就可以指定窗口大小，窗口大小就是指<strong>无需等待确认应答，而可以继续发送数据的最大值</strong>。</p>
+<p>窗口的实现实际上是操作系统开辟的一个<strong>缓存空间</strong>，<strong>发送方主机在等到确认应答返回之前，必须在缓冲区中保留已发送的数据。如果按期收到确认应答，此时数据就可以从缓存区清除。</strong></p>
+<p><strong>假设窗口大小为 <code>3</code> 个 TCP 段，那么发送方就可以连续发送 <code>3</code> 个 TCP 段，并且中途若有 ACK 丢失，可以通过下一个确认应答进行确认</strong>。如下图：</p>
+<p><img src="https://api2.mubu.com/v3/document_image/b1fb9943-9efc-4297-927b-894047c329ac-11197877.jpg" alt="滑动窗口方式并行处理"></p>
+<p>图中的 ACK 600 确认应答报文丢失，也没关系，因为<strong>可以通话下一个确认应答进行确认，只要发送方收到了 ACK 700 确认应答，就意味着 700 之前的所有数据接收方都收到了</strong>。这个模式就叫<strong>累计确认</strong>或者<strong>累计应答</strong>。</p>
+<h4 id="窗口大小的决定方"><a href="#窗口大小的决定方" class="headerlink" title="窗口大小的决定方"></a>窗口大小的决定方</h4><p>TCP 头里有一个字段叫 <code>Window</code>，也就是窗口大小。<strong>这个字段是接收端告诉发送端自己还有多少缓冲区可以接收数据。于是发送端就可以根据这个接收端的处理能力来发送数据，而不会导致接收端处理不过来。</strong></p>
+<p>所以，<strong>通常窗口的大小是由接收方的决定的</strong>。发送方发送的数据大小不能超过接收方的窗口大小，否则接收方就无法正常接收到数据。</p>
+<h4 id="发送方的滑动窗口"><a href="#发送方的滑动窗口" class="headerlink" title="发送方的滑动窗口"></a>发送方的滑动窗口</h4><h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a href="https://mp.weixin.qq.com/s/Tc09ovdNacOtnMOMeRc_uA" target="_blank" rel="noopener">https://mp.weixin.qq.com/s/Tc09ovdNacOtnMOMeRc_uA</a></p>
+]]></content>
+      <categories>
+        <category>网络</category>
+      </categories>
+      <tags>
+        <tag>TCP可靠传输</tag>
       </tags>
   </entry>
   <entry>
@@ -3149,6 +3544,369 @@
       </categories>
       <tags>
         <tag>网络</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>进程和线程的切换开销</title>
+    <url>/2020/05/03/os-8%E7%BA%BF%E7%A8%8B%E5%92%8C%E8%BF%9B%E7%A8%8B%E5%88%87%E6%8D%A2/</url>
+    <content><![CDATA[<h3 id="进程以及进程切换"><a href="#进程以及进程切换" class="headerlink" title="进程以及进程切换"></a>进程以及进程切换</h3><p>进程是操作系统的伟大发明之一，对应用程序屏蔽了CPU调度、内存管理等硬件细节，而抽象出一个进程的概念，让应用程序专心于实现自己的业务逻辑既可，而且在有限的CPU上可以“同时”进行许多个任务。但是它为用户带来方便的同时，也引入了一些额外的开销。如下图，在进程运行中间的时间里，虽然CPU也在忙于干活，但是却没有完成任何的用户工作，这就是进程机制带来的额外开销。</p>
+<p><img src="https://api2.mubu.com/v3/document_image/6dd32cf5-8718-46ca-b305-dadb66e6a565-11197877.jpg" alt="进程切换"></p>
+<p>在进程A切换到进程B的过程中，先保存A进程的上下文，以便于等A恢复运行的时候，能够知道A进程的下一条指令是啥。然后将要运行的B进程的上下文恢复到寄存器中。这个过程被称为<strong>上下文切换</strong>。上下文切换开销在进程不多、切换不频繁的应用场景下问题不大。但是现在Linux操作系统被用到了高并发的网络程序后端服务器。在单机支持成千上万个用户请求的时候，这个开销影响较大。因为用户进程在请求Redis、Mysql数据等<strong>网络IO阻塞掉的时候，或者在进程时间片到了，都会引发上下文切换。</strong></p>
+<p><img src="https://api2.mubu.com/v3/document_image/16f45d66-9a80-407d-ad17-e6a3e3fb7b79-11197877.jpg" alt="进程状态变化"></p>
+<h4 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h4><p>实验方法为创建两个进程并在它们之间传送一个<strong>令牌</strong>。其中一个进程在读取令牌时就会引起阻塞。另一个进程发送令牌后等待其返回时也处于阻塞状态。如此往返传送一定的次数，然后统计他们的平均单次切换时间开销。编译、运行</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;  </span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;  </span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/time.h&gt;  </span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;time.h&gt;  </span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sched.h&gt;  </span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;  </span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;      //pipe()  </span></span></span><br><span class="line">  </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span>  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">    <span class="keyword">int</span> x, i, fd[<span class="number">2</span>], p[<span class="number">2</span>];  </span><br><span class="line">    <span class="keyword">char</span> send    = <span class="string">'s'</span>;  </span><br><span class="line">    <span class="keyword">char</span> receive;  </span><br><span class="line">    pipe(fd);  </span><br><span class="line">    pipe(p);  </span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">timeval</span> <span class="title">tv</span>;</span>  </span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sched_param</span> <span class="title">param</span>;</span>  </span><br><span class="line">    param.sched_priority = <span class="number">0</span>;  </span><br><span class="line">  </span><br><span class="line">    <span class="keyword">while</span> ((x = fork()) == <span class="number">-1</span>); </span><br><span class="line">    <span class="keyword">if</span> (x==<span class="number">0</span>) &#123;  </span><br><span class="line">        sched_setscheduler(getpid(), SCHED_FIFO, &amp;param);  </span><br><span class="line">        gettimeofday(&amp;tv, <span class="literal">NULL</span>);  </span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"Before Context Switch Time%u s, %u us\n"</span>, tv.tv_sec, tv.tv_usec);  </span><br><span class="line">        <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; <span class="number">10000</span>; i++) &#123;  </span><br><span class="line">            <span class="built_in">read</span>(fd[<span class="number">0</span>], &amp;receive, <span class="number">1</span>);  </span><br><span class="line">            <span class="built_in">write</span>(p[<span class="number">1</span>], &amp;send, <span class="number">1</span>);  </span><br><span class="line">        &#125;  </span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">0</span>);  </span><br><span class="line">    &#125;  </span><br><span class="line">    <span class="keyword">else</span> &#123;  </span><br><span class="line">        sched_setscheduler(getpid(), SCHED_FIFO, &amp;param);  </span><br><span class="line">        <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; <span class="number">10000</span>; i++) &#123;  </span><br><span class="line">            <span class="built_in">write</span>(fd[<span class="number">1</span>], &amp;send, <span class="number">1</span>);  </span><br><span class="line">            <span class="built_in">read</span>(p[<span class="number">0</span>], &amp;receive, <span class="number">1</span>);  </span><br><span class="line">        &#125;  </span><br><span class="line">        gettimeofday(&amp;tv, <span class="literal">NULL</span>);  </span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"After Context SWitch Time%u s, %u us\n"</span>, tv.tv_sec, tv.tv_usec);  </span><br><span class="line">    &#125;  </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;  </span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line"><span class="comment">//gcc 编译运行</span></span><br><span class="line"><span class="comment">//Before Context Switch Time1617894469 s, 453169 us</span></span><br><span class="line"><span class="comment">//After Context SWitch Time1617894469 s, 506257 us</span></span><br></pre></td></tr></table></figure>
+<p>每次执行的时间会有差异，多次运行后<strong>平均每次上下文切换耗时3.5us左右</strong>。当然这个数字因机器而异。</p>
+<p>测试系统调用的时候，最低值是200ns。可见，<strong>上下文切换开销要比系统调用的开销要大。系统调用只是在进程内将用户态切换到内核态，然后再切回来，而上下文切换可是直接从进程A切换到了进程B。显然这个上下文切换需要完成的工作量更大。</strong></p>
+<h4 id="进程切换开销"><a href="#进程切换开销" class="headerlink" title="进程切换开销"></a>进程切换开销</h4><p>上下文切换的时候，CPU的开销都具体有哪些呢？开销分成两种，一种是直接开销、一种是间接开销。</p>
+<p><strong>直接开销就是在切换时，cpu必须做的事情</strong>，包括：</p>
+<p>1、切换<strong>页表</strong>全局目录</p>
+<p>2、切换<strong>内核态堆栈</strong></p>
+<p>3、切换<strong>硬件上下文</strong>（进程恢复前，必须装入寄存器的数据统称为硬件上下文）</p>
+<ul>
+<li>ip(instruction pointer)：指向当前执行指令的下一条指令</li>
+<li>bp(base pointer): 用于存放执行中的函数对应的栈帧的栈底地址</li>
+<li>sp(stack poinger): 用于存放执行中的函数对应的栈帧的栈顶地址</li>
+<li>cr3:页目录基址寄存器，保存页目录表的物理地址</li>
+<li>……</li>
+</ul>
+<p>4、刷新TLB</p>
+<p>5、系统调度器的代码执行</p>
+<p>间接开销主要指的是虽然切换到一个新进程后，由于各种<strong>缓存并不热，速度运行会慢一些</strong>。<strong>如果进程始终都在一个CPU上调度还好一些，如果跨CPU的话，之前热起来的TLB、L1、L2、L3因为运行的进程已经变了，所以以局部性原理cache起来的代码、数据也都没有用了，导致新进程穿透到内存的IO会变多</strong>。上面的实验并没有很好地测量到这种情况，所以实际的上下文切换开销可能比3.5us要大。</p>
+<h4 id="测试工具"><a href="#测试工具" class="headerlink" title="测试工具"></a>测试工具</h4><p>lmbench是用于评价系统综合性能的多平台开源benchmark，能够测试包括文档读写、内存操作、进程创建销毁开销、网络等性能。这个工具的优势是是进行了多组实验，每组2个进程、8个、16个。每个进程使用的数据大小也在变，充分模拟cache miss造成的影响。lmbench显示的进程上下文切换耗时从2.7us到5.48之间。</p>
+<h4 id="线程上下文切换耗时"><a href="#线程上下文切换耗时" class="headerlink" title="线程上下文切换耗时"></a>线程上下文切换耗时</h4><p>在Linux下其实本并没有线程，只是为了迎合开发者口味，搞了个<strong>轻量级进程出来就叫做了线程。</strong>轻量级进程和进程一样，<strong>都有自己独立的<code>task_struct</code>进程描述符，也都有自己独立的<code>pid</code>。</strong>从操作系统视角看，<strong>调度上和进程没有什么区别，都是在等待队列的双向链表里选择一个<code>task_struct</code>切到运行态</strong>。只不过<strong>轻量级进程和普通进程的区别是可以共享同一内存地址空间、代码段、全局变量、同一打开文件集合</strong>。</p>
+<p>同一进程下的线程<code>getpid()</code>看到的<code>pid</code>是一样的，其实<code>task_struct</code>里还有一个<code>tgid</code>字段。<strong>对于多线程程序来说，<code>getpid()</code>系统调用获取的实际上是这个<code>tgid</code>，因此隶属同一进程的多线程看起来PID相同。</strong></p>
+<p>实际测试:</p>
+<p>线程和进程测试差不多，创建20个线程，在线程之间通过管道来传递信号。<strong>接到信号就唤醒，然后再传递信号给下一个线程，自己睡眠。这个实验里单独考虑了给管道传递信号的额外开销，</strong>并在第一步就统计了出来。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/time.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> pipes[<span class="number">20</span>][<span class="number">3</span>];</span><br><span class="line"><span class="keyword">char</span> <span class="built_in">buffer</span>[<span class="number">10</span>];</span><br><span class="line"><span class="keyword">int</span> <span class="built_in">running</span> = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">inti</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i =<span class="number">20</span>;</span><br><span class="line">    <span class="keyword">while</span>(i--)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(pipe(pipes[i])&lt;<span class="number">0</span>)</span><br><span class="line">            <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">        pipes[i][<span class="number">2</span>] = i;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">distroy</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i =<span class="number">20</span>;</span><br><span class="line">    <span class="keyword">while</span>(i--)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">close</span>(pipes[i][<span class="number">0</span>]);</span><br><span class="line">        <span class="built_in">close</span>(pipes[i][<span class="number">1</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">double</span> <span class="title">self_test</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i =<span class="number">20000</span>;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">timeval</span> <span class="title">start</span>, <span class="title">end</span>;</span></span><br><span class="line">    gettimeofday(&amp;start, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">while</span>(i--)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(<span class="built_in">write</span>(pipes[<span class="number">0</span>][<span class="number">1</span>],<span class="built_in">buffer</span>,<span class="number">10</span>)==<span class="number">-1</span>)</span><br><span class="line">            <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">        <span class="built_in">read</span>(pipes[<span class="number">0</span>][<span class="number">0</span>],<span class="built_in">buffer</span>,<span class="number">10</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    gettimeofday(&amp;<span class="built_in">end</span>, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">return</span> (<span class="keyword">double</span>)(<span class="number">1000000</span>*(<span class="built_in">end</span>.tv_sec-start.tv_sec)+ <span class="built_in">end</span>.tv_usec-start.tv_usec)/<span class="number">20000</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> *_test(<span class="keyword">void</span> *arg)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int</span> pos = ((<span class="keyword">int</span> *)arg)[<span class="number">2</span>];</span><br><span class="line">    <span class="keyword">int</span> in = pipes[pos][<span class="number">0</span>];</span><br><span class="line">    <span class="keyword">int</span> to = pipes[(pos + <span class="number">1</span>)%<span class="number">20</span>][<span class="number">1</span>];</span><br><span class="line">    <span class="keyword">while</span>(<span class="built_in">running</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">read</span>(in,<span class="built_in">buffer</span>,<span class="number">10</span>);</span><br><span class="line">        <span class="keyword">if</span>(<span class="built_in">write</span>(to,<span class="built_in">buffer</span>,<span class="number">10</span>)==<span class="number">-1</span>)</span><br><span class="line">            <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">double</span> <span class="title">threading_test</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i = <span class="number">20</span>;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">timeval</span> <span class="title">start</span>, <span class="title">end</span>;</span></span><br><span class="line">    <span class="keyword">pthread_t</span> tid;</span><br><span class="line">    <span class="keyword">while</span>(--i)</span><br><span class="line">    &#123;</span><br><span class="line">        pthread_create(&amp;tid,<span class="literal">NULL</span>,_test,(<span class="keyword">void</span> *)pipes[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    i = <span class="number">10000</span>;</span><br><span class="line">    gettimeofday(&amp;start, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">while</span>(i--)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(<span class="built_in">write</span>(pipes[<span class="number">1</span>][<span class="number">1</span>],<span class="built_in">buffer</span>,<span class="number">10</span>)==<span class="number">-1</span>)</span><br><span class="line">            <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">        <span class="built_in">read</span>(pipes[<span class="number">0</span>][<span class="number">0</span>],<span class="built_in">buffer</span>,<span class="number">10</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    gettimeofday(&amp;<span class="built_in">end</span>, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="built_in">running</span> = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">if</span>(<span class="built_in">write</span>(pipes[<span class="number">1</span>][<span class="number">1</span>],<span class="built_in">buffer</span>,<span class="number">10</span>)==<span class="number">-1</span>)</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">return</span> (<span class="keyword">double</span>)(<span class="number">1000000</span>*(<span class="built_in">end</span>.tv_sec-start.tv_sec)+ <span class="built_in">end</span>.tv_usec-start.tv_usec)/<span class="number">10000</span>/<span class="number">20</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    inti();</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%6.6f\n"</span>,self_test());</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%6.6f\n"</span>,threading_test());</span><br><span class="line">    distroy();</span><br><span class="line">    <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ gcc xiancheng.c -o xiancheng -pthread</span><br><span class="line">dongshifu@dong:~/<span class="built_in">test</span>$ ./xiancheng </span><br><span class="line">1.332800</span><br><span class="line">3.168695</span><br></pre></td></tr></table></figure>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a href="https://mp.weixin.qq.com/s/uq5s5vwk5vtPOZ30sfNsOg" target="_blank" rel="noopener">https://mp.weixin.qq.com/s/uq5s5vwk5vtPOZ30sfNsOg</a></p>
+]]></content>
+      <categories>
+        <category>OS</category>
+      </categories>
+      <tags>
+        <tag>进程和线程开销</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>CPU多核心及缓存</title>
+    <url>/2020/05/01/os-7cpu%E5%86%85%E9%83%A8%E7%BC%93%E5%AD%98%E5%8F%8AMMU/</url>
+    <content><![CDATA[<h3 id="cpu多核真相"><a href="#cpu多核真相" class="headerlink" title="cpu多核真相"></a>cpu多核真相</h3><p><strong>物理CPU</strong>：主板上真正安装的<strong>CPU的个数</strong></p>
+<p><strong>物理核</strong>：一个CPU会集成多个<strong>物理核心</strong></p>
+<p><strong>逻辑核</strong>：超线程技术可以<strong>把一个物理核虚拟出来多个逻辑核</strong></p>
+<p>超线程里的2个逻辑核实际上是在一个物理核上运行的，模拟双核心运作，<strong>共享该物理核的L1和L2缓存</strong>。物理计算能力并没有增加，超线程技术只有在多任务的时候才能提升机器核整体的吞吐量。而且据Intel官方介绍，<strong>相比实核，平均性能提升只有20-30%30%左右。</strong></p>
+<p>通过top命令看到的CPU核是逻辑核，linux下可以通过<code>/proc/cupinfo</code>来查看更加详细的信息：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment">#cat /proc/cpuinfo | grep "physical id" | sort | uniq #查看物理cpu个数</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#cat /proc/cpuinfo| grep "cpu cores"| uniq #查看每个cpu的物理核数量</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#cat /proc/cpuinfo  | grep -E "core id|process|physical id" #查看逻辑核数量</span></span><br></pre></td></tr></table></figure>
+<h3 id="缓存"><a href="#缓存" class="headerlink" title="缓存"></a>缓存</h3><p>286之前的时代的CPU本是没有缓存的，因为当时的<strong>CPU和内存速度差异</strong>没有现在这么大,CPU直接访问内存。但是到386时代，CPU和内存的速度不匹配了，第一次出现了缓存。而且最早的缓存并没有放在CPU模块里，而是放在主板上的。再往后<strong>CPU越来越快，现在CPU的速度比内存要快百倍以上，所以就逐步演化出了L1、L2、L3三级缓存结构，而且都集成到的CPU芯片里，以进一步提高访问速度。</strong></p>
+<p>现代Intel的CPU架构的基本结构：</p>
+<p><img src="https://api2.mubu.com/v3/document_image/da647419-f0ef-4f51-8cab-a50c408074f3-11197877.jpg" alt="cpu核心架构"></p>
+<p>L1最接近于CPU，速度也最快，但是容量最小。一般现代CPU的L1会分成两个，一个用来<strong>cache data，一个用来cache code</strong>，这是因为code和data的更新策略并不相同，而且因为CISC的变长指令，code cache要做特殊优化。<strong>一般每个核都有自己独立的data L1和code L1。</strong><br>越往下，速度越慢，容量越大。L2一般也可以做到每个核一个独立的。但是<strong>L3一般就是整颗CPU共享的</strong>了。</p>
+<h4 id="linux下实际查看"><a href="#linux下实际查看" class="headerlink" title="linux下实际查看"></a>linux下实际查看</h4><p>Linux的内核的开发者定义了一套框架模型来完成这一目的，它就是CPUFreq系统。CPUFreq提供的sysfs接口，可以看到比/proc/cpuinfo更为详细的CPU详细信息。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># cd /sys/devices/system/cpu/;ll</span></span><br><span class="line">drwxr-xr-x  9 root root    0 4月   8 14:15 cpu0/</span><br><span class="line">drwxr-xr-x  9 root root    0 4月   8 14:15 cpu1/</span><br><span class="line">drwxr-xr-x  9 root root    0 4月   8 14:15 cpu2/</span><br><span class="line">drwxr-xr-x  9 root root    0 4月   8 14:15 cpu3/</span><br><span class="line">drwxr-xr-x  9 root root    0 4月   8 14:15 cpu4/</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
+<p><strong>L1一级缓存查看：</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># cat cpu0/cache/index0/level</span></span><br><span class="line">1</span><br><span class="line"><span class="comment"># cat cpu0/cache/index0/size</span></span><br><span class="line">32K</span><br><span class="line"><span class="comment"># cat cpu0/cache/index0/type</span></span><br><span class="line">Data</span><br><span class="line"><span class="comment"># cat cpu0/cache/index0/shared_cpu_list</span></span><br><span class="line">0,4</span><br><span class="line"><span class="comment"># cat cpu0/cache/index1/level</span></span><br><span class="line">1</span><br><span class="line"><span class="comment"># cat cpu0/cache/index1/size</span></span><br><span class="line">32K</span><br><span class="line"><span class="comment"># cat cpu0/cache/index1/type</span></span><br><span class="line">Instruction</span><br><span class="line"><span class="comment"># cat cpu0/cache/index1/shared_cpu_list</span></span><br><span class="line">0,4</span><br></pre></td></tr></table></figure>
+<p>从上面的level接口可以看出index0和index1都是一级缓存，只不过<strong>一个是Data数据缓存，一个是Instruction也就是代码缓存</strong>。<br>上面提到的是每个Core是独立的L1缓存，为什么shared_cpu_list显示有共享?这里看到的cpu0并不是物理Core，而是逻辑核，都是超线程技术虚拟出来的。实<strong>际上cpu0和cpu4是属于一个物理Core，所以每个Data L1和Instruction是这两个逻辑核共享的</strong>。本台电脑总共是有4个Data L1,4个Instrunction L1，大小都是32K。</p>
+<p><strong>L2二级缓存查看：</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># cat cpu0/cache/index2/size</span></span><br><span class="line">256K</span><br><span class="line"><span class="comment"># cat cpu0/cache/index2/type</span></span><br><span class="line">Unified</span><br><span class="line"><span class="comment"># cat cpu0/cache/index2/shared_cpu_list</span></span><br><span class="line">0,4</span><br></pre></td></tr></table></figure>
+<p>二级缓存要比一级缓存大不少，有256K，但是<strong>不分Data和Instruction。</strong>另外L2和L1一样，也是总共有4个，<strong>每两个逻辑核共享一个L2。</strong></p>
+<p><strong>L3三级缓存查看：</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># cat cpu0/cache/index3/size</span></span><br><span class="line">8192K</span><br><span class="line"><span class="comment"># cat cpu0/cache/index3/type</span></span><br><span class="line">Unified</span><br><span class="line"><span class="comment"># cat cpu0/cache/index3/shared_cpu_list</span></span><br><span class="line">0-7</span><br></pre></td></tr></table></figure>
+<p>L3达到了8M，买CPU的时候商品里能看到的缓存属性一般告诉的就是L3属性。因为L3要比L2和L1看起来要大的多。但实际上我的这台电脑里L3只有以个，每个CPU各一个，不像是L2、L1有很多。</p>
+<p>另外，Linux上还有个<code>dmidecode</code>命令，也能查看到一些关于CPU缓存的信息</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ sudo dmidecode -t cache</span><br></pre></td></tr></table></figure>
+<h4 id="Cache-Line"><a href="#Cache-Line" class="headerlink" title="Cache Line"></a>Cache Line</h4><p>Cache Line是<strong>本级缓存向下一层取数据时的基本单位</strong>。可以通过如下方式查看：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># cd /sys/devices/system/cpu/;ll</span></span><br><span class="line"><span class="comment"># cat cpu0/cache/index0/coherency_line_size</span></span><br><span class="line">64</span><br><span class="line"><span class="comment"># cat cpu0/cache/index1/coherency_line_size</span></span><br><span class="line">64</span><br><span class="line"><span class="comment"># cat cpu0/cache/index2/coherency_line_size</span></span><br><span class="line">64</span><br><span class="line"><span class="comment"># cat cpu0/cache/index3/coherency_line_size</span></span><br><span class="line">64</span><br></pre></td></tr></table></figure>
+<p>可以看到<strong>L1、L2、L3的Cache Line大小都是64字节（注意是字节。内存中的实际情况是：一次IO其实吐出来的只有64比特，注意是比特。 一个cache line请求需要内存吐8次数据。 这个是64bit是由总线位宽决定的，没办法改）。就是说每次cpu从内存获取数据的时候，都是以该单位来进行的，哪怕只取一个bit，CPU也是给取一个Cache Line然后放到各级缓存里存起来。</strong></p>
+<h3 id="TLB缓存"><a href="#TLB缓存" class="headerlink" title="TLB缓存"></a>TLB缓存</h3><p>TLB(Translation Lookaside Buffer)是一个小的，虚拟寻址的缓存，其中每一行都保存着一个由单个PTE(Page Table Entry 页表项)组成的块。如果<strong>没有TLB，则每次取数据都需要两次访问内存，即查页表获得物理地址和取数据。</strong>该<strong>缓存位于MMU内</strong>。</p>
+<h4 id="虚拟内存"><a href="#虚拟内存" class="headerlink" title="虚拟内存"></a>虚拟内存</h4><p>在<strong>用户的视角里</strong>，<strong>每个进程都有自己独立的地址空间</strong>，A进程的4GB和B进程4GB是完全独立不相关的，他们看到的都是操作系统虚拟出来的地址空间。但是呢，虚拟地址最终还是要落在实际内存的物理地址上进行操作的。<strong>操作系统就会通过页表的机制来实现进程的虚拟地址到物理地址的翻译工作。其中每一页的大小都是固定的</strong>。</p>
+<p>页表管理的两个关键点，分别是页面大小和页表级数</p>
+<p><strong>1.页面大小</strong><br>在Linux下，通过如下命令可以查看到当前操作系统的页大小</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># getconf PAGE_SIZE</span></span><br><span class="line">4096</span><br></pre></td></tr></table></figure>
+<p>可以看到当前的Linux机器的页表是4KB的大小。</p>
+<p><strong>2.页表级数</strong></p>
+<p>1）如果页表<strong>级数越少，虚拟地址到物理地址的映射会很快，但是需要管理的页表项会很多，能支持的地址空间也有限。</strong></p>
+<p>2）<strong>相反页表级数越多，需要的存储的页表数据就会越少，而且能支持到比较大的地址空间，但是虚拟地址到物理地址的映射就会越慢</strong>。</p>
+<h4 id="linux虚拟内存实现"><a href="#linux虚拟内存实现" class="headerlink" title="linux虚拟内存实现"></a>linux虚拟内存实现</h4><h5 id="32位系统的虚拟内存实现：二级页表"><a href="#32位系统的虚拟内存实现：二级页表" class="headerlink" title="32位系统的虚拟内存实现：二级页表"></a>32位系统的虚拟内存实现：<strong>二级页表</strong></h5><p>如果想支持32位的操作系统下的4GB进程虚拟地址空间，假设页表大小为4K，则共有2的20次方页面。如果采用速度最快的1级页表，对应则需要2的20次方个页表项。一个页表项假如4字节，那么一个进程就需要<code>（1048576*4=）4M</code>的内存来存页表项。<br>如果是采用2级页表，如图，则创建进程时只需要有一个页目录就可以了，占用<code>(1024*4)=4KB</code>的内存。剩下的二级页表项只有用到的时候才会再去申请。</p>
+<p><img src="https://api2.mubu.com/v3/document_image/b6e8d43f-0635-487e-a49e-bfae31655cff-11197877.jpg" alt="二级页表"></p>
+<p>这样则只需要页目录1024个，页表项1024个，<strong>总共2028个页表管理条目，（2048*4=）8k就可以支持起4GB的地址空间转换。</strong></p>
+<h5 id="64位系统的虚拟内存实现：四级页表"><a href="#64位系统的虚拟内存实现：四级页表" class="headerlink" title="64位系统的虚拟内存实现：四级页表"></a>64位系统的虚拟内存实现：四级页表</h5><p>现在的操作系统需要支持的可是48位地址空间（理论上可以支持64位，但其实现在只支持到了48位，也足够用了），而且要支持成百上千的进程，如果不采用分级页表的方式，则创建进程时就需要为其维护一个2的36次方个页表项（64位Linux目前只使用了地址中的48位的，在这里面，最后12位都是页内地址，只有前36位才是用来寻找页表的）， 2^36 *4Byte=32GB，这个更不能忍。也必须和32位系统一样，进一步提高页表的级数。</p>
+<p>Linux在v2.6.11以后，最终采用的方案是4级页表，分别是：</p>
+<ul>
+<li>PGD：page Global directory(47-39), 页全局目录</li>
+<li>PUD：Page Upper Directory(38-30)，页上级目录</li>
+<li>PMD：page middle directory(29-21)，页中间目录</li>
+<li>PTE：page table entry(20-12)，页表项</li>
+</ul>
+<p>这样，一个64位的虚拟空间，初始创建的时候只需要维护一个29 大小的一个页全局目录就够了，现在的页表数据结构被扩展到了8byte。这个页全局目录仅仅需要(29 *8=)4K，剩下的中间页目录、页表项只需要在使用的时候再分配就好了。Linux就是通过这种方式支持起(2^48 =)256T的进程地址空间的。</p>
+<h4 id="TLB"><a href="#TLB" class="headerlink" title="TLB"></a>TLB</h4><p>使用多级页表虽然只需要4k的初始页目录就可以支持起一个256T的进程地址空间。但是，这也带来了额外的问题，<strong>页表是存在内存里的。那就是一次内存IO光是虚拟地址到物理地址的转换就要去内存查4次页表，再算上真正的内存访问，竟然需要5次内存IO才能获取一个内存数据!</strong></p>
+<p>和<strong>CPU的L1、L2、L3的缓存思想一致，既然进行地址转换需要的内存IO次数多，且耗时。那么干脆就在CPU里把页表尽可能地cache起来不就行了么</strong>，所以就有了<strong>TLB(Translation Lookaside Buffer，位于MMU中，MMU位于CPU内)，专门用于改进虚拟地址到物理地址转换速度的缓存。其访问速度非常快，和寄存器相当，比L1访问还快。</strong></p>
+<h5 id="MMU"><a href="#MMU" class="headerlink" title="MMU"></a>MMU</h5><p>MMU（内存管理单元）：包括从逻辑地址到虚拟地址（线性地址）再到内存地址的变换过程、页式存储管理、段式存储管理、段页式存储管理、虚拟存储管理（请求分页、请求分段、请求段页）。 <strong>MMU位于CPU内部，可以假想为一个进程的所需要的资源都放在虚拟地址空间里面，而CPU在取指令时，机器指令中的地址码部分为虚拟地址（线性地址），需要经过MMU转换成为内存地址，才能进行取指令。</strong>MMU完成两大功能：</p>
+<ul>
+<li><p>虚拟地址到内存地址的地址变换</p>
+</li>
+<li><p>设置修改CPU对内存的访问级别。比如在Linux的虚拟地址空间中，3-4G为内核空间，访问级别最高，可以访问整个内存；而0-3G的用户空间只能访问用户空间的内容。其实这也是由MMU的地址变换机制所决定的。对于Inter（英特尔）CPU架构，CPU对内存的访问设置了4个访问级别：0、1、2、3，0最高，4最低。而Linux下，只是使用了CPU的两种级别：0、3。</p>
+</li>
+</ul>
+<p>CPU的状态属于程序状态字PSW的一位，系统模式(0)，用户模式(1)，CPU交替执行操作系统程序和用户程序。0级对应CPU的内核态（特权态、管态、系统态），而3级对应用户态（普通态或目态），这其实是对内核的一种保护机制。例如，在执行printf函数的时候，其本身是在用户空间执行，然后发生系统调用，调用系统函数write将用户空间的数据写入到内核空间，最后把内核的数据刷到（fsync）磁盘上，在这个过程中，CPU的状态发生了变化，从0级（用户态）到3级（内核态）。</p>
+<p>有了TLB之后，CPU访问某个虚拟内存地址的过程如下：</p>
+<ul>
+<li>CPU产生一个虚拟地址</li>
+<li><strong>MMU从TLB中获取页表，翻译成物理地址</strong></li>
+<li>MMU<strong>把物理地址发送给L1/L2/L3/缓存</strong></li>
+<li>L1/L2/L3/内存将地址对应数据返回给CPU</li>
+</ul>
+<p>第2步是类似于寄存器的访问速度，所以如果TLB能命中，则虚拟地址到物理地址的时间开销几乎可以忽略。</p>
+<h4 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h4><p>因为TLB并不是很大，只有4k，而且现在逻辑核又造成会有两个进程来共享。所以可能会有cache miss的情况出现。<strong>而且一旦TLB miss造成的后果可比物理地址cache miss后果要严重一些，最多可能需要进行5次内存IO才行。</strong></p>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a href="https://mp.weixin.qq.com/s/PQTuFZO51an6OAe3WX4BVw" target="_blank" rel="noopener">https://mp.weixin.qq.com/s/PQTuFZO51an6OAe3WX4BVw</a></p>
+<p><a href="https://mp.weixin.qq.com/s/mssTS3NN7-w2df1vhYSuYw" target="_blank" rel="noopener">https://mp.weixin.qq.com/s/mssTS3NN7-w2df1vhYSuYw</a></p>
+]]></content>
+      <categories>
+        <category>OS</category>
+      </categories>
+      <tags>
+        <tag>CPU及缓存</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>内存底层原理</title>
+    <url>/2020/04/25/os-6%E5%86%85%E5%AD%98/</url>
+    <content><![CDATA[<h3 id="内存底层原理"><a href="#内存底层原理" class="headerlink" title="内存底层原理"></a>内存底层原理</h3><h4 id="内存底层结构"><a href="#内存底层结构" class="headerlink" title="内存底层结构"></a>内存底层结构</h4><p>由于高速缓存的工作机制，内存对齐后性能高。且底层实现中<strong>内存的IO是以8个字节64bit为单位进行的。</strong></p>
+<p>内存物理结构：一个内存是由若干个黑色的<strong>内存颗粒</strong>构成的。每一个内存颗粒叫做一个<strong>chip</strong>。<strong>每个chip内部，由8个bank组成</strong>。每一个bank是一个<strong>二维平面上的矩阵</strong>。矩阵中<strong>每一个元素中都是保存了1个字节，也就是8个bit</strong></p>
+<h4 id="内存编址"><a href="#内存编址" class="headerlink" title="内存编址"></a>内存编址</h4><p>对于在应用程序中内存中地址连续的8个字节,例如0x0000-0x0007，是从位于bank上的呢？直观感觉，应该是在第一个bank上吗？其实不是的，程序员视角看起来连续的地址0x0000-0x0007，<strong>实际上是位于8个bank中的，每一个bank只保存了一个字节。在物理上，他们并不连续</strong>。下图很好地阐述了实际情况。</p>
+<p><img src="https://api2.mubu.com/v3/document_image/6be26faa-2427-4112-bd72-15e2cab64e46-11197877.jpg" alt="连续8字节在内存中的实际分布"></p>
+<p>编址原因：是电路工作效率。<strong>内存中的8个bank是可以并行工作的。如果想读取地址0x0000-0x0007，每个bank工作一次，拼起来就是需要的数据，IO效率会比较高。</strong>但要存在一个bank里，那这个bank只能自己干活。只能串行进行读取，需要读8次，这样速度会慢很多。</p>
+<p><strong>内存对齐最最底层的原因是内存的IO是以8个字节64bit为单位进行的。</strong> 对于64位数据宽度的内存，假如cpu也是64位的cpu（现在的计算机基本都是这样的），<strong>每次内存IO获取数据都是从同行同列的8个bank中各自读取一个字节拼起来的。从内存的0地址开始，0-7字节的数据可以一次IO读取出来，8-15字节的数据也可以一次读取出来。</strong></p>
+<p>假如指定要获取的是0x0001-0x0008，也是8字节，但是不是0开头的，内存需要怎么工作呢？没有好办法，内存只好先工作一次把0x0000-0x0007取出来，然后再把0x0008-0x0015取出来，<strong>把两次的结果都返回</strong>。CPU和内存IO的硬件限制导致没办法一次跨在两个数据宽度中间进行IO。</p>
+<h4 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h4><ul>
+<li><p>事实上，<strong>编译和链接器会自动替开发者对齐内存的，尽量保证一个变量不跨列寻址。</strong></p>
+</li>
+<li><p>其实在内存硬件层上，还有操作系统层。操作系统还管理了CPU的一级、二级、三级缓存。高速缓存里的<strong>Cache Line是64字节，它是内存IO单位的8倍，不会让内存IO浪费。</strong></p>
+</li>
+</ul>
+<h3 id="内存访问延迟"><a href="#内存访问延迟" class="headerlink" title="内存访问延迟"></a>内存访问延迟</h3><p>内存延迟一般是通过CL-tRCD-tRP-tRAS四个参数来标识的。详细理解一下这四个参数的含义：</p>
+<ul>
+<li>CL(Column Address Latency）：发送一个列地址到内存与数据开始响应之间的周期数</li>
+<li>tRCD（Row Address to Column Address Delay）：打开一行内存并访问其中的列所需的最小时钟周期数</li>
+<li><p>tRP(Row Precharge Time)：发出预充电命令与打开下一行之间所需的最小时钟周期数。</p>
+</li>
+<li><p>tRAS(Row Active Time)：行活动命令与发出预充电命令之间所需的最小时钟周期数。也就是对下一次预充电时间进行限制。</p>
+</li>
+</ul>
+<p>除了CL是固定周期数以外，其它的三个都是最小周期。另外上面的参数都是以<strong>时钟周期为单位</strong>的。因为<strong>现代的内存都是一个时钟周期上下沿分别各传输一次数据，所以用Speed/2就可以得出</strong>，如果机器的Speed是1066MHz，则时钟周期为533MHz。自己的机器可以通过dmidecode命令查看：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">dmidecode | grep -P -A16 <span class="string">"Memory Device"</span></span><br></pre></td></tr></table></figure>
+<h4 id="四个工作场景"><a href="#四个工作场景" class="headerlink" title="四个工作场景"></a>四个工作场景</h4><ul>
+<li>场景1：</li>
+</ul>
+<p>进程需要内存地址0x0000为的一个字节的数据，CPU这时候向内存控制器发出请求，内存控制器进行<strong>行地址的预充电，需要等待tRP个时钟周期。再发出打开一行内存的命令，又需要等待tRCD个时钟周期。接着发送列地址，再等待CL个周期。</strong>最终将0x0000-0x0007的数据全部返回给了CPU。CPU把这些数据放入到了自己的cache里，并帮你开始对0x0000的数据进行运算。</p>
+<ul>
+<li>场景2：</li>
+</ul>
+<p>进程需要内存地址0x0003的一个字节数据，<strong>CPU发现发现它在自己的cache里存在，直接使用就好了。这个场景里其实根本就没有内存IO发生</strong>。</p>
+<ul>
+<li>场景3：</li>
+</ul>
+<p>进程需要内存地址0x0008的一个字节数据，<strong>CPU的cache并没有命中，于是向内存控制器请求。内存控制器发现行地址和上一次工作的行地址一致，这次只需要发送列地址后等待CL个周期，</strong>就可以拿到0x0008-0x0015的数据并返回给CPU了。</p>
+<ul>
+<li>场景4：</li>
+</ul>
+<p>进程需要内存地址0xf000的一个字节数据，同样<strong>CPU的cache并不命中，向内存控制器请求。内存控制器一看（内心有些许的郁闷），这次行w地址又变了，得，和场景1一样。继续等待tRP+tRCD+CL个周期后，才能够取到数据并返回。</strong></p>
+<blockquote>
+<p>实际的计算机的内存IO过程中还需要进行逻辑地址和物理地址的转换，这里忽略。</p>
+</blockquote>
+<h4 id="实际计算"><a href="#实际计算" class="headerlink" title="实际计算"></a>实际计算</h4><p>内存也存在和磁盘一样，随机IO比顺序IO要慢的问题。<strong>如果行地址同上一次访问的不一致，则需要重新拷贝row buffer，延迟周期需要tRP+tRCD+CL。而如果是顺序IO的话（行地址不变），只需要CL个周期既可完成。</strong></p>
+<p>估算内存的延时,若测试机器上的内存参数Speed为1066MHz（通过dmidecode查得），该值除以2就是时钟周期的频率=1066/2=533Mhz。其延迟周期为7-7-7-24。</p>
+<ul>
+<li>随机IO：这种状况下需要tRP+tRCD+CL个时钟周期，7+7+7=21个周期。但是还有个tRAS的限制，两次行地址预充电不得小于24。所以得按24来计算，24*(1s/533Mhz) = 45ns</li>
+<li>顺序IO：这种状况下只需要CL个时钟周期 7*(1s/533Mhz)=13ns</li>
+</ul>
+<h4 id="扩展：CPU的cache-line虚拟内存概念"><a href="#扩展：CPU的cache-line虚拟内存概念" class="headerlink" title="扩展：CPU的cache line虚拟内存概念"></a>扩展：CPU的cache line虚拟内存概念</h4><p>因为对于内存来说，<strong>随机IO一次开销比顺序IO高好几倍。所以操作系统在工作的时候，会尽量让内存通过顺序IO的方式来进行。</strong>做法关键就是Cache Line。<strong>当CPU发现缓存不命中的时候，实际上从来不会向内存去请求1个字节，8个字节这种。而是一次性就要64字节，然后放到自己的Cache中存起来。</strong></p>
+<p>用上面的例子来看，</p>
+<ul>
+<li>如果随机请求8字节：耗时是45ns</li>
+<li>如果随机请求64字节：耗时是45+7*13 = 136ns</li>
+</ul>
+<p>开销也没贵多少，<strong>因为只有第一个字节是随机IO，后面的7个字节都是顺序IO。数据是8倍，但是IO耗时只有3倍，而且取出来的数据后面大概率要用</strong>，所以计算机内部就这么搞了，通过这种方式<strong>避免一些随机IO</strong>！</p>
+<p>另外，<strong>内存也支持burst(突发传输)模式，在这种模式下可以只传入一次行列地址，就命令内存返回该内存开头的连续字节数据，比如64字节。这种模式下，只有第一次的8字节需要真正的行列访问延迟，后面的7个字节可以直接按内存的数据频率给吐出来。</strong></p>
+<h3 id="内存核心频率"><a href="#内存核心频率" class="headerlink" title="内存核心频率"></a>内存核心频率</h3><p><strong>内存真正的工作频率是核心频率，时钟频率和数据频率都是在核心频率的基础上，通过技术手段放大出来的。内存越新，放大的倍数越多</strong>。 <strong>核心频率已经多年没有实质性进步了，这是受物理材料的极限限制，内存的核心频率一直在133MHz~200MHz之间徘徊</strong>。</p>
+<p>实际的内存提速使用的是<strong>电路时钟周期预取</strong>以及<strong>Bank Group</strong>等技术。</p>
+<h4 id="扩展：内存延迟"><a href="#扩展：内存延迟" class="headerlink" title="扩展：内存延迟"></a>扩展：内存延迟</h4><p>内存还有个概念叫<strong>IO频率、也叫时钟频率。简单理解为将DDR内存的Speed频率除以2，就是内存的IO频率</strong>。这个<strong>必须和CPU的外频相匹配才能工作</strong>。例如对于DDR3来说，假如核心频率133Mhz的内存工作频率下，匹配533MHz的CPU外频,其IO频率就是533Mhz。数据传输因为上下沿都可以传，所以是核心频率的8倍，也就是1066MHz左右。</p>
+<p>所有的内存条都有CL-tRCD-tRP-tRAS四个参数。其中最重要的是CL-tRCD-tRP这三个参数，只要费点劲，所有的在售内存你都能找到这3个值。例如经典的DDR3-1066、DDR3-1333及DDR3-1600的CL值分别为7-7-7、8-8-8及9-9-9。现在京东上一条比较流行的台式机内存金士顿(Kingston)DDR4 2400 8G，其时序是17-17-17。</p>
+<p>第四个参数有时候会被省略。原因有二，第一：现在的开发者不需要直接和内存打交道，而操作系统呢又做的比较内存友好，很少会有这个开销真正发生。第二，这个开销的值要比其它的值大很多，实在不太好看。商家为了内存能多卖一些，干脆就避而不谈了。</p>
+<p><strong>好了，问题来了。为什么内存越进步，延迟周期反而会变大了呢？</strong></p>
+<p>这就是因为<strong>延迟周期使用延迟时间除以内存Speed算出来的</strong>。这其实根本就不科学，最科学的办法应该是用延迟时间来评估。<strong>延迟时间很大程度上是受内存的核心频率的制约的</strong>。而这些年核心频率又基本上没有进步，所以延迟时间也不会有实质的降低。内存的制造商们又为了频率数据好看，能多卖些内存，非得采用Speed作为主周期来用。导致在用这个周期一衡量，貌似延迟周期就越来越大了。</p>
+<h3 id="测试参考"><a href="#测试参考" class="headerlink" title="测试参考"></a>测试参考</h3><p>在各种情况下进行内存访问延迟实验。<strong>最快的情况下其实不是内存在IO，而是CPU的高速缓存在工作。穿</strong>透到内存的话，顺序IO延时大约在10ns左右，随机访问确实比顺序访问慢的多，大概是4倍的关系。</p>
+<p>现代的服务器里，<strong>CPU和内存条都有多个，它们之间目前主要采用的是复杂的NUMA架构进行互联，NUMA把服务器里的CPU和内存分组划分成了不同的node。属于同一个node里的CPU和内存之间访问速度会比较快。而如果跨node的话，则需要经过QPI总线，总体来说，速度会略慢一些</strong>。</p>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a href="https://mp.weixin.qq.com/s/F0NTfz-3x3UxQeF-GSavRg" target="_blank" rel="noopener">https://mp.weixin.qq.com/s/F0NTfz-3x3UxQeF-GSavRg</a></p>
+<p><a href="https://mp.weixin.qq.com/s/ps8VfGpbL4-xKggM2ywjHw" target="_blank" rel="noopener">https://mp.weixin.qq.com/s/ps8VfGpbL4-xKggM2ywjHw</a></p>
+<p><a href="https://mp.weixin.qq.com/s/3KOXcvmtc5jiwzGSTSF_yQ" target="_blank" rel="noopener">https://mp.weixin.qq.com/s/3KOXcvmtc5jiwzGSTSF_yQ</a></p>
+<p><a href="https://mp.weixin.qq.com/s/OR2XB4J76haGc1THeq7WQg" target="_blank" rel="noopener">https://mp.weixin.qq.com/s/OR2XB4J76haGc1THeq7WQg</a></p>
+]]></content>
+      <categories>
+        <category>OS</category>
+      </categories>
+      <tags>
+        <tag>内存介绍</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>文件在磁盘中的开销</title>
+    <url>/2020/04/21/os-4%E7%A3%81%E7%9B%98%E4%B8%8E%E6%96%87%E4%BB%B6/</url>
+    <content><![CDATA[<h3 id="新建一个空文件占用多少磁盘空间"><a href="#新建一个空文件占用多少磁盘空间" class="headerlink" title="新建一个空文件占用多少磁盘空间"></a>新建一个空文件占用多少磁盘空间</h3><p>linux下<code>touch</code>一个空文件：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">touch empyt_file</span><br></pre></td></tr></table></figure>
+<p>进行该操作，是否要消耗磁盘空间？需要的话，大概能消耗多少？</p>
+<p><code>ls</code>这个命令可以查看文件大小：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ touch empty_file</span><br><span class="line">$ ls -l  </span><br><span class="line">total 0  </span><br><span class="line">-rw-r--r-- 1 dongshifu dongshifu 0 Aug 17 17:49 empty_file</span><br></pre></td></tr></table></figure>
+<p><code>ls</code>命令表示这个空文件占用的是0。<strong>文件的大小确实是0，因为还没有为该文件写入任何内容</strong>。但是现在要思考的是，<strong>一个空文件是否占用磁盘空间</strong>。所以直觉告诉这绝对不可能，磁盘上多出来一个文件，怎么可能一点空间开销都没有！</p>
+<p>为了解开这个谜底，还需要借助<code>df</code>命令。输入<code>df –i</code></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># df -i</span></span><br><span class="line">Filesystem            Inodes   IUsed   IFree IUse% Mounted on</span><br><span class="line">......</span><br><span class="line">/dev/sdb1            2147361984 12785019 2134576965    1% /search</span><br></pre></td></tr></table></figure>
+<p>该命令输出展示了<strong>文件系统中inode的使用情况</strong>。注意IUsed是12785019。继续新建一个空文件：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># touch empty_file2</span></span><br><span class="line">df -i</span><br><span class="line">Filesystem            Inodes   IUsed   IFree IUse% Mounted on</span><br><span class="line">......</span><br><span class="line">/dev/sdb1            2147361984 12785020 2134576964    1% /search</span><br></pre></td></tr></table></figure>
+<p>这下注意IUsed变成了12785020。</p>
+<p>得出结论：<strong>新建一个空文件会占用一个Inode。</strong></p>
+<h4 id="Inode"><a href="#Inode" class="headerlink" title="Inode"></a>Inode</h4><p>那么inode里都存了哪些和文件相关的信息呢？稍微看一下内核的源代码。以ext2文件系统为例，在linux-2.6里的文件<code>fs/ext2/ext2.h</code>中，可以找到内核对于inode结构体的定义。该结构体较为复杂，<strong>主要存储除了文件内容以外的一些其他数据</strong>，选一些比较关键的截取出来：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">ext2_inode</span> &#123;</span></span><br><span class="line">        __le16  i_mode;         <span class="comment">// 文件权限</span></span><br><span class="line">        __le16  i_uid;          <span class="comment">// 文件所有者ID</span></span><br><span class="line">        __le32  i_size;         <span class="comment">// 文件字节数大小</span></span><br><span class="line">        __le32  i_atime;        <span class="comment">// 文件上次被访问的时间</span></span><br><span class="line">        __le32  i_ctime;        <span class="comment">// 文件创建时间</span></span><br><span class="line">        __le32  i_mtime;        <span class="comment">// 文件被修改的时间</span></span><br><span class="line">        __le32  i_dtime;        <span class="comment">// 文件被删除的时间</span></span><br><span class="line">        __le16  i_gid;          <span class="comment">// 文件所属组ID</span></span><br><span class="line">        __le16  i_links_count;  <span class="comment">// 此文件的inode被连接的次数</span></span><br><span class="line">        __le32  i_blocks;       <span class="comment">// 文件的block数量</span></span><br><span class="line">        ...</span><br><span class="line">        __le32  i_block[EXT2_N_BLOCKS]; <span class="comment">// 指向存储文件数据的块的数组</span></span><br><span class="line">        ...</span><br></pre></td></tr></table></figure>
+<p>可以看到<strong>和文件相关的所属用户、访问时间等都是存在inode中的</strong>。使用<code>stat</code>命令就可以直接看到文件inode中数据。</p>
+<p>每个inode到底是多大呢？<code>dumpe2fs</code>可以查看（XFS的话使用xfs_info)。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># dumpe2fs -h /dev/mapper/vgroot-lvroot</span></span><br><span class="line">dumpe2fs 1.41.12 (17-May-2010)</span><br><span class="line">......</span><br><span class="line">Inode size:               256</span><br></pre></td></tr></table></figure>
+<p><strong>Inode size表示每个Inode的大小。</strong>一般，每个inode都是256字节。<strong>两个inode的大小正好对齐到磁盘扇区的512字节。</strong></p>
+<h4 id="文件名保存地址"><a href="#文件名保存地址" class="headerlink" title="文件名保存地址"></a>文件名保存地址</h4><p>Inode结构体都看完了，搞了半天不知道有没有发现一个问题，<strong>inode里并没有存储文件名！！那么，文件名到底跑哪儿去了？</strong></p>
+<p>在<code>fs/ext2/ext2.h</code>中，可以找到如下文件夹相关的结构体</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">ext2_dir_entry</span> &#123;</span></span><br><span class="line">         __le32  inode;                  <span class="comment">/* Inode number */</span></span><br><span class="line">         __le16  rec_len;                <span class="comment">/* Directory entry length */</span></span><br><span class="line">         __le16  name_len;               <span class="comment">/* Name length */</span></span><br><span class="line">         <span class="keyword">char</span>    name[];                 <span class="comment">/* File name, up to EXT2_NAME_LEN */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>该结构体就是<strong>文件夹所使用的数据结构</strong>。没错<strong>，文件名是存在其所属的文件夹中的，就是其中的<code>char name[]</code>字段。和文件名一起，文件夹里还记录了该文件的inode号等信息。</strong></p>
+<h3 id="一个字节的文件实际占用多少磁盘空间"><a href="#一个字节的文件实际占用多少磁盘空间" class="headerlink" title="一个字节的文件实际占用多少磁盘空间"></a>一个字节的文件实际占用多少磁盘空间</h3><p>假如给文件里只写入1个字节，那么这个文件实际的磁盘占用多大，难道真的是1个字节吗？</p>
+<p>实际操作：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># mkdir tempDir</span></span><br><span class="line"><span class="comment"># cd tempDir</span></span><br><span class="line"><span class="comment"># du -h</span></span><br><span class="line">0    .</span><br><span class="line"><span class="comment"># touch test</span></span><br><span class="line"><span class="comment"># du -h</span></span><br><span class="line">0</span><br></pre></td></tr></table></figure>
+<p>在一个目录中创建了一个空的文件以后，通过<code>du</code>命令看到的该文件夹的占用空间并没有发生变化。这符合之前的认识，因为空文件只占用inode。接着修改文件，添加一个字母：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">echo</span> <span class="string">"a"</span> &gt; <span class="built_in">test</span></span><br><span class="line"><span class="comment"># du -h</span></span><br><span class="line">4.0K</span><br></pre></td></tr></table></figure>
+<p>保存后再次查看该目录的空间占用。<strong>发现由原来的0增加到了4K</strong>。 所以说，<strong>文件里的内容不论多小，哪怕是一个字节，其实操作系统也会分配4K的</strong>。哦，当然了<strong>还得再算前文中说到的inode和文件夹数据结构中存储的文件名等所用的空间。</strong> 所以，不要在系统里维护一大堆的碎文件<strong>。文件再小，占用磁盘其实一点都不少！</strong></p>
+<h4 id="4K占用的底层原理"><a href="#4K占用的底层原理" class="headerlink" title="4K占用的底层原理"></a>4K占用的底层原理</h4><p>再把linux源代码文件fs/ext2/ext2.h里关于inode的定义翻出来，<strong>找到结构体中定义的指向数据节点用的block数组：</strong></p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">ext2_inode</span> &#123;</span></span><br><span class="line">    ......</span><br><span class="line">    __le32  i_block[EXT2_N_BLOCKS]; <span class="comment">// 指向存储文件数据的块的数组</span></span><br><span class="line">    ......</span><br></pre></td></tr></table></figure>
+<p><strong>当文件没有数据需要存储的时候，这个数组都是空值。而当写入了1个字节以后，文件系统就需要申请block去存储了，申请完后，指针放在这个数组里。哪怕文件内容只有一个字节，仍然会分配一个整的Block，因为这是文件系统的最小工作单位。那么这个block大小是多大呢，ext下可以通过<code>dumpe2fs</code>查看。</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment">#dumpe2fs -h /dev/mapper/vgroot-lvroot</span></span><br><span class="line">......</span><br><span class="line">Block size:               4096</span><br></pre></td></tr></table></figure>
+<p>一般情况，一个Block是4KB。</p>
+<h4 id="大文件如何存储"><a href="#大文件如何存储" class="headerlink" title="大文件如何存储"></a>大文件如何存储</h4><p>inode中定义的block数组大小呢，只有<code>EXT2_N_BLOCKS</code>个。再查看一下这个常量的定义，发现它是15，相关内核中定义如下：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> EXT2_NDIR_BLOCKS        12</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> EXT2_IND_BLOCK         EXT2_NDIR_BLOCKS</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> EXT2_DIND_BLOCK        (EXT2_IND_BLOCK + 1)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> EXT2_TIND_BLOCK        (EXT2_DIND_BLOCK + 1)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> EXT2_N_BLOCKS              (EXT2_TIND_BLOCK + 1)</span></span><br></pre></td></tr></table></figure>
+<p>就按4K的block size来看，15个block只够存的下15<em>4=60K的文件。 这个文件大小肯定不是那么简单，存一个mp4大片都得上G了。那<em>*Linux是怎么实现大文件存储的呢？其实上面宏的定义过程已经告知了一切，就是只有12个数组直接存block指针，其余的用来做间接索引（EXT2_IND_BLOCK），二级间接索引（EXT2_DIND_BLOCK）和三级索引（EXT2_TIND_BLOCK）。</em></em></p>
+<p><img src="https://api2.mubu.com/v3/document_image/c3c116ba-3f8f-4006-8cf4-a24d3d2a5d5c-11197877.jpg" alt="inode中的直接与间接索引"></p>
+<p>这样，一个文件可以使用的空间就指数倍的扩展了。 <strong>文件小的时候，都用直接索引，磁盘IO少，性能好。文件大的时候，访问一个block可能得先进行三次的IO，性能略慢，不过有OS层面的页缓存、目录项缓存的加持，也还好</strong>。</p>
+<h4 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h4><p><strong>文件系统是按照inode+block来组织的，所以不管文件多小，哪怕只有一个字节，在数据上都会消耗掉整整一个块(当然还得算上inode等开销)。</strong>这个块大小可以通过<code>dumpe2fs</code>等命令来查看。如果想改变这个块大小怎么办?对不起，只能重新格式化。</p>
+<p>再扯的远一点<strong>，所有的文件系统理念都是按照块来分配的，包括分布式文件系统</strong>，例如HDFS。<strong>由于HDFS应用场景是各种GB、TB甚至是PB级别的数据处理。所以为了降低block的管理成本，它的block size设置的非常大。在比较新的版本里，一个block直接就是128M，</strong>没看错，单位是M。 </p>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a href="https://mp.weixin.qq.com/s/WE6BodR_q0GSKks_TgYL1w" target="_blank" rel="noopener">https://mp.weixin.qq.com/s/WE6BodR_q0GSKks_TgYL1w</a></p>
+]]></content>
+      <categories>
+        <category>OS</category>
+      </categories>
+      <tags>
+        <tag>文件</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>操作系统固态硬盘基本介绍</title>
+    <url>/2020/04/12/os-3%E5%9B%BA%E6%80%81%E7%A1%AC%E7%9B%98/</url>
+    <content><![CDATA[<h3 id="SSD"><a href="#SSD" class="headerlink" title="SSD"></a>SSD</h3><p>SSD硬盘不像机械硬盘IO时依赖两个耗时的机械轴行为：磁盘旋转，以及磁道寻道，SSD硬盘的访问延迟要比机械硬盘要低的多，在随机IO下的表现尤其明显。</p>
+<h4 id="SSD的组成结构"><a href="#SSD的组成结构" class="headerlink" title="SSD的组成结构"></a>SSD的组成结构</h4><p>机械硬盘和ssd虽然都同为硬盘，但底层实现技术却完全不一样，机械硬盘使用的是磁性材料记忆，而SSD用的是类似u盘的闪存技术。实现技术的不同，必然在硬盘内部结构上他们就有天壤之别。不像机械硬盘里的圆形碟片，<strong>SSD是由一些电路和黑色的存储颗粒构成。SSD硬盘是基于NAND Flash存储技术的，属于非易失性存储设备</strong>，也即掉电了数据不会丢。</p>
+<p>SSD中包含Die,Plane,Block以及Page几个概念，其中：每个Die有若干个Plane，每个Plane有若干个Block，每个Block有若干个Page。Page是磁盘进行读写的最小单位，一般为2KB/4KB/8KB/16KB等。</p>
+<h4 id="SSD中的扇区"><a href="#SSD中的扇区" class="headerlink" title="SSD中的扇区"></a>SSD中的扇区</h4><p>与机械硬盘一样，在SSD中虽然每一个物理Page的大小为2K到16K不等，但是为了兼容性，也必须使用逻辑扇区。SSD控制器在逻辑上会把整个磁盘再重新划分成一个个的“扇区”，采用和新机械硬盘一样的LBA方式来进行编址（整个磁盘的扇区从0到某个最大值方式排列，并连成一条线）。当需要读取某几个”扇区”上数据的时候，SSD控制器通过访问这个LBA MapTable,再来找到要实际访问的物理Page。SSD最小的读写单位就是Page，没办法对扇区来进行读写的。</p>
+<h4 id="SSD的闪存单元"><a href="#SSD的闪存单元" class="headerlink" title="SSD的闪存单元"></a>SSD的闪存单元</h4><p>SSD是由一个个的Page组成。而在每一个Page里，又包含了许许多多的闪存单元。现代的闪存单元有多种类型，目前主流的主要分为SLC、MLC和TLC。在SLC里，一个单元的电压只分成高低两种状态，所以只能表示1bit数据。到了MLC，硬是把一个单元里的电压按照高低分成了四种状态，所以可以表示2bit。到了TLC，直接一个单元应拆分成8个电压高低不同的状态，为了表示3bit。由于TLC在数据读写需要八种不同电压状态，而施加不同的电压状态、 就需要更精确，也就需要更长的时间才能得以实现。另外由于电压状态多，出错的可能性也会更大。</p>
+<p>以上三种闪存单元对比：<strong>从性能和稳定性角度来看，SLC最好。从容量角度看，TLC最大</strong>。这就是为什么日常看到的工业级的SSD要比笔记本SSD要贵很多，其中一个很重要的原因就是工业级的盘往往采用的闪存单元是SLC或MLC，而我们家用的笔记本一般都是TCL，因为便宜。</p>
+<h4 id="小问题"><a href="#小问题" class="headerlink" title="小问题"></a>小问题</h4><p>假设某SSD的Page大小是4KB，一个文件是16KB。那么该文件是存在一个黑色的存储颗粒里,还是多个颗粒里？</p>
+<p>假设只写在一个颗粒里，那么对该文件进行读取的时候，就只能用到一条Flash通道，这样速度就会比较慢。<strong>如果存在相邻的4个颗粒里，每个写入4KB。这样多个Flash通道的带宽会充分发挥出来，传输速度也更快</strong>。所以，实际中是分散在多个。</p>
+]]></content>
+      <categories>
+        <category>OS</category>
+      </categories>
+      <tags>
+        <tag>固态硬盘</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>操作系统硬盘基本介绍</title>
+    <url>/2020/04/10/os-2%E7%A1%AC%E7%9B%98/</url>
+    <content><![CDATA[<h3 id="机械硬盘"><a href="#机械硬盘" class="headerlink" title="机械硬盘"></a>机械硬盘</h3><p>好像本科时候学的操作系统课程在讲解磁盘的时候非常简略。现在复习一下。</p>
+<h3 id="磁盘结构"><a href="#磁盘结构" class="headerlink" title="磁盘结构"></a>磁盘结构</h3><p>对于常见的机械磁盘，分磁盘面、磁道、柱面和扇区。</p>
+<p><img src="https://api2.mubu.com/v3/document_image/97cfa71c-113a-43bd-abdb-d78b1bc43a28-11197877.jpg" alt="磁盘逻辑结构"></p>
+<p><img src="https://api2.mubu.com/v3/document_image/3b042450-4931-4f66-a012-3c6132ca439c-11197877.jpg" alt="磁道和扇区"></p>
+<p>有以下概念 ：</p>
+<ul>
+<li><p>磁盘面：磁盘是由一叠磁盘面叠加组合构成，<strong>每个磁盘面上都会有一个磁头</strong>负责读写。</p>
+</li>
+<li><p>磁道(Sector/Track)：每个盘面会围绕圆心划分出多个<strong>同心圆圈，每个圆圈叫做一个磁道</strong>。</p>
+</li>
+<li><p>柱面(Cylinders)：所有盘片上的同一位置的磁道组成的<strong>立体</strong>叫做一个柱面。</p>
+</li>
+<li><p>扇区(Sector)：以磁道为单位管理磁盘仍然太大，所以又把每个磁道划分出了多个扇区。而<strong>磁盘存储的最小组成单位就是扇区</strong>。 </p>
+</li>
+</ul>
+<p>单柱面的存储容量 = 每个扇区的字节数 <em> 每柱面扇区数 </em> 磁盘面数 。</p>
+<p>整体磁盘的容量 = 单柱面容量 * 总的柱面数字。</p>
+<p>扇区与扇区之间其实不是紧挨着的，而是<strong>在每个扇区结尾还有一个存储纠错码的位置</strong>。假设<strong>某一个扇区读取时发生了错误，这样在扇区结尾的纠错码就能发现。磁头就会在磁盘下一圈转过来的时候再读取一遍。</strong></p>
+<h4 id="linux下查询"><a href="#linux下查询" class="headerlink" title="linux下查询"></a>linux下查询</h4><p>查看操作系统挂载的硬盘数量及大小，借助<code>lsblk</code>命令</p>
+<p>然后通过<code>fdisk</code>可以查看硬盘的详细信息：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> fdisk -l /dev/sda</span></span><br><span class="line"><span class="meta">#</span><span class="bash">可以查看到heads(磁头)数量，从而确定盘面数</span></span><br><span class="line"><span class="meta">#</span><span class="bash">cylinders 数量：每个盘面的磁道数</span></span><br><span class="line"><span class="meta">#</span><span class="bash">sectors/track 每个磁道上的扇区</span></span><br><span class="line"><span class="meta">#</span><span class="bash">每个逻辑扇区以及物理扇区的大小： 512bytes/4096bytes</span></span><br><span class="line"><span class="meta">#</span><span class="bash">每个units的大小=盘面数*每个磁道上的扇区数*逻辑扇区大小</span></span><br><span class="line"><span class="meta">#</span><span class="bash">磁盘总大小 = cylinders数 * units大小</span></span><br></pre></td></tr></table></figure>
+<h4 id="每个磁道可以存储的数据都是一样的吗？"><a href="#每个磁道可以存储的数据都是一样的吗？" class="headerlink" title="每个磁道可以存储的数据都是一样的吗？"></a>每个磁道可以存储的数据都是一样的吗？</h4><p>在<strong>老式的磁盘里，确实是每个磁道数据都是一样的</strong>。这样越是内圈磁道的存储密度越大。目的就是为了访问方便，通过一个CHS地址：柱面地址（Cylinders）、磁头地址（Heads）、扇区地址（Sectors）直接定位到存储数据所在的扇区。但是这产生的问题就是<strong>外圈磁道的数据密度没有充分发挥出来，造成磁盘存储容量很难提升</strong>。</p>
+<p>现代的磁盘人们改用等密度结构生产硬盘，也就是说，<strong>外圈磁道的扇区比内圈磁道多。这种磁盘里扇区是线性编号的，即从0到某个最大值方式排列，并连成一条线。这种寻址模式叫做LBA，全称为Logic Block Address（即扇区的逻辑块地址）。磁盘内部是自己会通过磁盘控制器来完成CHS到LBA的转换，进而定位到具体的物理扇区</strong></p>
+<h4 id="物理扇区大小"><a href="#物理扇区大小" class="headerlink" title="物理扇区大小"></a>物理扇区大小</h4><p>现代科技进步了，磁盘底层的最小组成单位并不是扇区512字节，physical Sector size 4KB。但这时存在一个问题是扇区大小为512字节的假设已经贯穿于整个软件链，比如BIOS，启动加载器，操作系统内核，文件系统代码，以及磁盘工具，等等。直接切换到4096 byte<strong>兼容性问题太大</strong>了，所以每个新的磁盘控制器将4096字节的物理扇区对应成了8个512字节的逻辑扇区，兼容各种老软件。</p>
+<p>除了<code>fdisk -l</code>命令外,如下方式也可以查看物理/逻辑扇区大小。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">cat /sys/block/sda/queue/physical_block_size</span></span><br><span class="line"><span class="meta">#</span><span class="bash">cat /sys/block/sda/queue/logical_block_size</span></span><br></pre></td></tr></table></figure>
+<h4 id="磁头的数量"><a href="#磁头的数量" class="headerlink" title="磁头的数量"></a>磁头的数量</h4><p>磁盘不可能真的装很多磁头，通过<code>fdisk -l</code>看到的磁头数量和扇区以及磁道一样，是被虚拟出来的。</p>
+<h3 id="磁盘分区"><a href="#磁盘分区" class="headerlink" title="磁盘分区"></a>磁盘分区</h3><p>分区是操作系统对磁盘进行管理的第一步，这也是任何一个计算机使用者都非常熟悉的概念。例如Windows下的C、D、E、F盘。那么操作系统的设计者是如何把整块磁盘分成C、D等分区的？</p>
+<p>为了方便讨论，这里假设要分的硬盘是有50个盘面，3000个柱面。给出两种方案</p>
+<ul>
+<li>方案一：50个盘面，C盘是0-10盘面， D盘是10-20个盘面,……</li>
+<li>方案二：3263个柱面，C盘0-1000个柱面，D盘1001-2001个柱面,……</li>
+</ul>
+<p>接下来讨论下那种方案更优秀，这得从<strong>磁盘的读写延时</strong>角度说起。读写原理说起来也简单，就是<strong>磁头要找到指定的磁道，指定的扇区，进而把数据读取出来或者写入进去的过程</strong>。这个过程分成如下三步：</p>
+<ul>
+<li>第一步，首先是磁头径向移动来寻找数据所在的磁道。这部分时间叫<strong>寻道时间</strong>。寻道时间，现代磁盘大概在3-15ms，其中寻道时间大小主要受磁头当前所在位置和目标磁道所在位置相对距离的影响</li>
+<li>第二步，找到目标磁道后通过盘面旋转，将目标扇区移动到磁头的正下方，这部分时间叫<strong>旋转延迟</strong>。现在主流服务器上经常使用的是1W转/分钟的磁盘，每旋转一周所需的时间为60*1000/10000=6ms，故其旋转延迟为（0-6ms）</li>
+<li>第三步，向目标扇区读取或者写入数据，这部分时间叫<strong>存取时间</strong>。这个是电磁操作，所以一般耗时较短，为零点几ms。</li>
+</ul>
+<p>到此为止，<strong>单次磁盘IO时间 = 寻道时间 + 旋转延迟 + 存取时间</strong></p>
+<p>分区上采用哪一种方案，最主要看的是那种方式性能更快。在磁盘分区的使用中，存在一个基本事实，那就是<strong>同一分区下的数据经常会一起读取。两种方案的对于旋转延迟、和存取时间上表现的性能是一样的，主要区别是在寻道时间的表现上</strong>：</p>
+<p>假如采用第一种，那么这样磁头就需要在3000多个磁道间不停地跳来跳去，这样磁盘的寻道时间就降不下来。而对于方案二，假如对于磁盘C，只需要在磁头在1-1000个磁道间移动就可以了，大大降低了寻道时间。所以<strong>所有的操作系统采用的都是方案二</strong>，没有用方案一的。</p>
+<p>分区的过程就是<strong>输入起始柱面号和截至柱面号的过程</strong>。不过在实际中，分区并不能从0号柱面开始的，因为磁<strong>盘的第一个磁道对应的柱面会被用来安装引导加载程序以及磁盘分区表。</strong>所以，操作系统通过按磁道对应的柱面划分分区，来降低磁盘IO所花费的的寻道时间 ，最终提高磁盘的读写性能。</p>
+<h3 id="机械硬盘的缺点及解决办法"><a href="#机械硬盘的缺点及解决办法" class="headerlink" title="机械硬盘的缺点及解决办法"></a>机械硬盘的缺点及解决办法</h3><h4 id="主要问题"><a href="#主要问题" class="headerlink" title="主要问题"></a>主要问题</h4><p>机械硬盘更多是用机械技术做出来的产品。当把带有机械技术基因的磁盘搭到计算机，尤其是应用到服务器领域的时候，暴露出了机械技术的两个严重问题：</p>
+<ul>
+<li><p>第一，速度慢。如果把内存和CPU的速度比作汽车和飞机的话，机械硬盘毫秒级别的延迟几乎就是牛车级别的。 </p>
+</li>
+<li><p>第二，容易坏。经常听说谁谁的磁盘坏了，很少有听说过谁的内存条，CPU坏了。</p>
+</li>
+</ul>
+<p>要想保证服务器运转的稳定和高速，就必须解决硬盘的这两个缺陷。</p>
+<h4 id="解决办法"><a href="#解决办法" class="headerlink" title="解决办法"></a>解决办法</h4><h5 id="多硬盘连接"><a href="#多硬盘连接" class="headerlink" title="多硬盘连接"></a>多硬盘连接</h5><p>单块硬盘不行，尝试同时使用多块硬盘。但假如给了N块硬盘，如何设计一个使用的方案？</p>
+<ul>
+<li>RAID 0：把<strong>一个文件分成N片，每一片都散列在不同的硬盘上</strong>。这样当文件进行读取的时候，就可以N块硬盘一起来工作，从而达到读取速度提高到N倍的效果。</li>
+</ul>
+<p><img src="https://api2.mubu.com/v3/document_image/204662d6-e7e5-41f5-8d33-41927478da19-11197877.jpg" alt="RAID0"></p>
+<p>缺点：没有解决容易坏的问题，<strong>任何一块硬盘坏了都会导致存储系统故障</strong>。</p>
+<ul>
+<li>RAID 1:仍然把文件分片，但是所有的分片都存在一块硬盘上，<strong>其它的硬盘只存拷贝。</strong>这既提高了硬盘的访问速度，也解决了坏的问题。任意一块硬盘坏了，存储系统都可以正常使用，只不过速度会打一点折扣。</li>
+</ul>
+<p><img src="https://api2.mubu.com/v3/document_image/88ea6682-01e8-4fbe-8f04-b8eea8cf3aaa-11197877.jpg" alt="RAID1"></p>
+<p>缺点：<strong>实现成本高。</strong></p>
+<ul>
+<li>RAID 5：样要对文件进行分片，但是不对存储的数据进行备份，而是会再单独存一个校验数据片。假如文件分为A1 A2 A3，然后需要再存一个<strong>校验片</strong>到别的磁盘上。这样<strong>不管A1，A2还是A3那一片丢失了，都可以根据另外两片和校验片合成出来。既保证了数据的安全性，又只用了一块磁盘做冗余存储</strong>。</li>
+</ul>
+<p><img src="https://api2.mubu.com/v3/document_image/7e22af98-48ad-4f07-960b-f1db61ec5e21-11197877.jpg" alt="RAID5"></p>
+<p>假如有8块256GB的硬盘，那么RAID5方案下的磁盘阵列从用户角度来看可用的存储空间是7*256GB，只“浪费”了一块盘的空间，所以目前RAID5应用比较广泛。</p>
+<h4 id="RAID卡缓存"><a href="#RAID卡缓存" class="headerlink" title="RAID卡缓存"></a>RAID卡缓存</h4><p>硬盘延迟是毫秒级别的，即使是多快硬盘并行，也只能提升数倍而已，不能够达到量级的提升。<strong>和CPU内存的纳秒级别工作频率比起来，还是太慢</strong>。在计算机界，没有<strong>缓存</strong>解决不了的速度问题，如果有，那就再加一层。现代磁盘本身也基本都带了缓存，另外在一些比较新的raid卡里，硬件开发者们又搞出来了一层“内存”，并且还自己附带一块电池，这就是RAID卡缓存。几款主流RAID卡的配置：</p>
+<ul>
+<li><p>PERC S120 入门软件阵列卡，主板集成无缓存 支持RAID 0 1</p>
+</li>
+<li><p>PERC H330 入门硬件RAID卡，无板载缓存, 支持RAID 0 1 5 10 50</p>
+</li>
+<li>PERC H730 主流硬件RAID卡带有1G缓存和电池 支持RAID 0 1 5 6 10 50 60</li>
+<li>PERC H730P 高性能硬件RAID卡带有2G缓存和电池 支持RAID 0 1 5 6 10 50 60</li>
+<li>PERC H830 同H730P,没有内置接口，使用外置接口连接附加存储磁盘柜用</li>
+</ul>
+<p>拿目前服务器端出镜率比较高的H730和H730P来看，他们分别带了1G和2G的缓存卡，并且自带电池。<strong>电池的作用就是当发现主机意外断电的时候，能够快速把缓存中的数据写回到磁盘中去。对于写入，一般操作系统写到这个RAID卡里就完事了，所以速度快。对于读取也是，只要缓存里有，就不会透传到磁盘的机械轴上。</strong></p>
+<p>文件相关函数里设置DIRECT I/O仅仅只能绕开操作系统本身的Page Cache,而<strong>RAID卡里的缓存，对于Linux来说，可以说算是一个黑盒。换句话说，就是操作系统并不清楚RAID卡是从缓存里吐的数据，还是真正从硬盘里读的。</strong></p>
+]]></content>
+      <categories>
+        <category>OS</category>
+      </categories>
+      <tags>
+        <tag>机械硬盘</tag>
       </tags>
   </entry>
   <entry>
