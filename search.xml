@@ -6654,12 +6654,10 @@
 <li><a href="http://b217dgy.blog.51cto.com/5704306/1320360" target="_blank" rel="noopener">霍夫圆变换函数HoughCircles</a></li>
 <li><p><a href="http://blog.csdn.net/u013162930/article/details/47396257" target="_blank" rel="noopener">OpenCV霍夫变换识别圆</a></p>
 </li>
-<li><p><a href="http://www.verydemo.com/demo_c92_i143180.html" target="_blank" rel="noopener">轮廓处理函数详细</a></p>
+<li><p><a href="http://blog.csdn.net/suky520/article/details/18601307" target="_blank" rel="noopener">使用Mat的opencv中的椭圆拟合</a></p>
 </li>
-<li><a href="http://blog.csdn.net/suky520/article/details/18601307" target="_blank" rel="noopener">使用Mat的opencv中的椭圆拟合</a></li>
 <li><a href="http://blog.csdn.net/augusdi/article/details/9000949#" target="_blank" rel="noopener">OpenCV画轮廓的外界圆矩形椭圆等</a></li>
 <li><a href="http://blog.csdn.net/fengbingchun/article/details/7069506" target="_blank" rel="noopener">利用cvMinAreaRect2求取轮廓最小外接矩形</a></li>
-<li><a href="http://abyss2333.lofter.com/post/1d54e92e_7b51afa" target="_blank" rel="noopener">输出HSV图像某个像素点的值</a></li>
 <li><a href="http://blog.csdn.net/guoyunfei20/article/details/54616847" target="_blank" rel="noopener">CvBox2D说明</a></li>
 </ol>
 <h3 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h3><p>其实整个项目比较简单，但意外的参加这种比赛也算是长了自己的见识，在此也特别感谢为我们提供了帮助的老师。</p>
