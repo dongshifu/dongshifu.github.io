@@ -203,6 +203,314 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/04/01/linux-%E7%B3%BB%E7%BB%9F-10%E7%BA%BF%E7%A8%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/04/01/linux-%E7%B3%BB%E7%BB%9F-10%E7%BA%BF%E7%A8%8B/" class="post-title-link" itemprop="url">linux系统-线程及其管理</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-04-01 15:12:58" itemprop="dateCreated datePublished" datetime="2020-04-01T15:12:58+08:00">2020-04-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-26 19:16:28" itemprop="dateModified" datetime="2021-03-26T19:16:28+08:00">2021-03-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index">
+                    <span itemprop="name">linux系统编程</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="线程"><a href="#线程" class="headerlink" title="线程"></a>线程</h3><h4 id="线程概念"><a href="#线程概念" class="headerlink" title="线程概念"></a>线程概念</h4><ul>
+<li><p>LWP： light weight process, 轻量级进程，<strong>本质仍是进程（在linux下)</strong></p>
+</li>
+<li><p>进程：<strong>独立地址空间，拥有PCB</strong></p>
+</li>
+<li><p>线程：<strong>也有PCB，但没有独立的地址空间（共享）</strong></p>
+</li>
+<li><p>区别：在于是否共享地址空间。进程独居，线程合租。</p>
+</li>
+</ul>
+<p>Linux下：</p>
+<ul>
+<li>线程为最小<strong>执行单位（cpu获得效率）</strong></li>
+<li>进程为最小<strong>资源分配单位</strong>，<strong>可看作只有一个线程的进程。</strong></li>
+</ul>
+<p>查看LWP号: <code>ps -Lf pid</code>查看指定线程的lwp号</p>
+<h4 id="linux内核线程实现"><a href="#linux内核线程实现" class="headerlink" title="linux内核线程实现"></a>linux内核线程实现</h4><p>linux中进程和线程关系密切</p>
+<ul>
+<li><p>线程是轻量级进程（light weight process)，<strong>也有PCB,创建线程使用的底层函数和进程一样，都是<code>clone</code></strong></p>
+</li>
+<li><p><strong>从内核里看进程和线程是一样的，都有各自不同的PCB，但PCB中指向的内存资源的三级页表是相同的</strong></p>
+</li>
+<li><p>进程可以蜕变为线程</p>
+</li>
+<li><p><strong>线程可以看作寄存器和栈（主要体现在函数调用,每个线程的stack空间不一样）的集合</strong></p>
+</li>
+<li><p>在linux下，<strong>线程是最小执行单位，进程是最小资源分配单位</strong></p>
+</li>
+</ul>
+<h4 id="三级页表"><a href="#三级页表" class="headerlink" title="三级页表"></a>三级页表</h4><p>PCB中持有<strong>当前进程的页目录表的指针, 页目录表中每一项指向一个个页表, 用页表检索物理内存页面</strong></p>
+<p><img src="https://api2.mubu.com/v3/document_image/a7768bae-b28c-4fe2-98ec-941805f1f5cb-11197877.jpg" alt="三级页表"></p>
+<p><img src="https://api2.mubu.com/v3/document_image/001da9ee-605d-4d7c-a0a7-100200b52c6e-11197877.jpg" alt="程序运行内存情况"></p>
+<h4 id="线程之间共享的资源"><a href="#线程之间共享的资源" class="headerlink" title="线程之间共享的资源"></a>线程之间共享的资源</h4><ul>
+<li><strong>文件描述符表</strong></li>
+<li>每种<strong>信号的处理方式(线程和信号最好不要一起使用)</strong></li>
+<li>当前<strong>工作目录</strong></li>
+<li><strong>用户ID和组ID</strong></li>
+<li><strong>内存地址空间(<code>.text/ .data/ .bss/ heap/共享库</code>)</strong></li>
+</ul>
+<h4 id="线程非共享资源"><a href="#线程非共享资源" class="headerlink" title="线程非共享资源"></a>线程非共享资源</h4><ul>
+<li><strong>线程id</strong></li>
+<li><strong>处理器现场和栈指针(内核栈)</strong></li>
+<li><strong>独立的栈空间（用户空间栈）</strong></li>
+<li>errno变量</li>
+<li><strong>信号屏蔽字</strong></li>
+<li>调度<strong>优先级</strong></li>
+</ul>
+<h4 id="线程优缺点"><a href="#线程优缺点" class="headerlink" title="线程优缺点"></a>线程优缺点</h4><p>优点： <strong>提高程序并发性，开销小，数据通信、共享数据方便</strong></p>
+<p>缺点：库函数不稳定，调试编写困难、gdb不支持，对信号支持不好</p>
+<p>linux下的实现方法使得进程和线程的差别不是很大。但<strong>可以通过在一个进程中开多个线程来达到抢占cpu的目的。</strong></p>
+<h3 id="线程控制原语"><a href="#线程控制原语" class="headerlink" title="线程控制原语"></a>线程控制原语</h3><h4 id="pthread-self函数"><a href="#pthread-self函数" class="headerlink" title="pthread_self函数"></a>pthread_self函数</h4><p><strong>获取线程ID。其作用对应进程中getpid()函数</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pthread_t</span> pthread_self(<span class="keyword">void</span>);</span><br></pre></td></tr></table></figure>
+<p>线程ID：<strong><code>pthread_t</code>类型，本质：在Linux下为无符号整数(<code>lu%</code>),其他系统中可能是结构体实现</strong></p>
+<p>线程ID是进程内部的识别标志。(<strong>两个进程间的线程ID允许相同</strong>)</p>
+<p>创建线程:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_create</span><span class="params">(<span class="keyword">pthread_t</span>* thread,<span class="keyword">const</span> <span class="keyword">pthread_attr_t</span>* attr,<span class="keyword">void</span>* (*start_routine)(<span class="keyword">void</span>* ),<span class="keyword">void</span>* arg)</span></span>;</span><br><span class="line"><span class="comment">//成功返回0, 失败返回errno;</span></span><br></pre></td></tr></table></figure>
+<p>注意：</p>
+<ul>
+<li><p>不应使用全局变量<code>pthread_t tid</code>, 而应使用<code>pthread_self</code></p>
+</li>
+<li><p><strong>在子线程中通过<code>pthread_create</code>传出参数来获取线程ID</strong></p>
+</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span>* <span class="title">thread_func</span><span class="params">(<span class="keyword">void</span>* arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"thread id is: %lu\n"</span>,pthread_self()); <span class="comment">//线程还没来得及输出进程就结束了</span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;   </span><br><span class="line">    <span class="keyword">pthread_t</span> tid;</span><br><span class="line">    <span class="keyword">int</span> ret;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"in main, thread id = %lu\n"</span>,pthread_self());</span><br><span class="line">    ret = pthread_create(&amp;tid, <span class="literal">NULL</span>,thread_func,<span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">if</span>(ret != <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">"pthred_create error: %s\n"</span>,strerror(ret));</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/*父进程等待1秒,否则父进程一旦退出,地址空间被释放,子线程没机会执行*/</span></span><br><span class="line">    sleep(<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="循环创建线程"><a href="#循环创建线程" class="headerlink" title="循环创建线程"></a>循环创建线程</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span>* <span class="title">thread_func</span><span class="params">(<span class="keyword">void</span>* arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// int i = *(int *)arg; //注意传地址最后取出来的值</span></span><br><span class="line">    <span class="keyword">int</span> i = (<span class="keyword">int</span>)arg;</span><br><span class="line">    sleep(i);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%dth thread id is: %lu\n"</span>,i,pthread_self()); <span class="comment">//线程还没来得及输出进程就结束了</span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;   </span><br><span class="line">    <span class="keyword">pthread_t</span> tid;</span><br><span class="line">    <span class="keyword">int</span> ret, i;</span><br><span class="line">    <span class="comment">// printf("in main, thread id = %lu\n",pthread_self());</span></span><br><span class="line">    <span class="keyword">for</span>(i=<span class="number">0</span>; i&lt;<span class="number">5</span>; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        ret = pthread_create(&amp;tid, <span class="literal">NULL</span>,thread_func,(<span class="keyword">void</span> *)i);</span><br><span class="line">        <span class="keyword">if</span>(ret != <span class="number">0</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">"pthred_create error: %s\n"</span>,strerror(ret));</span><br><span class="line">            <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    sleep(i);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;<span class="comment">//将当强进程退出</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意参数传递方式, <strong>先将int型的i强转成void*传入, 用到时再强转回int型</strong></p>
+<h5 id="线程参数传递"><a href="#线程参数传递" class="headerlink" title="线程参数传递"></a>线程参数传递</h5><p>如果使<code>void*</code>过程中不用强转, 看似规规矩矩的传地址再解引用, 会出现问题。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*这是一个出错的版本*/</span></span><br><span class="line"><span class="function"><span class="keyword">void</span>* <span class="title">tfn</span><span class="params">(<span class="keyword">void</span>* arg)</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> i=*((<span class="keyword">int</span>*)arg);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"I'm %dth thread,pid=%d,tid=%lu\n"</span>,i+<span class="number">1</span>,getpid(),pthread_self());</span><br><span class="line">	sleep(i);</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> i=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> ret=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">pthread_t</span> tid=<span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;<span class="number">5</span>;++i)&#123;</span><br><span class="line">		ret=pthread_create(&amp;tid,<span class="literal">NULL</span>,tfn,(<span class="keyword">void</span>*)&amp;i);</span><br><span class="line">		<span class="keyword">if</span>(ret!=<span class="number">0</span>)</span><br><span class="line">			perr_exit(<span class="string">"pthread_create error"</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	sleep(i);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="https://api2.mubu.com/v3/document_image/8c997c3d-e2c3-4946-b95c-ce9e924dd04e-11197877.jpg" alt="stack地址"></p>
+<p>错误分析：<strong><code>main</code>中给<code>tfn</code>传入的是它的函数栈帧中局部变量<code>i</code>的地址, 这样<code>tfn</code>能随时访问到i的值, 考虑到线程之间是并发执行的, 每次中<code>main</code>中固定的地址中拿数据, 相当于各个线程共享了这块地址, 由于访问时刻随机, 所以访问到的各个值也是很随机的</strong></p>
+<p><strong>使用强转可以保证变量<code>i</code>的实时性(C语言值传递的特性)</strong></p>
+<h5 id="线程共享"><a href="#线程共享" class="headerlink" title="线程共享"></a>线程共享</h5><p><strong>线程默认共享数据段, 代码段等地址空间, 常用的是全局变量, 而进程不共享全局变量, 只能借助<code>mmap</code></strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> var = <span class="number">20</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">fun</span><span class="params">(<span class="keyword">void</span> *arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    var = <span class="number">10</span>;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"thread\n"</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"befor pthread_create, var = %d\n"</span>,var);</span><br><span class="line">    <span class="keyword">pthread_t</span> tid;</span><br><span class="line">    tid = pthread_create(&amp;tid, <span class="literal">NULL</span>,fun, <span class="literal">NULL</span>);</span><br><span class="line">    sleep(<span class="number">1</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"after pthread_create, var = %d\n"</span>,var);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="pthread-exit函数"><a href="#pthread-exit函数" class="headerlink" title="pthread_exit函数"></a>pthread_exit函数</h4><p>将单个线程退出。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">pthread_exit</span><span class="params">(<span class="keyword">void</span>* rerval)</span></span>;<span class="comment">//参数：retval表示线程退出状态，通常传NULL</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><p><code>exit()</code>函数用来<strong>退出当前进程, 不可以用在线程中</strong>, 否则全部退出（<strong>exit退出会使进程退出</strong>）</p>
+</li>
+<li><p><code>pthread_exit()</code>函数才是用来<strong>将单个的线程退出</strong></p>
+</li>
+<li><p><code>pthread_exit</code>或者<code>return</code>返回的指针所指向的内存单元必须是<strong>全局的或者<code>malloc</code>分配的</strong>, <strong>不能在线程函数的栈上分配, 因为其他线程得到这个返回指针时线程函数已经退出了</strong></p>
+</li>
+</ul>
+<p><code>return</code>和<code>exit</code>的区别：</p>
+<ul>
+<li><strong>return是返回到调用者处，exit为退出进程</strong></li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span>* <span class="title">thread_func</span><span class="params">(<span class="keyword">void</span>* arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"thread id is: %lu\n"</span>,pthread_self()); <span class="comment">//线程还没来得及输出进程就结束了</span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;   </span><br><span class="line">    <span class="keyword">pthread_t</span> tid;</span><br><span class="line">    <span class="keyword">int</span> ret;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"in main, thread id = %lu\n"</span>,pthread_self());</span><br><span class="line">    ret = pthread_create(&amp;tid, <span class="literal">NULL</span>,thread_func,<span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">if</span>(ret != <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">"pthred_create error: %s\n"</span>,strerror(ret));</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// sleep(1);</span></span><br><span class="line">    pthread_exit(<span class="literal">NULL</span>); <span class="comment">//主线程退出</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="pthread-join函数"><a href="#pthread-join函数" class="headerlink" title="pthread_join函数"></a>pthread_join函数</h4><p><strong>阻塞等待线程退出，获取进程退出状态</strong>。其作用对应进程中的<code>waitpid()</code>函数。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_join</span><span class="params">(<span class="keyword">pthread_t</span> thread,<span class="keyword">void</span>** retval)</span></span>;<span class="comment">//成功返回0，失败返回错误号.线程的退出状态是void*, 回收时传的就是void**</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//回收子线程并获得返回值</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span>&#123;</span></span><br><span class="line">    <span class="keyword">char</span> ch;</span><br><span class="line">    <span class="keyword">int</span> var;</span><br><span class="line">    <span class="keyword">char</span> str[<span class="number">64</span>];</span><br><span class="line">&#125;<span class="keyword">exit_t</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">thred_func</span><span class="params">(<span class="keyword">void</span> *args)</span></span></span><br><span class="line"><span class="function"></span>&#123;   </span><br><span class="line">    <span class="comment">/*在堆区创建一个结构体*/</span></span><br><span class="line">    <span class="keyword">exit_t</span>* retvar = (<span class="keyword">exit_t</span>*)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(<span class="keyword">exit_t</span>));</span><br><span class="line">    retvar-&gt;ch = <span class="string">'m'</span>;</span><br><span class="line">    retvar-&gt;var = <span class="number">10</span>;</span><br><span class="line">    <span class="built_in">strcpy</span>(retvar-&gt;str,<span class="string">"my thread\n"</span>);</span><br><span class="line">    pthread_exit((<span class="keyword">void</span>*)retvar);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">pthread_t</span> tid;</span><br><span class="line">    <span class="keyword">exit_t</span> *val;</span><br><span class="line">    </span><br><span class="line">    pthread_create(&amp;tid,<span class="literal">NULL</span>,thred_func,<span class="literal">NULL</span>);</span><br><span class="line">	<span class="comment">/*pthread_join回收子线程*/</span></span><br><span class="line">    pthread_join(tid,(<span class="keyword">void</span>**)&amp;val);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"ch = %c, var = %d, str = %s\n"</span>,val-&gt;ch,val-&gt;var,val-&gt;str);</span><br><span class="line">    <span class="built_in">free</span>(val);</span><br><span class="line">    pthread_exit((<span class="keyword">void</span>*)<span class="number">1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>错误写法：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span>* <span class="title">tfn</span><span class="params">(<span class="keyword">void</span>* arg)</span></span>&#123;</span><br><span class="line">    <span class="comment">/*在堆区创建一个结构体*/</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">thrd</span> <span class="title">tval</span>;</span></span><br><span class="line">	<span class="comment">/*给结构体赋值*/</span></span><br><span class="line">	tval.var=<span class="number">100</span>;</span><br><span class="line">	<span class="built_in">strcpy</span>(tval.str,<span class="string">"love you"</span>);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> (<span class="keyword">void</span>*)&amp;tval;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>不能将子线程的回调函数的局部变量返回, 由于该函数执行完毕返回后, 其栈帧消失, 栈上的局部变量也就消失, 返回的是无意义的</strong>。<strong>可以在main函数中创建局部变量</strong></p>
+<h4 id="pthread-detach函数"><a href="#pthread-detach函数" class="headerlink" title="pthread_detach函数"></a>pthread_detach函数</h4><p>实现线程分离, <strong>线程终止会自动清理pcb, 无需回收</strong>，子线程分离后不能再调用<code>pthread_join</code>回收了。（<strong><code>detach</code>相当于自动回收, <code>join</code>相当于手动回收</strong>）</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_detach</span><span class="params">(<span class="keyword">pthread_t</span> thread)</span></span>; <span class="comment">//成功返回0，失败返回错误号</span></span><br></pre></td></tr></table></figure>
+<p>线程分离状态：指定该状态，<strong>线程主动与主控线程断开关系</strong>。<strong>线程结束后，其退出状态不由其他线程获取，而是直接自己主动释放。网络、多线程服务器常用。</strong></p>
+<p>进程若有该机制，将不会产生僵尸进程。<strong>僵尸进程的产生主要是由于进程死后，大部分资源被释放，一点残留资源仍然在系统中，导致内核以为该进程仍然存在。</strong></p>
+<p>也可以使用<code>pthread_create</code> 函数的第2个参数来实现：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">tfn</span><span class="params">(<span class="keyword">void</span> *arg)</span></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n =<span class="number">3</span>;</span><br><span class="line">    <span class="keyword">while</span>(n--)&#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"thread count %d\n"</span>,n);</span><br><span class="line">        sleep(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> (<span class="keyword">void</span>*)<span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">pthread_t</span> tid;</span><br><span class="line">    <span class="keyword">void</span> *tret;</span><br><span class="line">    <span class="keyword">int</span> err;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> 1</span></span><br><span class="line">    <span class="keyword">pthread_attr_t</span> attr; <span class="comment">//通过线程属性来设置游离态</span></span><br><span class="line">    pthread_attr_init(&amp;attr);</span><br><span class="line">    pthread_attr_setdetachstate(&amp;attr,PTHREAD_CREATE_DETACHED);</span><br><span class="line">    pthread_create(&amp;tid,&amp;attr, tfn,<span class="literal">NULL</span>);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line">    pthread_create(&amp;tid, <span class="literal">NULL</span>, tfn,<span class="literal">NULL</span>);</span><br><span class="line">    <span class="comment">// pthread_detach(tid); //让线程分离，自动退出，无系统残留资源</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    <span class="keyword">while</span>(<span class="number">1</span>)&#123;</span><br><span class="line">        err = pthread_join(tid, &amp;tret); <span class="comment">//阻塞等待子线程回收</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"--------------err = %d\n"</span>,err);</span><br><span class="line">        <span class="keyword">if</span>(err != <span class="number">0</span>)&#123;</span><br><span class="line">            <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">"thread %s\n"</span>, strerror(err));</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span>&#123;</span><br><span class="line">            <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">"thread exit code %d\n"</span>,(<span class="keyword">int</span>)tret);</span><br><span class="line">        &#125;</span><br><span class="line">        sleep(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>一般情况下，线程终止后，其终止状态一直保留到其他线程调用<code>pthread_join</code>获取其状态为止。但是<strong>线程也可以被设置为<code>detach</code>状态，这样的线程一旦终止就立刻回收它占用的所有资源，而不保留终止状态。</strong></p>
+<h4 id="pthread-cancel函数"><a href="#pthread-cancel函数" class="headerlink" title="pthread_cancel函数"></a>pthread_cancel函数</h4><p><strong>杀死（取消）线程， 作用对应于进程中的<code>kill()</code>函数</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_cancel</span><span class="params">(<span class="keyword">pthread_t</span> thread)</span></span>;<span class="comment">//成功返回0,失败返回错误号</span></span><br></pre></td></tr></table></figure>
+<p>注意：线程的取消并<strong>不是实时的，而是有一定的延时，需要等待线程到达某一个取消点(检查点，进入内核的契机），所以如果一个线程一直使用系统调用(一直不进内核), cancel就无法杀死该线程</strong></p>
+<p>取消点：<strong>线程检查是否被取消，并按请求进行动作的一个位置：通常是一些系统调用</strong><code>create, open , pause, close, read, write...</code>执行命令<code>man 7 pthreads</code>可以查看具备这些取消点的系统调用列表。</p>
+<p>可以粗略认为一个系统调用（进入内核）为一个取消点。<strong>如果线程中没有取消点，可以通过调用<code>pthread_testcancel</code>函数自行设置一个取消点。</strong></p>
+<p>被取消的线程，退出值定义在linux的<code>pthread</code>库中。常数<code>PTHREAD_CANCELED</code>的值是-1,可在头文件pthread.h中找到定义：<code>#define PTHREAD_CANCELED((void*)-1)</code>。因此<strong>当对一个已经被取消的线程使用<code>pthread_join</code>回收时，得到的返回值为-1。</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span>* <span class="title">tfn1</span><span class="params">(<span class="keyword">void</span>* arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"thread 1 returing\n"</span>);</span><br><span class="line">    <span class="keyword">return</span> (<span class="keyword">void</span>*)<span class="number">111</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span>* <span class="title">tfn2</span><span class="params">(<span class="keyword">void</span>* arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"thread 2 exiting\n"</span>);</span><br><span class="line">    pthread_exit((<span class="keyword">void</span>*)<span class="number">222</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span>* <span class="title">tfn3</span><span class="params">(<span class="keyword">void</span>* arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">while</span>(<span class="number">1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// printf("thread 3: I'm going to die in 3 seconds...\n"); //取消点</span></span><br><span class="line">        <span class="comment">// sleep(1);</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> (<span class="keyword">void</span>*)<span class="number">666</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">pthread_t</span> tid;</span><br><span class="line">    <span class="keyword">void</span>* tret = <span class="literal">NULL</span>;</span><br><span class="line">    </span><br><span class="line">    pthread_create(&amp;tid,<span class="literal">NULL</span>,tfn1,<span class="literal">NULL</span>);</span><br><span class="line">    pthread_join(tid, &amp;tret);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"thread 1 exit code = %d\n"</span>,(<span class="keyword">int</span>)tret);</span><br><span class="line"></span><br><span class="line">    pthread_create(&amp;tid, <span class="literal">NULL</span>, tfn2, <span class="literal">NULL</span>);</span><br><span class="line">    pthread_join(tid, &amp;tret);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"thread 2 exit code = %d\n"</span>,(<span class="keyword">int</span>)tret);</span><br><span class="line"></span><br><span class="line">    pthread_create(&amp;tid, <span class="literal">NULL</span>, tfn3, <span class="literal">NULL</span>);</span><br><span class="line">    sleep(<span class="number">3</span>);</span><br><span class="line">    pthread_cancel(tid);</span><br><span class="line">    pthread_join(tid,&amp;tret);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"thread 3 exit code = %d\n"</span>,(<span class="keyword">int</span>)tret);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">thread 1 returing</span></span><br><span class="line"><span class="comment">thread 1 exit code = 111</span></span><br><span class="line"><span class="comment">thread 2 exiting</span></span><br><span class="line"><span class="comment">thread 2 exit code = 222</span></span><br><span class="line"><span class="comment">thread 3: I'm going to die in 3 seconds...</span></span><br><span class="line"><span class="comment">thread 3 exit code = 666*/</span></span><br></pre></td></tr></table></figure>
+<h4 id="pthread-equal"><a href="#pthread-equal" class="headerlink" title="pthread_equal"></a>pthread_equal</h4><p>比较<strong>两个线程ID是否相等</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_eaqul</span><span class="params">(<span class="keyword">pthread_t</span> t1, <span class="keyword">pthread_t</span> t2)</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="线程属性"><a href="#线程属性" class="headerlink" title="线程属性"></a>线程属性</h3><p>linux下<strong>线程的属性可以根据实际项目需求来设置</strong>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> stuct </span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int</span>     etachstate; <span class="comment">//线程的分离状态</span></span><br><span class="line">    <span class="keyword">int</span>     schedpolicy; <span class="comment">//线程的调度策略</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sched_param</span>  <span class="title">schedparam</span>;</span> <span class="comment">//线程的调度参数</span></span><br><span class="line">    <span class="keyword">int</span>     inheritsched; <span class="comment">//线程的继承性</span></span><br><span class="line">    <span class="keyword">int</span>     scope; <span class="comment">//线程的作用域</span></span><br><span class="line">    <span class="keyword">size_t</span>  guardsize; <span class="comment">//线程末尾的警戒缓冲区大小</span></span><br><span class="line">    <span class="keyword">int</span>     stackaddr_set;<span class="comment">//线程的栈设置</span></span><br><span class="line">    <span class="keyword">void</span>*   stackaddr; <span class="comment">//线程栈的位置</span></span><br><span class="line">    <span class="keyword">size_t</span>  stacksize; <span class="comment">//线程栈的大小</span></span><br><span class="line">&#125;<span class="keyword">pthread_attr_t</span>;</span><br></pre></td></tr></table></figure>
+<p><strong>默认情况为非绑定、非分离、缺省的堆栈、与父进程同样级别的优先级。</strong></p>
+<p>线程<strong>栈大小查看命令</strong>：<code>ulimit -a</code></p>
+<h4 id="线程属性初始化"><a href="#线程属性初始化" class="headerlink" title="线程属性初始化"></a>线程属性初始化</h4><p><strong>应先初始化线程属性，再pthread_create创建线程</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_attr_init</span><span class="params">(<span class="keyword">pthread_attr_t</span> *attr)</span></span>; <span class="comment">//成功返回0,失败返回错误号</span></span><br></pre></td></tr></table></figure>
+<p><strong>销毁线程属性所占用的资源</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_attr_destroy</span><span class="params">(<span class="keyword">pthread_attr_t</span> *attr)</span></span>;<span class="comment">//成功返回0,失败返回错误号</span></span><br></pre></td></tr></table></figure>
+<h4 id="线程的分离状态"><a href="#线程的分离状态" class="headerlink" title="线程的分离状态"></a>线程的分离状态</h4><p>调用<code>pthread_detach()</code>函数或者通过属性设置可以使线程分离。<strong>如果一个线程为分离线程，而这个线程又运行非常之快，它很可能在<code>pthread_create</code>函数返回之前就终止了，它终止以后就可能将线程号和系统资源移交给其他的线程使用，这样调用<code>pthread_create</code>的线程就得到了错误的线程号。要避免这种情况的发生可以采取一定的同步措施，最简单的方法之一是可以在被创建的线程里调用<code>pthread_cond_timewait</code>函数，让这个线程等待一会，留出足够的时间让函数pthread_create返回</strong>。设置一段等待时间，是在多线程中常用的方法。但注意<strong>不要使用<code>wait()</code>之类的函数，它们是使整个进程睡眠，并不能解决线程同步的问题。</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*设置线程属性:分离或非分离*/</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_attr_setdetachstate</span><span class="params">(<span class="keyword">pthread_attr_t</span>* attr, <span class="keyword">int</span> detachstate)</span></span>;</span><br><span class="line"><span class="comment">/*获取线程属性*/</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_attr_getdetachstate</span><span class="params">(<span class="keyword">const</span> <span class="keyword">pthread_attr_t</span>* attr, <span class="keyword">int</span>* detachstate)</span></span>;</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">detachstate取值:</span></span><br><span class="line"><span class="comment">PTHREAD_CREATE_DETACHED</span></span><br><span class="line"><span class="comment">PTHREAD_CREATE_JOINABLE	*/</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> ret=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">pthread_t</span> tid=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">pthread_attr_t</span> attr;</span><br><span class="line">	<span class="comment">/*初始化属性结构体*/</span></span><br><span class="line">	ret=pthread_attr_init(&amp;attr);</span><br><span class="line">	<span class="keyword">if</span>(ret!=<span class="number">0</span>)</span><br><span class="line">		perr_exit(<span class="string">"pthread_attr_init error"</span>,ret);</span><br><span class="line">	<span class="comment">/*给属性结构体添加分离属性*/</span></span><br><span class="line">	pthread_attr_setdetachstate(&amp;attr,PTHREAD_CREATE_DETACHED);</span><br><span class="line">	<span class="keyword">if</span>(ret!=<span class="number">0</span>)</span><br><span class="line">		perr_exit(<span class="string">"pthread_attr_setdetachstate error"</span>,ret);</span><br><span class="line"></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">"main:pid=%d,tid=%lu\n"</span>,getpid(),pthread_self());</span><br><span class="line">	<span class="comment">/*创建子线程*/</span></span><br><span class="line">	ret=pthread_create(&amp;tid,&amp;attr,tfn,<span class="literal">NULL</span>);</span><br><span class="line">	<span class="keyword">if</span>(ret!=<span class="number">0</span>)</span><br><span class="line">		perr_exit(<span class="string">"pthread_create error"</span>,ret);</span><br><span class="line">	<span class="comment">/*join试一下,由于线程已经分离了,会出错*/</span></span><br><span class="line">	ret=pthread_join(tid,<span class="literal">NULL</span>);</span><br><span class="line">	<span class="keyword">if</span>(ret!=<span class="number">0</span>)</span><br><span class="line">		perr_exit(<span class="string">"pthread_join error"</span>,ret);</span><br><span class="line">	<span class="comment">/*销毁线程属性结构体*/</span></span><br><span class="line">	ret=pthread_attr_destroy(&amp;attr);</span><br><span class="line">	<span class="keyword">if</span>(ret!=<span class="number">0</span>)</span><br><span class="line">		perr_exit(<span class="string">"pthread_attr_destory error"</span>,ret);</span><br><span class="line">	pthread_exit(<span class="literal">NULL</span>);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="线程的栈地址"><a href="#线程的栈地址" class="headerlink" title="线程的栈地址"></a>线程的栈地址</h4><p><strong>当进程栈空间地址不够用时，指定新建线程使用由<code>malloc</code>分配的空间作为自己的栈空间（各个子线程会均分进程的栈空间, 但是线程的栈空间大小是可以调整的）</strong>。通过<code>pthread_attr_setstack</code>和<code>pthread_attr_getstack</code>两个函数分别设置和获取进程的栈地址。</p>
+<h4 id="线程的栈大小"><a href="#线程的栈大小" class="headerlink" title="线程的栈大小"></a>线程的栈大小</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_attr_setstacksize</span><span class="params">(<span class="keyword">pthread_attr_t</span> *attr, <span class="keyword">size_t</span> stacksize)</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_atrt_getstacksize</span><span class="params">(<span class="keyword">pthread_attr_t</span> *attr, <span class="keyword">size_t</span> *stacksize)</span></span></span><br></pre></td></tr></table></figure>
+<h3 id="线程同步"><a href="#线程同步" class="headerlink" title="线程同步"></a>线程同步</h3><h4 id="同步概念"><a href="#同步概念" class="headerlink" title="同步概念"></a>同步概念</h4><p>同步，即同时起步，协调一致。不同的对象，对同步的理解方式不同。例如：设备同步指在两个设备之间规定一个共同的时间参考。 数据库同步指让两个或多个数据库内容保持一致，或者按需要部分保持一致。文件一致指让两个或多个文件夹中的文件保持一致。</p>
+<h4 id="线程同步-1"><a href="#线程同步-1" class="headerlink" title="线程同步"></a>线程同步</h4><p><strong>一个线程发出某一功能调用时，再没有得到结果之前，该调用不返回。同时其他线程为保证数据的一致性，不能调用该功能。</strong></p>
+<p>避免产生<strong>与时间有关的错误</strong>。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/31/linux-%E7%B3%BB%E7%BB%9F-09%E4%BC%9A%E8%AF%9D%E5%8F%8A%E5%AE%88%E6%8A%A4%E8%BF%9B%E7%A8%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="ShifuDong">
+      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ShifuDong">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/03/31/linux-%E7%B3%BB%E7%BB%9F-09%E4%BC%9A%E8%AF%9D%E5%8F%8A%E5%AE%88%E6%8A%A4%E8%BF%9B%E7%A8%8B/" class="post-title-link" itemprop="url">linux系统-会话及守护进程</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-31 15:12:40" itemprop="dateCreated datePublished" datetime="2020-03-31T15:12:40+08:00">2020-03-31</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-26 16:04:14" itemprop="dateModified" datetime="2021-03-26T16:04:14+08:00">2021-03-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux%E7%B3%BB%E7%BB%9F%E7%BC%96%E7%A8%8B/" itemprop="url" rel="index">
+                    <span itemprop="name">linux系统编程</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="会话"><a href="#会话" class="headerlink" title="会话"></a>会话</h3><p>多个<strong>进程组的集合</strong>。</p>
+<p>创建一个会话需要注意的点：</p>
+<ul>
+<li>调用进程不能是进程组组长，该进程变成会话首进程(<code>session header</code>)「</li>
+<li>该进程成为一个新进程组的组长进程</li>
+<li>需要<code>root</code>权限(ubuntu不需要)</li>
+<li><strong>新会话丢弃原有的控制终端，该会话没有控制终端</strong></li>
+<li>该调用进程是组长进程，则出错返回</li>
+<li>建立新会话时，先调用<code>fork</code>,父进程终止，子进程调用<code>setsid</code></li>
+</ul>
+<p><code>setsid</code>函数:</p>
+<p>创建一个会话, 并以自己的ID设置进程组ID, 同时也是新会话的ID</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pid_t</span> setsid(<span class="keyword">void</span>);</span><br><span class="line"><span class="comment">//成功返回调用进程的会话ID, 失败返回-1并设置errno</span></span><br></pre></td></tr></table></figure>
+<p><strong>调用了<code>setsid</code>函数的进程, 既是新的会长, 也是新的组长</strong></p>
+<h3 id="守护进程"><a href="#守护进程" class="headerlink" title="守护进程"></a>守护进程</h3><p>Daemon(精灵)进程，是Linux中的<strong>后台服务进程</strong>，<strong>通常独立于控制终端并且周期性地执行某种任务或等待处理某些发生的事件</strong>。一般采用d结尾的名字。</p>
+<p>Linux后台的一些系统服务进程，<strong>没有控制终端，不能直接和用户交互。不受用户登录、注销的影响，一直在运行</strong>。这些进程属于守护进程。如：预读入缓输出机制的实现，<code>ftp</code>服务器，<code>nfs</code>服务器等。</p>
+<p>创建守护进程，最关键的步骤：调用<code>setsid</code>函数创建一个新的Session,并成为Session Leader.</p>
+<h4 id="创建守护进程"><a href="#创建守护进程" class="headerlink" title="创建守护进程"></a>创建守护进程</h4><ul>
+<li><p>创建子进程, 父进程退出: 所有工作在子进程中形式上脱离了控制终端</p>
+</li>
+<li><p><strong>在子进程中创建新会话: <code>setsid()</code>函数, 使子进程完全独立出来, 脱离控制</strong></p>
+</li>
+<li><p><strong>改变当前工作目录位置: <code>chdir()</code>函数, 防止占用可卸载的文件系统</strong></p>
+</li>
+<li><p>重设<strong>文件权限掩码</strong>: <code>umask()</code>函数, <strong>防止继承的文件创建屏蔽字拒绝某些权限</strong></p>
+</li>
+<li><p>关闭文件描述符: <strong>继承的打开文件不会用到, 浪费系统资源, 无法卸载</strong></p>
+</li>
+<li><p>开始执行守护进程核心工作</p>
+</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//创建守护进程</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span>* argv[])</span></span>&#123;</span><br><span class="line">	<span class="keyword">pid_t</span> pid=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> ret=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> fd=<span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	pid=fork();</span><br><span class="line">	<span class="keyword">if</span>(pid&gt;<span class="number">0</span>)</span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">	</span><br><span class="line">	<span class="comment">/*创建新会话*/</span></span><br><span class="line">	pid=setsid();</span><br><span class="line">	<span class="keyword">if</span>(pid==<span class="number">-1</span>)</span><br><span class="line">		perr_exit(<span class="string">"setsid error"</span>);</span><br><span class="line"></span><br><span class="line">	ret=chdir(<span class="string">"/home/dongshifu"</span>);</span><br><span class="line">	<span class="keyword">if</span>(ret==<span class="number">-1</span>)</span><br><span class="line">		perr_exit(<span class="string">"chdir error"</span>);</span><br><span class="line"></span><br><span class="line">	<span class="comment">/*重设文件权限掩码*/</span></span><br><span class="line">	umask(<span class="number">0022</span>);</span><br><span class="line"></span><br><span class="line">	<span class="comment">/*关闭标准输入*/</span></span><br><span class="line">	<span class="built_in">close</span>(STDIN_FILENO);</span><br><span class="line"></span><br><span class="line">	<span class="comment">/*将标准输出和标准出错重定向到文件黑洞*/</span></span><br><span class="line">	fd=<span class="built_in">open</span>(<span class="string">"/dev/null"</span>,O_RDWR);</span><br><span class="line">	<span class="keyword">if</span>(fd==<span class="number">-1</span>)</span><br><span class="line">		perr_exit(<span class="string">"open error"</span>);</span><br><span class="line">	dup2(fd,STDOUT_FILENO);</span><br><span class="line">	dup2(fd,STDERR_FILENO);</span><br><span class="line"></span><br><span class="line">	<span class="comment">/*模拟业务逻辑*/</span></span><br><span class="line">	<span class="keyword">while</span>(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/28/linux-%E7%B3%BB%E7%BB%9F-08%E4%BF%A1%E5%8F%B7/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1484,692 +1792,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/02/linux-02linux%E5%91%BD%E4%BB%A4%E4%BD%BF%E7%94%A8%20-1/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/03/02/linux-02linux%E5%91%BD%E4%BB%A4%E4%BD%BF%E7%94%A8%20-1/" class="post-title-link" itemprop="url">Linux常用命令使用-2</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-03-02 21:29:16" itemprop="dateCreated datePublished" datetime="2020-03-02T21:29:16+08:00">2020-03-02</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-20 20:47:13" itemprop="dateModified" datetime="2021-03-20T20:47:13+08:00">2021-03-20</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/linux/" itemprop="url" rel="index">
-                    <span itemprop="name">linux</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="系统相关命令"><a href="#系统相关命令" class="headerlink" title="系统相关命令"></a>系统相关命令</h3><h4 id="时间和日期"><a href="#时间和日期" class="headerlink" title="时间和日期"></a>时间和日期</h4><div class="table-container">
-<table>
-<thead>
-<tr>
-<th>序号</th>
-<th>命令</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>01</td>
-<td>date</td>
-<td>查看系统时间</td>
-</tr>
-<tr>
-<td>02</td>
-<td>cal</td>
-<td><code>calendar</code> 查看日历，<code>-y</code> 选项可以查看一年的日历</td>
-</tr>
-</tbody>
-</table>
-</div>
-<h4 id="磁盘信息"><a href="#磁盘信息" class="headerlink" title="磁盘信息"></a>磁盘信息</h4><div class="table-container">
-<table>
-<thead>
-<tr>
-<th>序号</th>
-<th>命令</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>01</td>
-<td>df -h</td>
-<td><code>disk free</code> 显示磁盘剩余空间</td>
-</tr>
-<tr>
-<td>02</td>
-<td>du -h [目录名]</td>
-<td><code>disk usage</code> 显示目录下的文件大小</td>
-</tr>
-</tbody>
-</table>
-</div>
-<ul>
-<li>选项说明</li>
-</ul>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>含义</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>-h</td>
-<td>以人性化的方式显示文件大小</td>
-</tr>
-</tbody>
-</table>
-</div>
-<h4 id="进程信息"><a href="#进程信息" class="headerlink" title="进程信息"></a>进程信息</h4><ul>
-<li>所谓 <strong>进程</strong>，通俗地说就是 <strong>当前正在执行的一个程序</strong></li>
-</ul>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>序号</th>
-<th>命令</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>01</td>
-<td>ps aux</td>
-<td><code>process status</code> 查看<strong>进程的详细状况</strong></td>
-</tr>
-<tr>
-<td>02</td>
-<td>top</td>
-<td><strong>动态显示运行中的进程并且排序</strong></td>
-</tr>
-<tr>
-<td>03</td>
-<td>htop</td>
-<td>更方便的动态显示运行中的进程并且排序</td>
-</tr>
-<tr>
-<td>04</td>
-<td>kill [-9] 进程代号</td>
-<td>终止指定代号的进程，<code>-9</code> 表示强行终止</td>
-</tr>
-</tbody>
-</table>
-</div>
-<blockquote>
-<p><code>ps</code> 默认只会显示当前用户通过终端启动的应用程序</p>
-</blockquote>
-<ul>
-<li><code>ps</code> 选项说明功能</li>
-</ul>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>选项</th>
-<th>含义</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>a</td>
-<td>显示终端上的所有进程，包括其他用户的进程</td>
-</tr>
-<tr>
-<td>u</td>
-<td>显示进程的详细状态</td>
-</tr>
-<tr>
-<td>x</td>
-<td>显示没有控制终端的进程</td>
-</tr>
-</tbody>
-</table>
-</div>
-<blockquote>
-<p>提示：使用 <code>kill</code> 命令时，最好只终止由当前用户开启的进程，而不要终止 <code>root</code> 身份开启的进程，否则可能导致系统崩溃</p>
-<ul>
-<li>要退出 <code>top</code> 可以直接输入 <code>q</code></li>
-</ul>
-</blockquote>
-<h3 id="用户权限相关命令"><a href="#用户权限相关命令" class="headerlink" title="用户权限相关命令"></a>用户权限相关命令</h3><h4 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h4><ul>
-<li><strong>用户</strong> 是 Linux 系统工作中重要的一环，用户管理包括 <strong>用户</strong> 与 <strong>组</strong> 管理</li>
-<li>在 Linux 系统中，不论是由本机或是远程登录系统，每个系统都<strong>必须拥有一个账号</strong>，并且<strong>对于不同的系统资源拥有不同的使用权限</strong></li>
-<li>在 Linux 中，可以指定 <strong>每一个用户</strong> 针对 <strong>不同的文件或者目录</strong> 的 <strong>不同权限</strong></li>
-<li>对 <strong>文件／目录</strong> 的权限包括：</li>
-</ul>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th style="text-align:center">序号</th>
-<th style="text-align:center">权限</th>
-<th style="text-align:center">英文</th>
-<th style="text-align:center">缩写</th>
-<th style="text-align:center">数字代号</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:center">01</td>
-<td style="text-align:center">读</td>
-<td style="text-align:center">read</td>
-<td style="text-align:center">r</td>
-<td style="text-align:center">4</td>
-</tr>
-<tr>
-<td style="text-align:center">02</td>
-<td style="text-align:center">写</td>
-<td style="text-align:center">write</td>
-<td style="text-align:center">w</td>
-<td style="text-align:center">2</td>
-</tr>
-<tr>
-<td style="text-align:center">03</td>
-<td style="text-align:center">执行</td>
-<td style="text-align:center">excute</td>
-<td style="text-align:center">x</td>
-<td style="text-align:center">1</td>
-</tr>
-</tbody>
-</table>
-</div>
-<h4 id="组"><a href="#组" class="headerlink" title="组"></a>组</h4><ul>
-<li><p>为了方便用户管理，提出了 <strong>组</strong> 的概念</p>
-</li>
-<li><p>在实际应用中，可以预先针对 <strong>组</strong> 设置好权限，然后 <strong>将不同的用户添加到对应的组中</strong>，从而<strong>不用依次为每一个用户设置权限</strong></p>
-</li>
-</ul>
-<h4 id="ls-l-扩展"><a href="#ls-l-扩展" class="headerlink" title="ls -l 扩展"></a>ls -l 扩展</h4><ul>
-<li><code>ls -l</code> 可以查看文件夹下文件的详细信息，从左到右依次是：<ul>
-<li><strong>权限</strong>，第 1 个字符如果是 <code>d</code> 表示目录</li>
-<li><strong>硬链接数</strong>，通俗地讲，就是<strong>有多少种方式，可以访问到当前目录／文件</strong></li>
-<li><strong>拥有者</strong>，家目录下 文件／目录 的拥有者通常都是当前用户</li>
-<li><strong>组</strong>，在 Linux 中，很多时候，会出现组名和用户名相同的情况，后续会讲</li>
-<li><strong>大小</strong></li>
-<li><strong>时间</strong></li>
-<li><strong>名称</strong></li>
-</ul>
-</li>
-</ul>
-<p><img src="https://api2.mubu.com/v3/document_image/bb7185f1-43e5-48fc-a2be-52411cc3e61d-11197877.jpg" alt="权限示意图">￼</p>
-<h4 id="chmod-简单使用"><a href="#chmod-简单使用" class="headerlink" title="chmod 简单使用"></a><code>chmod</code> 简单使用</h4><ul>
-<li><code>chmod</code> 可以修改 <strong>用户／组</strong> 对 <strong>文件／目录</strong> 的权限</li>
-<li>命令格式如下：</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chmod +/-rwx 文件名|目录名</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>提示：以上方式会一次性修改 <code>拥有者</code> / <code>组</code> 权限</p>
-</blockquote>
-<h4 id="超级用户"><a href="#超级用户" class="headerlink" title="超级用户"></a>超级用户</h4><ul>
-<li>Linux 系统中的 <code>root</code> 账号通常 <strong>用于系统的维护和管理</strong>，对操作系统的所有资源 <strong>具有所有访问权限</strong></li>
-<li>在大多数版本的 Linux 中，都不推荐 <strong>直接使用 root 账号登录系统</strong></li>
-<li>在 Linux 安装的过程中，系统会自动创建一个用户账号，而这个默认的用户就称为“标准用户”</li>
-</ul>
-<h4 id="sudo"><a href="#sudo" class="headerlink" title="sudo"></a>sudo</h4><ul>
-<li><code>su</code> 是 <code>substitute user</code> 的缩写，表示 <strong>使用另一个用户的身份</strong></li>
-<li><strong><code>sudo</code> 命令用来以其他身份来执行命令，预设的身份为 <code>root</code></strong></li>
-<li>用户使用 <code>sudo</code> 时，必须先输入密码，之后有 <strong>5 分钟的有效期限</strong>，超过期限则必须重新输入密码</li>
-</ul>
-<blockquote>
-<p>若其未经授权的用户企图使用 <code>sudo</code>，则会发出警告邮件给管理员</p>
-</blockquote>
-<h4 id="组管理-终端命令"><a href="#组管理-终端命令" class="headerlink" title="组管理 终端命令"></a><strong>组管理</strong> 终端命令</h4><blockquote>
-<p>提示：<strong>创建组</strong> / <strong>删除组</strong> 的终端命令都需要通过 <code>sudo</code> 执行</p>
-</blockquote>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>序号</th>
-<th>命令</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>01</td>
-<td>groupadd 组名</td>
-<td>添加组</td>
-</tr>
-<tr>
-<td>02</td>
-<td>groupdel 组名</td>
-<td>删除组</td>
-</tr>
-<tr>
-<td>03</td>
-<td>cat /etc/group</td>
-<td>确认组信息</td>
-</tr>
-<tr>
-<td>04</td>
-<td>chgrp -R 组名 文件/目录名</td>
-<td>递归修改文件/目录的所属组</td>
-</tr>
-</tbody>
-</table>
-</div>
-<blockquote>
-<p>提示：</p>
-<ul>
-<li>组信息保存在 <code>/etc/group</code> 文件中</li>
-<li><code>/etc</code> 目录是专门用来保存 <strong>系统配置信息</strong> 的目录￼</li>
-</ul>
-</blockquote>
-<ul>
-<li>在实际应用中，可以预先针对 <strong>组</strong> 设置好权限，然后 <strong>将不同的用户添加到对应的组中</strong>，从而<strong>不用依次为每一个用户设置权限</strong></li>
-</ul>
-<h4 id="用户管理-终端命令"><a href="#用户管理-终端命令" class="headerlink" title="用户管理 终端命令"></a><strong>用户管理</strong> 终端命令</h4><blockquote>
-<p>提示：<strong>创建用户</strong> / <strong>删除用户</strong> / <strong>修改其他用户密码</strong> 的终端命令都需要通过 <code>sudo</code> 执行</p>
-</blockquote>
-<h5 id="创建用户／设置密码／删除用户"><a href="#创建用户／设置密码／删除用户" class="headerlink" title="创建用户／设置密码／删除用户"></a>创建用户／设置密码／删除用户</h5><div class="table-container">
-<table>
-<thead>
-<tr>
-<th>序号</th>
-<th>命令</th>
-<th>作用</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>01</td>
-<td>useradd -m -g 组 新建用户名</td>
-<td>添加新用户</td>
-<td>-m 自动建立用户家目录-g 指定用户所在的组，否则会建立一个和同名的组</td>
-</tr>
-<tr>
-<td>02</td>
-<td>passwd 用户名</td>
-<td>设置用户密码</td>
-<td><strong>如果是普通用户，直接用 passwd 可以修改自己的账户密码</strong></td>
-</tr>
-<tr>
-<td>03</td>
-<td>userdel -r 用户名</td>
-<td>删除用户</td>
-<td><strong>-r 选项会自动删除用户家目录</strong></td>
-</tr>
-<tr>
-<td>04</td>
-<td>cat /etc/passwd `</td>
-<td>` grep 用户名</td>
-<td>确认用户信息</td>
-<td>新建用户后，用户信息会保存在 /etc/passwd 文件中</td>
-</tr>
-</tbody>
-</table>
-</div>
-<blockquote>
-<p>提示：</p>
-<ul>
-<li>创建用户时，如果忘记添加 <code>-m</code> 选项指定新用户的家目录 —— 最简单的方法就是<strong>删除用户，重新创建</strong></li>
-<li>创建用户时，默认会创建一个和<strong>用户名</strong>同名的<strong>组名</strong></li>
-<li>用户信息保存在 <code>/etc/passwd</code> 文件中</li>
-</ul>
-</blockquote>
-<h5 id="查看用户信息"><a href="#查看用户信息" class="headerlink" title="查看用户信息"></a>查看用户信息</h5><div class="table-container">
-<table>
-<thead>
-<tr>
-<th>序号</th>
-<th>命令</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>01</td>
-<td>id [用户名]</td>
-<td>查看用户 UID 和 GID 信息</td>
-</tr>
-<tr>
-<td>02</td>
-<td>who</td>
-<td>查看当前所有登录的用户列表</td>
-</tr>
-<tr>
-<td>03</td>
-<td>whoami</td>
-<td>查看当前登录用户的账户名</td>
-</tr>
-</tbody>
-</table>
-</div>
-<h5 id="passwd-文件"><a href="#passwd-文件" class="headerlink" title="passwd 文件"></a>passwd 文件</h5><p><code>/etc/passwd</code> 文件存放的是用户的信息，由 6 个分号组成的 7 个信息，分别是</p>
-<ol>
-<li>用户名</li>
-<li>密码（x，表示加密的密码）</li>
-<li>UID（用户标识）</li>
-<li>GID（组标识）</li>
-<li>用户全名或本地帐号</li>
-<li>家目录</li>
-<li>登录使用的 Shell，就是登录之后，使用的终端命令，<code>ubuntu</code> 默认用 <code>dash</code></li>
-</ol>
-<h5 id="usermod"><a href="#usermod" class="headerlink" title="usermod"></a>usermod</h5><ul>
-<li><code>usermod</code> 可以用来设置 <strong>用户</strong> 的 <strong>主组</strong> ／ <strong>附加组</strong> 和 <strong>登录 Shell</strong>，命令格式如下：<ul>
-<li><strong>主组</strong>：通常在新建用户时指定，在 <code>etc/passwd</code> 的第 4 列 <strong>GID 对应的组</strong></li>
-<li><strong>附加组</strong>：在 <code>etc/group</code> 中最后一列表示该组的用户列表，用于指定 <strong>用户的附加权限</strong></li>
-</ul>
-</li>
-</ul>
-<blockquote>
-<p>提示：设置了用户的附加组之后，需要重新登录才能生效！</p>
-</blockquote>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 修改用户的主组（passwd 中的 GID）</span></span><br><span class="line">usermod -g 组 用户名</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修改用户的附加组</span></span><br><span class="line">usermod -G 组 用户名</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修改用户登录 Shell</span></span><br><span class="line">usermod -s /bin/bash 用户名</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>注意：默认使用 <code>useradd</code> 添加的用户是没有权限使用 <code>sudo</code> 以 <code>root</code> 身份执行命令的，可以使用以下命令，将用户添加到 <code>sudo</code> 附加组中</p>
-</blockquote>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">usermod -G sudo 用户名</span><br></pre></td></tr></table></figure>
-<h5 id="which"><a href="#which" class="headerlink" title="which"></a>which</h5><blockquote>
-<p>提示</p>
-<ul>
-<li><code>/etc/passwd</code> 是用于保存用户信息的文件</li>
-<li><code>/usr/bin/passwd</code> 是用于修改用户密码的程序</li>
-</ul>
-</blockquote>
-<ul>
-<li><code>which</code> 命令可以<strong>查看执行命令所在位置</strong>，例如：</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">which</span> ls</span><br><span class="line"></span><br><span class="line"><span class="comment"># 输出</span></span><br><span class="line"><span class="comment"># /bin/ls</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">which</span> useradd</span><br><span class="line"></span><br><span class="line"><span class="comment"># 输出</span></span><br><span class="line"><span class="comment"># /usr/sbin/useradd</span></span><br></pre></td></tr></table></figure>
-<h5 id="bin-和-sbin"><a href="#bin-和-sbin" class="headerlink" title="bin 和 sbin"></a><code>bin</code> 和 <code>sbin</code></h5><ul>
-<li>在 <code>Linux</code> 中，绝大多数可执行文件都是保存在 <code>/bin</code>、<code>/sbin</code>、<code>/usr/bin</code>、<code>/usr/sbin</code></li>
-<li><code>/bin</code>（<code>binary</code>）是二进制执行文件目录，<strong>主要用于具体应用</strong></li>
-<li><code>/sbin</code>（<code>system binary</code>）是<strong>系统管理员专用</strong>的二进制代码存放目录，主要用于<strong>系统管理</strong></li>
-<li><code>/usr/bin</code>（<code>user commands for applications</code>）后期安装的一些软件</li>
-<li><code>/usr/sbin</code>（<code>super user commands for applications</code>）超级用户的一些管理程序</li>
-</ul>
-<blockquote>
-<p>提示：</p>
-<ul>
-<li><code>cd</code> 终端命令是内置在系统内核中的，没有独立的文件，因此用 <code>which</code> 无法找到 <code>cd</code> 命令的位置</li>
-</ul>
-</blockquote>
-<h5 id="切换用户"><a href="#切换用户" class="headerlink" title="切换用户"></a>切换用户</h5><div class="table-container">
-<table>
-<thead>
-<tr>
-<th>序号</th>
-<th>命令</th>
-<th>作用</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>01</td>
-<td>su - 用户名</td>
-<td>切换用户，并且切换目录</td>
-<td>- 可以切换到用户家目录，否则保持位置不变</td>
-</tr>
-<tr>
-<td>02</td>
-<td>exit</td>
-<td>退出当前登录账户</td>
-</tr>
-</tbody>
-</table>
-</div>
-<ul>
-<li><code>su</code> 不接用户名，可以切换到 <code>root</code>，但是不推荐使用，因为不安全</li>
-<li><code>exit</code> 示意图如下：</li>
-</ul>
-<p><img src="https://api2.mubu.com/v3/document_image/6a787f05-e037-4fbb-95a0-7cbb8aab2f48-11197877.jpg" alt="su和exit示意图">￼</p>
-<h5 id="修改文件权限"><a href="#修改文件权限" class="headerlink" title="修改文件权限"></a>修改文件权限</h5><div class="table-container">
-<table>
-<thead>
-<tr>
-<th>序号</th>
-<th>命令</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>01</td>
-<td>chown</td>
-<td>修改拥有者</td>
-</tr>
-<tr>
-<td>02</td>
-<td>chgrp</td>
-<td>修改组</td>
-</tr>
-<tr>
-<td>03</td>
-<td>chmod</td>
-<td>修改权限</td>
-</tr>
-</tbody>
-</table>
-</div>
-<ul>
-<li>命令格式如下：</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 修改文件|目录的拥有者</span></span><br><span class="line">chown 用户名 文件名|目录名</span><br><span class="line"></span><br><span class="line"><span class="comment"># 递归修改文件|目录的组</span></span><br><span class="line">chgrp -R 组名 文件名|目录名</span><br><span class="line"></span><br><span class="line"><span class="comment"># 递归修改文件权限</span></span><br><span class="line">chmod -R 755 文件名|目录名</span><br></pre></td></tr></table></figure>
-<ul>
-<li><code>chmod</code> 在设置权限时，可以简单地使用三个数字分别对应 <strong>拥有者</strong> ／ <strong>组</strong> 和 <strong>其他</strong> 用户的权限</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 直接修改文件|目录的 读|写|执行 权限，但是不能精确到 拥有者|组|其他</span></span><br><span class="line">chmod +/-rwx 文件名|目录名</span><br></pre></td></tr></table></figure>
-<p><img src="https://api2.mubu.com/v3/document_image/d5fd3e0b-d68b-4218-a3e6-186de7512dcb-11197877.jpg" alt="文件权限示意图"></p>
-<ul>
-<li>常见数字组合有（<code>u</code>表示用户／<code>g</code>表示组／<code>o</code>表示其他）： <ul>
-<li><code>777</code> ===&gt; <code>u=rwx,g=rwx,o=rwx</code> </li>
-<li><code>755</code> ===&gt; <code>u=rwx,g=rx,o=rx</code></li>
-<li><code>644</code> ===&gt; <code>u=rw,g=r,o=r</code></li>
-</ul>
-</li>
-</ul>
-<h3 id="其他命令"><a href="#其他命令" class="headerlink" title="其他命令"></a>其他命令</h3><h4 id="查找命令"><a href="#查找命令" class="headerlink" title="查找命令"></a>查找命令</h4><h5 id="find"><a href="#find" class="headerlink" title="find"></a>find</h5><ul>
-<li><p>目录紧跟在find之后</p>
-<ul>
-<li><code>find ./ -type &#39;l&#39;</code>找当前目录下的软连接, 子目录会递龟进入;</li>
-<li><code>find ./ -name &#39;*.jpg&#39;</code>-找当前目录下的jpg文件, 子目录会递龟进入;</li>
-<li><p><code>find ./ -maxdepth 3 -name &#39;*.jpg&#39;</code>-指定目录层级深度为3层;</p>
-</li>
-<li><p><code>find ./ -size +20M -size -50M</code>-指定大小范围;</p>
-</li>
-<li><p>按时间查找:</p>
-<ul>
-<li>-atime(access访问时间)</li>
-<li>-ctime(change更改时间)</li>
-<li>-mtime(modify改动时间)</li>
-<li><code>find ./ -ctime 3</code>查找三天内被改动的文件;</li>
-</ul>
-</li>
-<li><p><code>ls -h</code>-以人类可读的方式显示结果;</p>
-</li>
-<li>man手册中反斜杠<strong>/</strong>可以用于查找关键字;</li>
-</ul>
-</li>
-</ul>
-<h5 id="grep"><a href="#grep" class="headerlink" title="grep"></a>grep</h5><p>grep:按文件内容搜索”return”关键字:</p>
-<p><code>grep -r &quot;return&quot; ./ -n</code></p>
-<p>ps:监控后台进程的工作情况;</p>
-<p><code>ps aux</code></p>
-<p>加个管道过滤内容</p>
-<p><code>ps aux | grep &quot;kernel&quot;</code>(搜索本身会占一个进程)</p>
-<p>如果将管道的手法用在find上(用xargs):</p>
-<p><code>find /usr/ -maxdepth 3 -type -f | xargs ls -l</code></p>
-<p><strong><code>-exec</code>与<code>xargs</code>的区别:前者会将结果不论多少一股脑的交给-exec, 而xargs会做分片处理(效率更高);</strong></p>
-<p>创建名字中有空格的文件:</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ touch abc\ def</span><br><span class="line">$ touch <span class="string">"abc def"</span></span><br></pre></td></tr></table></figure>
-<p>由于xargs会将文件名中的空格误认为是分隔符, 解决方式: 控制分隔符:</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find /usr/ -maxdepth 3 -<span class="built_in">type</span> f -print0 | xargs -0 ls -l</span><br></pre></td></tr></table></figure>
-<h4 id="打包压缩"><a href="#打包压缩" class="headerlink" title="打包压缩"></a>打包压缩</h4><ul>
-<li><strong>打包压缩</strong> 是日常工作中备份文件的一种方式</li>
-<li>在不同操作系统中，常用的打包压缩方式是不同的 <ul>
-<li><code>Windows</code> 常用 <code>rar</code></li>
-<li><code>Mac</code> 常用 <code>zip</code></li>
-<li><code>Linux</code> 常用 <code>tar.gz</code></li>
-</ul>
-</li>
-</ul>
-<h4 id="打包-／-解包"><a href="#打包-／-解包" class="headerlink" title="打包 ／ 解包"></a>打包 ／ 解包</h4><ul>
-<li><code>tar</code> 是 Linux 中最常用的 <strong>备份</strong>工具，此命令可以 <strong>把一系列文件</strong> 打包到 <strong>一个大文件中</strong>，也可以把一个 <strong>打包的大文件恢复成一系列文件</strong></li>
-<li><code>tar</code> 的命令格式如下：</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 打包文件</span></span><br><span class="line">tar -cvf 打包文件.tar 被打包的文件／路径...</span><br><span class="line"></span><br><span class="line"><span class="comment"># 解包文件</span></span><br><span class="line">tar -xvf 打包文件.tar</span><br></pre></td></tr></table></figure>
-<ul>
-<li><code>tar</code> 选项说明</li>
-</ul>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>选项</th>
-<th>含义</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>c</td>
-<td>生成档案文件，创建打包文件</td>
-</tr>
-<tr>
-<td>x</td>
-<td>解开档案文件</td>
-</tr>
-<tr>
-<td>v</td>
-<td>列出归档解档的详细过程，显示进度</td>
-</tr>
-<tr>
-<td>f</td>
-<td>指定档案文件名称，f 后面一定是 .tar 文件，所以必须放选项最后</td>
-</tr>
-</tbody>
-</table>
-</div>
-<blockquote>
-<p>注意：<code>f</code> 选项必须放在最后，其他选项顺序可以随意</p>
-</blockquote>
-<h4 id="压缩／解压缩"><a href="#压缩／解压缩" class="headerlink" title="压缩／解压缩"></a>压缩／解压缩</h4><h5 id="zip"><a href="#zip" class="headerlink" title="zip"></a>zip</h5><p>zip压缩:</p>
-<p><code>zip -r ziptest.zip hello.c hello.cpp</code></p>
-<p>zip解压缩:</p>
-<p><code>unzip ziptest.zip</code></p>
-<h5 id="gzip"><a href="#gzip" class="headerlink" title="gzip"></a>gzip</h5><p><code>tar</code> 与 <code>gzip</code> 命令结合可以使用实现文件 <strong>打包和压缩</strong></p>
-<ul>
-<li>打包和压缩<ul>
-<li><code>tar</code> 只负责打包文件，但不压缩</li>
-<li>用 <code>gzip</code> 压缩 <code>tar</code> 打包后的文件，其扩展名一般用 <code>xxx.tar.gz</code></li>
-</ul>
-</li>
-</ul>
-<blockquote>
-<p>在 <code>Linux</code> 中，最常见的压缩文件格式就是 <code>xxx.tar.gz</code></p>
-</blockquote>
-<ul>
-<li><strong>在 <code>tar</code> 命令中有一个选项 -z 可以调用 <code>gzip</code>，从而可以方便的实现压缩和解压缩的功能</strong></li>
-<li>命令格式如下：</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 压缩文件</span></span><br><span class="line">tar -zcvf 打包文件.tar.gz 被压缩的文件／路径...</span><br><span class="line"></span><br><span class="line"><span class="comment"># 解压缩文件</span></span><br><span class="line">tar -zxvf 打包文件.tar.gz</span><br><span class="line"></span><br><span class="line"><span class="comment"># 解压缩到指定路径</span></span><br><span class="line">tar -zxvf 打包文件.tar.gz -C 目标路径</span><br></pre></td></tr></table></figure>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>选项</th>
-<th>含义</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>-C</td>
-<td><strong>解压缩到指定目录，注意：要解压缩的目录必须存在</strong></td>
-</tr>
-</tbody>
-</table>
-</div>
-<h5 id="bzip2"><a href="#bzip2" class="headerlink" title="bzip2"></a><code>bzip2</code></h5><ul>
-<li><code>tar</code> 与 <code>bzip2</code> 命令结合可以使用实现文件 <strong>打包和压缩</strong>（用法和 <code>gzip</code> 一样）<ul>
-<li><code>tar</code> 只负责打包文件，但不压缩，</li>
-<li>用 <code>bzip2</code> 压缩 <code>tar</code> 打包后的文件，其扩展名一般用 <code>xxx.tar.bz2</code></li>
-</ul>
-</li>
-<li>在 <code>tar</code> 命令中有一个选项 <strong>-j</strong> 可以调用 <code>bzip2</code>，从而可以方便的实现压缩和解压缩的功能</li>
-<li>命令格式如下：</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 压缩文件</span></span><br><span class="line">tar -jcvf 打包文件.tar.bz2 被压缩的文件／路径...</span><br><span class="line"></span><br><span class="line"><span class="comment"># 解压缩文件</span></span><br><span class="line">tar -jxvf 打包文件.tar.bz2</span><br></pre></td></tr></table></figure>
-<h4 id="软件安装"><a href="#软件安装" class="headerlink" title="软件安装"></a>软件安装</h4><h5 id="通过-apt-安装／卸载软件"><a href="#通过-apt-安装／卸载软件" class="headerlink" title="通过 apt 安装／卸载软件"></a>通过 apt 安装／卸载软件</h5><ul>
-<li>apt 是 <code>Advanced Packaging Tool</code>，是 Linux 下的一款安装包管理工具</li>
-<li>可以在终端中方便的 <strong>安装</strong>／<strong>卸载</strong>／<strong>更新软件包</strong></li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1. 安装软件</span></span><br><span class="line">$ sudo apt install 软件包</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 卸载软件</span></span><br><span class="line">$ sudo apt remove 软件名</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 更新已安装的包</span></span><br><span class="line">$ sudo apt upgrade </span><br><span class="line"><span class="comment"># 4. 更新源服务器列表:</span></span><br><span class="line">sudo vim /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
-<h5 id="配置软件源"><a href="#配置软件源" class="headerlink" title="配置软件源"></a>配置软件源</h5><ul>
-<li>如果希望在 <code>ubuntu</code> 中安装软件，<strong>更加快速</strong>，可以通过设置<strong>镜像源</strong>，选择一个访问网速更快的服务器，来提供软件下载／安装服务</li>
-<li>提示：更换服务器之后，需要一个相对比较长时间的更新过程，需要耐心等待。更新完成后，再安装软件都会从新设置的服务器下载软件了</li>
-</ul>
-<blockquote>
-<p>所谓镜像源，就是<strong>所有服务器的内容是相同的（镜像）</strong>，但是根据所在位置不同，国内服务器通常速度会更快一些！</p>
-</blockquote>
-<h5 id="通过deb包安装"><a href="#通过deb包安装" class="headerlink" title="通过deb包安装"></a>通过deb包安装</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">安装deb软件包命令： sudo dpkg -i xxx.deb</span><br><span class="line">删除软件包命令： sudo dpkg -r xxx.deb</span><br><span class="line">连同配置文件一起删除：sudo dpkg -r --purge xxx.deb</span><br><span class="line">查看软件包信息命令：sudo dpkg -info xxx.deb</span><br><span class="line">查看文件拷贝详细命令：sudo dpkg -L xxx.deb</span><br><span class="line">查看系统中已安装软件包信息：sudo dpkg -l</span><br><span class="line">重新配置软件包命令：sudo dpkg -reconfigure xxx</span><br></pre></td></tr></table></figure>
-<h5 id="源码安装"><a href="#源码安装" class="headerlink" title="源码安装"></a>源码安装</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">1.解压缩源代码包</span><br><span class="line">2.cd dir</span><br><span class="line">3. ./configure <span class="comment"># 检测文件是否缺失，创建Makefile, 检查编译环境</span></span><br><span class="line">4. make <span class="comment"># 编译源码，生成库和可执行程序</span></span><br><span class="line">5. sudo make install <span class="comment">#将库和可执行程序，安装到系统路径下</span></span><br><span class="line">6. sudo make distclean <span class="comment"># 删除和卸载软件</span></span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/02/linux-02linux%E5%91%BD%E4%BB%A4%E4%BD%BF%E7%94%A8/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2659,452 +2281,6 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/01/linux_01%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="ShifuDong">
-      <meta itemprop="description" content="记录生活， 记录学习， 分享知识">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ShifuDong">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/03/01/linux_01%E6%96%87%E4%BB%B6%E5%92%8C%E7%9B%AE%E5%BD%95/" class="post-title-link" itemprop="url">Linux 文件和目录及相关操作</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2020-03-01 21:29:16" itemprop="dateCreated datePublished" datetime="2020-03-01T21:29:16+08:00">2020-03-01</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-20 20:52:54" itemprop="dateModified" datetime="2021-03-20T20:52:54+08:00">2021-03-20</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/linux/" itemprop="url" rel="index">
-                    <span itemprop="name">linux</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="单用户操作系统和多用户操作系统"><a href="#单用户操作系统和多用户操作系统" class="headerlink" title="单用户操作系统和多用户操作系统"></a>单用户操作系统和多用户操作系统</h3><ul>
-<li><strong>单用户操作系统</strong>：指一台计算机在同一时间 <strong>只能由一个用户</strong> 使用，<strong>一个用户独自享用系统的全部硬件和软件资源</strong><ul>
-<li><strong>Windows XP</strong> 之前的版本都是单用户操作系统</li>
-</ul>
-</li>
-<li><strong>多用户操作系统</strong>：指一台计算机在同一时间可以由 <strong>多个用户</strong> 使用，多个用户共<strong>同享用系统的全部硬件和软件资源</strong><ul>
-<li><strong>Unix</strong> 和 <strong>Linux</strong> 的设计初衷就是多用户操作系统</li>
-</ul>
-</li>
-</ul>
-<h3 id="linux下的文件系统"><a href="#linux下的文件系统" class="headerlink" title="linux下的文件系统"></a>linux下的文件系统</h3><h4 id="Linux文件类型"><a href="#Linux文件类型" class="headerlink" title="Linux文件类型"></a>Linux文件类型</h4><ul>
-<li>普通-</li>
-<li>目录d</li>
-<li>字符设备c</li>
-<li>块设备b</li>
-<li>软连接l</li>
-<li>管道p</li>
-<li>套接字s</li>
-<li>Unknown</li>
-</ul>
-<h4 id="文件结构"><a href="#文件结构" class="headerlink" title="文件结构"></a>文件结构</h4><ul>
-<li><p>在 <code>Windows</code> 下，打开 “计算机”，看到的是一个个的驱动器盘符：eg: C盘，D盘…。</p>
-<ul>
-<li>每个驱动器都有自己的根目录结构，形成多个树并列的情形。</li>
-</ul>
-</li>
-<li><p>在 <code>Linux</code> 下，看不到驱动器盘符，看到的是<strong>文件夹（目录）</strong></p>
-<ul>
-<li>linux没有盘符概念，只有一个根目录 <code>/</code>，所有文件都在它下面</li>
-</ul>
-</li>
-</ul>
-<p><img src="https://api2.mubu.com/v3/document_image/fe5a0a8b-ade0-401a-b879-f7264d3f0a80-11197877.jpg" alt="linux文件系统"></p>
-<ul>
-<li><p>用户目录</p>
-<ul>
-<li><p>位于 <code>/home/xxx</code>，称之为用户工作目录或家目录，表示方式：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/home/xx</span><br><span class="line">~</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-<li><p>/：根目录，<strong>一般根目录下只存放目录</strong>，在 linux 下有且只有一个根目录，所有的东西都是从这里开始 </p>
-<ul>
-<li>当在终端里输入 <code>cd /home</code>，其实是在告诉电脑，先从 <code>/</code>（根目录）开始，再进入到 <code>home</code> 目录</li>
-</ul>
-</li>
-<li><p>/bin、/usr/bin：可执行二进制文件的目录，如<strong>常用的命令 ls、tar、mv、cat</strong> 等</p>
-</li>
-<li><p>/boot：放置 linux <strong>系统启动</strong>时用到的一些文件，如 linux 的<strong>内核</strong>文件：<code>/boot/vmlinuz</code>，<strong>系统引导</strong>管理器：<code>/boot/grub</code></p>
-</li>
-<li><p>/dev：存放linux系统下的<strong>设备文件</strong>，<strong>访问该目录下某个文件，相当于访问某个设备</strong>，常用的是挂载光驱<code>mount /dev/cdrom /mnt</code></p>
-</li>
-<li><p>/etc：<strong>系统配置文件</strong>存放的目录，不建议在此目录下存放可执行文件，重要的配置文件有  </p>
-<ul>
-<li>/etc/inittab</li>
-<li>/etc/fstab</li>
-<li>/etc/init.d</li>
-<li>/etc/X11</li>
-<li>/etc/sysconfig</li>
-<li><p>/etc/xinetd.d</p>
-</li>
-<li><p>/etc/profile</p>
-</li>
-</ul>
-</li>
-<li><p>/home：系统默认的用户家目录，新增用户账号时，用户的家目录都存放在此目录下 </p>
-<ul>
-<li><strong><code>~</code> 表示当前用户的家目录</strong></li>
-<li><code>~xxx</code> 表示用户 <code>xxx</code> 的家目录</li>
-</ul>
-</li>
-<li><p>/lib、/usr/lib、/usr/local/lib：<strong>系统使用的函数库的目录，程序在执行过程中，需要调用一些额外的参数时需要函数库的协助</strong></p>
-</li>
-<li><p>/lost+fount：系统异常产生错误时，会将一些遗失的片段放置于此目录下</p>
-</li>
-<li><p>/mnt: /media：光盘默认<strong>挂载点</strong>，通常光盘挂载于 /mnt/cdrom 下，也不一定，可以选择任意位置进行挂载</p>
-</li>
-<li><p>/opt：给主机<strong>额外安装软件所摆放的目录</strong></p>
-</li>
-<li><p>/proc：<strong>此目录的数据都在内存中，如系统核心，外部设备，网络状态，由于数据都存放于内存中，所以不占用磁盘空间</strong>，比较重要的文件有：/proc/cpuinfo、/proc/interrupts、/proc/dma、/proc/ioports、/proc/net/* 等</p>
-</li>
-<li><p>/root：<strong>系统管理员root的家目录</strong></p>
-</li>
-<li><p>/sbin、/usr/sbin、/usr/local/sbin：放置<strong>系统管理员使用的可执行命令</strong>，如 fdisk、shutdown、mount 等。与 /bin 不同的是，这几个目录是给系统管理员 root 使用的命令<strong>，一般用户只能”查看”而不能设置和使用</strong></p>
-</li>
-<li><p>/tmp：一般用户或正在执行的程序<strong>临时存放文件的目录</strong>，任何人都可以访问，<strong>重要数据不可放置在此目录下</strong></p>
-</li>
-<li><p>/srv：<strong>服务启动之后需要访问的数据目录</strong>，如 www 服务需要访问的网页数据存放在 /srv/www 内</p>
-</li>
-<li><p>/usr：<strong>应用程序存</strong>放目录 </p>
-<ul>
-<li>/usr/bin：存放应用程序</li>
-<li>/usr/share：存放共享数据</li>
-<li>/usr/lib：存放不能直接运行的，<strong>却是许多程序运行所必需的一些函数库文件</strong></li>
-<li>/usr/local：存放<strong>软件升级包</strong></li>
-<li>/usr/share/doc：系统说明文件存放目录</li>
-<li>/usr/share/man：程序说明文件存放目录</li>
-</ul>
-</li>
-<li><p>/var：放置系统执行过程中<strong>经常变化的文件</strong> </p>
-<ul>
-<li>/var/log：随时更改的<strong>日志</strong>文件 </li>
-<li>/var/spool/mail：邮件存放的目录</li>
-<li>/var/run：程序或服务启动后，其 PID 存放在该目录下</li>
-</ul>
-</li>
-</ul>
-<h4 id="文件和目录常用命令"><a href="#文件和目录常用命令" class="headerlink" title="文件和目录常用命令"></a>文件和目录常用命令</h4><ul>
-<li>查看目录内容 <ul>
-<li><code>ls</code></li>
-</ul>
-</li>
-<li>切换目录 <ul>
-<li><code>cd</code></li>
-</ul>
-</li>
-<li>创建和删除操作 <ul>
-<li><code>touch</code></li>
-<li><code>rm</code></li>
-<li><code>mkdir</code></li>
-</ul>
-</li>
-<li>拷贝和移动文件 <ul>
-<li><code>cp</code></li>
-<li><code>mv</code></li>
-</ul>
-</li>
-<li>查看文件内容 <ul>
-<li><code>cat</code></li>
-<li><code>more</code></li>
-<li><code>grep</code></li>
-</ul>
-</li>
-<li>其他 <ul>
-<li><code>echo</code></li>
-<li>重定向 <code>&gt;</code> 和 <code>&gt;&gt;</code></li>
-<li>管道 <code>|</code></li>
-</ul>
-</li>
-</ul>
-<h5 id="查看目录ls-命令说明"><a href="#查看目录ls-命令说明" class="headerlink" title="查看目录ls 命令说明"></a>查看目录<code>ls</code> 命令说明</h5><ul>
-<li><code>ls</code> 是英文单词 <strong>list</strong> 的简写，其功能为列出目录的内容，是用户最常用的命令之一，类似于 <strong>DOS</strong> 下的 <code>dir</code> 命令</li>
-</ul>
-<h5 id="Linux-下文件和目录的特点"><a href="#Linux-下文件和目录的特点" class="headerlink" title="Linux 下文件和目录的特点"></a>Linux 下文件和目录的特点</h5><ul>
-<li>Linux <strong>文件</strong> 或者 <strong>目录</strong> 名称最长可以有 <code>256</code> 个字符</li>
-<li>以 <code>.</code> 开头的文件为隐藏文件，需要用 -a 参数才能显示</li>
-<li><strong>.</strong> 代表当前目录</li>
-<li><strong>..</strong> 代表上一级目录</li>
-</ul>
-<h5 id="ls-常用选项"><a href="#ls-常用选项" class="headerlink" title="ls 常用选项"></a>ls 常用选项</h5><div class="table-container">
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>含义</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>-a</td>
-<td>显示指定目录下所有子目录与文件，包括隐藏文件</td>
-</tr>
-<tr>
-<td>-l</td>
-<td>以列表方式显示文件的详细信息</td>
-</tr>
-<tr>
-<td>-h</td>
-<td>配合 -l 以人性化的方式显示文件大小</td>
-</tr>
-</tbody>
-</table>
-</div>
-<h5 id="计算机中文件大小的表示方式"><a href="#计算机中文件大小的表示方式" class="headerlink" title="计算机中文件大小的表示方式"></a>计算机中文件大小的表示方式</h5><div class="table-container">
-<table>
-<thead>
-<tr>
-<th>单位</th>
-<th>英文</th>
-<th>含义</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>字节</td>
-<td>B（Byte）</td>
-<td>在计算机中作为一个数字单元，一般为 8 位二进制数</td>
-</tr>
-<tr>
-<td>千</td>
-<td>K（Kibibyte）</td>
-<td>1 KB = 1024 B，千字节 （1024 = 2 ** 10）</td>
-</tr>
-<tr>
-<td>兆</td>
-<td>M（Mebibyte）</td>
-<td>1 MB = 1024 KB，百万字节</td>
-</tr>
-<tr>
-<td>千兆</td>
-<td>G（Gigabyte）</td>
-<td>1 GB = 1024 MB，十亿字节，千兆字节</td>
-</tr>
-<tr>
-<td>太</td>
-<td>T（Terabyte）</td>
-<td>1 TB = 1024 GB，万亿字节，太字节</td>
-</tr>
-<tr>
-<td>拍</td>
-<td>P（Petabyte）</td>
-<td>1 PB = 1024 TB，千万亿字节，拍字节</td>
-</tr>
-<tr>
-<td>艾</td>
-<td>E（Exabyte）</td>
-<td>1 EB = 1024 PB，百亿亿字节，艾字节</td>
-</tr>
-<tr>
-<td>泽</td>
-<td>Z（Zettabyte）</td>
-<td>1 ZB = 1024 EB，十万亿亿字节，泽字节</td>
-</tr>
-<tr>
-<td>尧</td>
-<td>Y（Yottabyte）</td>
-<td>1 YB = 1024 ZB，一亿亿亿字节，尧字节</td>
-</tr>
-</tbody>
-</table>
-</div>
-<h5 id="ls-通配符的使用"><a href="#ls-通配符的使用" class="headerlink" title="ls 通配符的使用"></a>ls 通配符的使用</h5><div class="table-container">
-<table>
-<thead>
-<tr>
-<th>通配符</th>
-<th>含义</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>*</td>
-<td>代表任意个数个字符</td>
-</tr>
-<tr>
-<td>?</td>
-<td>代表任意一个字符，至少 1 个</td>
-</tr>
-<tr>
-<td>[]</td>
-<td>表示可以匹配字符组中的任一一个</td>
-</tr>
-<tr>
-<td>[abc]</td>
-<td>匹配 a、b、c 中的任意一个</td>
-</tr>
-<tr>
-<td>[a-f]</td>
-<td>匹配从 a 到 f 范围内的的任意一个字符</td>
-</tr>
-</tbody>
-</table>
-</div>
-<h5 id="文件操作基本命令"><a href="#文件操作基本命令" class="headerlink" title="文件操作基本命令"></a>文件操作基本命令</h5><p><code>more</code>-分屏显示文件内容, 空格翻页;</p>
-<p><code>less</code>同理;</p>
-<p><code>head -n file</code>-查看file的前n行;</p>
-<p><code>tail -n file</code>-查看file的后n行;</p>
-<h5 id="目录及操作基本命令"><a href="#目录及操作基本命令" class="headerlink" title="目录及操作基本命令"></a>目录及操作基本命令</h5><p><strong>一个目录所占的磁盘大小为4K;</strong></p>
-<p><code>cd -</code>-在两个目录之间来回切换;</p>
-<p><code>rmdir</code>-删除空目录;</p>
-<p><code>cp -a/-r srcdir dstdir</code>-拷贝目录;</p>
-<h5 id="查找文件"><a href="#查找文件" class="headerlink" title="查找文件"></a>查找文件</h5><ul>
-<li><code>find</code> 命令功能非常强大，通常用来在 <strong>特定的目录下</strong> <strong>搜索</strong> 符合条件的文件</li>
-</ul>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>序号</th>
-<th>命令</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>01</td>
-<td>find [路径] -name “*.py”</td>
-<td>查找指定路径下扩展名是 <code>.py</code> 的文件，包括子目录</td>
-</tr>
-</tbody>
-</table>
-</div>
-<ul>
-<li><strong>如果省略路径，表示在当前文件夹下查找</strong></li>
-<li>之前学习的通配符，在使用 <code>find</code> 命令时同时可用</li>
-</ul>
-<h5 id="硬链接和软链接"><a href="#硬链接和软链接" class="headerlink" title="硬链接和软链接"></a>硬链接和软链接</h5><ul>
-<li><p>软连接是<strong>一个文件</strong>，其中存的就是<strong>文件的路径</strong>, 路径有几个字符就占几个字节, 所以建议用绝对路径创建软连接;</p>
-<ul>
-<li>注意文件的权限, <strong>软连接的权限代表其本身的权限, 与指向的目的文件无关</strong>;</li>
-</ul>
-</li>
-<li><p>创建硬链接会增加硬链接计数;</p>
-<ul>
-<li>这些硬链接只想同一个文件, 修改一个其余的会同步变化;</li>
-<li>所有的硬链接有相同的<strong>Inode</strong>(文件统一id);</li>
-<li>删除只是把硬链接计数-1;</li>
-</ul>
-</li>
-</ul>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>序号</th>
-<th>命令</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>01</td>
-<td>ln -s 被链接的源文件 链接文件</td>
-<td>建立文件的软链接，用通俗的方式讲<strong>类似于</strong> Windows 下的<strong>快捷方式</strong></td>
-</tr>
-</tbody>
-</table>
-</div>
-<ul>
-<li>没有 <code>-s</code> 选项建立的是一个 <strong>硬链接文件</strong><ul>
-<li>两个文件占用相同大小的硬盘空间，<strong>工作中几乎不会建立文件的硬链接</strong></li>
-</ul>
-</li>
-<li><strong>源文件要使用绝对路径</strong>，不能使用相对路径，这样可以方便移动链接文件后，仍然能够正常使用</li>
-</ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ln -s hello.c hello.c.s #创建软连接;</span><br><span class="line">ln hello.c hello.c.h #创建硬链接;</span><br></pre></td></tr></table></figure>
-<h5 id="文件软硬链接的示意图"><a href="#文件软硬链接的示意图" class="headerlink" title="文件软硬链接的示意图"></a>文件软硬链接的示意图</h5><p><img src="https://api2.mubu.com/v3/document_image/1f4e640f-dc3e-4678-bb88-9fa7c1321aeb-11197877.jpg" alt="文件软硬链接示意图"></p>
-<blockquote>
-<p>在 Linux 中，<strong>文件名</strong> 和 <strong>文件的数据</strong> 是分开存储的</p>
-</blockquote>
-<ul>
-<li>提示： <ul>
-<li>在 Linux 中，只有文件的 <code>硬链接数 == 0</code> 才会被删除</li>
-<li>使用 <code>ls -l</code> 可以查看一个文件的硬链接的数量</li>
-</ul>
-</li>
-</ul>
-<h4 id="磁盘分区类型"><a href="#磁盘分区类型" class="headerlink" title="磁盘分区类型"></a>磁盘分区类型</h4><ul>
-<li>主分区：最多只能有四个</li>
-<li>扩展分区：最多一个，算作主分区的一种，主分区加扩展分区最多有四个。扩展分区不能存储数据和格式化，必须再划分为逻辑分区才可以使用。</li>
-<li>逻辑分区：在扩展分区中划分</li>
-</ul>
-<p>逻辑分区的编号从5开始</p>
-<h4 id="支持的文件系统"><a href="#支持的文件系统" class="headerlink" title="支持的文件系统"></a>支持的文件系统</h4><ul>
-<li>ext2:ext文件系统的升级版。最大支持16TB的分区和最大2TB的文件。</li>
-<li>ext3:ext2的升级，增加日志功能。</li>
-<li>ext4:ext3升级版本，主流使用，功能强大</li>
-</ul>
-<h4 id="文件系统常用命令"><a href="#文件系统常用命令" class="headerlink" title="文件系统常用命令"></a>文件系统常用命令</h4><h4 id="df-du-fsck-dump2fs"><a href="#df-du-fsck-dump2fs" class="headerlink" title="df, du, fsck, dump2fs"></a>df, du, fsck, dump2fs</h4><h5 id="文件系统查看命令df"><a href="#文件系统查看命令df" class="headerlink" title="文件系统查看命令df"></a>文件系统查看命令df</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">df \[选项][挂载点]</span><br><span class="line"></span><br><span class="line">-a 所有文件系统信息</span><br><span class="line"></span><br><span class="line">-h 使用习惯单位显示容量，如kB,MB,GB</span><br><span class="line"></span><br><span class="line">ls 只统计目录下的大小，而不会统计子目录下的数据大小。</span><br></pre></td></tr></table></figure>
-<h5 id="统计目录或文件大小du"><a href="#统计目录或文件大小du" class="headerlink" title="统计目录或文件大小du"></a>统计目录或文件大小du</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-a , -h , -s</span><br></pre></td></tr></table></figure>
-<p>df命令从文件系统考虑，不光要考虑文件占用的空间，还要统计被命令或程序占用的空间（eg. 文件已经被删除，但程序并没有释放空间）</p>
-<p><strong>du命令面向文件，只会计算文件或目录占用的空间。</strong></p>
-<h5 id="文件系统修复命令fsck"><a href="#文件系统修复命令fsck" class="headerlink" title="文件系统修复命令fsck"></a>文件系统修复命令fsck</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fsck[选项]分区设备文件名</span><br></pre></td></tr></table></figure>
-<h5 id="显示磁盘状态命令dumpe2fs"><a href="#显示磁盘状态命令dumpe2fs" class="headerlink" title="显示磁盘状态命令dumpe2fs"></a>显示磁盘状态命令dumpe2fs</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dumpe2fs 分区设备文件名</span><br></pre></td></tr></table></figure>
-<h4 id="文件系统常用命令-挂载命令"><a href="#文件系统常用命令-挂载命令" class="headerlink" title="文件系统常用命令-挂载命令"></a>文件系统常用命令-挂载命令</h4><h5 id="查询与自动挂载"><a href="#查询与自动挂载" class="headerlink" title="查询与自动挂载"></a>查询与自动挂载</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mount [-l]：查询系统中已经挂载的设备，-l会显示卷标名称</span><br><span class="line"></span><br><span class="line">mount -a 依据配置文件/etc/fastb的内容，自动挂载</span><br></pre></td></tr></table></figure>
-<h5 id="挂载命令格式"><a href="#挂载命令格式" class="headerlink" title="挂载命令格式"></a>挂载命令格式</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">mount [-t 文件系统] [-L 卷标名] [-o 特殊选项] 设备文件名 挂载点</span><br><span class="line"></span><br><span class="line">选项：</span><br><span class="line"></span><br><span class="line">-t 文件系统：加入文件系统类型来指定挂载的类型，可以ext3，ext4,iso9660等文件系统</span><br><span class="line"></span><br><span class="line">-L 卷标名：挂载指定卷标的分区，而不是安装设备文件名挂载</span><br><span class="line"></span><br><span class="line">-o 特殊指令（remount ...）</span><br><span class="line"></span><br><span class="line">mount -o remount ,noexec /home</span><br></pre></td></tr></table></figure>
-<h5 id="挂载光盘与U盘"><a href="#挂载光盘与U盘" class="headerlink" title="挂载光盘与U盘"></a>挂载光盘与U盘</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">挂载光盘</span></span><br><span class="line"></span><br><span class="line">mkdir /mnt/cdrom/ #建立挂载点</span><br><span class="line"></span><br><span class="line">mount -t iso9660 /dev/cdrom /mnt/cdrom #挂载光盘</span><br><span class="line"></span><br><span class="line">mount /dev/sr0 /mnt/cdrom</span><br></pre></td></tr></table></figure>
-<h5 id="卸载命令"><a href="#卸载命令" class="headerlink" title="卸载命令"></a>卸载命令</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">umount 设备文件名或挂载点</span><br><span class="line"></span><br><span class="line">umount /mnt/cdrom</span><br></pre></td></tr></table></figure>
-<h5 id="挂载U盘"><a href="#挂载U盘" class="headerlink" title="挂载U盘"></a>挂载U盘</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">fdisk -l 查看U盘设备文件名</span><br><span class="line"></span><br><span class="line">mount -t vfat /dev/sdb1 /mnt/usb/</span><br><span class="line"></span><br><span class="line">linux默认不支持NTFS文件系统</span><br></pre></td></tr></table></figure>
-<h4 id="fdisk分区"><a href="#fdisk分区" class="headerlink" title="fdisk分区"></a>fdisk分区</h4><h5 id="fdisk命令分区过程"><a href="#fdisk命令分区过程" class="headerlink" title="fdisk命令分区过程"></a>fdisk命令分区过程</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">1.添加硬盘，虚拟机必须在关机的情况下添加</span><br><span class="line"></span><br><span class="line">2.查看新硬盘 fdisk -l</span><br><span class="line"></span><br><span class="line">3.使用fdisk命令分区</span><br><span class="line"></span><br><span class="line">fdisk /dev/sdb</span><br><span class="line"></span><br><span class="line">4.重新读取分区表信息</span><br><span class="line"></span><br><span class="line">partprobe</span><br><span class="line"></span><br><span class="line">5.格式化分区</span><br><span class="line"></span><br><span class="line">扩展分区不可以格式化</span><br><span class="line"></span><br><span class="line">mkfs -t ext4 /dev/sdb1</span><br><span class="line"></span><br><span class="line">6.建立挂载分区</span><br></pre></td></tr></table></figure>
-<h5 id="分区自动挂载与fstab文件修复"><a href="#分区自动挂载与fstab文件修复" class="headerlink" title="分区自动挂载与fstab文件修复"></a>分区自动挂载与fstab文件修复</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">将挂载写入/etc/fstab文件，一定要写对</span><br><span class="line"></span><br><span class="line">mount -a 依据配置文件 /etc/fstab的内容，自动挂载</span><br><span class="line"></span><br><span class="line">/etc/fstab文件修复</span><br><span class="line"></span><br><span class="line">mount -o remount,rm /</span><br></pre></td></tr></table></figure>
-<h4 id="分配swap分区"><a href="#分配swap分区" class="headerlink" title="分配swap分区"></a>分配swap分区</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">1.free命令</span><br><span class="line">查看内存与swap分区使用情况</span><br><span class="line">cached(缓存):加速数据的读取过程</span><br><span class="line">buffer(缓冲)：写入数据过程中，将分散的写入操作保存到内存中，当达到一定的程度再集中写入硬盘，加速数据的写入过程。</span><br><span class="line"></span><br><span class="line">2.新建swap分区</span><br><span class="line">fdisk /dev/sdb</span><br><span class="line">还需将分区ID改为82</span><br><span class="line"></span><br><span class="line">3.格式化</span><br><span class="line">mkswap /dev/sdb6</span><br><span class="line"></span><br><span class="line">4.加入swap分区</span><br><span class="line">swapon /dev/sdb6 加入swap分区</span><br><span class="line">swapoff /dev/sdb6 取消swap分区</span><br><span class="line"></span><br><span class="line">5.swap分区开机自动挂载</span><br><span class="line">vi /etc/fstab</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
@@ -3155,20 +2331,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">78</span>
+          <span class="site-state-item-count">80</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-count">13</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">30</span>
+        <span class="site-state-item-count">31</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
